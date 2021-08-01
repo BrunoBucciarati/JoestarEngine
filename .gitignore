@@ -1,4 +1,5 @@
 
+.vs
 .vs/slnx.sqlite
 .vs/ProjectSettings.json
 .vs/VSWorkspaceState.json
@@ -12,6 +13,10 @@
 *.pdb
 *.tlog
 *.html
+*.obj
+*.exe
+*.log
+*.ilk
 glfw-3.3.4/build
 glfw-3.3.4/docs
 glfw-3.3.4/examples
@@ -19,3 +24,6 @@ glfw-3.3.4/tests
 glm-master/doc
 glm-master/test
 
+.vs/JoestarEngine/v16/ipch/AutoPCH/62f52454aa9ccf7e/MAIN.ipch
+*.ilk
+*.recipe
