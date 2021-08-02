@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\JoestarEngine\JoestarEngine\x64\Debug\JoestarEngine.exe</FullPath>
+      <FullPath>D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
