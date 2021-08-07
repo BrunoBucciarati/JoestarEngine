@@ -80,8 +80,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>$(SolutionDir)glfw-3.3.4\include;$(SolutionDir)glm-master;C:\VulkanSDK\1.2.182.0\Include;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\VulkanSDK\1.2.182.0\Lib;$(SolutionDir)glfw-3.3.4\build\src\Debug;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>$(SolutionDir)ThirdParty\glfw-3.3.4\include;$(SolutionDir)ThirdParty\glm-master;D:\VulkanSDK\1.2.182.0\Include;$(SolutionDir)ThirdParty\glad\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>D:\VulkanSDK\1.2.182.0\Lib;$(SolutionDir)ThirdParty\glfw-3.3.4\build\src\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -145,12 +145,57 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Base\GameObject.cpp" />
+    <ClCompile Include="Base\Object.cpp" />
+    <ClCompile Include="Base\SubSystem.cpp" />
+    <ClCompile Include="Base\Renderer.cpp" />
+    <ClCompile Include="Base\Scene.cpp" />
+    <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
+    <ClCompile Include="IO\File.cpp" />
+    <ClCompile Include="IO\FileSystem.cpp" />
+    <ClCompile Include="Thread\RenderThreadVulkan.cpp" />
+    <ClCompile Include="Thread\Thread.cpp" />
+    <ClCompile Include="Graphics\glad.c" />
+    <ClCompile Include="Graphics\GPUProgramGL.cpp" />
+    <ClCompile Include="Graphics\Graphics.cpp" />
+    <ClCompile Include="Graphics\GraphicsGL.cpp" />
+    <ClCompile Include="Graphics\GraphicsVulkan.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="VulkanApplication.cpp" />
+    <ClCompile Include="Misc\Application.cpp" />
+    <ClCompile Include="Graphics\GPUProgram.cpp" />
+    <ClCompile Include="Base\EngineContext.cpp" />
+    <ClCompile Include="Misc\GlobalConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GlobalConfig.h" />
-    <ClInclude Include="VulkanApplication.h" />
+    <ClInclude Include="Base\Camera.h" />
+    <ClInclude Include="Base\ClassIDs.h" />
+    <ClInclude Include="Base\GameObject.h" />
+    <ClInclude Include="Base\Object.h" />
+    <ClInclude Include="Base\ObjectDefines.h" />
+    <ClInclude Include="Base\SubSystem.h" />
+    <ClInclude Include="Base\Renderer.h" />
+    <ClInclude Include="Base\Scene.h" />
+    <ClInclude Include="Graphics\GPUProgramVulkan.h" />
+    <ClInclude Include="Graphics\GraphicDefines.h" />
+    <ClInclude Include="Graphics\Shader\ShaderDefs.h" />
+    <ClInclude Include="IO\File.h" />
+    <ClInclude Include="Thread\RenderThread.h" />
+    <ClInclude Include="Thread\RenderThreadGL.h" />
+    <ClInclude Include="Thread\RenderThreadVulkan.h" />
+    <ClInclude Include="Thread\Thread.h" />
+    <ClInclude Include="Graphics\GPUProgramGL.h" />
+    <ClInclude Include="Graphics\RenderCommand.h" />
+    <ClInclude Include="IO\FileSystem.h" />
+    <ClInclude Include="Base\EngineContext.h" />
+    <ClInclude Include="Misc\GlobalConfig.h" />
+    <ClInclude Include="Misc\Application.h" />
+    <ClInclude Include="Graphics\Graphics.h" />
+    <ClInclude Include="Graphics\GraphicsGL.h" />
+    <ClInclude Include="Graphics\GraphicsVulkan.h" />
+    <ClInclude Include="Graphics\Material.h" />
+    <ClInclude Include="Graphics\Mesh.h" />
+    <ClInclude Include="Graphics\GPUProgram.h" />
+    <ClInclude Include="IO\Log.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

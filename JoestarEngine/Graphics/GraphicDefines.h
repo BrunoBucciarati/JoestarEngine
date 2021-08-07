@@ -1,0 +1,11 @@
+#pragma once
+#ifndef _JOESTAR_GRAPHICS_DEF_H_
+#define _JOESTAR_GRAPHICS_DEF_H_
+enum GFX_API {
+	GFX_API_OPENGL = 0,
+	GFX_API_VULKAN,
+	GFX_API_D3D11,
+	GFX_API_D3D12,
+	GFX_API_INVALID
+};
+#endif
