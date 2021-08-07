@@ -48,33 +48,6 @@
     <ClCompile Include="Base\Scene.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Base\EngineContext.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Base\SubSystem.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Base\Object.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Misc\GlobalConfig.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Thread\Thread.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Thread\RenderThreadVulkan.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="IO\FileSystem.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="IO\File.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\GPUProgramVulkan.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -120,48 +93,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Base\Camera.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Base\EngineContext.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\RenderCommand.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Base\SubSystem.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Base\ObjectDefines.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Base\Object.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Base\ClassIDs.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Thread\Thread.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\GraphicDefines.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Thread\RenderThread.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Thread\RenderThreadVulkan.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Thread\RenderThreadGL.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="IO\File.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\Shader\ShaderDefs.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\GPUProgramVulkan.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

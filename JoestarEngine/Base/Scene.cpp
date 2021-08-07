@@ -66,7 +66,7 @@ Scene::Scene() {
 	Renderer* render = new Renderer;
     render->mesh_ = GenUVSphere();
     render->mat_ = new Material;
-    //render->mat_->SetDefault();
+    render->mat_->SetDefault();
     go->render = render;
 }
 

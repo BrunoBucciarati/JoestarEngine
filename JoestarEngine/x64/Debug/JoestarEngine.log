@@ -1,9 +1,8 @@
-﻿  Graphics.cpp
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
-D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
-  RenderThreadVulkan.cpp
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
-D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
-  The contents of <optional> are available only with C++17 or later.
+﻿  Renderer.cpp
+  Application.cpp
+  main.cpp
   正在生成代码...
-  JoestarEngine.vcxproj -> D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe
+Renderer.obj : error LNK2001: 无法解析的外部符号 "public: static class Application * Application::appInstance" (?appInstance@Application@@2PEAV1@EA)
+main.obj : error LNK2001: 无法解析的外部符号 "public: static class Application * Application::appInstance" (?appInstance@Application@@2PEAV1@EA)
+Scene.obj : error LNK2019: 无法解析的外部符号 "public: static class GPUProgram * __cdecl GPUProgram::CreateProgram(void)" (?CreateProgram@GPUProgram@@SAPEAV1@XZ)，函数 "public: __cdecl Material::Material(void)" (??0Material@@QEAA@XZ) 中引用了该符号
+D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe : fatal error LNK1120: 2 个无法解析的外部命令
