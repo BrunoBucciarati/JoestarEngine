@@ -1,29 +1,29 @@
 ﻿#include "GPUProgram.h"
 #include "../Misc/GlobalConfig.h"
 #include "GPUProgramGL.h"
-const char* GPUProgram::ShaderCodeFromFile(const char* file) {
-	std::string code;
-	std::ifstream shaderFile;
-	shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try
-    {
-        shaderFile.open(file);
-        std::stringstream shaderStream;
-        shaderStream << shaderFile.rdbuf();
-        shaderFile.close();
-        code = shaderStream.str();
-        return code.c_str();
-    }
-    catch (std::ifstream::failure e)
-    {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-    }
-    return code.c_str();
-}
+#include "GPUProgramVulkan.h"
+#include "../IO/FileSystem.h"
+#include "../Misc/Application.h"
+#include "GraphicDefines.h"
 
-static GPUProgram* CreateProgram() {
-    std::string GFX_API = GetGlobalConfig()->GetConfig<std::string>("GFX_API");
-    if (GFX_API.find("OpenGL") != std::string::npos) {
+namespace Joestar {
+    File* GPUProgram::ShaderCodeFile(const char* file) {
+        Application* app = Application::GetApplication();
+        FileSystem* fs = app->GetSubSystem<FileSystem>();
+        std::string path = fs->GetResourceDir();
+        path += "Shaders/";
+        path += file;
+        File* f = fs->ReadFile(path.c_str());
+        return f;
+    }
+
+    GPUProgram* GPUProgram::CreateProgram() {
+        Application* app = Application::GetApplication();
+        GFX_API gfxAPI = (GFX_API)(app->GetSubSystem<GlobalConfig>()->GetConfig<int>("GFX_API"));
+
+        if (gfxAPI == GFX_API_VULKAN) {
+            return new GPUProgramVulkan;
+        }
         return new GPUProgramGL;
     }
 }

@@ -24,8 +24,12 @@ ThirdParty/glfw-3.3.4/out
 ThirdParty/glfw-3.3.4/examples
 ThirdParty/glfw-3.3.4/tests
 ThirdParty/glfw-3.3.4/CMake
+ThirdParty/glfw-3.3.4/out
 ThirdParty/glm-master/doc
 ThirdParty/glm-master/test
 .vs/JoestarEngine/v16/ipch/AutoPCH/62f52454aa9ccf7e/MAIN.ipch
 *.ilk
 *.recipe
+JoestarEngine/x64
+*.log
+*.obj

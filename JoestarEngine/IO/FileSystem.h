@@ -1,7 +1,15 @@
 #pragma once
-class FileSystem {
-public:
-	const static char* GetResourceDir() {
-		return "../../../Resources/";
-	}
-};
+#include "../Base/SubSystem.h"
+#include "File.h"
+namespace Joestar {
+	typedef void ReadFileCallback(File*);
+	class FileSystem : public SubSystem {
+		REGISTER_OBJECT(FileSystem, SubSystem)
+		static const char* GetResourceDir() {
+			return "../Resources/";
+		}
+
+		void ReadFileAsync(const char* filePath, ReadFileCallback callback);
+		File* ReadFile(const char* filePath);
+	};
+}
