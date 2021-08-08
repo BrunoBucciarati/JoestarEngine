@@ -1,7 +1,6 @@
 #include "File.h"
 #include "Log.h"
 #include <fstream>
-#include <direct.h>//---getcwd
 namespace Joestar {
 	File::File(const char* filename, bool async) {
 		mSize = 0;

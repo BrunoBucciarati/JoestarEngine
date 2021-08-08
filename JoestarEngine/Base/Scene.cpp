@@ -5,7 +5,7 @@
 Mesh* GenUVSphere()
 {
     Mesh* mesh = new Mesh();
-    std::vector<Vertex> vertices;
+    //std::vector<Vertex> vertices;
     std::vector<glm::vec2> uv;
     std::vector<glm::vec3> normals;
     std::vector<unsigned int> indices;
@@ -23,11 +23,11 @@ Mesh* GenUVSphere()
                 float yPos = std::cos(ySegment * PI);
                 float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
 
-                Vertex v;
-                v.Position = glm::vec3(xPos, yPos, zPos);
-                v.TexCoords = glm::vec2(xSegment, ySegment);
-                v.Normal = glm::vec3(xPos, yPos, zPos);
-                vertices.push_back(v);
+                //Vertex v;
+               // v.Position = glm::vec3(xPos, yPos, zPos);
+               // v.TexCoords = glm::vec2(xSegment, ySegment);
+               // v.Normal = glm::vec3(xPos, yPos, zPos);
+                //vertices.push_back(v);
             }
     }
 
@@ -54,7 +54,7 @@ Mesh* GenUVSphere()
         }
         //indexCount = indices.size();
         mesh->indices_ = indices;
-        mesh->vertices_ = vertices;
+        //mesh->vertices_ = vertices;
 
         return mesh;
     }

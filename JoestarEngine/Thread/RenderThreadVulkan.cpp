@@ -9,7 +9,6 @@
 #include "../Misc/Application.h"
 #include "../IO/Log.h"
 #include "../Graphics/GPUProgram.h"
-#include "../Graphics/GPUProgramVulkan.h"
 #include <optional>
 #include <algorithm>
 #include <cstdint>
@@ -22,22 +21,22 @@ namespace Joestar {
     };
     SwapChainSupportDetails RenderThreadVulkan::QuerySwapChainSupport(VkPhysicalDevice device) {
         SwapChainSupportDetails details;
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, vkContext.surface, &details.capabilities);
 
         uint32_t formatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, vkContext.surface, &formatCount, nullptr);
 
         if (formatCount != 0) {
             details.formats.resize(formatCount);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, vkContext.surface, &formatCount, details.formats.data());
         }
 
         uint32_t presentModeCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, vkContext.surface, &presentModeCount, nullptr);
 
         if (presentModeCount != 0) {
             details.presentModes.resize(presentModeCount);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, vkContext.surface, &presentModeCount, details.presentModes.data());
         }
         return details;
     }
@@ -62,7 +61,7 @@ namespace Joestar {
     const bool enableValidationLayers = true;
 #endif
     RenderThreadVulkan::RenderThreadVulkan() {
-        physicalDevice = VK_NULL_HANDLE;
+        vkContext.physicalDevice = VK_NULL_HANDLE;
     }
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -93,6 +92,7 @@ namespace Joestar {
         CreateGraphicsPipeline();
         CreateFrameBuffers();
         CreateCommandPool();
+        CreateVertexBuffer();
         CreateCommandBuffers();
         CreateSyncObjects();
         
@@ -163,48 +163,51 @@ namespace Joestar {
             createInfo.enabledLayerCount = 0;
         }
 
-        VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
+        VkResult result = vkCreateInstance(&createInfo, nullptr, &vkContext.instance);
         if (result != VK_SUCCESS) {
-            LOGERROR("failed to create instance!");
+            LOGERROR("failed to create vkContext.instance!");
         }
     }
 
     void RenderThreadVulkan::CreateSurface() {
-        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-            LOGERROR("failed to create window surface!");
+        if (glfwCreateWindowSurface(vkContext.instance, window, nullptr, &vkContext.surface) != VK_SUCCESS) {
+            LOGERROR("failed to create window vkContext.surface!");
         }
     }
 
     void RenderThreadVulkan::CleanupSwapChain() {
         for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
-            vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
+            vkDestroyFramebuffer(vkContext.device, swapChainFramebuffers[i], nullptr);
         }
 
-        vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+        vkFreeCommandBuffers(vkContext.device, vkContext.commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
-        vkDestroyPipeline(device, graphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-        vkDestroyRenderPass(device, renderPass, nullptr);
+        vkDestroyPipeline(vkContext.device, graphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(vkContext.device, pipelineLayout, nullptr);
+        vkDestroyRenderPass(vkContext.device, renderPass, nullptr);
 
         for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-            vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+            vkDestroyImageView(vkContext.device, swapChainImageViews[i], nullptr);
         }
 
-        vkDestroySwapchainKHR(device, swapChain, nullptr);
+        vkDestroySwapchainKHR(vkContext.device, vkContext.swapChain, nullptr);
     }
 
 void RenderThreadVulkan::Cleanup() {
     CleanupSwapChain();
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(device, inFlightFences[i], nullptr);
+        vkDestroySemaphore(vkContext.device, renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(vkContext.device, imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(vkContext.device, inFlightFences[i], nullptr);
     }
-    vkDestroyCommandPool(device, commandPool, nullptr);
-    vkDestroyDevice(device, nullptr);
+    if (currentProgram) {
+        currentProgram->Clean();
+    }
+    vkDestroyCommandPool(vkContext.device, vkContext.commandPool, nullptr);
+    vkDestroyDevice(vkContext.device, nullptr);
 
-    vkDestroySurfaceKHR(instance, surface, nullptr);
-    vkDestroyInstance(instance, nullptr);
+    vkDestroySurfaceKHR(vkContext.instance, vkContext.surface, nullptr);
+    vkDestroyInstance(vkContext.instance, nullptr);
     glfwDestroyWindow(window);
 
     glfwTerminate();
@@ -236,7 +239,7 @@ QueueFamilyIndices RenderThreadVulkan::FindQueueFamilies(VkPhysicalDevice device
     int i = 0;
     for (const auto& queueFamily : queueFamilies) {
         VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, vkContext.surface, &presentSupport);
         if (presentSupport) {
             indices.presentFamily = i;
         }
@@ -251,26 +254,26 @@ QueueFamilyIndices RenderThreadVulkan::FindQueueFamilies(VkPhysicalDevice device
 
 void RenderThreadVulkan::PickPhysicalDevice() {
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(vkContext.instance, &deviceCount, nullptr);
     if (deviceCount == 0) {
         LOGERROR("failed to find GPUs with Vulkan support!");
     }
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(vkContext.instance, &deviceCount, devices.data());
     for (const auto& device : devices) {
         if (IsDeviceSuitable(device)) {
-            physicalDevice = device;
+            vkContext.physicalDevice = device;
             break;
         }
     }
 
-    if (physicalDevice == VK_NULL_HANDLE) {
+    if (vkContext.physicalDevice == VK_NULL_HANDLE) {
         LOGERROR("failed to find a suitable GPU!");
     }
 }
 
 void RenderThreadVulkan::CreateLogicalDevice() {
-    QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
+    QueueFamilyIndices indices = FindQueueFamilies(vkContext.physicalDevice);
 
     float queuePriority = 1.0f;
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -302,12 +305,12 @@ void RenderThreadVulkan::CreateLogicalDevice() {
     else {
         createInfo.enabledLayerCount = 0;
     }
-    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
-        LOGERROR("failed to create logical device!");
+    if (vkCreateDevice(vkContext.physicalDevice, &createInfo, nullptr, &vkContext.device) != VK_SUCCESS) {
+        LOGERROR("failed to create logical vkContext.device!");
     }
 
-    vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
-    vkGetDeviceQueue(device, indices.presentFamily, 0, &presentQueue);
+    vkGetDeviceQueue(vkContext.device, indices.graphicsFamily, 0, &vkContext.graphicsQueue);
+    vkGetDeviceQueue(vkContext.device, indices.presentFamily, 0, &vkContext.presentQueue);
 }
 
 VkSurfaceFormatKHR RenderThreadVulkan::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
@@ -343,7 +346,7 @@ VkExtent2D RenderThreadVulkan::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& 
 }
 
 void RenderThreadVulkan::CreateSwapChain() {
-    SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physicalDevice);
+    SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(vkContext.physicalDevice);
 
     VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
@@ -355,7 +358,7 @@ void RenderThreadVulkan::CreateSwapChain() {
     }
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = surface;
+    createInfo.surface = vkContext.surface;
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -363,7 +366,7 @@ void RenderThreadVulkan::CreateSwapChain() {
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
+    QueueFamilyIndices indices = FindQueueFamilies(vkContext.physicalDevice);
     uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
 
     if (indices.graphicsFamily != indices.presentFamily) {
@@ -384,12 +387,12 @@ void RenderThreadVulkan::CreateSwapChain() {
 
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+    if (vkCreateSwapchainKHR(vkContext.device, &createInfo, nullptr, &vkContext.swapChain) != VK_SUCCESS) {
         LOGERROR("failed to create swap chain!");
     }
-    vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(vkContext.device, vkContext.swapChain, &imageCount, nullptr);
     swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+    vkGetSwapchainImagesKHR(vkContext.device, vkContext.swapChain, &imageCount, swapChainImages.data());
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
 }
@@ -411,7 +414,7 @@ void RenderThreadVulkan::CreateImageViews() {
         createInfo.subresourceRange.levelCount = 1;
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
-        if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS) {
+        if (vkCreateImageView(vkContext.device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS) {
             LOGERROR("failed to create image views!");
         }
     }
@@ -453,23 +456,21 @@ void RenderThreadVulkan::CreateRenderPass() {
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(vkContext.device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
         throw std::runtime_error("failed to create render pass!");
     }
 }
 
 void RenderThreadVulkan::CreateGraphicsPipeline() {
     GPUProgramVulkan* program = static_cast<GPUProgramVulkan*>(GPUProgram::CreateProgram());
-    program->SetDevice(&device);
-    program->SetShader("vert.spv", "frag.spv");
+    currentProgram = program;
+    program->SetDevice(&vkContext);
+    program->SetShader("test.vert", "test.frag");
+
+    //VkBuffer* vertexBuffer = program->GetVertexBuffer();
+
     VkPipelineShaderStageCreateInfo* info = program->GetShaderStage();
 
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -555,16 +556,18 @@ void RenderThreadVulkan::CreateGraphicsPipeline() {
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(vkContext.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         LOGERROR("failed to create pipeline layout!");
     }
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
-    pipelineInfo.pStages = program->GetShaderStage();
+    pipelineInfo.pStages = info;
 
-    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    //Create Vertex Buffer
+    VkPipelineVertexInputStateCreateInfo* vertexInputInfo = program->GetVertexInputInfo();
+    pipelineInfo.pVertexInputState = vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
     pipelineInfo.pViewportState = &viewportState;
     pipelineInfo.pRasterizationState = &rasterizer;
@@ -579,10 +582,9 @@ void RenderThreadVulkan::CreateGraphicsPipeline() {
 
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1; // Optional
-    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(vkContext.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
         LOGERROR("failed to create graphics pipeline!");
     }
-    program->Clean();
 }
 
 void RenderThreadVulkan::CreateFrameBuffers() {
@@ -601,21 +603,23 @@ void RenderThreadVulkan::CreateFrameBuffers() {
         framebufferInfo.height = swapChainExtent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+        if (vkCreateFramebuffer(vkContext.device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
             LOGERROR("failed to create framebuffer!");
         }
     }
 }
 
+
+
 void RenderThreadVulkan::CreateCommandPool() {
-    QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physicalDevice);
+    QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(vkContext.physicalDevice);
 
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
     poolInfo.flags = 0; // Optional
     
-    if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(vkContext.device, &poolInfo, nullptr, &vkContext.commandPool) != VK_SUCCESS) {
         LOGERROR("failed to create command pool!");
     }
 }
@@ -624,11 +628,11 @@ void RenderThreadVulkan::CreateCommandBuffers() {
     commandBuffers.resize(swapChainFramebuffers.size());
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = commandPool;
+    allocInfo.commandPool = vkContext.commandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-    if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(vkContext.device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
         LOGERROR("failed to allocate command buffers!");
     }
 
@@ -652,7 +656,15 @@ void RenderThreadVulkan::CreateCommandBuffers() {
         renderPassInfo.pClearValues = &clearColor;
         vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-        vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+
+        VkBuffer vertexBuffer = *(currentProgram->GetVertexBuffer());
+        VkBuffer vertexBuffers[] = { vertexBuffer };
+        VkDeviceSize offsets[] = { 0 };
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(commandBuffers[i], *(currentProgram->GetIndexBuffer()), 0, VK_INDEX_TYPE_UINT16);
+
+        vkCmdDrawIndexed(commandBuffers[i], currentProgram->GetIndexSize(), 1, 0, 0, 0);
+        //vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
         vkCmdEndRenderPass(commandBuffers[i]);
         if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
             LOGERROR("failed to record command buffer!");
@@ -671,9 +683,9 @@ void RenderThreadVulkan::CreateSyncObjects() {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+        if (vkCreateSemaphore(vkContext.device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(vkContext.device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(vkContext.device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
 
             LOGERROR("failed to create synchronization objects for a frame!");
         }
@@ -681,11 +693,11 @@ void RenderThreadVulkan::CreateSyncObjects() {
 }
 
 void RenderThreadVulkan::DrawFrame() {
-    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t >::max());
-    vkResetFences(device, 1, &inFlightFences[currentFrame]);
+    vkWaitForFences(vkContext.device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t >::max());
+    vkResetFences(vkContext.device, 1, &inFlightFences[currentFrame]);
 
     uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(vkContext.device, vkContext.swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
         framebufferResized = false;
         RecreateSwapChain();
@@ -709,7 +721,7 @@ void RenderThreadVulkan::DrawFrame() {
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+    if (vkQueueSubmit(vkContext.graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
         LOGERROR("failed to submit draw command buffer!");
     }
 
@@ -718,12 +730,12 @@ void RenderThreadVulkan::DrawFrame() {
 
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
-    VkSwapchainKHR swapChains[] = { swapChain };
+    VkSwapchainKHR swapChains[] = { vkContext.swapChain };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
-    result = vkQueuePresentKHR(presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(vkContext.presentQueue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
         framebufferResized = false;
         RecreateSwapChain();
@@ -744,7 +756,7 @@ void RenderThreadVulkan::RecreateSwapChain() {
         glfwGetFramebufferSize(window, &width, &height);
         glfwWaitEvents();
     }
-    vkDeviceWaitIdle(device);
+    vkDeviceWaitIdle(vkContext.device);
 
     CleanupSwapChain();
 
@@ -755,6 +767,83 @@ void RenderThreadVulkan::RecreateSwapChain() {
     CreateFrameBuffers();
     CreateCommandBuffers();
 }
+struct Vertex1 {
+    glm::vec2 pos;
+    glm::vec3 color;
 
+    static VkVertexInputBindingDescription getBindingDescription() {
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex1);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        return bindingDescription;
+    }
+
+    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex1, pos);
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex1, color);
+
+        return attributeDescriptions;
+    }
+};
+
+void RenderThreadVulkan::CreateVertexBuffer() {
+    currentProgram->CreateVertexBuffer();
+    currentProgram->CreateIndexBuffer();
+    vertexBuffer = *currentProgram->GetVertexBuffer();
+    return;
+
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateBuffer(vkContext.device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create vertex buffer!");
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(vkContext.device, vertexBuffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    if (vkAllocateMemory(vkContext.device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate vertex buffer memory!");
+    }
+
+    vkBindBufferMemory(vkContext.device, vertexBuffer, vertexBufferMemory, 0);
+
+    void* data;
+    vkMapMemory(vkContext.device, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+    memcpy(data, vertices.data(), (size_t)bufferInfo.size);
+    vkUnmapMemory(vkContext.device, vertexBufferMemory);
+}
+
+uint32_t RenderThreadVulkan::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(vkContext.physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
+}
 
 }

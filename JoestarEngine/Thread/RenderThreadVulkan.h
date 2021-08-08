@@ -1,13 +1,8 @@
 #pragma once
-#include <glad/glad.h>
-#define VK_USE_PLATFORM_WIN32_KHR
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-#include <vulkan/vulkan.h>
+#include "../Graphics/VulkanHeader.h"
 #include "RenderThread.h"
 #include <vector>
+#include "../Graphics/GPUProgramVulkan.h"
 namespace Joestar {
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 	struct QueueFamilyIndices {
@@ -35,6 +30,7 @@ namespace Joestar {
 		void CreateGraphicsPipeline();
 		void CreateFrameBuffers();
 		void CreateCommandPool();
+		void CreateVertexBuffer();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
 		void Cleanup();
@@ -47,16 +43,12 @@ namespace Joestar {
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 	private:
+		GPUProgramVulkan* currentProgram;
 		GLFWwindow* window;
-		VkInstance instance;
-		VkPhysicalDevice physicalDevice;
-		VkDevice device;
-		VkQueue graphicsQueue;
-		VkQueue presentQueue;
-		VkSurfaceKHR surface;
-		VkSwapchainKHR swapChain;
+		VulkanContext vkContext;
 		std::vector<VkImage> swapChainImages;
 		std::vector<VkImageView> swapChainImageViews;
 		VkFormat swapChainImageFormat;
@@ -65,12 +57,17 @@ namespace Joestar {
 		VkPipelineLayout pipelineLayout;
 		VkPipeline graphicsPipeline;
 		std::vector<VkFramebuffer> swapChainFramebuffers;
-		VkCommandPool commandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
 		std::vector<VkSemaphore> imageAvailableSemaphores;
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
 		size_t currentFrame = 0;
 		bool framebufferResized = false;
+
+
+		// only for test!!!!!!!
+		VkBuffer vertexBuffer;
+		VkDeviceMemory vertexBufferMemory;
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	};
 }

@@ -13,18 +13,18 @@
 #include <vector>
 using namespace std;
 
-struct Vertex {
-    // position
-    glm::vec3 Position;
-    // normal
-    glm::vec3 Normal;
-    // texCoords
-    glm::vec2 TexCoords;
-    // tangent
-    glm::vec3 Tangent;
-    // bitangent
-    glm::vec3 Bitangent;
-};
+//struct Vertex {
+//    // position
+//    glm::vec3 Position;
+//    // normal
+//    glm::vec3 Normal;
+//    // texCoords
+//    glm::vec2 TexCoords;
+//    // tangent
+//    glm::vec3 Tangent;
+//    // bitangent
+//    glm::vec3 Bitangent;
+//};
 
 struct Texture {
     unsigned int id;
@@ -35,7 +35,7 @@ struct Texture {
 class Mesh {
 public:
     // mesh Data
-    vector<Vertex>       vertices_;
+    //vector<Vertex>       vertices_;
     vector<unsigned int> indices_;
     vector<Texture>      textures_;
     unsigned int cachedVAO;

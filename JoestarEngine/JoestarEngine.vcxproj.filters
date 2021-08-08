@@ -75,6 +75,12 @@
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Math\Vector2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Vector3.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -162,6 +168,24 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\GPUProgramVulkan.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector4.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\FloatMath.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector3.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\VertexData.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\VulkanHeader.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
