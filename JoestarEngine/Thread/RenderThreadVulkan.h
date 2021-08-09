@@ -31,11 +31,15 @@ namespace Joestar {
 		void CreateFrameBuffers();
 		void CreateCommandPool();
 		void CreateVertexBuffer();
+		void CreateUniformBuffers();
+		void UpdateUniformBuffer(uint32_t idx);
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
 		void Cleanup();
 		void CleanupSwapChain();
 		void RecreateSwapChain();
+		void CreateDescriptorSetLayout();
+
 		inline void SetFrameBufferResized(bool flag) { framebufferResized = flag; }
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
@@ -44,18 +48,22 @@ namespace Joestar {
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void SetupDebugMessenger();
+		void CreateDescriptorPool();
+		void CreateDescriptorSets();
 
 	private:
 		GPUProgramVulkan* currentProgram;
 		GLFWwindow* window;
-		VulkanContext vkContext;
+		VulkanContext vkCtx;
 		std::vector<VkImage> swapChainImages;
 		std::vector<VkImageView> swapChainImageViews;
 		VkFormat swapChainImageFormat;
 		VkExtent2D swapChainExtent;
 		VkRenderPass renderPass;
+		VkDescriptorSetLayout descriptorSetLayout;
 		VkPipelineLayout pipelineLayout;
-		VkPipeline graphicsPipeline;
+		VkPipeline graphicsPipeline; 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
 		std::vector<VkCommandBuffer> commandBuffers;
 		std::vector<VkSemaphore> imageAvailableSemaphores;
@@ -63,11 +71,21 @@ namespace Joestar {
 		std::vector<VkFence> inFlightFences;
 		size_t currentFrame = 0;
 		bool framebufferResized = false;
+		VkBuffer indexBuffer;
+		VkDeviceMemory indexBufferMemory;
+		VkDebugUtilsMessengerEXT debugMessenger;
+
+		std::vector<VkBuffer> uniformBuffers;
+		std::vector<VkDeviceMemory> uniformBuffersMemory;
+		VkDescriptorPool descriptorPool;
+		std::vector<VkDescriptorSet> descriptorSets;
 
 
 		// only for test!!!!!!!
 		VkBuffer vertexBuffer;
 		VkDeviceMemory vertexBufferMemory;
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		void createUniformBuffers();
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	};
 }

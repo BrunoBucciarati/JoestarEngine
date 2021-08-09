@@ -16,6 +16,7 @@ namespace Joestar {
 		GetSubSystem<GlobalConfig>()->UpdateConfig("WINDOW_WIDTH", width);
 		GetSubSystem<GlobalConfig>()->UpdateConfig("WINDOW_HEIGHT", height);
 		//GetGlobalConfig()->UpdateConfig("GFX_API", str);
+
 		InitSubSystem(Graphics, gContext);
 		GetSubSystem<Graphics>()->Init();
 	}

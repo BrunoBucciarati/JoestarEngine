@@ -153,6 +153,7 @@
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
     <ClCompile Include="IO\File.cpp" />
     <ClCompile Include="IO\FileSystem.cpp" />
+    <ClCompile Include="Math\Matrix4x4.cpp" />
     <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector3.cpp" />
     <ClCompile Include="Thread\RenderThreadVulkan.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Graphics\VulkanHeader.h" />
     <ClInclude Include="IO\File.h" />
     <ClInclude Include="Math\FloatMath.h" />
+    <ClInclude Include="Math\Matrix4x4.h" />
     <ClInclude Include="Math\Vector2.h" />
     <ClInclude Include="Math\Vector3.h" />
     <ClInclude Include="Math\Vector4.h" />

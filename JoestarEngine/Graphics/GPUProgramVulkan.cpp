@@ -13,7 +13,7 @@ namespace Joestar {
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(file->GetBuffer());
 
 		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(vkContextPtr->device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+		if (vkCreateShaderModule(vkCtxPtr->device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 			LOGERROR("failed to create shader module!");
 		}
 		return shaderModule;
@@ -58,12 +58,12 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::Clean() {
-		vkDestroyShaderModule(vkContextPtr->device, vertShaderModule, nullptr);
-		vkDestroyShaderModule(vkContextPtr->device, fragShaderModule, nullptr);
-		vkDestroyBuffer(vkContextPtr->device, vertexBuffer, nullptr);
-		vkFreeMemory(vkContextPtr->device, vertexBufferMemory, nullptr);
-		vkDestroyBuffer(vkContextPtr->device, indexBuffer, nullptr);
-		vkFreeMemory(vkContextPtr->device, indexBufferMemory, nullptr);
+		vkDestroyShaderModule(vkCtxPtr->device, vertShaderModule, nullptr);
+		vkDestroyShaderModule(vkCtxPtr->device, fragShaderModule, nullptr);
+		vkDestroyBuffer(vkCtxPtr->device, vertexBuffer, nullptr);
+		vkFreeMemory(vkCtxPtr->device, vertexBufferMemory, nullptr);
+		vkDestroyBuffer(vkCtxPtr->device, indexBuffer, nullptr);
+		vkFreeMemory(vkCtxPtr->device, indexBufferMemory, nullptr);
 	}
 
 	VkPipelineVertexInputStateCreateInfo* GPUProgramVulkan::GetVertexInputInfo() {
@@ -97,15 +97,15 @@ namespace Joestar {
 		VkDeviceMemory stagingBufferMemory;
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 		void* data;
-		vkMapMemory(vkContextPtr->device, stagingBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(vkCtxPtr->device, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(vkContextPtr->device, stagingBufferMemory);
+		vkUnmapMemory(vkCtxPtr->device, stagingBufferMemory);
 
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer, vertexBufferMemory);
 		CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
-		vkDestroyBuffer(vkContextPtr->device, stagingBuffer, nullptr);
-		vkFreeMemory(vkContextPtr->device, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(vkCtxPtr->device, stagingBuffer, nullptr);
+		vkFreeMemory(vkCtxPtr->device, stagingBufferMemory, nullptr);
 	}
 
 	void GPUProgramVulkan::CreateIndexBuffer() {
@@ -116,21 +116,21 @@ namespace Joestar {
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
-		vkMapMemory(vkContextPtr->device, stagingBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(vkCtxPtr->device, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, indices.data(), (size_t)bufferSize);
-		vkUnmapMemory(vkContextPtr->device, stagingBufferMemory);
+		vkUnmapMemory(vkCtxPtr->device, stagingBufferMemory);
 
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
 
 		CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
-		vkDestroyBuffer(vkContextPtr->device, stagingBuffer, nullptr);
-		vkFreeMemory(vkContextPtr->device, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(vkCtxPtr->device, stagingBuffer, nullptr);
+		vkFreeMemory(vkCtxPtr->device, stagingBufferMemory, nullptr);
 	}
 
 	uint32_t GPUProgramVulkan::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(vkContextPtr->physicalDevice, &memProperties);
+		vkGetPhysicalDeviceMemoryProperties(vkCtxPtr->physicalDevice, &memProperties);
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
 				return i;
@@ -148,34 +148,34 @@ namespace Joestar {
 		bufferInfo.usage = usage;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateBuffer(vkContextPtr->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+		if (vkCreateBuffer(vkCtxPtr->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create buffer!");
 		}
 
 		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(vkContextPtr->device, buffer, &memRequirements);
+		vkGetBufferMemoryRequirements(vkCtxPtr->device, buffer, &memRequirements);
 
 		VkMemoryAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		allocInfo.allocationSize = memRequirements.size;
 		allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-		if (vkAllocateMemory(vkContextPtr->device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+		if (vkAllocateMemory(vkCtxPtr->device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
 			throw std::runtime_error("failed to allocate buffer memory!");
 		}
 
-		vkBindBufferMemory(vkContextPtr->device, buffer, bufferMemory, 0);
+		vkBindBufferMemory(vkCtxPtr->device, buffer, bufferMemory, 0);
 	}
 
 	void GPUProgramVulkan::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = vkContextPtr->commandPool;
+		allocInfo.commandPool = vkCtxPtr->commandPool;
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(vkContextPtr->device, &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(vkCtxPtr->device, &allocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -194,8 +194,8 @@ namespace Joestar {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(vkContextPtr->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(vkContextPtr->graphicsQueue);
+		vkQueueSubmit(vkCtxPtr->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(vkCtxPtr->graphicsQueue);
 	}
 }
 //#include "../IO/Log.h"

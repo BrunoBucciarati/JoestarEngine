@@ -5,8 +5,15 @@
 #include "../IO/File.h"
 #include <array>
 #include "../Graphics/VertexData.h"
+#include "../Math/Matrix4x4.h"
 
 namespace Joestar {
+
+    struct UniformBufferObject {
+        Matrix4x4f model;
+        Matrix4x4f view;
+        Matrix4x4f proj;
+    };
     const std::vector<Vertex> vertices = {
         {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
         {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
@@ -19,7 +26,7 @@ namespace Joestar {
     class GPUProgramVulkan :public GPUProgram {
     public:
         VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
-        void SetDevice(VulkanContext* ptr) { vkContextPtr = ptr; }
+        void SetDevice(VulkanContext* ctx) { vkCtxPtr = ctx; }
         void SetShader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
         void CreateVertexBuffer();
         void CreateIndexBuffer();
@@ -42,7 +49,7 @@ namespace Joestar {
         //void SetMat4(const std::string& name, const glm::mat4& value) const;
         VkShaderModule CreateShaderModule(File* code);
     private:
-        VulkanContext* vkContextPtr;
+        VulkanContext* vkCtxPtr;
         VkPipelineShaderStageCreateInfo mShaderStage[2];
         VkShaderModule vertShaderModule{}, fragShaderModule{};
         VkBuffer vertexBuffer;
