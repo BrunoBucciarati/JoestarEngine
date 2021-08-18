@@ -1,6 +1,8 @@
 #pragma once
 #include "Renderer.h"
-class GameObject {
-public:
-	Renderer* render;
-};
+namespace Joestar {
+	class GameObject {
+	public:
+		Renderer* render;
+	};
+}

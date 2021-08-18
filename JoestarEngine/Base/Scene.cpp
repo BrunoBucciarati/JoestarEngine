@@ -1,20 +1,20 @@
 #include "Scene.h"
 #include <vector>
-
-//test sphere
-Mesh* GenUVSphere()
-{
-    Mesh* mesh = new Mesh();
-    //std::vector<Vertex> vertices;
-    std::vector<glm::vec2> uv;
-    std::vector<glm::vec3> normals;
-    std::vector<unsigned int> indices;
-
-    const unsigned int X_SEGMENTS = 64;
-    const unsigned int Y_SEGMENTS = 64;
-    const float PI = 3.14159265359;
-    for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
+namespace Joestar {
+    //test sphere
+    Mesh* GenUVSphere()
     {
+        Mesh* mesh = new Mesh();
+        //std::vector<Vertex> vertices;
+        std::vector<glm::vec2> uv;
+        std::vector<glm::vec3> normals;
+        std::vector<unsigned int> indices;
+
+        const unsigned int X_SEGMENTS = 64;
+        const unsigned int Y_SEGMENTS = 64;
+        const float PI = 3.14159265359;
+        for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
+        {
             for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
             {
                 float xSegment = (float)x / (float)X_SEGMENTS;
@@ -29,7 +29,7 @@ Mesh* GenUVSphere()
                // v.Normal = glm::vec3(xPos, yPos, zPos);
                 //vertices.push_back(v);
             }
-    }
+        }
 
         bool oddRow = false;
         for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
@@ -53,27 +53,28 @@ Mesh* GenUVSphere()
             oddRow = !oddRow;
         }
         //indexCount = indices.size();
-        mesh->indices_ = indices;
+        //mesh->indices_ = indices;
         //mesh->vertices_ = vertices;
 
         return mesh;
     }
 
 
-Scene::Scene() {
-	//for test
-	GameObject* go = new GameObject;
-	Renderer* render = new Renderer;
-    render->mesh_ = GenUVSphere();
-    render->mat_ = new Material;
-    //render->mat_->SetDefault();
-    go->render = render;
-}
+    Scene::Scene() {
+        //for test
+        //GameObject* go = new GameObject;
+        //Renderer* render = new Renderer;
+     //   render->mesh_ = GenUVSphere();
+     //   render->mat_ = new Material;
+     //   //render->mat_->SetDefault();
+     //   go->render = render;
+    }
 
-void Scene::RenderScene() {
-	for (std::vector<GameObject>::const_iterator iter = gameObjects.begin(); iter != gameObjects.end(); iter++) {
-		if (iter->render) {
-			iter->render->Render(camera);
-		}
-	}
+    void Scene::RenderScene() {
+        for (std::vector<GameObject>::const_iterator iter = gameObjects.begin(); iter != gameObjects.end(); iter++) {
+            if (iter->render) {
+                iter->render->Render(camera);
+            }
+        }
+    }
 }

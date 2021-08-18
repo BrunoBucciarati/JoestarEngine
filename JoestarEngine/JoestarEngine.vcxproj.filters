@@ -33,9 +33,6 @@
     <ClCompile Include="Graphics\GraphicsGL.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\GraphicsVulkan.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Graphics\GPUProgramGL.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -84,6 +81,15 @@
     <ClCompile Include="Math\Matrix4x4.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Image.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Mesh.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\VertexData.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -105,9 +111,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\GraphicsGL.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\GraphicsVulkan.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\GPUProgramGL.h">
@@ -192,6 +195,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Math\Matrix4x4.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Image.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

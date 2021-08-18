@@ -2,9 +2,11 @@
 #include "../Graphics/Mesh.h"
 #include "../Graphics/Material.h"
 #include "Camera.h"
-class Renderer {
-public:
-	Mesh* mesh_;
-	Material* mat_;
-	void Render(Camera cam);
-};
+namespace Joestar {
+	class Renderer {
+	public:
+		Mesh* mesh_;
+		Material* mat_;
+		void Render(Camera cam);
+	};
+}

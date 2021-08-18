@@ -1,8 +1,8 @@
 #include "Application.h"
 #include "../Base/EngineContext.h"
 #include "../Base/SubSystem.h"
-#include "../Graphics/GraphicsGL.h"
-#include "../Graphics/GraphicsVulkan.h"
+//#include "../Graphics/GraphicsGL.h"
+//#include "../Graphics/GraphicsVulkan.h"
 #include "GlobalConfig.h"
 #include "../Graphics/GraphicDefines.h"
 

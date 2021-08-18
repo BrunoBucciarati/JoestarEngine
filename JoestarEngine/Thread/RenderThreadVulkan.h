@@ -51,6 +51,10 @@ namespace Joestar {
 		void SetupDebugMessenger();
 		void CreateDescriptorPool();
 		void CreateDescriptorSets();
+		void CreateDepthResources();
+		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		VkFormat FindDepthFormat();
+		bool HasStencilComponent(VkFormat format);
 
 	private:
 		GPUProgramVulkan* currentProgram;
@@ -74,6 +78,9 @@ namespace Joestar {
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;
 		VkDebugUtilsMessengerEXT debugMessenger;
+		VkImage depthImage;
+		VkDeviceMemory depthImageMemory;
+		VkImageView depthImageView;
 
 		std::vector<VkBuffer> uniformBuffers;
 		std::vector<VkDeviceMemory> uniformBuffersMemory;

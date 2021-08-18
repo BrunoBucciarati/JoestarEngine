@@ -80,7 +80,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>$(SolutionDir)ThirdParty\glfw-3.3.4\include;$(SolutionDir)ThirdParty\glm-master;D:\VulkanSDK\1.2.182.0\Include;$(SolutionDir)ThirdParty\glad\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(SolutionDir)ThirdParty\glfw-3.3.4\include;$(SolutionDir)ThirdParty\glm-master;D:\VulkanSDK\1.2.182.0\Include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\stb_image;$(SolutionDir)ThirdParty\tinyobj;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>D:\VulkanSDK\1.2.182.0\Lib;$(SolutionDir)ThirdParty\glfw-3.3.4\build\src\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,6 +151,9 @@
     <ClCompile Include="Base\Renderer.cpp" />
     <ClCompile Include="Base\Scene.cpp" />
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
+    <ClCompile Include="Graphics\Image.cpp" />
+    <ClCompile Include="Graphics\Mesh.cpp" />
+    <ClCompile Include="Graphics\VertexData.cpp" />
     <ClCompile Include="IO\File.cpp" />
     <ClCompile Include="IO\FileSystem.cpp" />
     <ClCompile Include="Math\Matrix4x4.cpp" />
@@ -162,7 +165,6 @@
     <ClCompile Include="Graphics\GPUProgramGL.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\GraphicsGL.cpp" />
-    <ClCompile Include="Graphics\GraphicsVulkan.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Misc\Application.cpp" />
     <ClCompile Include="Graphics\GPUProgram.cpp" />
@@ -180,6 +182,7 @@
     <ClInclude Include="Base\Scene.h" />
     <ClInclude Include="Graphics\GPUProgramVulkan.h" />
     <ClInclude Include="Graphics\GraphicDefines.h" />
+    <ClInclude Include="Graphics\Image.h" />
     <ClInclude Include="Graphics\Shader\ShaderDefs.h" />
     <ClInclude Include="Graphics\VertexData.h" />
     <ClInclude Include="Graphics\VulkanHeader.h" />
@@ -201,7 +204,6 @@
     <ClInclude Include="Misc\Application.h" />
     <ClInclude Include="Graphics\Graphics.h" />
     <ClInclude Include="Graphics\GraphicsGL.h" />
-    <ClInclude Include="Graphics\GraphicsVulkan.h" />
     <ClInclude Include="Graphics\Material.h" />
     <ClInclude Include="Graphics\Mesh.h" />
     <ClInclude Include="Graphics\GPUProgram.h" />
