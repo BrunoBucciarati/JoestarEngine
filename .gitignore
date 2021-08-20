@@ -33,3 +33,4 @@ ThirdParty/glm-master/test
 JoestarEngine/x64
 *.log
 *.obj
+JoestarEngine/x64/Debug/JoestarEngine.log

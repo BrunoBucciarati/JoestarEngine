@@ -26,8 +26,8 @@ namespace Joestar {
 		void CreateLogicalDevice();
 		void CreateSwapChain();
 		void CreateImageViews();
-		void CreateRenderPass();
-		void CreateGraphicsPipeline();
+		//void CreateRenderPass();
+		//void CreateGraphicsPipeline();
 		void CreateFrameBuffers();
 		void CreateCommandPool();
 		void CreateVertexBuffer();
@@ -57,19 +57,16 @@ namespace Joestar {
 		bool HasStencilComponent(VkFormat format);
 		VkSampleCountFlagBits GetMaxUsableSampleCount();
 		void CreateColorResources();
+		void ProcessInputVulkan();
 
 	private:
 		GPUProgramVulkan* currentProgram;
 		GLFWwindow* window;
 		VulkanContext vkCtx;
-		std::vector<VkImage> swapChainImages;
-		std::vector<VkImageView> swapChainImageViews;
-		VkFormat swapChainImageFormat;
-		VkExtent2D swapChainExtent;
-		VkRenderPass renderPass;
+/*		VkRenderPass renderPass;
 		VkDescriptorSetLayout descriptorSetLayout;
 		VkPipelineLayout pipelineLayout;
-		VkPipeline graphicsPipeline; 
+		VkPipeline graphicsPipeline;*/ 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
 		std::vector<VkCommandBuffer> commandBuffers;
 		std::vector<VkSemaphore> imageAvailableSemaphores;
@@ -87,11 +84,6 @@ namespace Joestar {
 		VkDeviceMemory colorImageMemory;
 		VkImageView colorImageView;
 		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-
-		std::vector<VkBuffer> uniformBuffers;
-		std::vector<VkDeviceMemory> uniformBuffersMemory;
-		VkDescriptorPool descriptorPool;
-		std::vector<VkDescriptorSet> descriptorSets;
 
 
 		// only for test!!!!!!!

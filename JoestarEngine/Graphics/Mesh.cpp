@@ -12,6 +12,10 @@ namespace Joestar {
         Vector3f pos;
         Vector3f color;
         Vector2f texCoord;
+
+        bool operator ==(const Vertex v) {
+            return pos == v.pos && color == v.color && texCoord == v.texCoord;
+        }
     };
 	void Mesh::Load(std::string path) {
         tinyobj::attrib_t attrib;
@@ -30,14 +34,14 @@ namespace Joestar {
                 vertex.pos.Set(attrib.vertices[3 * index.vertex_index + 0], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2]);
                 vertex.color.Set(1.f, 1.f, 1.f);
                 vertex.texCoord.Set(attrib.texcoords[2 * index.texcoord_index + 0], 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]);
+                std::vector<Vertex>::const_iterator it = std::find(vertices.begin(), vertices.end(), vertex);
+                if (it == vertices.end()) {
                     vertices.push_back(vertex);
                     indices.push_back(vertices.size());
-                //std::vector<Vertex>::iterator res = std::find(vertices.begin(), vertices.end(), vertex);
-                //if (res == vertices.end()) {
-                //} else {
-                //    indices.push_back(res - vertices.begin());
-                //}
-
+                }
+                else {
+                    indices.push_back(it - vertices.begin());
+                }
             }
         }
 

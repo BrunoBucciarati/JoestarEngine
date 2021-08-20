@@ -11,6 +11,7 @@ enum ClassIDType {
 	DefineClassID(GlobalConfig, 2)
 	DefineClassID(Graphics, 3)
 	DefineClassID(FileSystem, 4)
+	DefineClassID(HID, 5)
 	kClassIDCount
 };
 
