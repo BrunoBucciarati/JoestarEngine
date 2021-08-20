@@ -6,7 +6,7 @@
 namespace Joestar {
 	Image::Image(const char* path) {
 		std::string resDir = FileSystem::GetResourceDir();
-		data = (char*)stbi_load((resDir + "Textures/" + path).c_str(), &width, &height, &channels, STBI_rgb_alpha);
+		data = (char*)stbi_load((resDir + path).c_str(), &width, &height, &channels, STBI_rgb_alpha);
 	}
 	Image::~Image() {
 		if (data)

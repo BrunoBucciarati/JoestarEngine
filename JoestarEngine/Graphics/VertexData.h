@@ -8,12 +8,15 @@
 namespace Joestar {
     class VertexBuffer {
     public:
-        inline uint8_t* GetBuffer() { return buffer; }
         inline void SetFlag(uint32_t f) { flags = f; }
         inline void SetBuffer(uint8_t* data) { buffer = data; }
-        inline void SetSize(uint32_t s) { size = s; }
+        inline uint8_t* GetBuffer() { return buffer; }
+        inline void SetSize(uint32_t s) { size = s; buffer = new uint8_t[size]; }
         inline uint32_t GetSize() { return size; }
         void AppendVertexAttr(VERTEX_ATTRIBUTE v);
+        ~VertexBuffer() {
+            delete buffer;
+        }
         VkPipelineVertexInputStateCreateInfo* GetVKVertexInputInfo();
         VkVertexInputBindingDescription GetVKBindingDescription();
         std::vector<VkVertexInputAttributeDescription> GetVKAttributeDescriptions();
@@ -26,38 +29,19 @@ namespace Joestar {
         VkVertexInputBindingDescription bindingDescription;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     };
-    struct Vertex {
-        Vector3f pos;
-        Vector3f color;
-        Vector2f texCoord;
-        static VkVertexInputBindingDescription GetBindingDescription() {
-            VkVertexInputBindingDescription bindingDescription{};
-            bindingDescription.binding = 0;
-            bindingDescription.stride = sizeof(Vertex);
-            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-            return bindingDescription;
+    class IndexBuffer {
+    public:
+        inline void SetBuffer(uint8_t* data) { buffer = data; }
+        inline uint8_t* GetBuffer() { return buffer; }
+        inline void SetSize(uint32_t s) { size = s; buffer = new uint8_t[size]; }
+        inline uint32_t GetSize() { return size; }
+        inline uint32_t GetIndexCount() { return size / 2; }
+        ~IndexBuffer() {
+            delete buffer;
         }
-
-        //static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions() {
-        //    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
-
-        //    attributeDescriptions[0].binding = 0;
-        //    attributeDescriptions[0].location = 0;
-        //    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        //    attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-        //    attributeDescriptions[1].binding = 0;
-        //    attributeDescriptions[1].location = 1;
-        //    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        //    attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-        //    attributeDescriptions[2].binding = 0;
-        //    attributeDescriptions[2].location = 2;
-        //    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-        //    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-        //    return attributeDescriptions;
-        //}
+    private:
+        uint8_t* buffer;
+        uint32_t size; //size of data
     };
 }

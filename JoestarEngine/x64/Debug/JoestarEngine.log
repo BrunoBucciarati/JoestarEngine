@@ -1,52 +1,14 @@
-﻿  Renderer.cpp
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(7,46): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(8,42): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\Vector2.h(54,76): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
-D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
-  Scene.cpp
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(7,46): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(8,42): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\Vector2.h(54,76): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
-D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
-D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(15,39): warning C4305: “初始化”: 从“double”到“float”截断
-  GPUProgram.cpp
+﻿  GPUProgram.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
 D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.h(50,40): warning C4267: “return”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.h(51,41): warning C4267: “return”: 从“size_t”转换到“uint32_t”，可能丢失数据
   GPUProgramVulkan.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
 D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.h(50,40): warning C4267: “return”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.h(51,41): warning C4267: “return”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(29,52): warning C4267: “参数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(219,93): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(219,75): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
   Graphics.cpp
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(7,46): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(8,42): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\Vector2.h(54,76): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
-D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.h(50,40): warning C4267: “return”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.h(51,41): warning C4267: “return”: 从“size_t”转换到“uint32_t”，可能丢失数据
-  Mesh.cpp
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
-D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
-  VertexData.cpp
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(7,46): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(8,42): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\Vector2.h(54,76): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
-D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
-  Application.cpp
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(7,46): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(8,42): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
@@ -57,14 +19,8 @@ D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参�
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
 D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.h(50,40): warning C4267: “return”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.h(51,41): warning C4267: “return”: 从“size_t”转换到“uint32_t”，可能丢失数据
   The contents of <optional> are available only with C++17 or later.
-  main.cpp
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
-D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
   正在生成代码...
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(1120): warning C4715: “Joestar::RenderThreadVulkan::FindSupportedFormat”: 不是所有的控件路径都返回值
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(138): warning C4715: “Joestar::GPUProgramVulkan::FindMemoryType”: 不是所有的控件路径都返回值
+D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(1150): warning C4715: “Joestar::RenderThreadVulkan::FindSupportedFormat”: 不是所有的控件路径都返回值
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(141): warning C4715: “Joestar::GPUProgramVulkan::FindMemoryType”: 不是所有的控件路径都返回值
   JoestarEngine.vcxproj -> D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe

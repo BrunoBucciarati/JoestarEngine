@@ -16,16 +16,23 @@ struct Texture {
 class Mesh {
 public:
     // mesh Data
-    std::vector<Vertex>       vertices;
-    std::vector<unsigned int> indices;
-    std::vector<Texture>      textures;
+    //std::vector<Vertex>       vertices;
+    //std::vector<unsigned int> indices;
+    //std::vector<Texture>      textures;
+    VertexBuffer* vb;
+    IndexBuffer* ib;
     unsigned int cachedVAO;
     bool cachedDirty;
 
     // constructor
-    Mesh()
+    ~Mesh()
     {
+        delete vb;
+        delete ib;
     }
+
+    inline VertexBuffer* GetVB() { return vb; }
+    inline IndexBuffer* GetIB() { return ib; }
 
     void Load(std::string path);
 

@@ -6,6 +6,7 @@
 #include <array>
 #include "../Graphics/VertexData.h"
 #include "../Math/Matrix4x4.h"
+#include "Mesh.h"
 
 namespace Joestar {
 
@@ -14,21 +15,21 @@ namespace Joestar {
         Matrix4x4f view;
         Matrix4x4f proj;
     };
-    const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-    
-    { {-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-    };
-    const std::vector<uint16_t> indices = {
-     0, 1, 2, 2, 3, 0,
-     4, 5, 6, 6, 7, 4
-    };
+    //const std::vector<Vertex> vertices = {
+    //{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    //{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    //{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    //{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+    //
+    //{ {-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    //{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    //{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    //{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+    //};
+    //const std::vector<uint16_t> indices = {
+    // 0, 1, 2, 2, 3, 0,
+    // 4, 5, 6, 6, 7, 4
+    //};
     class GPUProgramVulkan :public GPUProgram {
     public:
         GPUProgramVulkan();
@@ -41,14 +42,15 @@ namespace Joestar {
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         void CreateTextureImage();
         void CreateTextureImageView();
-        VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
+        VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT, uint32_t mipLevels = 1);
         void CreateTextureSampler();
-        void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        void CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         inline VkBuffer* GetVertexBuffer() { return &vertexBuffer; }
         inline VkBuffer* GetIndexBuffer() { return &indexBuffer; }
-        inline uint32_t GetIndexSize() { return indices.size(); }
-        inline uint32_t GetVertexSize() { return vertices.size(); }
+        inline uint32_t GetIndexSize() { return mesh->GetIB()->GetSize(); }
+        inline uint32_t GetIndexCount() { return mesh->GetIB()->GetIndexCount(); }
+        //inline uint32_t GetVertexSize() { return vertices.size(); }
         void Clean();        
         inline VkPipelineShaderStageCreateInfo* GetShaderStage() { return mShaderStage; };
         //void Use();
@@ -62,8 +64,9 @@ namespace Joestar {
         VkShaderModule CreateShaderModule(File* code);
         VkCommandBuffer BeginSingleTimeCommands();
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
-        void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
         void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+        void GenerateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
         VkImageView textureImageView;
         VkSampler textureSampler;
@@ -78,9 +81,11 @@ namespace Joestar {
         VkMemoryAllocateInfo allocInfo{};
         VkBuffer indexBuffer;
         VkDeviceMemory indexBufferMemory;
+        uint32_t mipLevels;
         VkImage textureImage;
         VkDeviceMemory textureImageMemory;
-        VertexBuffer* vb;
+        //VertexBuffer* vb;
+        Mesh* mesh;
     };
 
 }
