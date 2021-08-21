@@ -1,15 +1,16 @@
 #include "Graphics.h"
-#include "GraphicDefines.h"
 #include "../Base/Scene.h"
 #include "../Misc/GlobalConfig.h"
 #include "../Thread/RenderThreadVulkan.h"
 #include "../Thread/RenderThreadGL.h"
 
 namespace Joestar {
-	static Scene* scene;
-	Graphics::Graphics(EngineContext* context) : Super(context) {}
+	Graphics::Graphics(EngineContext* context) : Super(context) {
+		cmdBuffer.resize(1000);
+		cmdIdx = 0;
+		defaultClearColor.Set(0.0f, 1.0f, 0.0f, 1.0f);
+	}
 	Graphics::~Graphics() {
-
 	}
 
 	void Graphics::Init() {
@@ -28,10 +29,52 @@ namespace Joestar {
 	}
 
 	void Graphics::MainLoop() {
-		//if (!scene) {
-		//	scene = new Scene;
-		//}
-		//scene->RenderScene();
-		renderThread->DrawFrame();
+		renderThread->DrawFrame(cmdBuffer, cmdIdx);
+		//clear command buffer
+		cmdIdx = 0;
+	}
+
+	void Graphics::Clear() {
+		cmdBuffer[cmdIdx].typ = RenderCMD_Clear;
+		cmdBuffer[cmdIdx].size = sizeof(defaultClearColor);
+		cmdBuffer[cmdIdx].data = &defaultClearColor;
+		++cmdIdx;
+	}
+
+	void Graphics::UpdateBuiltinMatrix(BUILTIN_MATRIX typ, Matrix4x4f& mat) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateUniformBuffer;
+		cmdBuffer[cmdIdx].flag = typ;
+		cmdBuffer[cmdIdx].size = sizeof(mat);
+		cmdBuffer[cmdIdx].data = mat.GetPtr();
+		++cmdIdx;
+	}
+
+	void Graphics::UpdateVertexBuffer(VertexBuffer* vb) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateVertexBuffer;
+		cmdBuffer[cmdIdx].size = sizeof(VertexBuffer*);// vb->GetSize();
+		cmdBuffer[cmdIdx].data = vb;
+		++cmdIdx;
+	}
+
+	void Graphics::UpdateIndexBuffer(IndexBuffer* ib) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateIndexBuffer;
+		cmdBuffer[cmdIdx].size = sizeof(IndexBuffer*);
+		cmdBuffer[cmdIdx].data = ib;
+		++cmdIdx;
+	}
+
+	void Graphics::DrawIndexed() {
+		cmdBuffer[cmdIdx].typ = RenderCMD_DrawIndexed;
+		cmdBuffer[cmdIdx].size = 0;
+		++cmdIdx;
+	}
+
+
+	void Graphics::UseShader(std::string& name) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_UseShader;
+		cmdBuffer[cmdIdx].size = name.length();
+		cmdBuffer[cmdIdx].data = (void*)name.c_str();
+		++cmdIdx;
+
 	}
 }

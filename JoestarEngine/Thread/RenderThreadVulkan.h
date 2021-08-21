@@ -3,6 +3,7 @@
 #include "RenderThread.h"
 #include <vector>
 #include "../Graphics/GPUProgramVulkan.h"
+#include "../Graphics/RenderCommand.h"
 namespace Joestar {
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 	struct QueueFamilyIndices {
@@ -18,7 +19,7 @@ namespace Joestar {
 	public:
 		RenderThreadVulkan();
 		void InitRenderContext();
-		void DrawFrame();
+		void DrawFrame(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx);
 		bool CheckValidationLayerSupport();
 		void CreateInstance();
 		void CreateSurface();
@@ -26,19 +27,13 @@ namespace Joestar {
 		void CreateLogicalDevice();
 		void CreateSwapChain();
 		void CreateImageViews();
-		//void CreateRenderPass();
-		//void CreateGraphicsPipeline();
-		void CreateFrameBuffers();
 		void CreateCommandPool();
-		void CreateVertexBuffer();
-		void CreateUniformBuffers();
-		void UpdateUniformBuffer(uint32_t idx);
+		//void UpdateUniformBuffer(uint32_t idx);
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
 		void Cleanup();
 		void CleanupSwapChain();
 		void RecreateSwapChain();
-		void CreateDescriptorSetLayout();
 
 		inline void SetFrameBufferResized(bool flag) { framebufferResized = flag; }
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
@@ -49,26 +44,18 @@ namespace Joestar {
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void SetupDebugMessenger();
-		void CreateDescriptorPool();
-		void CreateDescriptorSets();
-		void CreateDepthResources();
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkFormat FindDepthFormat();
 		bool HasStencilComponent(VkFormat format);
 		VkSampleCountFlagBits GetMaxUsableSampleCount();
-		void CreateColorResources();
 		void ProcessInputVulkan();
+		//void MouseCallback(GLFWwindow* window, double xpos, double ypos);
+		//void ScrollCallback();
 
 	private:
 		GPUProgramVulkan* currentProgram;
 		GLFWwindow* window;
 		VulkanContext vkCtx;
-/*		VkRenderPass renderPass;
-		VkDescriptorSetLayout descriptorSetLayout;
-		VkPipelineLayout pipelineLayout;
-		VkPipeline graphicsPipeline;*/ 
-		std::vector<VkFramebuffer> swapChainFramebuffers;
-		std::vector<VkCommandBuffer> commandBuffers;
 		std::vector<VkSemaphore> imageAvailableSemaphores;
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
@@ -77,20 +64,6 @@ namespace Joestar {
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;
 		VkDebugUtilsMessengerEXT debugMessenger;
-		VkImage depthImage;
-		VkDeviceMemory depthImageMemory;
-		VkImageView depthImageView;
-		VkImage colorImage;
-		VkDeviceMemory colorImageMemory;
-		VkImageView colorImageView;
 		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-
-
-		// only for test!!!!!!!
-		VkBuffer vertexBuffer;
-		VkDeviceMemory vertexBufferMemory;
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		void createUniformBuffers();
-		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	};
 }

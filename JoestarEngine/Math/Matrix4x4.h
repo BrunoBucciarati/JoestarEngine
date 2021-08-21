@@ -19,6 +19,13 @@ namespace Joestar {
 		Matrix4x4f(const Matrix3x3f& other);
 		explicit Matrix4x4f(const float data[16]);
 
+		bool operator == (const Matrix4x4f& v) const {
+			for (int i = 0; i < 16; i++)
+				if (m_Data[i] != v[i])
+					return false;
+			return true;
+		}
+
 		float& Get(int row, int column) { return m_Data[row + (column * 4)]; }
 		const float& Get(int row, int column)const { return m_Data[row + (column * 4)]; }
 		float* GetPtr() { return m_Data; }

@@ -90,6 +90,12 @@
     <ClCompile Include="Graphics\VertexData.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Base\Camera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IO\HID.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -198,6 +204,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Image.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IO\HID.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,11 +2,17 @@
 #include "../Graphics/Mesh.h"
 #include "../Graphics/Material.h"
 #include "Camera.h"
+#include "../Base/ObjectDefines.h"
+#include "../Math/Matrix4x4.h"
 namespace Joestar {
-	class Renderer {
+	class Renderer : public Object {
+		REGISTER_OBJECT(Renderer, Object);
 	public:
-		Mesh* mesh_;
-		Material* mat_;
+		explicit Renderer(EngineContext* ctx);
+		Mesh* mesh;
+		Material* mat;
+		Matrix4x4f model;
+		std::string shaderName;
 		void Render(Camera cam);
 	};
 }

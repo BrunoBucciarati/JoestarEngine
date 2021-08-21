@@ -5,6 +5,8 @@
 //#include "../Graphics/GraphicsVulkan.h"
 #include "GlobalConfig.h"
 #include "../Graphics/GraphicDefines.h"
+#include "../IO/HID.h"
+#include "../Base/Scene.h"
 
 namespace Joestar {
 	void Application::Start() {
@@ -19,6 +21,9 @@ namespace Joestar {
 
 		InitSubSystem(Graphics, gContext);
 		GetSubSystem<Graphics>()->Init();
+
+		InitSubSystem(HID, gContext);
+		InitSubSystem(Scene, gContext);
 	}
 
 	void Application::Run()
@@ -30,6 +35,7 @@ namespace Joestar {
 	}
 
 	void Application::Update() {
+		GetSubSystem<Scene>()->Update();
 		GetSubSystem<Graphics>()->MainLoop();
 	}
 

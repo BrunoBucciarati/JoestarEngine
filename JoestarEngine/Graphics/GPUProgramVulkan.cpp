@@ -43,18 +43,18 @@ namespace Joestar {
 	}
 
 	GPUProgramVulkan::GPUProgramVulkan() {
-		Application* app = Application::GetApplication();
-		FileSystem* fs = app->GetSubSystem<FileSystem>();
-		std::string path = fs->GetResourceDir();
-		path += "Models/";
-		char workDir[260];
-		if (_getcwd(workDir, 260))
-			path = workDir + ("/" + path);
-		mesh = new Mesh;
-		mesh->Load(path + "viking_room/viking_room.obj");
+		//Application* app = Application::GetApplication();
+		//FileSystem* fs = app->GetSubSystem<FileSystem>();
+		//std::string path = fs->GetResourceDir();
+		//path += "Models/";
+		//char workDir[260];
+		//if (_getcwd(workDir, 260))
+		//	path = workDir + ("/" + path);
+		//mesh = new Mesh;
+		//mesh->Load(path + "viking_room/viking_room.obj");
 	}
 	
-	void GPUProgramVulkan::SetShader(const char* vertexPath, const char* fragmentPath, const char* geometryPath) {
+	void GPUProgramVulkan::SetShader(PipelineState& pso, std::string& vertexPath, std::string& fragmentPath, std::string& geometryPath) {
 		Application* app = Application::GetApplication();
 		FileSystem* fs = app->GetSubSystem<FileSystem>();
 		std::string path = fs->GetResourceDir();
@@ -73,69 +73,69 @@ namespace Joestar {
 		File* vShaderCode = ShaderCodeFile(vertSpvPath.c_str());
 		File* fShaderCode = ShaderCodeFile(fragSpvPath.c_str());
 
-		vertShaderModule = CreateShaderModule(vShaderCode);
-		fragShaderModule = CreateShaderModule(fShaderCode);
+		pso.vertShaderModule = CreateShaderModule(vShaderCode);
+		pso.fragShaderModule = CreateShaderModule(fShaderCode);
 
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertShaderStageInfo.module = vertShaderModule;
+		vertShaderStageInfo.module = pso.vertShaderModule;
 		vertShaderStageInfo.pName = "main";
 
 		VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
 		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragShaderStageInfo.module = fragShaderModule;
+		fragShaderStageInfo.module = pso.fragShaderModule;
 		fragShaderStageInfo.pName = "main";
 
 		//VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-		mShaderStage[0] = vertShaderStageInfo;
-		mShaderStage[1] = fragShaderStageInfo;
+		pso.shaderStage[0] = vertShaderStageInfo;
+		pso.shaderStage[1] = fragShaderStageInfo;
 	}
 
 	void GPUProgramVulkan::Clean() {
-		vkDestroyDescriptorSetLayout(vkCtxPtr->device, pipelineCtx->descriptorSetLayout, nullptr);
-		vkDestroyShaderModule(vkCtxPtr->device, vertShaderModule, nullptr);
-		vkDestroyShaderModule(vkCtxPtr->device, fragShaderModule, nullptr);
-		vkDestroyBuffer(vkCtxPtr->device, vertexBuffer, nullptr);
-		vkFreeMemory(vkCtxPtr->device, vertexBufferMemory, nullptr);
-		vkDestroyBuffer(vkCtxPtr->device, indexBuffer, nullptr);
-		vkFreeMemory(vkCtxPtr->device, indexBufferMemory, nullptr);
-		vkDestroySampler(vkCtxPtr->device, textureSampler, nullptr);
-		vkDestroyImageView(vkCtxPtr->device, textureImageView, nullptr);
-		vkDestroyImage(vkCtxPtr->device, textureImage, nullptr);
-		vkFreeMemory(vkCtxPtr->device, textureImageMemory, nullptr);
-		delete mesh;
+		vkDestroyDescriptorSetLayout(vkCtxPtr->device, currentPSO.pipelineCtx->descriptorSetLayout, nullptr);
+		vkDestroyShaderModule(vkCtxPtr->device, currentPSO.vertShaderModule, nullptr);
+		vkDestroyShaderModule(vkCtxPtr->device, currentPSO.fragShaderModule, nullptr);
+		vkDestroyBuffer(vkCtxPtr->device, currentPSO.vertexBuffer, nullptr);
+		vkFreeMemory(vkCtxPtr->device, currentPSO.vertexBufferMemory, nullptr);
+		vkDestroyBuffer(vkCtxPtr->device, currentPSO.indexBuffer, nullptr);
+		vkFreeMemory(vkCtxPtr->device, currentPSO.indexBufferMemory, nullptr);
+		vkDestroySampler(vkCtxPtr->device, currentPSO.textureSampler, nullptr);
+		vkDestroyImageView(vkCtxPtr->device, currentPSO.textureImageView, nullptr);
+		vkDestroyImage(vkCtxPtr->device, currentPSO.textureImage, nullptr);
+		vkFreeMemory(vkCtxPtr->device, currentPSO.textureImageMemory, nullptr);
+		//delete mesh;
 
-		vkDestroyPipeline(vkCtxPtr->device, pipelineCtx->graphicsPipeline, nullptr);
-		vkDestroyPipelineLayout(vkCtxPtr->device, pipelineCtx->pipelineLayout, nullptr);
-		vkDestroyRenderPass(vkCtxPtr->device, pipelineCtx->renderPass, nullptr);
+		vkDestroyPipeline(vkCtxPtr->device, currentPSO.pipelineCtx->graphicsPipeline, nullptr);
+		vkDestroyPipelineLayout(vkCtxPtr->device, currentPSO.pipelineCtx->pipelineLayout, nullptr);
+		vkDestroyRenderPass(vkCtxPtr->device, currentPSO.pipelineCtx->renderPass, nullptr);
 	}
 
-	VkPipelineVertexInputStateCreateInfo* GPUProgramVulkan::GetVertexInputInfo() {
-		return mesh->GetVB()->GetVKVertexInputInfo();
-	}
+	//VkPipelineVertexInputStateCreateInfo* GPUProgramVulkan::GetVertexInputInfo() {
+	//	//return mesh->GetVB()->GetVKVertexInputInfo();
+	//}
 
-	void GPUProgramVulkan::CreateVertexBuffer() {
-		VkDeviceSize bufferSize = mesh->GetVB()->GetSize();
+	void GPUProgramVulkan::CreateVertexBuffer(PipelineState& pso, VertexBuffer* vb) {
+		VkDeviceSize bufferSize = vb->GetSize();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 		void* data;
 		vkMapMemory(vkCtxPtr->device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, mesh->GetVB()->GetBuffer(), (size_t)bufferSize);
+		memcpy(data, vb->GetBuffer(), (size_t)bufferSize);
 		vkUnmapMemory(vkCtxPtr->device, stagingBufferMemory);
 
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer, vertexBufferMemory);
-		CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, pso.vertexBuffer, pso.vertexBufferMemory);
+		CopyBuffer(stagingBuffer, pso.vertexBuffer, bufferSize);
 
 		vkDestroyBuffer(vkCtxPtr->device, stagingBuffer, nullptr);
 		vkFreeMemory(vkCtxPtr->device, stagingBufferMemory, nullptr);
 	}
 
-	void GPUProgramVulkan::CreateIndexBuffer() {
-		VkDeviceSize bufferSize = GetIndexSize();
+	void GPUProgramVulkan::CreateIndexBuffer(PipelineState& pso, IndexBuffer* ib) {
+		VkDeviceSize bufferSize = ib->GetSize();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -143,12 +143,12 @@ namespace Joestar {
 
 		void* data;
 		vkMapMemory(vkCtxPtr->device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, mesh->GetIB()->GetBuffer(), (size_t)bufferSize);
+		memcpy(data, ib->GetBuffer(), (size_t)bufferSize);
 		vkUnmapMemory(vkCtxPtr->device, stagingBufferMemory);
 
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pso.indexBuffer, pso.indexBufferMemory);
 
-		CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
+		CopyBuffer(stagingBuffer, pso.indexBuffer, bufferSize);
 
 		vkDestroyBuffer(vkCtxPtr->device, stagingBuffer, nullptr);
 		vkFreeMemory(vkCtxPtr->device, stagingBufferMemory, nullptr);
@@ -240,7 +240,7 @@ namespace Joestar {
 		vkBindImageMemory(vkCtxPtr->device, image, imageMemory, 0);
 	}
 
-	void GPUProgramVulkan::CreateTextureImage() {
+	void GPUProgramVulkan::CreateTextureImage(PipelineState& pso) {
 		Image* img = new Image("Models/viking_room/viking_room.png");
 		VkDeviceSize imageSize = img->GetSize() * 4;
 		mipLevels = static_cast<uint32_t>(std::floor(std::log2(Max(img->GetWidth(), img->GetHeight())))) + 1;
@@ -253,12 +253,12 @@ namespace Joestar {
 		memcpy(data, img->GetData(), static_cast<size_t>(imageSize));
 		vkUnmapMemory(vkCtxPtr->device, stagingBufferMemory);
 
-		CreateImage(img->GetWidth(), img->GetHeight(), mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+		CreateImage(img->GetWidth(), img->GetHeight(), mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pso.textureImage, pso.textureImageMemory);
 		//for mipmap
-		TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
-		CopyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(img->GetWidth()), static_cast<uint32_t>(img->GetHeight()));
+		TransitionImageLayout(pso.textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+		CopyBufferToImage(stagingBuffer, pso.textureImage, static_cast<uint32_t>(img->GetWidth()), static_cast<uint32_t>(img->GetHeight()));
 		//TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
-		GenerateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, img->GetWidth(), img->GetHeight(), mipLevels);
+		GenerateMipmaps(pso.textureImage, VK_FORMAT_R8G8B8A8_SRGB, img->GetWidth(), img->GetHeight(), mipLevels);
 
 		delete img;
 		vkDestroyBuffer(vkCtxPtr->device, stagingBuffer, nullptr);
@@ -485,8 +485,8 @@ namespace Joestar {
 
 		EndSingleTimeCommands(commandBuffer);
 	}
-	void GPUProgramVulkan::CreateTextureImageView() {
-		textureImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+	void GPUProgramVulkan::CreateTextureImageView(PipelineState& pso) {
+		pso.textureImageView = CreateImageView(pso.textureImage, VK_FORMAT_R8G8B8A8_SRGB);
 	}
 	VkImageView GPUProgramVulkan::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels) {
 		VkImageViewCreateInfo viewInfo{};
@@ -505,7 +505,7 @@ namespace Joestar {
 		}
 		return view;
 	}
-	void GPUProgramVulkan::CreateTextureSampler() {
+	void GPUProgramVulkan::CreateTextureSampler(PipelineState& pso) {
 		VkSamplerCreateInfo samplerInfo{};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -524,12 +524,12 @@ namespace Joestar {
 		samplerInfo.maxLod = static_cast<float>(mipLevels);
 		samplerInfo.mipLodBias = 0.0f;
 
-		if (vkCreateSampler(vkCtxPtr->device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+		if (vkCreateSampler(vkCtxPtr->device, &samplerInfo, nullptr, &pso.textureSampler) != VK_SUCCESS) {
 			LOGERROR("failed to create texture sampler!");
 		}
 	}
 
-	void GPUProgramVulkan::CreateRenderPass(VKPipelineContext* pipelineContext) {
+	void GPUProgramVulkan::CreateRenderPass(PipelineState& pso) {
 		VkAttachmentDescription colorAttachment{};
 		colorAttachment.format = vkCtxPtr->swapChainImageFormat;
 		colorAttachment.samples = msaaSamples;
@@ -597,15 +597,18 @@ namespace Joestar {
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
 
-		if (vkCreateRenderPass(vkCtxPtr->device, &renderPassInfo, nullptr, &(pipelineContext->renderPass)) != VK_SUCCESS) {
+		if (vkCreateRenderPass(vkCtxPtr->device, &renderPassInfo, nullptr, &(pso.pipelineCtx->renderPass)) != VK_SUCCESS) {
 			LOGERROR("failed to create render pass!");
 		}
 	}
 
-	void GPUProgramVulkan::CreateGraphicsPipeline(VKPipelineContext* pipelineContext) {
-		SetShader("test.vert", "test.frag");
+	void GPUProgramVulkan::CreateGraphicsPipeline(PipelineState& pso) {
+		std::string vs = pso.shader + ".vert";
+		std::string fs = pso.shader + ".frag";
+		std::string gs = "";
+		SetShader(pso, vs, fs, gs);
 
-		VkPipelineShaderStageCreateInfo* info = GetShaderStage();
+		VkPipelineShaderStageCreateInfo* info = pso.shaderStage;
 
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -696,15 +699,17 @@ namespace Joestar {
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1; // Optional
-		VkDescriptorSetLayout layouts[] = { pipelineContext->descriptorSetLayout };
+		VkDescriptorSetLayout layouts[] = { pso.pipelineCtx->descriptorSetLayout };
 		pipelineLayoutInfo.pSetLayouts = layouts; // Optional
 
-		if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(pipelineContext->pipelineLayout)) != VK_SUCCESS) {
+		if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(pso.pipelineCtx->pipelineLayout)) != VK_SUCCESS) {
 			LOGERROR("failed to create pipeline layout!");
 		}
 
+		CreateVertexBuffer(pso, pso.vb);
+		CreateIndexBuffer(pso, pso.ib);
 		//Create Vertex Buffer
-		VkPipelineVertexInputStateCreateInfo* vertexInputInfo = GetVertexInputInfo();
+		VkPipelineVertexInputStateCreateInfo* vertexInputInfo = pso.vb->GetVKVertexInputInfo();
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = 2;
@@ -718,18 +723,18 @@ namespace Joestar {
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = nullptr; // Optional
 
-		pipelineInfo.layout = pipelineContext->pipelineLayout;
-		pipelineInfo.renderPass = pipelineContext->renderPass;
+		pipelineInfo.layout = pso.pipelineCtx->pipelineLayout;
+		pipelineInfo.renderPass = pso.pipelineCtx->renderPass;
 		pipelineInfo.subpass = 0;
 
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 		//pipelineInfo.basePipelineIndex = -1; // Optional
-		if (vkCreateGraphicsPipelines(vkCtxPtr->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &(pipelineContext->graphicsPipeline)) != VK_SUCCESS) {
+		if (vkCreateGraphicsPipelines(vkCtxPtr->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &(pso.pipelineCtx->graphicsPipeline)) != VK_SUCCESS) {
 			LOGERROR("failed to create graphics pipeline!");
 		}
 	}
 
-	void GPUProgramVulkan::CreateDescriptorSetLayout(VKPipelineContext* pipelineContext) {
+	void GPUProgramVulkan::CreateDescriptorSetLayout(PipelineState& pso) {
 		VkDescriptorSetLayoutBinding uboLayoutBinding{};
 		uboLayoutBinding.binding = 0;
 		uboLayoutBinding.descriptorCount = 1;
@@ -750,24 +755,311 @@ namespace Joestar {
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 
-		if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(pipelineContext->descriptorSetLayout)) != VK_SUCCESS) {
+		if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(pso.pipelineCtx->descriptorSetLayout)) != VK_SUCCESS) {
 			LOGERROR("failed to create descriptor set layout!");
 		}
 	}
 
-	VKPipelineContext* GPUProgramVulkan::GetPipelineContext() {
-		if (pipelineCtx) {
-			return pipelineCtx;
-		}
-		pipelineCtx = new VKPipelineContext;
-		CreateRenderPass(pipelineCtx);
-		CreateDescriptorSetLayout(pipelineCtx);
-		CreateGraphicsPipeline(pipelineCtx);
+	VKPipelineContext* GPUProgramVulkan::GetPipelineContext(PipelineState& pso) {
+		pso.pipelineCtx = new VKPipelineContext;
+		pso.fbCtx = new VKFrameBufferContext;
+		CreateRenderPass(pso);
+		CreateDescriptorSetLayout(pso);
+		CreateGraphicsPipeline(pso);
+		CreateColorResources(pso);
+        CreateDepthResources(pso);
+        CreateUniformBuffers();
+        CreateFrameBuffers(pso);
+		CreateTextureImage(pso);
+		//CreateVertexBuffer();
+		//CreateIndexBuffer();
+		CreateTextureImage(pso);
+		CreateTextureImageView(pso);
+		CreateTextureSampler(pso);
+		CreateDescriptorPool();
+		CreateDescriptorSets(pso);
 
-		return pipelineCtx;
+		return pso.pipelineCtx;
 	}
 
+	void GPUProgramVulkan::CreateColorResources(PipelineState& pso) {
+		VkFormat colorFormat = vkCtxPtr->swapChainImageFormat;
+
+		CreateImage(vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pso.fbCtx->colorImage, pso.fbCtx->colorImageMemory);
+		pso.fbCtx->colorImageView = CreateImageView(pso.fbCtx->colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+	}
+
+	void GPUProgramVulkan::CreateDepthResources(PipelineState& pso) {
+		VkFormat depthFormat = FindDepthFormat();
+		CreateImage(vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pso.fbCtx->depthImage, pso.fbCtx->depthImageMemory);
+		pso.fbCtx->depthImageView = CreateImageView(pso.fbCtx->depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+		TransitionImageLayout(pso.fbCtx->depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+	}
+
+	void GPUProgramVulkan::CreateUniformBuffers() {
+		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+		
+		vkCtxPtr->uniformBuffers.resize(vkCtxPtr->swapChainImages.size());
+		vkCtxPtr->uniformBuffersMemory.resize(vkCtxPtr->swapChainImages.size());
+		
+		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
+		    CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkCtxPtr->uniformBuffers[i], vkCtxPtr->uniformBuffersMemory[i]);
+		}
+	}
+
+	void GPUProgramVulkan::CreateFrameBuffers(PipelineState& pso) {
+		vkCtxPtr->swapChainFramebuffers.resize(vkCtxPtr->swapChainImageViews.size());
+		for (size_t i = 0; i < vkCtxPtr->swapChainImageViews.size(); i++) {
+			std::array<VkImageView, 3> attachments = {
+				pso.fbCtx->colorImageView,
+				pso.fbCtx->depthImageView,
+				vkCtxPtr->swapChainImageViews[i]
+			};
+
+			VkFramebufferCreateInfo framebufferInfo{};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = pso.pipelineCtx->renderPass;
+			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			framebufferInfo.pAttachments = attachments.data();
+			framebufferInfo.width = vkCtxPtr->swapChainExtent.width;
+			framebufferInfo.height = vkCtxPtr->swapChainExtent.height;
+			framebufferInfo.layers = 1;
+
+			if (vkCreateFramebuffer(vkCtxPtr->device, &framebufferInfo, nullptr, &vkCtxPtr->swapChainFramebuffers[i]) != VK_SUCCESS) {
+				LOGERROR("failed to create framebuffer!");
+			}
+		}
+	}
+
+	void GPUProgramVulkan::CreateDescriptorPool() {
+		std::array<VkDescriptorPoolSize, 2> poolSizes{};
+		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSizes[0].descriptorCount = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
+		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[1].descriptorCount = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
+
+		VkDescriptorPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+		poolInfo.pPoolSizes = poolSizes.data();
+		poolInfo.maxSets = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
+
+		if (vkCreateDescriptorPool(vkCtxPtr->device, &poolInfo, nullptr, &vkCtxPtr->descriptorPool) != VK_SUCCESS) {
+			LOGERROR("failed to create descriptor pool!");
+		}
+	}
+
+	void GPUProgramVulkan::CreateDescriptorSets(PipelineState& pso) {
+		std::vector<VkDescriptorSetLayout> layouts(vkCtxPtr->swapChainImages.size(), pso.pipelineCtx->descriptorSetLayout);
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = vkCtxPtr->descriptorPool;
+		allocInfo.descriptorSetCount = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
+		allocInfo.pSetLayouts = layouts.data();
+
+		vkCtxPtr->descriptorSets.resize(vkCtxPtr->swapChainImages.size());
+		if (vkAllocateDescriptorSets(vkCtxPtr->device, &allocInfo, vkCtxPtr->descriptorSets.data()) != VK_SUCCESS) {
+			LOGERROR("failed to allocate descriptor sets!");
+		}
+
+		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = vkCtxPtr->uniformBuffers[i];
+			bufferInfo.offset = 0;
+			bufferInfo.range = sizeof(UniformBufferObject);
+
+			VkDescriptorImageInfo imageInfo{};
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = pso.textureImageView;
+			imageInfo.sampler = pso.textureSampler;
+
+			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[0].dstSet = vkCtxPtr->descriptorSets[i];
+			descriptorWrites[0].dstBinding = 0;
+			descriptorWrites[0].dstArrayElement = 0;
+			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrites[0].descriptorCount = 1;
+			descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[1].dstSet = vkCtxPtr->descriptorSets[i];
+			descriptorWrites[1].dstBinding = 1;
+			descriptorWrites[1].dstArrayElement = 0;
+			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrites[1].descriptorCount = 1;
+			descriptorWrites[1].pImageInfo = &imageInfo;
+
+			vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		}
+	}
+
+	void GPUProgramVulkan::UpdateUniformBuffer(uint32_t currentImage) {
+		//UniformBufferObject ubo = currentPSO.ubo;
+/*		ubo.model = Matrix4x4f::identity;
+		//auto currentTime = std::chrono::high_resolution_clock::now();
+		//float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		//Vector4f test1 = ubo.view.MultiplyVector4(Vector4f(0.5, 0.5, 0, 1));
+		//test1.z = -test1.z;
+		//Vector4f test = ubo.proj.MultiplyVector4(test1);*/
+		//currentPSO.ubo.view.LookAt(Vector3f(0.0f, 0.0f, -2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f));
+		//currentPSO.ubo.proj.SetPerspective(45.f, vkCtxPtr->swapChainExtent.width / (float)vkCtxPtr->swapChainExtent.height, 0.1f, 10.0f);
+		
+		if (vkCtxPtr->uniformBuffersMemory.empty()) return;
+		void* data;
+		vkMapMemory(vkCtxPtr->device, vkCtxPtr->uniformBuffersMemory[currentImage], 0, sizeof(currentPSO.ubo), 0, &data);
+		memcpy(data, &currentPSO.ubo, sizeof(currentPSO.ubo));
+		vkUnmapMemory(vkCtxPtr->device, vkCtxPtr->uniformBuffersMemory[currentImage]);
+	}
+
+	void GPUProgramVulkan::RecordCommandBuffer(PipelineState& pso) {
+		for (size_t i = 0; i < vkCtxPtr->commandBuffers.size(); i++) {
+			VkCommandBufferBeginInfo beginInfo{};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfo.flags = 0; // Optional
+			beginInfo.pInheritanceInfo = nullptr; // Optional
+
+			if (vkBeginCommandBuffer(vkCtxPtr->commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+				LOGERROR("failed to begin recording command buffer!");
+			}
+			VkRenderPassBeginInfo renderPassInfo{};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassInfo.renderPass = pso.pipelineCtx->renderPass;
+			renderPassInfo.framebuffer = vkCtxPtr->swapChainFramebuffers[i];
+			renderPassInfo.renderArea.offset = { 0, 0 };
+			renderPassInfo.renderArea.extent = vkCtxPtr->swapChainExtent;
+			std::array<VkClearValue, 2> clearValues{};
+			clearValues[0].color = { pso.clearColor.x, pso.clearColor.y, pso.clearColor.z, pso.clearColor.w};
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
+			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+			renderPassInfo.pClearValues = clearValues.data();
+			vkCmdBeginRenderPass(vkCtxPtr->commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBindPipeline(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->graphicsPipeline);
+
+			VkBuffer vertexBuffer = pso.vertexBuffer;
+			VkBuffer vertexBuffers[] = { vertexBuffer };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, 1, vertexBuffers, offsets);
+			vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], pso.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
+			vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], pso.ib->GetIndexCount(), 1, 0, 0, 0);
+			//vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+			vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
+			if (vkEndCommandBuffer(vkCtxPtr->commandBuffers[i]) != VK_SUCCESS) {
+				LOGERROR("failed to record command buffer!");
+			}
+		}
+	}
+
+	void RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso) {
+		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
+		switch (flag) {
+			case BUILTIN_MATRIX_MODEL: pso.ubo.model = *(Matrix4x4f*)cmd.data; break;
+			case BUILTIN_MATRIX_VIEW: pso.ubo.view = *(Matrix4x4f*)cmd.data; break;
+			case BUILTIN_MATRIX_PROJECTION: pso.ubo.proj = *(Matrix4x4f*)cmd.data; break;
+			default: break;
+		}
+	}
+
+	void RenderCmdUpdateVertexBuffer(RenderCommand cmd, PipelineState& pso) {
+		
+	}
+
+	void RenderCmdUpdateIndexBuffer(RenderCommand cmd, PipelineState& pso) {
+		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
+		switch (flag) {
+		case BUILTIN_MATRIX_MODEL: pso.ubo.model = *(Matrix4x4f*)cmd.data; break;
+		case BUILTIN_MATRIX_VIEW: pso.ubo.view = *(Matrix4x4f*)cmd.data; break;
+		case BUILTIN_MATRIX_PROJECTION: pso.ubo.proj = *(Matrix4x4f*)cmd.data; break;
+		default: break;
+		}
+	}
+
+	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx) {
+		if (cmdIdx == 0) return;
+
+		PipelineState pso;
+		for (int i = 0; i < cmdIdx; ++i) {
+			switch (cmdBuffer[i].typ) {
+			case RenderCMD_Clear: pso.clearColor = *((Vector4f*)cmdBuffer[i].data); break;
+			case RenderCMD_UpdateUniformBuffer: RenderCmdUpdateUniformBuffer(cmdBuffer[i], pso); break;
+			case RenderCMD_UpdateVertexBuffer: {
+				VertexBuffer* vb = (VertexBuffer*)cmdBuffer[i].data;
+				pso.vb = vb;
+				//CreateVertexBuffer(vb);
+				break;
+			}
+			case RenderCMD_UpdateIndexBuffer: {
+				IndexBuffer* ib = (IndexBuffer*)cmdBuffer[i].data;
+				pso.ib = ib;
+				//CreateIndexBuffer(ib);
+				break;
+			}
+			case RenderCMD_UseShader: {
+				std::string shader = (const char*)cmdBuffer[i].data;
+				pso.shader = shader;
+				//CreateIndexBuffer(ib);
+				break;
+			}
+			case RenderCMD_Draw: {
+				if (!(currentPSO == pso)) {
+					GetPipelineContext(pso);
+					RecordCommandBuffer(pso);
+					currentPSO = pso;
+				} else {
+					//still need to update ubo
+					currentPSO.ubo = pso.ubo;
+				}
+				break;
+			}
+			case RenderCMD_DrawIndexed: {
+				if (!(currentPSO == pso)) {
+					GetPipelineContext(pso);
+					RecordCommandBuffer(pso);
+					currentPSO = pso;
+				} else {
+					//still need to update ubo
+					currentPSO.ubo = pso.ubo;
+				}
+				break;
+			}
+			default: break;
+			}
+		}
+
+		//for (size_t i = 0; i < vkCtxPtr->commandBuffers.size(); i++) {
+		//	VkCommandBufferBeginInfo beginInfo{};
+		//	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		//	beginInfo.flags = 0; // Optional
+		//	beginInfo.pInheritanceInfo = nullptr; // Optional
+
+		//	if (vkBeginCommandBuffer(vkCtxPtr->commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+		//		LOGERROR("failed to begin recording command buffer!");
+		//	}
+
+		//	VkRenderPassBeginInfo renderPassInfo{};
+		//	for (int i = 0; i < cmdIdx; ++i) {
+		//		switch (cmdBuffer[i].typ) {
+		//		case RenderCMD_Clear:
+		//		}
+		//	}
+
+		//	vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
+		//	if (vkEndCommandBuffer(vkCtxPtr->commandBuffers[i]) != VK_SUCCESS) {
+		//		LOGERROR("failed to record command buffer!");
+		//	}
+		//}
+	}
 
 	void GPUProgramVulkan::CleanupSwapChain() {
+		vkDestroyImageView(vkCtxPtr->device, currentPSO.fbCtx->colorImageView, nullptr);
+		vkDestroyImage(vkCtxPtr->device, currentPSO.fbCtx->colorImage, nullptr);
+		vkFreeMemory(vkCtxPtr->device, currentPSO.fbCtx->colorImageMemory, nullptr);
+		vkDestroyImageView(vkCtxPtr->device, currentPSO.fbCtx->depthImageView, nullptr);
+		vkDestroyImage(vkCtxPtr->device, currentPSO.fbCtx->depthImage, nullptr);
+		vkFreeMemory(vkCtxPtr->device, currentPSO.fbCtx->depthImageMemory, nullptr);
 	}
 }

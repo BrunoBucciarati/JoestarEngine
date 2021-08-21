@@ -1,5 +1,8 @@
 #include "Scene.h"
+#include "../IO/HID.h"
+#include "../Graphics/Graphics.h"
 #include <vector>
+#include "../IO/FileSystem.h"
 namespace Joestar {
     //test sphere
     Mesh* GenUVSphere()
@@ -22,12 +25,6 @@ namespace Joestar {
                 float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
                 float yPos = std::cos(ySegment * PI);
                 float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-
-                //Vertex v;
-               // v.Position = glm::vec3(xPos, yPos, zPos);
-               // v.TexCoords = glm::vec2(xSegment, ySegment);
-               // v.Normal = glm::vec3(xPos, yPos, zPos);
-                //vertices.push_back(v);
             }
         }
 
@@ -52,28 +49,46 @@ namespace Joestar {
             }
             oddRow = !oddRow;
         }
-        //indexCount = indices.size();
-        //mesh->indices_ = indices;
-        //mesh->vertices_ = vertices;
 
         return mesh;
     }
 
 
-    Scene::Scene() {
+    Scene::Scene(EngineContext* ctx) : Super(ctx) {
         //for test
-        //GameObject* go = new GameObject;
-        //Renderer* render = new Renderer;
-     //   render->mesh_ = GenUVSphere();
-     //   render->mat_ = new Material;
-     //   //render->mat_->SetDefault();
-     //   go->render = render;
+        GameObject* go = new GameObject;
+        gameObjects.push_back(go);
+        Renderer* render = new Renderer(ctx);
+        go->render = render;
+        render->mesh = new Mesh;
+
+        FileSystem* fs = GetSubsystem<FileSystem>();
+        std::string path = fs->GetResourceDir();
+        path += "Models/";
+        char workDir[260];
+        if (_getcwd(workDir, 260))
+            path = workDir + ("/" + path);
+        render->mesh->Load(path + "viking_room/viking_room.obj");
+     // render->mat_ = new Material;
+     // render->mat_->SetDefault();
+    }
+
+    void Scene::Update() {
+        HID* hid = GetSubsystem<HID>();
+        camera.ProcessHID(hid, 0.01f);
+
+        Graphics* graphics = GetSubsystem<Graphics>();
+        RenderScene();
     }
 
     void Scene::RenderScene() {
-        for (std::vector<GameObject>::const_iterator iter = gameObjects.begin(); iter != gameObjects.end(); iter++) {
-            if (iter->render) {
-                iter->render->Render(camera);
+        Graphics* graphics = GetSubsystem<Graphics>();
+        graphics->Clear();
+        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera.GetProjectionMatrix());
+        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera.GetViewMatrix());
+        for (std::vector<GameObject*>::const_iterator iter = gameObjects.begin(); iter != gameObjects.end(); iter++) {
+            if ((*iter)->render) {
+                (*iter)->render->Render(camera);
             }
         }
     }

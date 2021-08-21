@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Base\Camera.cpp" />
     <ClCompile Include="Base\GameObject.cpp" />
     <ClCompile Include="Base\Object.cpp" />
     <ClCompile Include="Base\SubSystem.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="Graphics\VertexData.cpp" />
     <ClCompile Include="IO\File.cpp" />
     <ClCompile Include="IO\FileSystem.cpp" />
+    <ClCompile Include="IO\HID.cpp" />
     <ClCompile Include="Math\Matrix4x4.cpp" />
     <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector3.cpp" />
@@ -187,6 +189,7 @@
     <ClInclude Include="Graphics\VertexData.h" />
     <ClInclude Include="Graphics\VulkanHeader.h" />
     <ClInclude Include="IO\File.h" />
+    <ClInclude Include="IO\HID.h" />
     <ClInclude Include="Math\FloatMath.h" />
     <ClInclude Include="Math\Matrix4x4.h" />
     <ClInclude Include="Math\Vector2.h" />

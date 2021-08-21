@@ -17,5 +17,16 @@ enum VERTEX_ATTRIBUTE {
 	VERTEX_ATTRIB_COUNT
 };
 
+enum BUILTIN_MATRIX {
+	BUILTIN_MATRIX_MODEL = 0,
+	BUILTIN_MATRIX_VIEW,
+	BUILTIN_MATRIX_PROJECTION
+};
+
+struct BuiltinMatrixCmdData {
+	BUILTIN_MATRIX matrixType;
+	void* data;
+};
+
 const int VERTEX_ATTRIBUTE_SIZE[] = { 3, 3, 3, 2 };
 #endif
