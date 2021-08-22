@@ -12,7 +12,6 @@ namespace Joestar {
 		Mesh* mesh;
 		Material* mat;
 		Matrix4x4f model;
-		std::string shaderName;
 		void Render(Camera cam);
 	};
 }

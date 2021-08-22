@@ -11,6 +11,7 @@
 #include "RenderCommand.h"
 #include <map>
 #include <cstring>
+#include "Texture.h"
 
 namespace Joestar {
     struct UniformBufferObject {
@@ -35,18 +36,33 @@ namespace Joestar {
         VkDeviceMemory indexBufferMemory;
         VkBuffer vertexBuffer;
         VkDeviceMemory vertexBufferMemory;
-        VkImage textureImage;
-        VkDeviceMemory textureImageMemory;
-        VkImageView textureImageView;
         VkSampler textureSampler;
         VkPipelineShaderStageCreateInfo shaderStage[2];
         VkShaderModule vertShaderModule{}, fragShaderModule{};
+
+        std::vector<uint32_t> textures;
 
         bool operator== (PipelineState & p2) {
             return (clearColor == p2.clearColor) && shader == p2.shader &&
                 (vb == vb) && (ib == ib);
         }
     };
+
+    class TextureVK {
+    public:
+        explicit TextureVK(Texture*);
+        inline uint32_t ID() { return texture->id; }
+        inline uint32_t GetSize() { return texture->GetSize(); }
+        inline bool HasMipmap() { return texture->hasMipMap; }
+        VkImage textureImage;
+        VkDeviceMemory textureImageMemory;
+        VkImageView textureImageView;
+    private:
+        Texture* texture;
+    };
+
+
+
     class GPUProgramVulkan :public GPUProgram {
     public:
         GPUProgramVulkan();
@@ -57,8 +73,8 @@ namespace Joestar {
         void CreateIndexBuffer(PipelineState& pso, IndexBuffer* ib);
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-        void CreateTextureImage(PipelineState& pso);
-        void CreateTextureImageView(PipelineState& pso);
+        void CreateTextureImage(TextureVK* tex);
+        void CreateTextureImageView(TextureVK* tex);
         VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT, uint32_t mipLevels = 1);
         void CreateTextureSampler(PipelineState& pso);
         void CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
@@ -90,24 +106,24 @@ namespace Joestar {
         void CreateFrameBuffers(PipelineState& pso);
         void CreateDescriptorPool();
         void CreateDescriptorSets(PipelineState& pso);
+        void UpdateDescriptorSets(PipelineState& pso);
         void UpdateUniformBuffer(uint32_t currentImage);
         void RecordCommandBuffer(PipelineState& pso);
         void ExecuteRenderCommand(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx);
 
     private:
         VulkanContext* vkCtxPtr;
-        //VKPipelineContext* pipelineCtx;
-        //VKFrameBufferContext* fbCtx;
 
         VkBufferCreateInfo bufferInfo{};
         VkMemoryRequirements memRequirements;
         VkMemoryAllocateInfo allocInfo{};
         uint32_t mipLevels;
-        //VertexBuffer* vb;
-        //Mesh* mesh;
         VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_2_BIT;
         PipelineState currentPSO;
         std::vector<PipelineState> allPSO;
+        std::map<uint32_t, TextureVK*> textureVKs;
+        //pending texture, will upload during UpdateUniform
+        std::map<uint32_t, TextureVK*> pendingTextureVKs;
     };
 
 }

@@ -16,7 +16,7 @@ namespace Joestar {
 		T* GetSubsystem() const {
 			return static_cast<T*>(GetSubsystem(T::GetClassID()));
 		}
-	private:
+	protected:
 		EngineContext* mContext;
 	};
 

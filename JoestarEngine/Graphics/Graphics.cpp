@@ -77,4 +77,20 @@ namespace Joestar {
 		++cmdIdx;
 
 	}
+
+	//update material
+	void Graphics::UpdateMaterial(Material* mat) {
+		UseShader(mat->GetShaderName());
+		std::vector<Texture*> textures = mat->GetTextures();
+		for (int i = 0; i < textures.size(); i++) {
+			UpdateTexture(textures[i]);
+		}
+	}
+
+	void Graphics::UpdateTexture(Texture* t) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateTexture;
+		cmdBuffer[cmdIdx].size = sizeof(Texture*);
+		cmdBuffer[cmdIdx].data = (void*)t;
+		++cmdIdx;
+	}
 }

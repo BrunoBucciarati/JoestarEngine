@@ -7,7 +7,12 @@ enum RenderCommandType {
 	RenderCMD_UpdateUniformBuffer,
 	RenderCMD_UpdateVertexBuffer,
 	RenderCMD_UpdateIndexBuffer,
-	RenderCMD_UseShader
+	RenderCMD_UseShader,
+	RenderCMD_UpdateTexture,
+
+
+
+	RenderCMD_Invalid
 };
 
 struct RenderCommand {

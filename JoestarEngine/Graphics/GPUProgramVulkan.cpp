@@ -6,6 +6,10 @@
 #include "Image.h"
 
 namespace Joestar {
+	TextureVK::TextureVK(Texture* t) : texture(t) {
+		
+	}
+
 	VkFormat GPUProgramVulkan::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 		for (VkFormat format : candidates) {
 			VkFormatProperties props;
@@ -102,9 +106,9 @@ namespace Joestar {
 		vkDestroyBuffer(vkCtxPtr->device, currentPSO.indexBuffer, nullptr);
 		vkFreeMemory(vkCtxPtr->device, currentPSO.indexBufferMemory, nullptr);
 		vkDestroySampler(vkCtxPtr->device, currentPSO.textureSampler, nullptr);
-		vkDestroyImageView(vkCtxPtr->device, currentPSO.textureImageView, nullptr);
-		vkDestroyImage(vkCtxPtr->device, currentPSO.textureImage, nullptr);
-		vkFreeMemory(vkCtxPtr->device, currentPSO.textureImageMemory, nullptr);
+		//vkDestroyImageView(vkCtxPtr->device, currentPSO.textureImageView, nullptr);
+		//vkDestroyImage(vkCtxPtr->device, currentPSO.textureImage, nullptr);
+		//vkFreeMemory(vkCtxPtr->device, currentPSO.textureImageMemory, nullptr);
 		//delete mesh;
 
 		vkDestroyPipeline(vkCtxPtr->device, currentPSO.pipelineCtx->graphicsPipeline, nullptr);
@@ -240,9 +244,9 @@ namespace Joestar {
 		vkBindImageMemory(vkCtxPtr->device, image, imageMemory, 0);
 	}
 
-	void GPUProgramVulkan::CreateTextureImage(PipelineState& pso) {
+	void GPUProgramVulkan::CreateTextureImage(TextureVK* tex) {
 		Image* img = new Image("Models/viking_room/viking_room.png");
-		VkDeviceSize imageSize = img->GetSize() * 4;
+		VkDeviceSize imageSize = tex->GetSize();
 		mipLevels = static_cast<uint32_t>(std::floor(std::log2(Max(img->GetWidth(), img->GetHeight())))) + 1;
 
 		VkBuffer stagingBuffer;
@@ -253,12 +257,15 @@ namespace Joestar {
 		memcpy(data, img->GetData(), static_cast<size_t>(imageSize));
 		vkUnmapMemory(vkCtxPtr->device, stagingBufferMemory);
 
-		CreateImage(img->GetWidth(), img->GetHeight(), mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pso.textureImage, pso.textureImageMemory);
+		CreateImage(img->GetWidth(), img->GetHeight(), mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, tex->textureImage, tex->textureImageMemory);
 		//for mipmap
-		TransitionImageLayout(pso.textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
-		CopyBufferToImage(stagingBuffer, pso.textureImage, static_cast<uint32_t>(img->GetWidth()), static_cast<uint32_t>(img->GetHeight()));
-		//TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
-		GenerateMipmaps(pso.textureImage, VK_FORMAT_R8G8B8A8_SRGB, img->GetWidth(), img->GetHeight(), mipLevels);
+		TransitionImageLayout(tex->textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+		CopyBufferToImage(stagingBuffer, tex->textureImage, static_cast<uint32_t>(img->GetWidth()), static_cast<uint32_t>(img->GetHeight()));
+		if (tex->HasMipmap()) {
+			GenerateMipmaps(tex->textureImage, VK_FORMAT_R8G8B8A8_SRGB, img->GetWidth(), img->GetHeight(), mipLevels);
+		} else {
+			TransitionImageLayout(tex->textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
+		}
 
 		delete img;
 		vkDestroyBuffer(vkCtxPtr->device, stagingBuffer, nullptr);
@@ -485,8 +492,8 @@ namespace Joestar {
 
 		EndSingleTimeCommands(commandBuffer);
 	}
-	void GPUProgramVulkan::CreateTextureImageView(PipelineState& pso) {
-		pso.textureImageView = CreateImageView(pso.textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+	void GPUProgramVulkan::CreateTextureImageView(TextureVK* tex) {
+		tex->textureImageView = CreateImageView(tex->textureImage, VK_FORMAT_R8G8B8A8_SRGB);
 	}
 	VkImageView GPUProgramVulkan::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels) {
 		VkImageViewCreateInfo viewInfo{};
@@ -513,7 +520,7 @@ namespace Joestar {
 		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.anisotropyEnable = VK_TRUE;
+		samplerInfo.anisotropyEnable = VK_FALSE;
 		samplerInfo.maxAnisotropy = 16;
 		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
@@ -770,11 +777,10 @@ namespace Joestar {
         CreateDepthResources(pso);
         CreateUniformBuffers();
         CreateFrameBuffers(pso);
-		CreateTextureImage(pso);
 		//CreateVertexBuffer();
 		//CreateIndexBuffer();
-		CreateTextureImage(pso);
-		CreateTextureImageView(pso);
+		//CreateTextureImage(pso);
+		//CreateTextureImageView(pso);
 		CreateTextureSampler(pso);
 		CreateDescriptorPool();
 		CreateDescriptorSets(pso);
@@ -848,7 +854,6 @@ namespace Joestar {
 			LOGERROR("failed to create descriptor pool!");
 		}
 	}
-
 	void GPUProgramVulkan::CreateDescriptorSets(PipelineState& pso) {
 		std::vector<VkDescriptorSetLayout> layouts(vkCtxPtr->swapChainImages.size(), pso.pipelineCtx->descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo{};
@@ -862,6 +867,10 @@ namespace Joestar {
 			LOGERROR("failed to allocate descriptor sets!");
 		}
 
+		UpdateDescriptorSets(pso);
+	}
+
+	void GPUProgramVulkan::UpdateDescriptorSets(PipelineState& pso) {
 		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
 			VkDescriptorBufferInfo bufferInfo{};
 			bufferInfo.buffer = vkCtxPtr->uniformBuffers[i];
@@ -870,7 +879,22 @@ namespace Joestar {
 
 			VkDescriptorImageInfo imageInfo{};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = pso.textureImageView;
+			std::map<uint32_t, TextureVK*>::iterator it = textureVKs.find(pso.textures[0]);
+			TextureVK* tex;
+			if (it == textureVKs.end()) {
+				it = pendingTextureVKs.find(pso.textures[0]);
+				if (it == pendingTextureVKs.end()) {
+					LOGERROR("this texture didn't call Graphics::UpdateTexture!!!");
+				}
+				CreateTextureImage(it->second);
+				CreateTextureImageView(it->second);
+				textureVKs[it->first] = it->second;
+				tex = it->second;
+				pendingTextureVKs.erase(it);
+			} else {
+				tex = it->second;
+			}
+			imageInfo.imageView = tex->textureImageView;
 			imageInfo.sampler = pso.textureSampler;
 
 			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
@@ -896,21 +920,19 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::UpdateUniformBuffer(uint32_t currentImage) {
-		//UniformBufferObject ubo = currentPSO.ubo;
-/*		ubo.model = Matrix4x4f::identity;
-		//auto currentTime = std::chrono::high_resolution_clock::now();
-		//float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-		//Vector4f test1 = ubo.view.MultiplyVector4(Vector4f(0.5, 0.5, 0, 1));
-		//test1.z = -test1.z;
-		//Vector4f test = ubo.proj.MultiplyVector4(test1);*/
-		//currentPSO.ubo.view.LookAt(Vector3f(0.0f, 0.0f, -2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f));
-		//currentPSO.ubo.proj.SetPerspective(45.f, vkCtxPtr->swapChainExtent.width / (float)vkCtxPtr->swapChainExtent.height, 0.1f, 10.0f);
-		
 		if (vkCtxPtr->uniformBuffersMemory.empty()) return;
 		void* data;
 		vkMapMemory(vkCtxPtr->device, vkCtxPtr->uniformBuffersMemory[currentImage], 0, sizeof(currentPSO.ubo), 0, &data);
 		memcpy(data, &currentPSO.ubo, sizeof(currentPSO.ubo));
 		vkUnmapMemory(vkCtxPtr->device, vkCtxPtr->uniformBuffersMemory[currentImage]);
+
+		//for (std::map<uint32_t, TextureVK*>::iterator it = pendingTextureVKs.begin(); it != pendingTextureVKs.end(); it++) {
+		//	CreateTextureImage(it->second);
+		//	CreateTextureImageView(it->second);
+		//	UpdateDescriptorSets(currentPSO, it->second);
+		//	textureVKs[it->first] = it->second;
+		//}
+		//pendingTextureVKs.clear();
 	}
 
 	void GPUProgramVulkan::RecordCommandBuffer(PipelineState& pso) {
@@ -990,26 +1012,33 @@ namespace Joestar {
 			case RenderCMD_UpdateVertexBuffer: {
 				VertexBuffer* vb = (VertexBuffer*)cmdBuffer[i].data;
 				pso.vb = vb;
-				//CreateVertexBuffer(vb);
 				break;
 			}
 			case RenderCMD_UpdateIndexBuffer: {
 				IndexBuffer* ib = (IndexBuffer*)cmdBuffer[i].data;
 				pso.ib = ib;
-				//CreateIndexBuffer(ib);
 				break;
 			}
 			case RenderCMD_UseShader: {
 				std::string shader = (const char*)cmdBuffer[i].data;
 				pso.shader = shader;
-				//CreateIndexBuffer(ib);
+				break;
+			}
+			case RenderCMD_UpdateTexture: {
+				Texture* tex = (Texture*)cmdBuffer[i].data;
+				//check if uniform buffer is ready
+				if (textureVKs.find(tex->id) == textureVKs.end() && pendingTextureVKs.find(tex->id) == pendingTextureVKs.end()) {
+					TextureVK* vkTex = new TextureVK(tex);
+					pendingTextureVKs[vkTex->ID()] = vkTex;
+				}
+				pso.textures.push_back(tex->id);
 				break;
 			}
 			case RenderCMD_Draw: {
 				if (!(currentPSO == pso)) {
+					currentPSO = pso;
 					GetPipelineContext(pso);
 					RecordCommandBuffer(pso);
-					currentPSO = pso;
 				} else {
 					//still need to update ubo
 					currentPSO.ubo = pso.ubo;

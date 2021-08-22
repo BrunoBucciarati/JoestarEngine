@@ -7,6 +7,7 @@
 #include "../Math/Vector4.h"
 #include "GraphicDefines.h"
 #include "VertexData.h"
+#include "Material.h"
 #include "../Math/Matrix4x4.h"
 namespace Joestar {
 	class Graphics : public SubSystem {
@@ -21,7 +22,9 @@ namespace Joestar {
 		void UpdateBuiltinMatrix(BUILTIN_MATRIX typ, Matrix4x4f& mat);
 		void UpdateVertexBuffer(VertexBuffer* vb);
 		void UpdateIndexBuffer(IndexBuffer* ib);
+		void UpdateMaterial(Material* mat);
 		void UseShader(std::string& name);
+		void UpdateTexture(Texture*);
 		void DrawIndexed();
 
 	private:

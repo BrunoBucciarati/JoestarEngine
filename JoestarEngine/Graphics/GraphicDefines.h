@@ -16,6 +16,7 @@ enum VERTEX_ATTRIBUTE {
 	VERTEX_TEXCOORD,
 	VERTEX_ATTRIB_COUNT
 };
+const int VERTEX_ATTRIBUTE_SIZE[] = { 3, 3, 3, 2 };
 
 enum BUILTIN_MATRIX {
 	BUILTIN_MATRIX_MODEL = 0,
@@ -28,5 +29,11 @@ struct BuiltinMatrixCmdData {
 	void* data;
 };
 
-const int VERTEX_ATTRIBUTE_SIZE[] = { 3, 3, 3, 2 };
+enum TEXTURE_FORMAT {
+	TEXTURE_FORMAT_RGBA8 = 0,
+	TEXTURE_FORMAT_FORMATCOUNT
+};
+const int TEXTURE_FORMAT_SIZE[] = {
+	4
+};
 #endif

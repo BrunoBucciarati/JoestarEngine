@@ -5,12 +5,13 @@ namespace Joestar {
 	Renderer::Renderer(EngineContext* ctx) : Super(ctx) {
 		model = Matrix4x4f::identity;
 		//for test now
-		shaderName = "test";
 	}
 	void Renderer::Render(Camera cam) {
-		if (mesh) {
+		if (mesh && mat) {
 			Graphics* graphics = GetSubsystem<Graphics>();
-			graphics->UseShader(shaderName);
+			graphics->UpdateMaterial(mat);
+			//graphics->UseShader(mat->GetShaderName());
+			//graphics->UpdateTexture(mat->GetShaderName());
 			graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, model);
 			graphics->UpdateVertexBuffer(mesh->GetVB());
 			graphics->UpdateIndexBuffer(mesh->GetIB());

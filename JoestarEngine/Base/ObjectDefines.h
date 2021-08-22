@@ -18,6 +18,8 @@
 	
 #define REGISTER_SUBSYSTEM(CLASS) REGISTER_OBJECT(CLASS, SubSystem);
 
+#define NEW_OBJECT(CLASS)\
+	new CLASS(mContext)
 
 #define InitSubSystem(CLASS, CONTEXT) \
 	CLASS* ptr##CLASS = new CLASS(CONTEXT);\

@@ -3,14 +3,16 @@
 #include "../Graphics/Graphics.h"
 #include <vector>
 #include "../IO/FileSystem.h"
+#include "../Math/Vector2.h"
+#include "../Math/Vector3.h"
 namespace Joestar {
     //test sphere
     Mesh* GenUVSphere()
     {
         Mesh* mesh = new Mesh();
         //std::vector<Vertex> vertices;
-        std::vector<glm::vec2> uv;
-        std::vector<glm::vec3> normals;
+        std::vector<Vector2f> uv;
+        std::vector<Vector3f> normals;
         std::vector<unsigned int> indices;
 
         const unsigned int X_SEGMENTS = 64;
@@ -63,12 +65,10 @@ namespace Joestar {
         render->mesh = new Mesh;
 
         FileSystem* fs = GetSubsystem<FileSystem>();
-        std::string path = fs->GetResourceDir();
-        path += "Models/";
-        char workDir[260];
-        if (_getcwd(workDir, 260))
-            path = workDir + ("/" + path);
+        std::string path = fs->GetModelDir();
         render->mesh->Load(path + "viking_room/viking_room.obj");
+        render->mat = NEW_OBJECT(Material);
+        render->mat->SetDefault();
      // render->mat_ = new Material;
      // render->mat_->SetDefault();
     }
