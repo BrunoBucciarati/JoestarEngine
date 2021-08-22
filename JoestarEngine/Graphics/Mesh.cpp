@@ -33,11 +33,11 @@ namespace Joestar {
                 Vertex vertex{};
                 vertex.pos.Set(attrib.vertices[3 * index.vertex_index + 0], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2]);
                 vertex.color.Set(1.f, 1.f, 1.f);
-                vertex.texCoord.Set(attrib.texcoords[2 * index.texcoord_index + 0], 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]);
+                vertex.texCoord.Set(attrib.texcoords[2 * index.texcoord_index + 0], 1.f - attrib.texcoords[2 * index.texcoord_index + 1]);
                 std::vector<Vertex>::const_iterator it = std::find(vertices.begin(), vertices.end(), vertex);
                 if (it == vertices.end()) {
-                    vertices.push_back(vertex);
                     indices.push_back(vertices.size());
+                    vertices.push_back(vertex);
                 }
                 else {
                     indices.push_back(it - vertices.begin());

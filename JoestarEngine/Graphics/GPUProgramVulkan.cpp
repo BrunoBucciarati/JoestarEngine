@@ -945,6 +945,7 @@ namespace Joestar {
 			vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], pso.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
 			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
+			//vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], 9, 1, 0, 0, 0);
 			vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], pso.ib->GetIndexCount(), 1, 0, 0, 0);
 			//vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
 			vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);

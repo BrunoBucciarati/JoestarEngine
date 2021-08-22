@@ -1,15 +1,17 @@
-﻿  RenderThreadVulkan.cpp
+﻿  Mesh.cpp
+D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
 D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-  The contents of <optional> are available only with C++17 or later.
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(103,21): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(104,21): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(107,24): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(108,25): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(109,17): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(110,17): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(114,19): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(115,19): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Thread\RenderThreadVulkan.cpp(708): warning C4715: “Joestar::RenderThreadVulkan::FindSupportedFormat”: 不是所有的控件路径都返回值
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Mesh.cpp(39,54): warning C4267: “参数”: 从“size_t”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=uint16_t
+          ]
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Mesh.cpp(43,42): warning C4244: “参数”: 从“__int64”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=uint16_t
+          ]
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Mesh.cpp(52,53): warning C4267: “参数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Mesh.cpp(56,54): warning C4267: “参数”: 从“size_t”转换到“uint32_t”，可能丢失数据
   JoestarEngine.vcxproj -> D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe
