@@ -14,15 +14,6 @@
 #include "Texture.h"
 
 namespace Joestar {
-    struct UniformBufferObject {
-        Matrix4x4f model;
-        Matrix4x4f view;
-        Matrix4x4f proj;
-        bool operator== (UniformBufferObject& ub) {
-            return model == ub.model && view == ub.view && proj == ub.proj;
-        }
-    };
-
     struct PipelineState {
         Vector4f clearColor;
         UniformBufferObject ubo;
@@ -43,6 +34,10 @@ namespace Joestar {
         std::vector<uint32_t> textures;
 
         bool operator== (PipelineState & p2) {
+            if (textures.size() != p2.textures.size()) return false;
+            for (int i = 0; i < textures.size(); ++i) {
+                if (textures[i] != p2.textures[i]) return false;
+            }
             return (clearColor == p2.clearColor) && shader == p2.shader &&
                 (vb == vb) && (ib == ib);
         }

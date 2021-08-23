@@ -25,3 +25,10 @@
 	CLASS* ptr##CLASS = new CLASS(CONTEXT);\
 	SubSystem* t##CLASS = (SubSystem*)ptr##CLASS;\
 	CONTEXT->subSystems[ClassID(CLASS)] = t##CLASS;
+
+#define GET_SET(NAME, TYPE) \
+public: \
+	const TYPE& Get##NAME() {return m_##NAME;} \
+	Set##NAME(TYPE val) {m_##NAME = val;} \
+private:\
+	TYPE m_##NAME;

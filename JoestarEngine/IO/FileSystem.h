@@ -21,5 +21,6 @@ namespace Joestar {
 
 		void ReadFileAsync(const char* filePath, ReadFileCallback callback);
 		File* ReadFile(const char* filePath);
+		File* OpenFile(const char* filePath);
 	};
 }

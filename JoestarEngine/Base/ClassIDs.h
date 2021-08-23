@@ -16,6 +16,8 @@ enum ClassIDType {
 	DefineClassID(Renderer, 7)
 	DefineClassID(Texture, 8)
 	DefineClassID(Material, 9)
+	DefineClassID(Shader, 10)
+	DefineClassID(ShaderParser, 11)
 
 	kClassIDCount
 };

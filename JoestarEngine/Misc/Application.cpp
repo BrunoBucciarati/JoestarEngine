@@ -7,6 +7,7 @@
 #include "../Graphics/GraphicDefines.h"
 #include "../IO/HID.h"
 #include "../Base/Scene.h"
+#include "../Graphics/Shader/ShaderParser.h"
 
 namespace Joestar {
 	void Application::Start() {
@@ -23,6 +24,7 @@ namespace Joestar {
 		GetSubSystem<Graphics>()->Init();
 
 		InitSubSystem(HID, gContext);
+		InitSubSystem(ShaderParser, gContext);
 		InitSubSystem(Scene, gContext);
 	}
 

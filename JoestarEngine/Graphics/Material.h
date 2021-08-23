@@ -15,7 +15,7 @@ namespace Joestar {
 	//Material() :program(GPUProgram::CreateProgram()) {}
 	void SetDefault() {
 		if (!shader) {
-			shader = new Shader;
+			shader = NEW_OBJECT(Shader);
 			shader->SetName("test");
 		}
 		textures.push_back(NEW_OBJECT(Texture));

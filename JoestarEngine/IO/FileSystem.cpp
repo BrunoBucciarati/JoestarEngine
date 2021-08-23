@@ -13,4 +13,9 @@ namespace Joestar {
 		File* file = new File(filename);
 		return file;
 	}
+
+	File* FileSystem::OpenFile(const char* filename) {
+		File* file = new File(filename);
+		return file;
+	}
 }
