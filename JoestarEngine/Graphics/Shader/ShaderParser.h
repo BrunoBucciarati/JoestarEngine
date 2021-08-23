@@ -10,10 +10,8 @@ namespace Joestar {
 		ShaderDataTypeVec2,
 		ShaderDataTypeVec3,
 		ShaderDataTypeVec4,
-		ShaderDataTypeMat4
-	};
-	enum SamplerType {
-		SampleTypeInvalid = 0,
+		ShaderDataTypeMat4,
+		ShaderDataTypeSampler,
 		SamplerType2D,
 		SamplerTypeCube,
 		SamplerType3D
@@ -26,10 +24,10 @@ namespace Joestar {
 		std::string name;
 		ShaderDataType dataType;
 	};
-	struct SamplerDef {
+/*	struct SamplerDef {
 		std::string name;
 		SamplerType dataType;
-	};
+	}*/;
 	struct UBODef {
 		std::string name;
 	};
@@ -37,7 +35,7 @@ namespace Joestar {
 		uint16_t version;
 		std::vector<VertexDef> attrs;
 		std::vector<UniformDef> uniforms;
-		std::vector<SamplerDef> samplers;
+		//std::vector<SamplerDef> samplers;
 		std::vector<UBODef> ubos;
 		std::string entryFunction = "main";
 	};

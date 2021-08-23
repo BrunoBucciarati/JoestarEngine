@@ -18,6 +18,9 @@
 #define TOKEN_VEC3 "vec3"
 #define TOKEN_VEC4 "vec4"
 #define TOKEN_MAT4 "mat4"
+#define TOKEN_SAMPLER2D "sampler2D"
+#define TOKEN_SAMPLERCUBE "samplerCube"
+#define TOKEN_SAMPLER3D "sampler3D"
 #define TOKEN_LB "{"
 #define TOKEN_RB "}"
 #define TOKEN_SEMICOLON ";"
@@ -31,7 +34,15 @@
 	if (token == TOKEN_VEC2) val = ShaderDataTypeVec2; \
 	if (token == TOKEN_VEC3) val = ShaderDataTypeVec3; \
 	if (token == TOKEN_VEC4) val = ShaderDataTypeVec4; \
-	if (token == TOKEN_MAT4) val = ShaderDataTypeMat4;
+	if (token == TOKEN_MAT4) val = ShaderDataTypeMat4;\
+	if (token == TOKEN_SAMPLER2D) val = SamplerType2D; \
+	if (token == TOKEN_SAMPLERCUBE) val = SamplerTypeCube; \
+	if (token == TOKEN_SAMPLER3D) val = SamplerType3D;
+
+#define SET_SAMPLERTYPE_BY_TOKEN(val, token) \
+	if (token == TOKEN_SAMPLER2D) val = SamplerType2D; \
+	if (token == TOKEN_SAMPLERCUBE) val = SamplerTypeCube; \
+	if (token == TOKEN_SAMPLER3D) val = SamplerType3D;
 
 namespace Joestar {
 	struct TokenStream {
@@ -93,7 +104,6 @@ namespace Joestar {
 		str = t; \
 		return true; \
 	}
-	
 
 		bool AcceptDataTypeToken(std::string& str) {
 			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_FLOAT);
@@ -101,6 +111,16 @@ namespace Joestar {
 			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_VEC3);
 			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_VEC4);
 			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_MAT4);
+			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_SAMPLER2D);
+			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_SAMPLERCUBE);
+			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_SAMPLER3D);
+			return false;
+		}
+
+		bool AcceptSamplerTypeToken(std::string& str) {
+			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_SAMPLER2D);
+			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_SAMPLERCUBE);
+			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_SAMPLER3D);
 			return false;
 		}
 	};
@@ -115,6 +135,15 @@ namespace Joestar {
 				}
 
 				SET_DATATYPE_BY_TOKEN(shaderInfo.uniforms[binding].dataType, tok)
+				tokenStream.AcceptString(shaderInfo.uniforms[binding].name);
+			//} else if(tokenStream.AcceptSamplerTypeToken(tok)) {
+			//	if (binding == -1) binding = shaderInfo.uniforms.size();
+			//	if (shaderInfo.uniforms.size() < binding + 1) {
+			//		shaderInfo.uniforms.resize(binding + 1);
+			//	}
+
+			//	SET_DATATYPE_BY_TOKEN(shaderInfo.uniforms[binding].dataType, tok);
+
 			} else {
 				//must be a UBO
 				tokenStream.AcceptString(tok);
@@ -190,28 +219,31 @@ namespace Joestar {
 		return true;
 	}
 
-	void ParseVertexShader(char* buffer, uint32_t idx, uint32_t size, ShaderInfo& shaderInfo) {
+	void GetTokenStream(char* buffer, uint32_t idx, uint32_t size, TokenStream& tokenStream) {
 		char c;
-		TokenStream tokenStream;
 		int tokenIdx = 0;
 		tokenStream.resize(1000);
 		while (idx < size) {
 			c = buffer[idx];
 			switch (c) {
-				case '\n':
-				case ' ':
-				case '\r':
-				case '\0': if (!tokenStream[tokenIdx].empty()) ++tokenIdx; break;
-				case '(': 
-				case '=':
-				case ';':
-				case ')': if (!tokenStream[tokenIdx].empty()) ++tokenIdx; tokenStream[tokenIdx] = c; ++tokenIdx; break;
-				default: tokenStream[tokenIdx] += c; break;
+			case '\n':
+			case ' ':
+			case '\r':
+			case '\0': if (!tokenStream[tokenIdx].empty()) ++tokenIdx; break;
+			case '(':
+			case '=':
+			case ';':
+			case ')': if (!tokenStream[tokenIdx].empty()) ++tokenIdx; tokenStream[tokenIdx] = c; ++tokenIdx; break;
+			default: tokenStream[tokenIdx] += c; break;
 			}
 			++idx;
 		}
 		tokenStream.size = idx;
+	}
 
+	void ParseVertexShader(char* buffer, uint32_t idx, uint32_t size, ShaderInfo& shaderInfo) {
+		TokenStream tokenStream;
+		GetTokenStream(buffer, idx, size, tokenStream);
 		if (tokenStream.AcceptToken(TOKEN_GL_VERSION)) {
 			tokenStream.AcceptInt16(shaderInfo.version);
 
@@ -235,6 +267,38 @@ namespace Joestar {
 		}
 	}
 
+	void ParseFragmentShader(char* buffer, uint32_t idx, uint32_t size, ShaderInfo& shaderInfo) {
+		TokenStream tokenStream;
+		GetTokenStream(buffer, idx, size, tokenStream);
+
+		if (tokenStream.AcceptToken(TOKEN_GL_VERSION)) {
+			tokenStream.AcceptInt16(shaderInfo.version);
+
+			bool flag = true;
+			//Accept all layout info
+			while (flag) {
+				flag = false;
+				if (tokenStream.AcceptToken(TOKEN_LAYOUT)) {
+					flag = true;
+					tokenStream.AcceptToken(TOKEN_LP);
+					//if (!TryParseAttribute(tokenStream, shaderInfo)) {
+						//uniform
+					//}
+					if (!TryParseBindingUniform(tokenStream, shaderInfo)) {
+						tokenStream.AcceptTokenForward(TOKEN_RP);
+						tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
+					}
+				}
+				else if (TryParseUniform(tokenStream, shaderInfo)) {
+					flag = true;
+				}
+			}
+		}
+		else {
+			LOGERROR("[SHADERPARSER] NO GL VERSION FOUND");
+		}
+	}
+
 	void ShaderParser::ParseShader(std::string& name, ShaderInfo& info) {
 		FileSystem* fs = GetSubsystem<FileSystem>();
 		const char* dir = fs->GetShaderDir();
@@ -245,6 +309,6 @@ namespace Joestar {
 		File* fragFile = fs->ReadFile(fragPath.c_str());
 
 		ParseVertexShader((char*)vertFile->GetBuffer(), 0, vertFile->Size(), info);
-		//Parse((char*)fragFile->GetBuffer(), 0, fragFile->Size(), info);
+		ParseFragmentShader((char*)fragFile->GetBuffer(), 0, fragFile->Size(), info);
 	}
 }

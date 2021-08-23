@@ -2,7 +2,8 @@
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(7,46): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(8,42): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Shader\ShaderParser.cpp(112,60): warning C4267: “=”: 从“size_t”转换到“uint16_t”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Shader\ShaderParser.cpp(121,56): warning C4267: “=”: 从“size_t”转换到“uint16_t”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Shader\ShaderParser.cpp(247,76): warning C4267: “参数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Shader\ShaderParser.cpp(132,60): warning C4267: “=”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Shader\ShaderParser.cpp(150,56): warning C4267: “=”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Shader\ShaderParser.cpp(311,76): warning C4267: “参数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Shader\ShaderParser.cpp(312,78): warning C4267: “参数”: 从“size_t”转换到“uint32_t”，可能丢失数据
   JoestarEngine.vcxproj -> D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe
