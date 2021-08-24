@@ -70,17 +70,17 @@ namespace Joestar {
 	}
 
 
-	void Graphics::UseShader(std::string& name) {
+	void Graphics::UseShader(const Shader* shader) {
 		cmdBuffer[cmdIdx].typ = RenderCMD_UseShader;
-		cmdBuffer[cmdIdx].size = name.length();
-		cmdBuffer[cmdIdx].data = (void*)name.c_str();
+		cmdBuffer[cmdIdx].size = sizeof(Shader*);
+		cmdBuffer[cmdIdx].data = (void*)shader;
 		++cmdIdx;
 
 	}
 
 	//update material
 	void Graphics::UpdateMaterial(Material* mat) {
-		UseShader(mat->GetShaderName());
+		UseShader(mat->GetShader());
 		std::vector<Texture*> textures = mat->GetTextures();
 		for (int i = 0; i < textures.size(); i++) {
 			UpdateTexture(textures[i]);

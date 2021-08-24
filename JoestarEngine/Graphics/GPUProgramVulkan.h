@@ -10,16 +10,34 @@
 #include <vector>
 #include "RenderCommand.h"
 #include <map>
-#include <cstring>
+#include <string>
 #include "Texture.h"
+#include "Shader/Shader.h"
 
 namespace Joestar {
+    class ShaderVK {
+    public:
+        explicit ShaderVK(Shader* _shader) : shader(_shader) {}
+        std::string& GetName() { return shader->GetName(); }
+        uint32_t ID() { return shader->id; }
+        Shader* shader;
+        VkShaderModule vertShaderModule{}, fragShaderModule{};
+        VkPipelineShaderStageCreateInfo shaderStage[2];
+        bool operator ==(ShaderVK& s2) {
+            return GetName() == s2.GetName();
+        }
+        void Clear(VkDevice& dev) {
+            vkDestroyShaderModule(dev, vertShaderModule, nullptr);
+            vkDestroyShaderModule(dev, fragShaderModule, nullptr);
+        }
+    };
+
     struct PipelineState {
         Vector4f clearColor;
         UniformBufferObject ubo;
         VertexBuffer* vb;
         IndexBuffer* ib;
-        std::string shader;
+        ShaderVK* shader;
 
         VKPipelineContext* pipelineCtx;
         VKFrameBufferContext* fbCtx;
@@ -28,8 +46,6 @@ namespace Joestar {
         VkBuffer vertexBuffer;
         VkDeviceMemory vertexBufferMemory;
         VkSampler textureSampler;
-        VkPipelineShaderStageCreateInfo shaderStage[2];
-        VkShaderModule vertShaderModule{}, fragShaderModule{};
 
         std::vector<uint32_t> textures;
 
@@ -63,7 +79,7 @@ namespace Joestar {
         GPUProgramVulkan();
         VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
         void SetDevice(VulkanContext* ctx) { vkCtxPtr = ctx; }
-        void SetShader(PipelineState& pso, std::string& vertexPath, std::string& fragmentPath, std::string& geometryPath);
+        void SetShader(PipelineState& pso);
         void CreateVertexBuffer(PipelineState& pso, VertexBuffer* vb);
         void CreateIndexBuffer(PipelineState& pso, IndexBuffer* ib);
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -119,6 +135,7 @@ namespace Joestar {
         std::map<uint32_t, TextureVK*> textureVKs;
         //pending texture, will upload during UpdateUniform
         std::map<uint32_t, TextureVK*> pendingTextureVKs;
+        std::map<uint32_t, ShaderVK*> shaderVKs;
     };
 
 }

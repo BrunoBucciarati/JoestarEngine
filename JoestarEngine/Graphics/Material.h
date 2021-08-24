@@ -22,8 +22,9 @@ namespace Joestar {
 		std::string path = "Models/viking_room/viking_room.png";
 		textures[0]->TextureFromImage(path);
 	}
-	inline std::string& GetShaderName() { return shader->GetName(); }
-	inline std::vector<Texture*>& GetTextures() { return textures;  }
+	std::string& GetShaderName() { return shader->GetName(); }
+	const Shader* GetShader() { return shader; }
+	std::vector<Texture*>& GetTextures() { return textures;  }
 	private:
 		Shader* shader;
 		std::vector<Texture*> textures;

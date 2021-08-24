@@ -58,7 +58,7 @@ namespace Joestar {
 		//mesh->Load(path + "viking_room/viking_room.obj");
 	}
 	
-	void GPUProgramVulkan::SetShader(PipelineState& pso, std::string& vertexPath, std::string& fragmentPath, std::string& geometryPath) {
+	void GPUProgramVulkan::SetShader(PipelineState& pso) {
 		Application* app = Application::GetApplication();
 		FileSystem* fs = app->GetSubSystem<FileSystem>();
 		std::string path = fs->GetResourceDir();
@@ -67,40 +67,40 @@ namespace Joestar {
 		if (_getcwd(workDir, 260))
 			path = workDir + ("/" + path);
 
+		ShaderVK* shader = pso.shader;
 		//First Compile To Spir-V
-		std::string vertSpvPath = std::string(vertexPath) + ".spv";
-		std::string fragSpvPath = std::string(fragmentPath) + ".spv";
-		std::string compileVertSpv = path + "glslc.exe " + (path + vertexPath) + " -o " + (path + vertSpvPath);
-		std::string compileFragSpv = path + "glslc.exe " + (path + fragmentPath) + " -o " + (path + fragSpvPath);
+		std::string vertSpvPath = std::string(shader->GetName()) + "vert.spv";
+		std::string fragSpvPath = std::string(shader->GetName()) + "frag.spv";
+		std::string compileVertSpv = path + "glslc.exe " + (path + shader->GetName() + ".vert") + " -o " + (path + vertSpvPath);
+		std::string compileFragSpv = path + "glslc.exe " + (path + shader->GetName() + ".frag") + " -o " + (path + fragSpvPath);
 		system(compileVertSpv.c_str());
 		system(compileFragSpv.c_str());
 		File* vShaderCode = ShaderCodeFile(vertSpvPath.c_str());
 		File* fShaderCode = ShaderCodeFile(fragSpvPath.c_str());
 
-		pso.vertShaderModule = CreateShaderModule(vShaderCode);
-		pso.fragShaderModule = CreateShaderModule(fShaderCode);
+		shader->vertShaderModule = CreateShaderModule(vShaderCode);
+		shader->fragShaderModule = CreateShaderModule(fShaderCode);
 
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertShaderStageInfo.module = pso.vertShaderModule;
+		vertShaderStageInfo.module = shader->vertShaderModule;
 		vertShaderStageInfo.pName = "main";
 
 		VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
 		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragShaderStageInfo.module = pso.fragShaderModule;
+		fragShaderStageInfo.module = shader->fragShaderModule;
 		fragShaderStageInfo.pName = "main";
 
 		//VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-		pso.shaderStage[0] = vertShaderStageInfo;
-		pso.shaderStage[1] = fragShaderStageInfo;
+		shader->shaderStage[0] = vertShaderStageInfo;
+		shader->shaderStage[1] = fragShaderStageInfo;
 	}
 
 	void GPUProgramVulkan::Clean() {
 		vkDestroyDescriptorSetLayout(vkCtxPtr->device, currentPSO.pipelineCtx->descriptorSetLayout, nullptr);
-		vkDestroyShaderModule(vkCtxPtr->device, currentPSO.vertShaderModule, nullptr);
-		vkDestroyShaderModule(vkCtxPtr->device, currentPSO.fragShaderModule, nullptr);
+		currentPSO.shader->Clear(vkCtxPtr->device);
 		vkDestroyBuffer(vkCtxPtr->device, currentPSO.vertexBuffer, nullptr);
 		vkFreeMemory(vkCtxPtr->device, currentPSO.vertexBufferMemory, nullptr);
 		vkDestroyBuffer(vkCtxPtr->device, currentPSO.indexBuffer, nullptr);
@@ -610,12 +610,12 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::CreateGraphicsPipeline(PipelineState& pso) {
-		std::string vs = pso.shader + ".vert";
-		std::string fs = pso.shader + ".frag";
-		std::string gs = "";
-		SetShader(pso, vs, fs, gs);
+		//std::string vs = pso.shader + ".vert";
+		//std::string fs = pso.shader + ".frag";
+		//std::string gs = "";
+		SetShader(pso);
 
-		VkPipelineShaderStageCreateInfo* info = pso.shaderStage;
+		VkPipelineShaderStageCreateInfo* info = pso.shader->shaderStage;
 
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -1020,8 +1020,11 @@ namespace Joestar {
 				break;
 			}
 			case RenderCMD_UseShader: {
-				std::string shader = (const char*)cmdBuffer[i].data;
-				pso.shader = shader;
+				Shader* shader = (Shader*)cmdBuffer[i].data;
+				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
+					shaderVKs[shader->id] = new ShaderVK(shader);
+				}
+				pso.shader = shaderVKs[shader->id];
 				break;
 			}
 			case RenderCMD_UpdateTexture: {

@@ -19,10 +19,12 @@ namespace Joestar {
 	struct VertexDef {
 		VERTEX_ATTRIBUTE attr;
 		ShaderDataType dataType;
+		uint16_t location;
 	};
 	struct UniformDef {
 		std::string name;
 		ShaderDataType dataType;
+		uint16_t binding;
 	};
 /*	struct SamplerDef {
 		std::string name;

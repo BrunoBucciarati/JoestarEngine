@@ -136,6 +136,7 @@ namespace Joestar {
 
 				SET_DATATYPE_BY_TOKEN(shaderInfo.uniforms[binding].dataType, tok)
 				tokenStream.AcceptString(shaderInfo.uniforms[binding].name);
+				shaderInfo.uniforms[binding].binding = binding;
 			//} else if(tokenStream.AcceptSamplerTypeToken(tok)) {
 			//	if (binding == -1) binding = shaderInfo.uniforms.size();
 			//	if (shaderInfo.uniforms.size() < binding + 1) {
@@ -186,30 +187,29 @@ namespace Joestar {
 
 		//attribute
 		if (tokenStream.AcceptToken(TOKEN_IN)) {
-			if (shaderInfo.attrs.size() < location + 1) {
-				shaderInfo.attrs.resize(location + 1);
-			}
-
+			shaderInfo.attrs.resize(shaderInfo.attrs.size() + 1);
+			VertexDef vd = shaderInfo.attrs[shaderInfo.attrs.size() - 1];
+			vd.location = location;
 			//dataType
 			{
 				std::string tok;
 				bool flag = tokenStream.AcceptDataTypeToken(tok);
-				SET_DATATYPE_BY_TOKEN(shaderInfo.attrs[location].dataType, tok)
+				SET_DATATYPE_BY_TOKEN(vd.dataType, tok)
 			}
 
 			//attrib
 			{
 				if (tokenStream.AcceptToken(TOKEN_IN_POSITION)) {
-					shaderInfo.attrs[location].attr = VERTEX_POS;
+					vd.attr = VERTEX_POS;
 				}
 				else if (tokenStream.AcceptToken(TOKEN_IN_COLOR)) {
-					shaderInfo.attrs[location].attr = VERTEX_COLOR;
+					vd.attr = VERTEX_COLOR;
 				}
 				else if (tokenStream.AcceptToken(TOKEN_IN_TEXCOORD)) {
-					shaderInfo.attrs[location].attr = VERTEX_TEXCOORD;
+					vd.attr = VERTEX_TEXCOORD;
 				}
 				else if (tokenStream.AcceptToken(TOKEN_IN_NORMAL)) {
-					shaderInfo.attrs[location].attr = VERTEX_NORMAL;
+					vd.attr = VERTEX_NORMAL;
 				}
 			}
 			tokenStream.AcceptToken(TOKEN_SEMICOLON);

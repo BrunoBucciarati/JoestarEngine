@@ -27,8 +27,5 @@
 	CONTEXT->subSystems[ClassID(CLASS)] = t##CLASS;
 
 #define GET_SET(NAME, TYPE) \
-public: \
-	const TYPE& Get##NAME() {return m_##NAME;} \
-	Set##NAME(TYPE val) {m_##NAME = val;} \
-private:\
-	TYPE m_##NAME;
+	const TYPE& Get##NAME() {return NAME;} \
+	void Set##NAME(TYPE val) {NAME = val;}
