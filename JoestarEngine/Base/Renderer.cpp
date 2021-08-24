@@ -13,7 +13,7 @@ namespace Joestar {
 			//graphics->UseShader(mat->GetShaderName());
 			//graphics->UpdateTexture(mat->GetShaderName());
 			graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, model);
-			graphics->UpdateVertexBuffer(mesh->GetVB());
+			graphics->UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
 			graphics->UpdateIndexBuffer(mesh->GetIB());
 			graphics->DrawIndexed();
 		}

@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "VertexData.h"
 
 namespace Joestar {
@@ -26,18 +27,15 @@ public:
         delete ib;
     }
 
-    inline VertexBuffer* GetVB() { return vb; }
-    inline IndexBuffer* GetIB() { return ib; }
+    VertexBuffer* GetVB() { return vb; }
+    VertexBuffer* GetVB(uint32_t flag);
+    IndexBuffer* GetIB() { return ib; }
 
     void Load(std::string path);
 
-    // render the mesh
-    void Draw()
-    {
-    }
-
 private:
     // render data 
+    std::map<uint32_t, VertexBuffer*> CustomVBs;
 };
 }
 #endif

@@ -188,7 +188,7 @@ namespace Joestar {
 		//attribute
 		if (tokenStream.AcceptToken(TOKEN_IN)) {
 			shaderInfo.attrs.resize(shaderInfo.attrs.size() + 1);
-			VertexDef vd = shaderInfo.attrs[shaderInfo.attrs.size() - 1];
+			VertexDef& vd = shaderInfo.attrs[shaderInfo.attrs.size() - 1];
 			vd.location = location;
 			//dataType
 			{

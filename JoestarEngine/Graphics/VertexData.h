@@ -9,6 +9,7 @@ namespace Joestar {
     class VertexBuffer {
     public:
         inline void SetFlag(uint32_t f) { flags = f; }
+        uint32_t GetFlag() { return flags; }
         inline void SetBuffer(uint8_t* data) { buffer = data; }
         inline uint8_t* GetBuffer() { return buffer; }
         inline void SetSize(uint32_t s) { size = s; buffer = new uint8_t[size]; }

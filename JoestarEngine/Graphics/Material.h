@@ -23,7 +23,7 @@ namespace Joestar {
 		textures[0]->TextureFromImage(path);
 	}
 	std::string& GetShaderName() { return shader->GetName(); }
-	const Shader* GetShader() { return shader; }
+	Shader* GetShader() { return shader; }
 	std::vector<Texture*>& GetTextures() { return textures;  }
 	private:
 		Shader* shader;
