@@ -20,6 +20,7 @@ enum ClassIDType {
 	DefineClassID(ShaderParser, 11)
 	DefineClassID(ProceduralMesh, 12)
 	DefineClassID(Mesh, 13)
+	DefineClassID(MemoryManager, 14)
 
 	kClassIDCount
 };

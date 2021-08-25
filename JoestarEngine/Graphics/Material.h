@@ -24,7 +24,9 @@ namespace Joestar {
 	}
 	std::string& GetShaderName() { return shader->GetName(); }
 	Shader* GetShader() { return shader; }
-	std::vector<Texture*>& GetTextures() { return textures;  }
+	std::vector<Texture*>& GetTextures() {
+		return textures;
+	}
 	private:
 		Shader* shader;
 		std::vector<Texture*> textures;

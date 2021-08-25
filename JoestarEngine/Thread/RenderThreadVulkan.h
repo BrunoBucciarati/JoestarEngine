@@ -19,7 +19,7 @@ namespace Joestar {
 	public:
 		RenderThreadVulkan();
 		void InitRenderContext();
-		void DrawFrame(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx);
+		void DrawFrame(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx);
 		bool CheckValidationLayerSupport();
 		void CreateInstance();
 		void CreateSurface();

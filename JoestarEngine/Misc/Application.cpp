@@ -9,10 +9,12 @@
 #include "../Base/Scene.h"
 #include "../Graphics/Shader/ShaderParser.h"
 #include "../Graphics/ProceduralMesh.h"
+#include "../IO/MemoryManager.h"
 
 namespace Joestar {
 	void Application::Start() {
 		gContext = new EngineContext;
+		InitSubSystem(MemoryManager, gContext)
 		InitSubSystem(GlobalConfig, gContext)
 		int GFX_API = GFX_API_VULKAN;
 		GetSubSystem<GlobalConfig>()->UpdateConfig("GFX_API", GFX_API);

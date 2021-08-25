@@ -83,7 +83,7 @@ namespace Joestar {
 	//update material
 	void Graphics::UpdateMaterial(Material* mat) {
 		UseShader(mat->GetShader());
-		std::vector<Texture*> textures = mat->GetTextures();
+		std::vector<Texture*>& textures = mat->GetTextures();
 		for (int i = 0; i < textures.size(); i++) {
 			UpdateTexture(textures[i]);
 		}

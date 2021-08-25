@@ -94,6 +94,10 @@ namespace Joestar {
             return clearColor == p2.clearColor && shader == p2.shader &&
                 (vb == vb) && (ib == ib);
         }
+
+        bool operator!= (PipelineState& p2) {
+            return !(*this == p2);
+        }
     };
 
     //class VertexBufferVK {
@@ -105,7 +109,7 @@ namespace Joestar {
     class GPUProgramVulkan :public GPUProgram {
     public:
         GPUProgramVulkan();
-        VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
+        //VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
         void SetDevice(VulkanContext* ctx) { vkCtxPtr = ctx; }
         void SetShader(PipelineState& pso);
         void CreateVertexBuffer(PipelineState& pso, VertexBuffer* vb);
@@ -147,8 +151,8 @@ namespace Joestar {
         void CreateDescriptorSets(PipelineState& pso);
         void UpdateDescriptorSets(PipelineState& pso);
         void UpdateUniformBuffer(uint32_t currentImage);
-        void RecordCommandBuffer(PipelineState& pso);
-        void ExecuteRenderCommand(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx);
+        void RecordCommandBuffer(std::vector<PipelineState*>& pso);
+        void ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx);
         void RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso);
         void RenderCmdUpdateUniformBufferObject(RenderCommand cmd, PipelineState& pso);
         void RecordRenderPass(PipelineState& pso, int i);
@@ -163,12 +167,13 @@ namespace Joestar {
         uint32_t mipLevels;
         VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_2_BIT;
         PipelineState currentPSO;
-        std::vector<PipelineState> allPSOs;
+        std::map<uint32_t, PipelineState> allPSOs;
         std::map<uint32_t, TextureVK*> textureVKs;
         //pending texture, will upload during UpdateUniform
         std::map<uint32_t, TextureVK*> pendingTextureVKs;
         std::map<uint32_t, ShaderVK*> shaderVKs;
         std::map<uint32_t, UniformBufferVK*> uniformVKs;
+        std::vector<PipelineState*> psoChain;
     };
 
 }

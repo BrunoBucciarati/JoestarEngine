@@ -928,17 +928,18 @@ namespace Joestar {
 				}
 			}
 			vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+			//descriptorWrites.clear();
 		}
 	}
 
 	void GPUProgramVulkan::UpdateUniformBuffer(uint32_t currentImage) {
 		void* data;
-		for (int i = 0; i < currentPSO.ubs.size(); ++i) {
-			if (currentPSO.ubs[i]->uniformBuffersMemory.empty()) return;
-			if (currentPSO.ubs[i]->texID > 0) continue;//texture don't need to update
-			vkMapMemory(vkCtxPtr->device, currentPSO.ubs[i]->uniformBuffersMemory[currentImage], 0, currentPSO.ubs[i]->size, 0, &data);
-			memcpy(data, currentPSO.ubs[i]->data, currentPSO.ubs[i]->size);
-			vkUnmapMemory(vkCtxPtr->device, currentPSO.ubs[i]->uniformBuffersMemory[currentImage]);
+
+		for (auto& ub : uniformVKs) {
+			if (ub.second->texID > 0) continue;
+			vkMapMemory(vkCtxPtr->device, ub.second->uniformBuffersMemory[currentImage], 0, ub.second->size, 0, &data);
+			memcpy(data, ub.second->data, ub.second->size);
+			vkUnmapMemory(vkCtxPtr->device, ub.second->uniformBuffersMemory[currentImage]);
 		}
 	}
 
@@ -965,13 +966,11 @@ namespace Joestar {
 		vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], pso.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
 		vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
-		//vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], 9, 1, 0, 0, 0);
 		vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], pso.ib->GetIndexCount(), 1, 0, 0, 0);
-		//vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
 		vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
 	}
 
-	void GPUProgramVulkan::RecordCommandBuffer(PipelineState& pso) {
+	void GPUProgramVulkan::RecordCommandBuffer(std::vector<PipelineState*>& pso) {
 		for (size_t i = 0; i < vkCtxPtr->commandBuffers.size(); i++) {
 			VkCommandBufferBeginInfo beginInfo{};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -981,9 +980,9 @@ namespace Joestar {
 			if (vkBeginCommandBuffer(vkCtxPtr->commandBuffers[i], &beginInfo) != VK_SUCCESS) {
 				LOGERROR("failed to begin recording command buffer!");
 			}
-			RecordRenderPass(pso, i);
-			RecordRenderPass(pso, i);
-			RecordRenderPass(pso, i);
+			for (int j = 0; j < pso.size(); ++j) {
+				RecordRenderPass(*pso[j], i);
+			}
 			if (vkEndCommandBuffer(vkCtxPtr->commandBuffers[i]) != VK_SUCCESS) {
 				LOGERROR("failed to record command buffer!");
 			}
@@ -1067,23 +1066,26 @@ namespace Joestar {
 		
 	}
 
-	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx) {
+	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx) {
 		if (cmdIdx == 0) return;
 
-		PipelineState pso;
+		std::vector<PipelineState*> framePSOChain;
+		PipelineState* pso = new PipelineState;
+		bool needRecord = false;
+		int curPSOIdx = 0;
 		for (int i = 0; i < cmdIdx; ++i) {
 			switch (cmdBuffer[i].typ) {
-			case RenderCMD_Clear: pso.clearColor = *((Vector4f*)cmdBuffer[i].data); break;
-			case RenderCMD_UpdateUniformBufferObject: RenderCmdUpdateUniformBufferObject(cmdBuffer[i], pso); break;
-			case RenderCMD_UpdateUniformBuffer: RenderCmdUpdateUniformBuffer(cmdBuffer[i], pso); break;
+			case RenderCMD_Clear: pso->clearColor = *((Vector4f*)cmdBuffer[i].data); break;
+			case RenderCMD_UpdateUniformBufferObject: RenderCmdUpdateUniformBufferObject(cmdBuffer[i], *pso); break;
+			case RenderCMD_UpdateUniformBuffer: RenderCmdUpdateUniformBuffer(cmdBuffer[i], *pso); break;
 			case RenderCMD_UpdateVertexBuffer: {
 				VertexBuffer* vb = (VertexBuffer*)cmdBuffer[i].data;
-				pso.vb = vb;
+				pso->vb = vb;
 				break;
 			}
 			case RenderCMD_UpdateIndexBuffer: {
 				IndexBuffer* ib = (IndexBuffer*)cmdBuffer[i].data;
-				pso.ib = ib;
+				pso->ib = ib;
 				break;
 			}
 			case RenderCMD_UseShader: {
@@ -1091,7 +1093,7 @@ namespace Joestar {
 				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
 					shaderVKs[shader->id] = new ShaderVK(shader);
 				}
-				pso.shader = shaderVKs[shader->id];
+				pso->shader = shaderVKs[shader->id];
 				break;
 			}
 			case RenderCMD_UpdateTexture: {
@@ -1101,38 +1103,44 @@ namespace Joestar {
 					TextureVK* vkTex = new TextureVK(tex);
 					pendingTextureVKs[vkTex->ID()] = vkTex;
 				}
-				pso.textures.push_back(tex->id);
+				pso->textures.push_back(tex->id);
 
 				if (uniformVKs.find(tex->id) == uniformVKs.end()) {
 					UniformBufferVK* texUB = new UniformBufferVK;
 					texUB->texID = tex->id;
 					uniformVKs[tex->id] = texUB;
 				}
-				pso.ubs.push_back(uniformVKs[tex->id]);
+				pso->ubs.push_back(uniformVKs[tex->id]);
 				break;
 			}
 			case RenderCMD_Draw: {
 				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
-				pso.topology = topology;
-				if (!(currentPSO == pso)) {
-					currentPSO = pso;
-					GetPipelineContext(pso);
-					RecordCommandBuffer(pso);
+				pso->topology = topology;
+				//if (framePSOChain.empty) {
+				//	framePSOChain;
+				//	currentPSO = pso;
+				//	if (!needRecord) {
+				//		psoChain.clear();
+				//		needRecord = true;
+				//	}
+				//	GetPipelineContext(pso);
+				//	//RecordCommandBuffer(pso);
 
-					//reset pso state after every draw call
-					pso = {};
-				}
+				//	//reset pso state after every draw call
+				//	pso = {};
+				//}
 				break;
 			}
 			case RenderCMD_DrawIndexed: {
 				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
-				pso.topology = topology;
-				if (!(currentPSO == pso)) {
-					GetPipelineContext(pso);
-					RecordCommandBuffer(pso);
-					currentPSO = pso;
-					//reset pso state after every draw call
-					pso = {};
+				pso->topology = topology;
+				if (psoChain.size() > curPSOIdx && *psoChain[curPSOIdx] == *pso) {
+					framePSOChain.push_back(psoChain[curPSOIdx]);
+					++curPSOIdx;
+				} else {
+					GetPipelineContext(*pso);
+					framePSOChain.push_back(pso);
+					needRecord = true;
 				}
 				break;
 			}
@@ -1140,28 +1148,26 @@ namespace Joestar {
 			}
 		}
 
-		//for (size_t i = 0; i < vkCtxPtr->commandBuffers.size(); i++) {
-		//	VkCommandBufferBeginInfo beginInfo{};
-		//	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		//	beginInfo.flags = 0; // Optional
-		//	beginInfo.pInheritanceInfo = nullptr; // Optional
-
-		//	if (vkBeginCommandBuffer(vkCtxPtr->commandBuffers[i], &beginInfo) != VK_SUCCESS) {
-		//		LOGERROR("failed to begin recording command buffer!");
-		//	}
-
-		//	VkRenderPassBeginInfo renderPassInfo{};
-		//	for (int i = 0; i < cmdIdx; ++i) {
-		//		switch (cmdBuffer[i].typ) {
-		//		case RenderCMD_Clear:
+		//if (framePSOChain.size() != psoChain.size()) {
+		//	needRecord = true;
+		//} else {
+		//	for (int i = 0; i < psoChain.size(); ++i) {
+		//		if (!(framePSOChain[i] == psoChain[i])) {
+		//			needRecord = true;
+		//			break;
 		//		}
 		//	}
-
-		//	vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
-		//	if (vkEndCommandBuffer(vkCtxPtr->commandBuffers[i]) != VK_SUCCESS) {
-		//		LOGERROR("failed to record command buffer!");
-		//	}
 		//}
+		if (needRecord) {
+			RecordCommandBuffer(framePSOChain);
+			for (auto& pso : psoChain) {
+				if (std::find(framePSOChain.begin(), framePSOChain.end(), pso) == framePSOChain.end()) {
+					delete pso;
+				}
+			}
+			psoChain.clear();
+			psoChain.swap(framePSOChain);
+		}
 	}
 
 	void GPUProgramVulkan::CleanupSwapChain() {

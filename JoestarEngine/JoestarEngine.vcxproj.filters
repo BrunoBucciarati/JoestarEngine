@@ -239,5 +239,8 @@
     <ClInclude Include="Graphics\ProceduralMesh.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="IO\MemoryManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

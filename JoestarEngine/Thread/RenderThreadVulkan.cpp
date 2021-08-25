@@ -576,12 +576,12 @@ void RenderThreadVulkan::ProcessInputVulkan() {
 }
 
 
-void RenderThreadVulkan::DrawFrame(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx) {
+void RenderThreadVulkan::DrawFrame(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx) {
     ProcessInputVulkan();
     glfwPollEvents();
-    if (glfwWindowShouldClose(window)) {
-        return;
-    }
+    //if (glfwWindowShouldClose(window)) {
+    //    return;
+    //}
 
     //no incoming draw call
     if (cmdIdx == 0) return;
