@@ -5,6 +5,7 @@ enum RenderCommandType {
 	RenderCMD_Draw,
 	RenderCMD_DrawIndexed,
 	RenderCMD_UpdateUniformBuffer,
+	RenderCMD_UpdateUniformBufferObject,
 	RenderCMD_UpdateVertexBuffer,
 	RenderCMD_UpdateIndexBuffer,
 	RenderCMD_UseShader,

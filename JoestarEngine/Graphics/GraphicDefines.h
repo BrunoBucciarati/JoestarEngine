@@ -2,6 +2,7 @@
 #ifndef _JOESTAR_GRAPHICS_DEF_H_
 #define _JOESTAR_GRAPHICS_DEF_H_
 #include "../Math/Matrix4x4.h"
+#include <string>
 
 namespace Joestar {
 	enum GFX_API {
@@ -46,7 +47,7 @@ namespace Joestar {
 		Matrix4x4f view;
 		Matrix4x4f proj;
 		bool operator== (UniformBufferObject& ub) {
-			return model == ub.model && view == ub.view && proj == ub.proj;
+			return view == ub.view && proj == ub.proj && model == ub.model;
 		}
 	};
 }

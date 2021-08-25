@@ -262,10 +262,10 @@ namespace Joestar {
         for (size_t i = 0; i < vkCtx.swapChainImageViews.size(); i++) {
             vkDestroyImageView(vkCtx.device, vkCtx.swapChainImageViews[i], nullptr);
         }
-        for (size_t i = 0; i < vkCtx.swapChainImages.size(); i++) {
-            vkDestroyBuffer(vkCtx.device, vkCtx.uniformBuffers[i], nullptr);
-            vkFreeMemory(vkCtx.device, vkCtx.uniformBuffersMemory[i], nullptr);
-        }
+        //for (size_t i = 0; i < vkCtx.swapChainImages.size(); i++) {
+        //    vkDestroyBuffer(vkCtx.device, vkCtx.uniformBuffers[i], nullptr);
+        //    vkFreeMemory(vkCtx.device, vkCtx.uniformBuffersMemory[i], nullptr);
+        //}
         vkDestroyDescriptorPool(vkCtx.device, vkCtx.descriptorPool, nullptr);
         vkDestroySwapchainKHR(vkCtx.device, vkCtx.swapChain, nullptr);
     }

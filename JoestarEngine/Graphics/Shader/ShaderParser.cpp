@@ -137,6 +137,7 @@ namespace Joestar {
 				SET_DATATYPE_BY_TOKEN(shaderInfo.uniforms[binding].dataType, tok)
 				tokenStream.AcceptString(shaderInfo.uniforms[binding].name);
 				shaderInfo.uniforms[binding].binding = binding;
+				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
 			//} else if(tokenStream.AcceptSamplerTypeToken(tok)) {
 			//	if (binding == -1) binding = shaderInfo.uniforms.size();
 			//	if (shaderInfo.uniforms.size() < binding + 1) {
@@ -148,11 +149,12 @@ namespace Joestar {
 			} else {
 				//must be a UBO
 				tokenStream.AcceptString(tok);
-				if (binding == -1) binding = shaderInfo.ubos.size();
-				if (shaderInfo.ubos.size() < binding + 1) {
-					shaderInfo.ubos.resize(binding + 1);
+				if (binding == -1) binding = shaderInfo.uniforms.size();
+				if (shaderInfo.uniforms.size() < binding + 1) {
+					shaderInfo.uniforms.resize(binding + 1);
 				}
-				shaderInfo.ubos[binding].name = tok;
+				shaderInfo.uniforms[binding].name = tok;
+				shaderInfo.uniforms[binding].binding = binding;
 				tokenStream.AcceptToken(TOKEN_LB);
 				tokenStream.AcceptTokenForward(TOKEN_RB);
 				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
@@ -172,7 +174,7 @@ namespace Joestar {
 			return false;
 		}
 		tokenStream.AcceptToken(TOKEN_RP);
-		return TryParseUniform(tokenStream, shaderInfo);
+		return TryParseUniform(tokenStream, shaderInfo, binding);
 	}
 
 	bool TryParseAttribute(TokenStream& tokenStream, ShaderInfo& shaderInfo) {
@@ -251,7 +253,7 @@ namespace Joestar {
 			//Accept all layout info
 			while (flag) {
 				flag = false;
-				if (tokenStream.AcceptToken(TOKEN_LAYOUT)) {
+				if (tokenStream.AcceptTokenForward(TOKEN_LAYOUT)) {
 					flag = true;
 					tokenStream.AcceptToken(TOKEN_LP);
 					if (!TryParseAttribute(tokenStream, shaderInfo)) {

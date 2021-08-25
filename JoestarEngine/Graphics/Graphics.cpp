@@ -42,7 +42,8 @@ namespace Joestar {
 	}
 
 	void Graphics::UpdateBuiltinMatrix(BUILTIN_MATRIX typ, Matrix4x4f& mat) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateUniformBuffer;
+		//cmdBuffer[cmdIdx].typ = typ == BUILTIN_MATRIX_MODEL ? RenderCMD_UpdateUniformBuffer : RenderCMD_UpdateUniformBufferObject;
+		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateUniformBufferObject;
 		cmdBuffer[cmdIdx].flag = typ;
 		cmdBuffer[cmdIdx].size = sizeof(mat);
 		cmdBuffer[cmdIdx].data = mat.GetPtr();
@@ -92,5 +93,12 @@ namespace Joestar {
 		cmdBuffer[cmdIdx].size = sizeof(Texture*);
 		cmdBuffer[cmdIdx].data = (void*)t;
 		++cmdIdx;
+	}
+
+	void Graphics::DrawMesh(Mesh* mesh, Material* mat) {
+		UpdateMaterial(mat);
+		UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
+		UpdateIndexBuffer(mesh->GetIB());
+		DrawIndexed();
 	}
 }

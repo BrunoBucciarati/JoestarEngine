@@ -4,6 +4,7 @@
 #include "../IO/FileSystem.h"
 #include "../IO/File.h"
 #include <array>
+#include "GraphicDefines.h"
 #include "../Graphics/VertexData.h"
 #include "../Math/Matrix4x4.h"
 #include "Mesh.h"
@@ -19,6 +20,12 @@ namespace Joestar {
     public:
         explicit ShaderVK(Shader* _shader) : shader(_shader) {}
         std::string& GetName() { return shader->GetName(); }
+        uint16_t GetUniformBindingByName(std::string& name) {
+            return shader->GetUniformBindingByName(name);
+        }
+        uint16_t GetSamplerBinding(int count) {
+            return shader->GetSamplerBinding(count);
+        }
         uint32_t ID() { return shader->id; }
         Shader* shader;
         VkShaderModule vertShaderModule{}, fragShaderModule{};
@@ -29,33 +36,6 @@ namespace Joestar {
         void Clear(VkDevice& dev) {
             vkDestroyShaderModule(dev, vertShaderModule, nullptr);
             vkDestroyShaderModule(dev, fragShaderModule, nullptr);
-        }
-    };
-
-    struct PipelineState {
-        Vector4f clearColor;
-        UniformBufferObject ubo;
-        VertexBuffer* vb;
-        IndexBuffer* ib;
-        ShaderVK* shader;
-
-        VKPipelineContext* pipelineCtx;
-        VKFrameBufferContext* fbCtx;
-        VkBuffer indexBuffer;
-        VkDeviceMemory indexBufferMemory;
-        VkBuffer vertexBuffer;
-        VkDeviceMemory vertexBufferMemory;
-        VkSampler textureSampler;
-
-        std::vector<uint32_t> textures;
-
-        bool operator== (PipelineState & p2) {
-            if (textures.size() != p2.textures.size()) return false;
-            for (int i = 0; i < textures.size(); ++i) {
-                if (textures[i] != p2.textures[i]) return false;
-            }
-            return (clearColor == p2.clearColor) && shader == p2.shader &&
-                (vb == vb) && (ib == ib);
         }
     };
 
@@ -72,7 +52,54 @@ namespace Joestar {
         Texture* texture;
     };
 
+    class UniformBufferVK {
+    public:
+        std::vector<VkBuffer> uniformBuffers;
+        std::vector<VkDeviceMemory> uniformBuffersMemory;
+        uint32_t size;
+        void* data;
+        uint32_t id;
+        std::string name;
+        uint32_t texID;
+    };
 
+    struct PipelineState {
+        Vector4f clearColor;
+        //UniformBufferObject ubo;
+        VertexBuffer* vb;
+        IndexBuffer* ib;
+        ShaderVK* shader;
+        std::vector<UniformBufferVK*> ubs;
+
+        VKPipelineContext* pipelineCtx;
+        VKFrameBufferContext* fbCtx;
+        VkBuffer indexBuffer;
+        VkDeviceMemory indexBufferMemory;
+        VkBuffer vertexBuffer;
+        VkDeviceMemory vertexBufferMemory;
+        VkSampler textureSampler;
+
+        std::vector<uint32_t> textures;
+
+        bool operator== (PipelineState & p2) {
+            if (textures.size() != p2.textures.size()) return false;
+            for (int i = 0; i < textures.size(); ++i) {
+                if (textures[i] != p2.textures[i]) return false;
+            }
+            if (ubs.size() != p2.ubs.size()) return false;
+            for (int i = 0; i < ubs.size(); ++i) {
+                if (ubs[i] != p2.ubs[i]) return false;
+            }
+            return (clearColor == p2.clearColor) && shader == p2.shader &&
+                (vb == vb) && (ib == ib);
+        }
+    };
+
+    //class VertexBufferVK {
+    //    explicit VertexBufferVK(VertexBuffer* v) : vb(v)  {}
+    //private:
+    //    VertexBuffer* vb;
+    //};
 
     class GPUProgramVulkan :public GPUProgram {
     public:
@@ -113,7 +140,7 @@ namespace Joestar {
         void CleanupSwapChain();
         void CreateDepthResources(PipelineState& pso);
         void CreateColorResources(PipelineState& pso);
-        void CreateUniformBuffers();
+        void CreateUniformBuffers(UniformBufferVK* ub);
         void CreateFrameBuffers(PipelineState& pso);
         void CreateDescriptorPool();
         void CreateDescriptorSets(PipelineState& pso);
@@ -121,9 +148,12 @@ namespace Joestar {
         void UpdateUniformBuffer(uint32_t currentImage);
         void RecordCommandBuffer(PipelineState& pso);
         void ExecuteRenderCommand(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx);
+        void RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso);
+        void RenderCmdUpdateUniformBufferObject(RenderCommand cmd, PipelineState& pso);
 
     private:
         VulkanContext* vkCtxPtr;
+        bool dynamicCommadBuffer;
 
         VkBufferCreateInfo bufferInfo{};
         VkMemoryRequirements memRequirements;
@@ -136,6 +166,7 @@ namespace Joestar {
         //pending texture, will upload during UpdateUniform
         std::map<uint32_t, TextureVK*> pendingTextureVKs;
         std::map<uint32_t, ShaderVK*> shaderVKs;
+        std::map<uint32_t, UniformBufferVK*> uniformVKs;
     };
 
 }

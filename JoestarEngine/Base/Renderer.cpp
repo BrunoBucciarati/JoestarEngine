@@ -9,13 +9,8 @@ namespace Joestar {
 	void Renderer::Render(Camera cam) {
 		if (mesh && mat) {
 			Graphics* graphics = GetSubsystem<Graphics>();
-			graphics->UpdateMaterial(mat);
-			//graphics->UseShader(mat->GetShaderName());
-			//graphics->UpdateTexture(mat->GetShaderName());
 			graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, model);
-			graphics->UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
-			graphics->UpdateIndexBuffer(mesh->GetIB());
-			graphics->DrawIndexed();
+			graphics->DrawMesh(mesh, mat);
 		}
 	}
 }

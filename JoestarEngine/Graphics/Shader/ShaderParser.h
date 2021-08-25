@@ -3,6 +3,7 @@
 #include "../../Base/SubSystem.h"
 #include <vector>
 #include <string>
+
 namespace Joestar {
 	enum ShaderDataType {
 		ShaderDataTypeInvalid = 0,
@@ -30,15 +31,15 @@ namespace Joestar {
 		std::string name;
 		SamplerType dataType;
 	}*/;
-	struct UBODef {
-		std::string name;
-	};
+	//struct UBODef {
+	//	std::string name;
+	//};
 	struct ShaderInfo {
 		uint16_t version;
 		std::vector<VertexDef> attrs;
 		std::vector<UniformDef> uniforms;
 		//std::vector<SamplerDef> samplers;
-		std::vector<UBODef> ubos;
+		//std::vector<UBODef> ubos;
 		std::string entryFunction = "main";
 	};
 	class ShaderParser : public SubSystem {

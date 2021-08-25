@@ -46,7 +46,8 @@ namespace Joestar {
 		return shaderModule;
 	}
 
-	GPUProgramVulkan::GPUProgramVulkan() {
+	GPUProgramVulkan::GPUProgramVulkan() : dynamicCommadBuffer(false) {
+
 		//Application* app = Application::GetApplication();
 		//FileSystem* fs = app->GetSubSystem<FileSystem>();
 		//std::string path = fs->GetResourceDir();
@@ -521,7 +522,7 @@ namespace Joestar {
 		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerInfo.anisotropyEnable = VK_FALSE;
-		samplerInfo.maxAnisotropy = 16;
+		samplerInfo.maxAnisotropy = 1;
 		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
 		samplerInfo.compareEnable = VK_FALSE;
@@ -775,7 +776,7 @@ namespace Joestar {
 		CreateGraphicsPipeline(pso);
 		CreateColorResources(pso);
         CreateDepthResources(pso);
-        CreateUniformBuffers();
+        //CreateUniformBuffers();
         CreateFrameBuffers(pso);
 		//CreateVertexBuffer();
 		//CreateIndexBuffer();
@@ -802,14 +803,14 @@ namespace Joestar {
 		TransitionImageLayout(pso.fbCtx->depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 	}
 
-	void GPUProgramVulkan::CreateUniformBuffers() {
-		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+	void GPUProgramVulkan::CreateUniformBuffers(UniformBufferVK* ub) {
+		VkDeviceSize bufferSize = ub->size;
 		
-		vkCtxPtr->uniformBuffers.resize(vkCtxPtr->swapChainImages.size());
-		vkCtxPtr->uniformBuffersMemory.resize(vkCtxPtr->swapChainImages.size());
+		ub->uniformBuffers.resize(vkCtxPtr->swapChainImages.size());
+		ub->uniformBuffersMemory.resize(vkCtxPtr->swapChainImages.size());
 		
 		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
-		    CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkCtxPtr->uniformBuffers[i], vkCtxPtr->uniformBuffersMemory[i]);
+		    CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, ub->uniformBuffers[i], ub->uniformBuffersMemory[i]);
 		}
 	}
 
@@ -871,68 +872,89 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::UpdateDescriptorSets(PipelineState& pso) {
-		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
-			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = vkCtxPtr->uniformBuffers[i];
-			bufferInfo.offset = 0;
-			bufferInfo.range = sizeof(UniformBufferObject);
+		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); ++i) {
+			std::vector<VkWriteDescriptorSet> descriptorWrites{};
+			descriptorWrites.resize(pso.ubs.size());
+			int samplerCount = 0;
+			for (int j = 0; j < pso.ubs.size(); ++j) {
+				UniformBufferVK* ub = pso.ubs[j];
 
-			VkDescriptorImageInfo imageInfo{};
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			std::map<uint32_t, TextureVK*>::iterator it = textureVKs.find(pso.textures[0]);
-			TextureVK* tex;
-			if (it == textureVKs.end()) {
-				it = pendingTextureVKs.find(pso.textures[0]);
-				if (it == pendingTextureVKs.end()) {
-					LOGERROR("this texture didn't call Graphics::UpdateTexture!!!");
+				if (ub->texID > 0) {
+					VkDescriptorImageInfo imageInfo{};
+					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					std::map<uint32_t, TextureVK*>::iterator it = textureVKs.find(pso.textures[0]);
+					TextureVK* tex;
+					if (it == textureVKs.end()) {
+						it = pendingTextureVKs.find(pso.textures[0]);
+						if (it == pendingTextureVKs.end()) {
+							LOGERROR("this texture didn't call Graphics::UpdateTexture!!!");
+						}
+						CreateTextureImage(it->second);
+						CreateTextureImageView(it->second);
+						textureVKs[it->first] = it->second;
+						tex = it->second;
+						pendingTextureVKs.erase(it);
+					} else {
+						tex = it->second;
+					}
+					imageInfo.imageView = tex->textureImageView;
+					imageInfo.sampler = pso.textureSampler;
+
+					descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrites[j].dstSet = vkCtxPtr->descriptorSets[i];
+					descriptorWrites[j].dstBinding = pso.shader->GetSamplerBinding(samplerCount++);
+					descriptorWrites[j].dstArrayElement = 0;
+					descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					descriptorWrites[j].descriptorCount = 1;
+					descriptorWrites[j].pImageInfo = &imageInfo;
+
+				} else {
+					VkDescriptorBufferInfo bufferInfo{};
+					bufferInfo.buffer = ub->uniformBuffers[i];
+					bufferInfo.offset = 0;
+					bufferInfo.range = sizeof(UniformBufferObject);
+					
+					descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrites[j].dstSet = vkCtxPtr->descriptorSets[i];
+					descriptorWrites[j].dstBinding = pso.shader->GetUniformBindingByName(ub->name);
+					descriptorWrites[j].dstArrayElement = 0;
+					descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					descriptorWrites[j].descriptorCount = 1;
+					descriptorWrites[j].pBufferInfo = &bufferInfo;
 				}
-				CreateTextureImage(it->second);
-				CreateTextureImageView(it->second);
-				textureVKs[it->first] = it->second;
-				tex = it->second;
-				pendingTextureVKs.erase(it);
-			} else {
-				tex = it->second;
+
+				//std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+				//descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				//descriptorWrites[0].dstSet = vkCtxPtr->descriptorSets[i];
+				//descriptorWrites[0].dstBinding = 0;
+				//descriptorWrites[0].dstArrayElement = 0;
+				//descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				//descriptorWrites[0].descriptorCount = 1;
+				//descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+				//descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				//descriptorWrites[1].dstSet = vkCtxPtr->descriptorSets[i];
+				//descriptorWrites[1].dstBinding = 1;
+				//descriptorWrites[1].dstArrayElement = 0;
+				//descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				//descriptorWrites[1].descriptorCount = 1;
+				//descriptorWrites[1].pImageInfo = &imageInfo;
+
 			}
-			imageInfo.imageView = tex->textureImageView;
-			imageInfo.sampler = pso.textureSampler;
-
-			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = vkCtxPtr->descriptorSets[i];
-			descriptorWrites[0].dstBinding = 0;
-			descriptorWrites[0].dstArrayElement = 0;
-			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrites[0].descriptorCount = 1;
-			descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = vkCtxPtr->descriptorSets[i];
-			descriptorWrites[1].dstBinding = 1;
-			descriptorWrites[1].dstArrayElement = 0;
-			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptorWrites[1].descriptorCount = 1;
-			descriptorWrites[1].pImageInfo = &imageInfo;
-
 			vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 		}
 	}
 
 	void GPUProgramVulkan::UpdateUniformBuffer(uint32_t currentImage) {
-		if (vkCtxPtr->uniformBuffersMemory.empty()) return;
 		void* data;
-		vkMapMemory(vkCtxPtr->device, vkCtxPtr->uniformBuffersMemory[currentImage], 0, sizeof(currentPSO.ubo), 0, &data);
-		memcpy(data, &currentPSO.ubo, sizeof(currentPSO.ubo));
-		vkUnmapMemory(vkCtxPtr->device, vkCtxPtr->uniformBuffersMemory[currentImage]);
-
-		//for (std::map<uint32_t, TextureVK*>::iterator it = pendingTextureVKs.begin(); it != pendingTextureVKs.end(); it++) {
-		//	CreateTextureImage(it->second);
-		//	CreateTextureImageView(it->second);
-		//	UpdateDescriptorSets(currentPSO, it->second);
-		//	textureVKs[it->first] = it->second;
-		//}
-		//pendingTextureVKs.clear();
+		for (int i = 0; i < currentPSO.ubs.size(); ++i) {
+			if (currentPSO.ubs[i]->uniformBuffersMemory.empty()) return;
+			if (currentPSO.ubs[i]->texID > 0) continue;//texture don't need to update
+			vkMapMemory(vkCtxPtr->device, currentPSO.ubs[i]->uniformBuffersMemory[currentImage], 0, currentPSO.ubs[i]->size, 0, &data);
+			memcpy(data, currentPSO.ubs[i]->data, currentPSO.ubs[i]->size);
+			vkUnmapMemory(vkCtxPtr->device, currentPSO.ubs[i]->uniformBuffersMemory[currentImage]);
+		}		
 	}
 
 	void GPUProgramVulkan::RecordCommandBuffer(PipelineState& pso) {
@@ -977,28 +999,81 @@ namespace Joestar {
 		}
 	}
 
-	void RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso) {
+	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(RenderCommand cmd, PipelineState& pso) {
+		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
+		std::string name = "UniformBufferObject";
+		//built in name
+		uint32_t hashID = hashString(name.c_str());
+		if (uniformVKs.find(hashID) == uniformVKs.end()) {
+			uniformVKs[hashID] = new UniformBufferVK;
+			uniformVKs[hashID]->name = name;
+			uniformVKs[hashID]->size = sizeof(UniformBufferObject);
+			uniformVKs[hashID]->id = hashID;
+			uniformVKs[hashID]->data = new UniformBufferObject;
+
+			CreateUniformBuffers(uniformVKs[hashID]);
+
+		}
+		switch (flag) {
+			//case BUILTIN_MATRIX_MODEL: pso.ubo.model = *(Matrix4x4f*)cmd.data; break;
+			case BUILTIN_MATRIX_VIEW: {
+				//pso.ubo.view = *(Matrix4x4f*)cmd.data;
+				((UniformBufferObject*)uniformVKs[hashID]->data)->view = *(Matrix4x4f*)cmd.data;
+				break; 
+			}
+			case BUILTIN_MATRIX_PROJECTION: { 
+				//pso.ubo.proj = *(Matrix4x4f*)cmd.data; name = "proj"; 
+				((UniformBufferObject*)uniformVKs[hashID]->data)->proj = *(Matrix4x4f*)cmd.data;
+				break; 
+			}
+			case BUILTIN_MATRIX_MODEL: {
+				//pso.ubo.proj = *(Matrix4x4f*)cmd.data; name = "proj"; 
+				((UniformBufferObject*)uniformVKs[hashID]->data)->model = *(Matrix4x4f*)cmd.data;
+				break;
+			}
+			default: break;
+		}
+		if (name.empty()) {
+			LOGERROR("update ubo but type not recognize!");
+			return;
+		}
+
+		bool hasUBO = false;
+		for (auto& ub : pso.ubs) {
+			if (ub->id == hashID) {
+				hasUBO = true;
+				break;
+			}
+		}
+		if (!hasUBO)
+			pso.ubs.push_back(uniformVKs[hashID]);
+	}
+
+	void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso) {
 		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
 		switch (flag) {
-			case BUILTIN_MATRIX_MODEL: pso.ubo.model = *(Matrix4x4f*)cmd.data; break;
-			case BUILTIN_MATRIX_VIEW: pso.ubo.view = *(Matrix4x4f*)cmd.data; break;
-			case BUILTIN_MATRIX_PROJECTION: pso.ubo.proj = *(Matrix4x4f*)cmd.data; break;
-			default: break;
+		case BUILTIN_MATRIX_MODEL: {
+			//built in name
+			std::string name = "model";
+			uint32_t hashID = hashString(name.c_str()) + cmd.size;
+			if (uniformVKs.find(hashID) == uniformVKs.end()) {
+				uniformVKs[hashID] = new UniformBufferVK;
+				uniformVKs[hashID]->name = name;
+				uniformVKs[hashID]->size = cmd.size;
+				uniformVKs[hashID]->id = hashID;
+				uniformVKs[hashID]->data = cmd.data;
+
+				CreateUniformBuffers(uniformVKs[hashID]);
+			}
+			pso.ubs.push_back(uniformVKs[hashID]);
+			break; 
+		}
+		default: break;
 		}
 	}
 
 	void RenderCmdUpdateVertexBuffer(RenderCommand cmd, PipelineState& pso) {
 		
-	}
-
-	void RenderCmdUpdateIndexBuffer(RenderCommand cmd, PipelineState& pso) {
-		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
-		switch (flag) {
-		case BUILTIN_MATRIX_MODEL: pso.ubo.model = *(Matrix4x4f*)cmd.data; break;
-		case BUILTIN_MATRIX_VIEW: pso.ubo.view = *(Matrix4x4f*)cmd.data; break;
-		case BUILTIN_MATRIX_PROJECTION: pso.ubo.proj = *(Matrix4x4f*)cmd.data; break;
-		default: break;
-		}
 	}
 
 	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx) {
@@ -1008,6 +1083,7 @@ namespace Joestar {
 		for (int i = 0; i < cmdIdx; ++i) {
 			switch (cmdBuffer[i].typ) {
 			case RenderCMD_Clear: pso.clearColor = *((Vector4f*)cmdBuffer[i].data); break;
+			case RenderCMD_UpdateUniformBufferObject: RenderCmdUpdateUniformBufferObject(cmdBuffer[i], pso); break;
 			case RenderCMD_UpdateUniformBuffer: RenderCmdUpdateUniformBuffer(cmdBuffer[i], pso); break;
 			case RenderCMD_UpdateVertexBuffer: {
 				VertexBuffer* vb = (VertexBuffer*)cmdBuffer[i].data;
@@ -1035,6 +1111,13 @@ namespace Joestar {
 					pendingTextureVKs[vkTex->ID()] = vkTex;
 				}
 				pso.textures.push_back(tex->id);
+
+				if (uniformVKs.find(tex->id) == uniformVKs.end()) {
+					UniformBufferVK* texUB = new UniformBufferVK;
+					texUB->texID = tex->id;
+					uniformVKs[tex->id] = texUB;
+				}
+				pso.ubs.push_back(uniformVKs[tex->id]);
 				break;
 			}
 			case RenderCMD_Draw: {
@@ -1044,7 +1127,7 @@ namespace Joestar {
 					RecordCommandBuffer(pso);
 				} else {
 					//still need to update ubo
-					currentPSO.ubo = pso.ubo;
+					//currentPSO.ubo = pso.ubo;
 				}
 				break;
 			}
@@ -1055,7 +1138,7 @@ namespace Joestar {
 					currentPSO = pso;
 				} else {
 					//still need to update ubo
-					currentPSO.ubo = pso.ubo;
+					//currentPSO.ubo = pso.ubo;
 				}
 				break;
 			}

@@ -18,7 +18,7 @@ namespace Joestar {
 		void Init();
 		virtual void DrawTriangle() {}
 		void MainLoop();
-		virtual void DrawMesh(Mesh* mesh) {}
+		void DrawMesh(Mesh* mesh, Material* mat);
 		void Clear();
 		void UpdateBuiltinMatrix(BUILTIN_MATRIX typ, Matrix4x4f& mat);
 		void UpdateVertexBuffer(VertexBuffer* vb);

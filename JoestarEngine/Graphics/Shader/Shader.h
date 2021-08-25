@@ -13,6 +13,8 @@ namespace Joestar {
 		inline std::string& GetName() { return name; };
 		void SetName(std::string n);
 		uint32_t GetVertexAttributeFlag();
+		uint16_t GetUniformBindingByName(std::string& name);
+		uint16_t GetSamplerBinding(int count);
 		uint32_t id;
 	private:
 		std::string name;
