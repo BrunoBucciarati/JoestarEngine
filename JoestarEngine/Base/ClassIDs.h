@@ -18,6 +18,8 @@ enum ClassIDType {
 	DefineClassID(Material, 9)
 	DefineClassID(Shader, 10)
 	DefineClassID(ShaderParser, 11)
+	DefineClassID(ProceduralMesh, 12)
+	DefineClassID(Mesh, 13)
 
 	kClassIDCount
 };

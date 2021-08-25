@@ -8,11 +8,12 @@
 #include "../IO/HID.h"
 #include "../Base/Scene.h"
 #include "../Graphics/Shader/ShaderParser.h"
+#include "../Graphics/ProceduralMesh.h"
 
 namespace Joestar {
 	void Application::Start() {
 		gContext = new EngineContext;
-		InitSubSystem(GlobalConfig, gContext);
+		InitSubSystem(GlobalConfig, gContext)
 		int GFX_API = GFX_API_VULKAN;
 		GetSubSystem<GlobalConfig>()->UpdateConfig("GFX_API", GFX_API);
 		int width = 800, height = 600;
@@ -20,12 +21,13 @@ namespace Joestar {
 		GetSubSystem<GlobalConfig>()->UpdateConfig("WINDOW_HEIGHT", height);
 		//GetGlobalConfig()->UpdateConfig("GFX_API", str);
 
-		InitSubSystem(Graphics, gContext);
+		InitSubSystem(Graphics, gContext)
 		GetSubSystem<Graphics>()->Init();
 
-		InitSubSystem(HID, gContext);
-		InitSubSystem(ShaderParser, gContext);
-		InitSubSystem(Scene, gContext);
+		InitSubSystem(HID, gContext)
+		InitSubSystem(ShaderParser, gContext)
+		InitSubSystem(ProceduralMesh, gContext)
+		InitSubSystem(Scene, gContext)
 	}
 
 	void Application::Run()

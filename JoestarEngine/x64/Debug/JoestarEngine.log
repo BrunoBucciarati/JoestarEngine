@@ -1,1 +1,12 @@
-﻿  JoestarEngine.vcxproj -> D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe
+﻿  GPUProgramVulkan.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
+D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
+D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(251,93): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(251,75): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(984,27): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(985,27): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(986,27): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(27): warning C4715: “Joestar::GPUProgramVulkan::FindSupportedFormat”: 不是所有的控件路径都返回值
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(173): warning C4715: “Joestar::GPUProgramVulkan::FindMemoryType”: 不是所有的控件路径都返回值
+  JoestarEngine.vcxproj -> D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe

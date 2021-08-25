@@ -108,6 +108,9 @@
     <ClCompile Include="Graphics\Shader\Shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\ProceduralMesh.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -231,6 +234,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Shader\ShaderParser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ProceduralMesh.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

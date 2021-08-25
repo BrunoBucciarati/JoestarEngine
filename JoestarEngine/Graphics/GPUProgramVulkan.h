@@ -70,6 +70,7 @@ namespace Joestar {
         IndexBuffer* ib;
         ShaderVK* shader;
         std::vector<UniformBufferVK*> ubs;
+        MeshTopology topology;
 
         VKPipelineContext* pipelineCtx;
         VKFrameBufferContext* fbCtx;
@@ -90,7 +91,7 @@ namespace Joestar {
             for (int i = 0; i < ubs.size(); ++i) {
                 if (ubs[i] != p2.ubs[i]) return false;
             }
-            return (clearColor == p2.clearColor) && shader == p2.shader &&
+            return clearColor == p2.clearColor && shader == p2.shader &&
                 (vb == vb) && (ib == ib);
         }
     };
@@ -150,10 +151,11 @@ namespace Joestar {
         void ExecuteRenderCommand(std::vector<RenderCommand> cmdBuffer, uint16_t cmdIdx);
         void RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso);
         void RenderCmdUpdateUniformBufferObject(RenderCommand cmd, PipelineState& pso);
+        void RecordRenderPass(PipelineState& pso, int i);
 
     private:
         VulkanContext* vkCtxPtr;
-        bool dynamicCommadBuffer;
+        bool dynamicCommandBuffer;
 
         VkBufferCreateInfo bufferInfo{};
         VkMemoryRequirements memRequirements;
@@ -161,7 +163,7 @@ namespace Joestar {
         uint32_t mipLevels;
         VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_2_BIT;
         PipelineState currentPSO;
-        std::vector<PipelineState> allPSO;
+        std::vector<PipelineState> allPSOs;
         std::map<uint32_t, TextureVK*> textureVKs;
         //pending texture, will upload during UpdateUniform
         std::map<uint32_t, TextureVK*> pendingTextureVKs;

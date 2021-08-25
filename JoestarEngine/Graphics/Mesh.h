@@ -6,10 +6,26 @@
 #include <vector>
 #include <map>
 #include "VertexData.h"
+#include "../Base/Object.h"
 
 namespace Joestar {
+    enum MeshTopology {
+        MESH_TOPOLOGY_TRIANGLE = 0,
+        MESH_TOPOLOGY_TRIANGLE_STRIP
+    };
+    struct VertexLoad {
+        Vector3f pos;
+        Vector3f normal;
+        Vector3f color;
+        Vector2f texCoord;
 
-class Mesh {
+        bool operator ==(const VertexLoad& v) {
+            return pos == v.pos && color == v.color && texCoord == v.texCoord;
+        }
+    };
+
+class Mesh : public Object {
+    REGISTER_OBJECT(Mesh, Object)
 public:
     // mesh Data
     //std::vector<Vertex>       vertices;
@@ -19,23 +35,26 @@ public:
     IndexBuffer* ib;
     unsigned int cachedVAO;
     bool cachedDirty;
-
-    // constructor
-    ~Mesh()
-    {
-        delete vb;
-        delete ib;
-    }
+    explicit Mesh(EngineContext* ctx);
 
     VertexBuffer* GetVB() { return vb; }
     VertexBuffer* GetVB(uint32_t flag);
     IndexBuffer* GetIB() { return ib; }
 
+    MeshTopology GetTopology() {
+        return mTopology;
+    }
+
+    void SetTopology(MeshTopology t) {
+        mTopology = t;
+    }
+
     void Load(std::string path);
 
 private:
     // render data 
-    std::map<uint32_t, VertexBuffer*> CustomVBs;
+    std::map<uint32_t, VertexBuffer*> customVBs;
+    MeshTopology mTopology;
 };
 }
 #endif

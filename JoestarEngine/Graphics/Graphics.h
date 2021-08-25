@@ -26,7 +26,7 @@ namespace Joestar {
 		void UpdateMaterial(Material* mat);
 		void UseShader(const Shader* shader);
 		void UpdateTexture(Texture*);
-		void DrawIndexed();
+		void DrawIndexed(Mesh* mesh);
 
 	private:
 		RenderThread* renderThread;

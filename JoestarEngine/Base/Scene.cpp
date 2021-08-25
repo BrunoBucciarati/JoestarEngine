@@ -4,65 +4,16 @@
 #include <vector>
 #include "../IO/FileSystem.h"
 #include "../Math/Vector2.h"
+#include "../Graphics/ProceduralMesh.h"
 #include "../Math/Vector3.h"
 namespace Joestar {
-    //test sphere
-    Mesh* GenUVSphere()
-    {
-        Mesh* mesh = new Mesh();
-        //std::vector<Vertex> vertices;
-        std::vector<Vector2f> uv;
-        std::vector<Vector3f> normals;
-        std::vector<unsigned int> indices;
-
-        const unsigned int X_SEGMENTS = 64;
-        const unsigned int Y_SEGMENTS = 64;
-        const float PI = 3.14159265359;
-        for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
-        {
-            for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-            {
-                float xSegment = (float)x / (float)X_SEGMENTS;
-                float ySegment = (float)y / (float)Y_SEGMENTS;
-                float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-                float yPos = std::cos(ySegment * PI);
-                float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-            }
-        }
-
-        bool oddRow = false;
-        for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
-        {
-            if (!oddRow) // even rows: y == 0, y == 2; and so on
-            {
-                for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-                {
-                    indices.push_back(y * (X_SEGMENTS + 1) + x);
-                    indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-                }
-            }
-            else
-            {
-                for (int x = X_SEGMENTS; x >= 0; --x)
-                {
-                    indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-                    indices.push_back(y * (X_SEGMENTS + 1) + x);
-                }
-            }
-            oddRow = !oddRow;
-        }
-
-        return mesh;
-    }
-
-
     Scene::Scene(EngineContext* ctx) : Super(ctx) {
         //for test
         GameObject* go = new GameObject;
         gameObjects.push_back(go);
-        Renderer* render = new Renderer(ctx);
+        Renderer* render = NEW_OBJECT(Renderer);
         go->render = render;
-        render->mesh = new Mesh;
+        render->mesh = NEW_OBJECT(Mesh);
 
         FileSystem* fs = GetSubsystem<FileSystem>();
         std::string path = fs->GetModelDir();
@@ -71,6 +22,13 @@ namespace Joestar {
         render->mat->SetDefault();
      // render->mat_ = new Material;
      // render->mat_->SetDefault();
+
+        GameObject* sphere = new GameObject;
+        //gameObjects.push_back(sphere);
+        sphere->render = NEW_OBJECT(Renderer);
+        sphere->render->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
+        sphere->render->mat = NEW_OBJECT(Material);
+        sphere->render->mat->SetDefault();
     }
 
     void Scene::Update() {

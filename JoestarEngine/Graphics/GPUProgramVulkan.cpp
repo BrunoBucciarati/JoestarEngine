@@ -46,7 +46,7 @@ namespace Joestar {
 		return shaderModule;
 	}
 
-	GPUProgramVulkan::GPUProgramVulkan() : dynamicCommadBuffer(false) {
+	GPUProgramVulkan::GPUProgramVulkan() : dynamicCommandBuffer(false) {
 
 		//Application* app = Application::GetApplication();
 		//FileSystem* fs = app->GetSubSystem<FileSystem>();
@@ -621,7 +621,11 @@ namespace Joestar {
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		if (pso.topology == MESH_TOPOLOGY_TRIANGLE_STRIP) {
+			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		} else {
+			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		}
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 		VkViewport viewport{};
@@ -938,6 +942,35 @@ namespace Joestar {
 		}
 	}
 
+	void GPUProgramVulkan::RecordRenderPass(PipelineState& pso, int i) {
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = pso.pipelineCtx->renderPass;
+		renderPassInfo.framebuffer = vkCtxPtr->swapChainFramebuffers[i];
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = vkCtxPtr->swapChainExtent;
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = { pso.clearColor.x, pso.clearColor.y, pso.clearColor.z, pso.clearColor.w };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
+		vkCmdBeginRenderPass(vkCtxPtr->commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBindPipeline(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->graphicsPipeline);
+
+		VkBuffer vertexBuffer = pso.vertexBuffer;
+		VkBuffer vertexBuffers[] = { vertexBuffer };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, 1, vertexBuffers, offsets);
+		vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], pso.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+		vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
+		//vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], 9, 1, 0, 0, 0);
+		vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], pso.ib->GetIndexCount(), 1, 0, 0, 0);
+		//vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+		vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
+	}
+
 	void GPUProgramVulkan::RecordCommandBuffer(PipelineState& pso) {
 		for (size_t i = 0; i < vkCtxPtr->commandBuffers.size(); i++) {
 			VkCommandBufferBeginInfo beginInfo{};
@@ -948,32 +981,9 @@ namespace Joestar {
 			if (vkBeginCommandBuffer(vkCtxPtr->commandBuffers[i], &beginInfo) != VK_SUCCESS) {
 				LOGERROR("failed to begin recording command buffer!");
 			}
-			VkRenderPassBeginInfo renderPassInfo{};
-			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassInfo.renderPass = pso.pipelineCtx->renderPass;
-			renderPassInfo.framebuffer = vkCtxPtr->swapChainFramebuffers[i];
-			renderPassInfo.renderArea.offset = { 0, 0 };
-			renderPassInfo.renderArea.extent = vkCtxPtr->swapChainExtent;
-			std::array<VkClearValue, 2> clearValues{};
-			clearValues[0].color = { pso.clearColor.x, pso.clearColor.y, pso.clearColor.z, pso.clearColor.w};
-			clearValues[1].depthStencil = { 1.0f, 0 };
-
-			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-			renderPassInfo.pClearValues = clearValues.data();
-			vkCmdBeginRenderPass(vkCtxPtr->commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			vkCmdBindPipeline(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->graphicsPipeline);
-
-			VkBuffer vertexBuffer = pso.vertexBuffer;
-			VkBuffer vertexBuffers[] = { vertexBuffer };
-			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, 1, vertexBuffers, offsets);
-			vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], pso.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
-			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
-			//vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], 9, 1, 0, 0, 0);
-			vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], pso.ib->GetIndexCount(), 1, 0, 0, 0);
-			//vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
-			vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
+			RecordRenderPass(pso, i);
+			RecordRenderPass(pso, i);
+			RecordRenderPass(pso, i);
 			if (vkEndCommandBuffer(vkCtxPtr->commandBuffers[i]) != VK_SUCCESS) {
 				LOGERROR("failed to record command buffer!");
 			}
@@ -1102,24 +1112,27 @@ namespace Joestar {
 				break;
 			}
 			case RenderCMD_Draw: {
+				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
+				pso.topology = topology;
 				if (!(currentPSO == pso)) {
 					currentPSO = pso;
 					GetPipelineContext(pso);
 					RecordCommandBuffer(pso);
-				} else {
-					//still need to update ubo
-					//currentPSO.ubo = pso.ubo;
+
+					//reset pso state after every draw call
+					pso = {};
 				}
 				break;
 			}
 			case RenderCMD_DrawIndexed: {
+				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
+				pso.topology = topology;
 				if (!(currentPSO == pso)) {
 					GetPipelineContext(pso);
 					RecordCommandBuffer(pso);
 					currentPSO = pso;
-				} else {
-					//still need to update ubo
-					//currentPSO.ubo = pso.ubo;
+					//reset pso state after every draw call
+					pso = {};
 				}
 				break;
 			}

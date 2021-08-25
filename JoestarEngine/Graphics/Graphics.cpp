@@ -64,9 +64,10 @@ namespace Joestar {
 		++cmdIdx;
 	}
 
-	void Graphics::DrawIndexed() {
+	void Graphics::DrawIndexed(Mesh* mesh) {
 		cmdBuffer[cmdIdx].typ = RenderCMD_DrawIndexed;
 		cmdBuffer[cmdIdx].size = 0;
+		cmdBuffer[cmdIdx].flag = mesh->GetTopology();
 		++cmdIdx;
 	}
 
@@ -99,6 +100,6 @@ namespace Joestar {
 		UpdateMaterial(mat);
 		UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
 		UpdateIndexBuffer(mesh->GetIB());
-		DrawIndexed();
+		DrawIndexed(mesh);
 	}
 }
