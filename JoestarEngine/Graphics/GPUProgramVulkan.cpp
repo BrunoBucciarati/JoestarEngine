@@ -922,25 +922,6 @@ namespace Joestar {
 					descriptorWrites[j].descriptorCount = 1;
 					descriptorWrites[j].pBufferInfo = &bufferInfo;
 				}
-
-				//std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-				//descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				//descriptorWrites[0].dstSet = vkCtxPtr->descriptorSets[i];
-				//descriptorWrites[0].dstBinding = 0;
-				//descriptorWrites[0].dstArrayElement = 0;
-				//descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				//descriptorWrites[0].descriptorCount = 1;
-				//descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-				//descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				//descriptorWrites[1].dstSet = vkCtxPtr->descriptorSets[i];
-				//descriptorWrites[1].dstBinding = 1;
-				//descriptorWrites[1].dstArrayElement = 0;
-				//descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				//descriptorWrites[1].descriptorCount = 1;
-				//descriptorWrites[1].pImageInfo = &imageInfo;
-
 			}
 			vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 		}
@@ -954,7 +935,7 @@ namespace Joestar {
 			vkMapMemory(vkCtxPtr->device, currentPSO.ubs[i]->uniformBuffersMemory[currentImage], 0, currentPSO.ubs[i]->size, 0, &data);
 			memcpy(data, currentPSO.ubs[i]->data, currentPSO.ubs[i]->size);
 			vkUnmapMemory(vkCtxPtr->device, currentPSO.ubs[i]->uniformBuffersMemory[currentImage]);
-		}		
+		}
 	}
 
 	void GPUProgramVulkan::RecordCommandBuffer(PipelineState& pso) {
