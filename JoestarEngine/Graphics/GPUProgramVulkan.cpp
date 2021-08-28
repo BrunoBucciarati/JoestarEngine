@@ -859,13 +859,8 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::GetPipeline(RenderPassVK* pass, int i) {
-		//pso.pipelineCtx = new VKPipelineContext;
-		//pso.fbCtx = new VKFrameBufferContext;
-		//CreateRenderPass(pso);
-
 		CreateDescriptorSetLayout(pass, i);
 		CreateGraphicsPipeline(pass, i);
-        //CreateFrameBuffers(pso);
 		CreateTextureSampler(pass, i);
 		CreateDescriptorPool();
 		CreateDescriptorSets(pass->dcs[i]);
@@ -1148,7 +1143,7 @@ namespace Joestar {
 	//	}
 	//}
 
-#define CHECK_PASS() if(pass == nullptr) LOGERROR("PLEASE START PASS FIRST!\n");
+#define CHECK_PASS() if(pass == nullptr) {LOGERROR("PLEASE START PASS FIRST!\n");}
 	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx) {
 		if (cmdIdx == 0) return;
 		//for test, we only record once now
@@ -1157,11 +1152,6 @@ namespace Joestar {
 		RenderPassVK* pass = nullptr;
 		DrawCallVK* drawcall = new DrawCallVK;
 		drawcall->pso = new PipelineStateVK;
-		/*std::vector<RenderPassVK*> passList;*/
-		//std::vector<PipelineState*> framePSOChain;
-		//PipelineState* pso = new PipelineState;
-		bool needRecord = true;
-		int curPSOIdx = 0;
 		for (int i = 0; i < cmdIdx; ++i) {
 			switch (cmdBuffer[i].typ) {
 			case RenderCMD_BeginRenderPass: {
@@ -1171,6 +1161,9 @@ namespace Joestar {
 			}
 			case RenderCMD_EndRenderPass: {
 				CHECK_PASS()
+				for (auto& dc : pass->dcs) {
+					pass->HashInsert(dc->hash);
+				}
 				renderPassList.push_back(pass);
 				break;
 			}
@@ -1186,32 +1179,39 @@ namespace Joestar {
 			}
 			//case RenderCMD_UpdateUniformBuffer: RenderCmdUpdateUniformBuffer(cmdBuffer[i], *pso); break;
 			case RenderCMD_UpdateVertexBuffer: {
+				CHECK_PASS()
 				VertexBuffer* vb = (VertexBuffer*)cmdBuffer[i].data;
 				if (vbs.find(vb->id) == vbs.end()) {
 					vbs[vb->id] = new VertexBufferVK(vb);
 					CreateVertexBuffer(vbs[vb->id]);
 				}
 				drawcall->vb = vbs[vb->id];
+				drawcall->HashInsert(vb->id);
 				break;
 			}
 			case RenderCMD_UpdateIndexBuffer: {
+				CHECK_PASS()
 				IndexBuffer* ib = (IndexBuffer*)cmdBuffer[i].data;
 				if (ibs.find(ib->id) == ibs.end()) {
 					ibs[ib->id] = new IndexBufferVK(ib);
 					CreateIndexBuffer(ibs[ib->id]);
 				}
 				drawcall->ib = ibs[ib->id];
+				drawcall->HashInsert(ib->id);
 				break;
 			}
 			case RenderCMD_UseShader: {
+				CHECK_PASS()
 				Shader* shader = (Shader*)cmdBuffer[i].data;
 				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
 					shaderVKs[shader->id] = new ShaderVK(shader);
 				}
 				drawcall->shader = shaderVKs[shader->id];
+				drawcall->HashInsert(shader->id);
 				break;
 			}
 			case RenderCMD_UpdateTexture: {
+				CHECK_PASS()
 				Texture* tex = (Texture*)cmdBuffer[i].data;
 				U8 binding = cmdBuffer[i].flag;
 				//check if uniform buffer is ready
@@ -1228,80 +1228,56 @@ namespace Joestar {
 				}
 				//update binding tex
 				drawcall->shader->ubs[binding] = tex->id;
-				//drawcall->shader->ubs.push_back(tex->id);
+				drawcall->HashInsert(tex->id);
 				break;
 			}
 			case RenderCMD_Draw: {
+				CHECK_PASS()
 				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
 				drawcall->topology = topology;
-				//if (framePSOChain.empty) {
-				//	framePSOChain;
-				//	currentPSO = pso;
-				//	if (!needRecord) {
-				//		psoChain.clear();
-				//		needRecord = true;
-				//	}
-				//	GetPipelineContext(pso);
-				//	//RecordCommandBuffer(pso);
-
-				//	//reset pso state after every draw call
-				//	pso = {};
-				//}
+				drawcall->HashInsert(topology);
 				break;
 			}
 			case RenderCMD_DrawIndexed: {
+				CHECK_PASS()
 				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
 				drawcall->topology = topology;
+				drawcall->HashInsert(topology);
 				pass->dcs.push_back(drawcall);
 				drawcall = new DrawCallVK;
 				drawcall->pso = new PipelineStateVK;
-				//if (psoChain.size() > curPSOIdx && *psoChain[curPSOIdx] == *pso) {
-				//	framePSOChain.push_back(psoChain[curPSOIdx]);
-				//	++curPSOIdx;
-				//	delete pso;
-				//	pso = new PipelineState;
-				//} else {
-				//	GetPipelineContext(*pso);
-				//	framePSOChain.push_back(pso);
-				//	needRecord = true;
-				//	pso = new PipelineState;
-				//}
 				break;
 			}
 			default: break;
 			}
 		}
 
-		//if (framePSOChain.size() != psoChain.size()) {
-		//	needRecord = true;
-		//} else {
-		//	for (int i = 0; i < psoChain.size(); ++i) {
-		//		if (!(framePSOChain[i] == psoChain[i])) {
-		//			needRecord = true;
-		//			break;
-		//		}
-		//	}
-		//}
+		bool needRecord = false;
+		if (lastRenderPassList.size() != renderPassList.size()) {
+			needRecord = true;
+		} else {
+			for (int i = 0; i < lastRenderPassList.size(); ++i) {
+				if (lastRenderPassList[i]->hash != renderPassList[i]->hash) {
+					needRecord = true;
+					break;
+				}
+			}
+		}
 		if (needRecord) {
 			RecordCommandBuffer(renderPassList);
-			//for (auto& pso : psoChain) {
-			//	if (std::find(framePSOChain.begin(), framePSOChain.end(), pso) == framePSOChain.end()) {
-			//		delete pso;
-			//	}
-			//}
-			//psoChain.clear();
-			//psoChain.swap(framePSOChain);
 		}
 
+
+		delete drawcall->pso;
 		delete drawcall;
+
+		lastRenderPassList.clear();
+		lastRenderPassList.swap(renderPassList);
 	}
 
 	void GPUProgramVulkan::CleanupSwapChain() {
-		//vkDestroyImageView(vkCtxPtr->device, currentPSO.fbCtx->colorImageView, nullptr);
-		//vkDestroyImage(vkCtxPtr->device, currentPSO.fbCtx->colorImage, nullptr);
-		//vkFreeMemory(vkCtxPtr->device, currentPSO.fbCtx->colorImageMemory, nullptr);
-		//vkDestroyImageView(vkCtxPtr->device, currentPSO.fbCtx->depthImageView, nullptr);
-		//vkDestroyImage(vkCtxPtr->device, currentPSO.fbCtx->depthImage, nullptr);
-		//vkFreeMemory(vkCtxPtr->device, currentPSO.fbCtx->depthImageMemory, nullptr);
+		for (auto& fb : fbs) {
+			fb.second->Clean(vkCtxPtr->device);
+		}
 	}
 }

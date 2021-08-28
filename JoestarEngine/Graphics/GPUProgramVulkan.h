@@ -16,6 +16,23 @@
 #include "Shader/Shader.h"
 
 namespace Joestar {
+    struct FrameBufferVK {
+        VkImage depthImage;
+        VkDeviceMemory depthImageMemory;
+        VkImageView depthImageView;
+        VkImage colorImage;
+        VkDeviceMemory colorImageMemory;
+        VkImageView colorImageView;
+        void Clean(VkDevice& dev) {
+            vkDestroyImageView(dev, colorImageView, nullptr);
+            vkDestroyImage(dev, colorImage, nullptr);
+            vkFreeMemory(dev, colorImageMemory, nullptr);
+            vkDestroyImageView(dev, depthImageView, nullptr);
+            vkDestroyImage(dev, depthImage, nullptr);
+            vkFreeMemory(dev, depthImageMemory, nullptr);
+        }
+    };
+
     class ShaderVK {
     public:
         explicit ShaderVK(Shader* _shader) : shader(_shader) {
@@ -102,8 +119,6 @@ namespace Joestar {
 
     struct UniformBufferVK {
         std::vector<BufferVK> buffers;
-        //std::vector<VkBuffer> uniformBuffers;
-        //std::vector<VkDeviceMemory> uniformBuffersMemory;
         uint32_t size;
         void* data;
         uint32_t id;
@@ -120,40 +135,15 @@ namespace Joestar {
     };
 
     struct PipelineStateVK {
-        //bool clear = false;
-        //bool msaa = false;
-        //Vector4f clearColor;
-        //UniformBufferObject ubo;
-        //ShaderVK* shader;
-        std::vector<UniformBufferVK*> ubs;
-
         VkDescriptorSetLayout descriptorSetLayout;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
-        //PipelineVK* pipeline;
-
-        //VkBuffer indexBuffer;
-        //VkDeviceMemory indexBufferMemory;
-        //VkBuffer vertexBuffer;
-        //VkDeviceMemory vertexBufferMemory;
         VkSampler textureSampler;
-
-        std::vector<uint32_t> textures;
-
-        bool operator== (PipelineStateVK& p2) {
-            if (textures.size() != p2.textures.size()) return false;
-            for (int i = 0; i < textures.size(); ++i) {
-                if (textures[i] != p2.textures[i]) return false;
-            }
-            if (ubs.size() != p2.ubs.size()) return false;
-            for (int i = 0; i < ubs.size(); ++i) {
-                if (ubs[i] != p2.ubs[i]) return false;
-            }
-            return true;// clearColor == p2.clearColor && shader == p2.shader && clear == p2.clear;
-        }
-
-        bool operator!= (PipelineStateVK& p2) {
-            return !(*this == p2);
+        U32 hash = 0;
+        //ez hash, i guess that's ok
+        void HashInsert(U32 i) {
+            hash *= 10;
+            hash += i;
         }
     };
 
@@ -163,6 +153,12 @@ namespace Joestar {
         ShaderVK* shader;
         MeshTopology topology;
         PipelineStateVK* pso;
+        U32 hash = 0;
+        //ez hash, i guess that's ok
+        void HashInsert(U32 i) {
+            hash *= 10;
+            hash += i;
+        }
     };
 
     struct RenderPassVK {
@@ -174,6 +170,12 @@ namespace Joestar {
         Vector4f clearColor;
         const char* name;
         std::vector<DrawCallVK*> dcs;
+        U32 hash = 0;
+        //ez hash, i guess that's ok
+        void HashInsert(U32 i) {
+            hash *= 10;
+            hash += i;
+        }
     };
 
 
@@ -251,6 +253,7 @@ namespace Joestar {
         //std::vector<PipelineStateVK*> psoChain;
 
         std::vector<RenderPassVK*> renderPassList;
+        std::vector<RenderPassVK*> lastRenderPassList;
     };
 
 }
