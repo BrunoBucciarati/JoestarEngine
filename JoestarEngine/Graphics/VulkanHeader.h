@@ -30,19 +30,11 @@ struct VulkanContext {
 	std::vector<VkCommandBuffer> commandBuffers;
 };
 
-struct VKFrameBufferContext {
+struct FrameBufferVK {
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
 	VkImage colorImage;
 	VkDeviceMemory colorImageMemory;
 	VkImageView colorImageView;
-};
-
-struct VKPipelineContext {
-	VkRenderPass renderPass;
-	VkDescriptorSetLayout descriptorSetLayout;
-	VkPipelineLayout pipelineLayout;
-	VkPipeline graphicsPipeline;
-	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 };

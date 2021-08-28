@@ -10,6 +10,11 @@ enum RenderCommandType {
 	RenderCMD_UpdateIndexBuffer,
 	RenderCMD_UseShader,
 	RenderCMD_UpdateTexture,
+	RenderCMD_UpdateProgram,
+	RenderCMD_BeginRenderPass,
+	RenderCMD_EndRenderPass,
+	RenderCMD_BeginDrawCall,
+	RenderCMD_EndDrawCall,
 
 
 

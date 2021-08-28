@@ -131,7 +131,7 @@ namespace Joestar {
         glfwSetCursorPosCallback(window, MouseCallback);
         glfwSetScrollCallback(window, ScrollCallback);
 
-        GPUProgramVulkan* program = static_cast<GPUProgramVulkan*>(GPUProgram::CreateProgram());
+        GPUProgramVulkan* program = new GPUProgramVulkan();
         currentProgram = program;
         program->SetDevice(&vkCtx);
         CreateInstance();
@@ -183,7 +183,7 @@ namespace Joestar {
         PopulateDebugMessengerCreateInfo(createInfo);
 
         if (CreateDebugUtilsMessengerEXT(vkCtx.instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-            LOGERROR("failed to set up debug messenger!");
+            LOGERROR("failed to set up debug messenger!\n");
         }
     }
     void RenderThreadVulkan::CreateInstance() {

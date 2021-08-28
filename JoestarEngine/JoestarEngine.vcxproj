@@ -156,6 +156,7 @@
     <ClCompile Include="Graphics\Image.cpp" />
     <ClCompile Include="Graphics\Mesh.cpp" />
     <ClCompile Include="Graphics\ProceduralMesh.cpp" />
+    <ClCompile Include="Graphics\ProgramCPU.cpp" />
     <ClCompile Include="Graphics\Shader\Shader.cpp" />
     <ClCompile Include="Graphics\Shader\ShaderParser.cpp" />
     <ClCompile Include="Graphics\Texture.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="Graphics\GraphicDefines.h" />
     <ClInclude Include="Graphics\Image.h" />
     <ClInclude Include="Graphics\ProceduralMesh.h" />
+    <ClInclude Include="Graphics\ProgramCPU.h" />
     <ClInclude Include="Graphics\Shader\Shader.h" />
     <ClInclude Include="Graphics\Shader\ShaderParser.h" />
     <ClInclude Include="Graphics\Shader\ShaderDefs.h" />

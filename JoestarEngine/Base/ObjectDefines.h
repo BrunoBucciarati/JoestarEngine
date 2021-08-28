@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 #define REGISTER_OBJECT_ROOT(CLASS)\
 	public:\
 		static const char* GetTypeStatic() {return #CLASS;}\
@@ -29,3 +30,7 @@
 #define GET_SET(NAME, TYPE) \
 	const TYPE& Get##NAME() {return NAME;} \
 	void Set##NAME(TYPE val) {NAME = val;}
+
+typedef uint8_t U8;
+typedef uint16_t U16;
+typedef uint32_t U32;

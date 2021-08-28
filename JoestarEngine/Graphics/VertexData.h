@@ -3,49 +3,53 @@
 #include "../Math/Vector2.h"
 #include "VulkanHeader.h"
 #include "GraphicDefines.h"
+#include "../Base/ObjectDefines.h"
 #include <vector>
 
 namespace Joestar {
     class VertexBuffer {
     public:
-        void SetFlag(uint32_t f) { flags = f; }
-        uint32_t GetFlag() { return flags; }
-        void SetBuffer(uint8_t* data) { buffer = data; }
-        uint8_t* GetBuffer() { return buffer; }
-        void SetSize(uint32_t s) {
-            size = s;
-            buffer = new uint8_t[size];
+        VertexBuffer();
+        void SetFlag(U32 f) { flags = f; }
+        U32 GetFlag() { return flags; }
+        void CopyBuffer(U8* data, U32 sz) {
+            if (!buffer) SetSize(sz);
+            memcpy(buffer, data, sz);
         }
-        uint32_t GetSize() { return size; }
+        U8* GetBuffer() { return buffer; }
+        void SetSize(U32 s) {
+            size = s;
+            buffer = new U8[size];
+        }
+        U32 GetSize() { return size; }
         void AppendVertexAttr(VERTEX_ATTRIBUTE v);
         ~VertexBuffer() {
             delete buffer;
         }
-        VkPipelineVertexInputStateCreateInfo* GetVKVertexInputInfo();
-        VkVertexInputBindingDescription GetVKBindingDescription();
-        std::vector<VkVertexInputAttributeDescription> GetVKAttributeDescriptions();
-    private:
-        uint8_t* buffer; //raw data
-        uint32_t flags; //flag of vertex channel
-        uint32_t size; //size of data
+        U32 id;
+        U32 flags; //flag of vertex channel
+        U8* buffer; //raw data
+        U32 size; //size of data
         std::vector<VERTEX_ATTRIBUTE> attrs; //size of vertex channels
-        std::vector<VkVertexInputAttributeDescription>attributeDescriptions;
-        VkVertexInputBindingDescription bindingDescription;
-        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     };
 
     class IndexBuffer {
     public:
-        inline void SetBuffer(uint8_t* data) { buffer = data; }
-        inline uint8_t* GetBuffer() { return buffer; }
-        inline void SetSize(uint32_t s) { size = s; buffer = new uint8_t[size]; }
-        inline uint32_t GetSize() { return size; }
-        inline uint32_t GetIndexCount() { return size / 2; }
+        IndexBuffer();
+        U8* GetBuffer() { return buffer; }
+        void CopyBuffer(U8* data, U32 sz) {
+            if (!buffer) SetSize(sz);
+            memcpy(buffer, data, sz);
+        }
+        void SetSize(U32 s) { size = s; buffer = new U8[size]; }
+        U32 GetSize() { return size; }
+        U32 GetIndexCount() { return size / 2; }
         ~IndexBuffer() {
             delete buffer;
         }
+        U32 id;
     private:
-        uint8_t* buffer;
-        uint32_t size; //size of data
+        U8* buffer;
+        U32 size; //size of data
     };
 }

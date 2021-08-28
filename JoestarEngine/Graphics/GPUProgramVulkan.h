@@ -18,25 +18,35 @@
 namespace Joestar {
     class ShaderVK {
     public:
-        explicit ShaderVK(Shader* _shader) : shader(_shader) {}
+        explicit ShaderVK(Shader* _shader) : shader(_shader) {
+            for (auto& uniform : shader->info.uniforms) {
+                if (uniform.dataType > ShaderDataTypeSampler) {
+                    ubs.push_back(uniform.binding);
+                } else {
+                    ubs.push_back(hashString(uniform.name.c_str()));
+                }
+            }
+        }
         std::string& GetName() { return shader->GetName(); }
-        uint16_t GetUniformBindingByName(std::string& name) {
+        U16 GetUniformBindingByName(std::string& name) {
             return shader->GetUniformBindingByName(name);
         }
-        uint16_t GetSamplerBinding(int count) {
+        U16 GetSamplerBinding(int count) {
             return shader->GetSamplerBinding(count);
         }
-        uint32_t ID() { return shader->id; }
+        U32 ID() { return shader->id; }
         Shader* shader;
         VkShaderModule vertShaderModule{}, fragShaderModule{};
         VkPipelineShaderStageCreateInfo shaderStage[2];
         bool operator ==(ShaderVK& s2) {
             return GetName() == s2.GetName();
         }
-        void Clear(VkDevice& dev) {
+        void Clean(VkDevice& dev) {
             vkDestroyShaderModule(dev, vertShaderModule, nullptr);
             vkDestroyShaderModule(dev, fragShaderModule, nullptr);
         }
+        std::vector<U32> ubs;
+        std::vector<U32> textures;
     };
 
     class TextureVK {
@@ -52,37 +62,85 @@ namespace Joestar {
         Texture* texture;
     };
 
-    class UniformBufferVK {
+    class BufferVK {
     public:
-        std::vector<VkBuffer> uniformBuffers;
-        std::vector<VkDeviceMemory> uniformBuffersMemory;
+        VkBuffer buffer;
+        VkDeviceMemory memory;
+
+        void Clean(VkDevice& dev) {
+            vkDestroyBuffer(dev, buffer, nullptr);
+            vkFreeMemory(dev, memory, nullptr);
+        }
+    };
+
+    class VertexBufferVK : public BufferVK {
+    public:
+        explicit VertexBufferVK(VertexBuffer* b) { vb = b; }
+        VertexBuffer* vb;
+        U32 ID() { return vb->id; }
+        U32 GetSize() { return vb->GetSize(); }
+        U8* GetBuffer() { return vb->GetBuffer(); }
+        VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
+        VkVertexInputBindingDescription GetBindingDescription();
+        std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
+
+    private:
+        std::vector<VkVertexInputAttributeDescription>attributeDescriptions;
+        VkVertexInputBindingDescription bindingDescription;
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    };
+
+    class IndexBufferVK : public BufferVK {
+    public:
+        explicit IndexBufferVK(IndexBuffer* b) { ib = b; }
+        U32 GetIndexCount() { return ib->GetIndexCount(); }
+        IndexBuffer* ib;
+        U32 ID() { return ib->id; }
+        U32 GetSize() { return ib->GetSize(); }
+        U8* GetBuffer() { return ib->GetBuffer(); }
+    };
+
+    struct UniformBufferVK {
+        std::vector<BufferVK> buffers;
+        //std::vector<VkBuffer> uniformBuffers;
+        //std::vector<VkDeviceMemory> uniformBuffersMemory;
         uint32_t size;
         void* data;
         uint32_t id;
         std::string name;
-        uint32_t texID;
+        uint32_t texID = 0;
+
+        void Clean(VkDevice& dev) {
+            for (auto& buf: buffers) {
+                vkDestroyBuffer(dev, buf.buffer, nullptr);
+                vkFreeMemory(dev, buf.memory, nullptr);
+            }
+            buffers.clear();
+        }
     };
 
-    struct PipelineState {
-        Vector4f clearColor;
+    struct PipelineStateVK {
+        //bool clear = false;
+        //bool msaa = false;
+        //Vector4f clearColor;
         //UniformBufferObject ubo;
-        VertexBuffer* vb;
-        IndexBuffer* ib;
-        ShaderVK* shader;
+        //ShaderVK* shader;
         std::vector<UniformBufferVK*> ubs;
-        MeshTopology topology;
 
-        VKPipelineContext* pipelineCtx;
-        VKFrameBufferContext* fbCtx;
-        VkBuffer indexBuffer;
-        VkDeviceMemory indexBufferMemory;
-        VkBuffer vertexBuffer;
-        VkDeviceMemory vertexBufferMemory;
+        VkDescriptorSetLayout descriptorSetLayout;
+        VkPipelineLayout pipelineLayout;
+        VkPipeline graphicsPipeline;
+        //PipelineVK* pipeline;
+
+        //VkBuffer indexBuffer;
+        //VkDeviceMemory indexBufferMemory;
+        //VkBuffer vertexBuffer;
+        //VkDeviceMemory vertexBufferMemory;
         VkSampler textureSampler;
 
         std::vector<uint32_t> textures;
 
-        bool operator== (PipelineState & p2) {
+        bool operator== (PipelineStateVK& p2) {
             if (textures.size() != p2.textures.size()) return false;
             for (int i = 0; i < textures.size(); ++i) {
                 if (textures[i] != p2.textures[i]) return false;
@@ -91,35 +149,48 @@ namespace Joestar {
             for (int i = 0; i < ubs.size(); ++i) {
                 if (ubs[i] != p2.ubs[i]) return false;
             }
-            return clearColor == p2.clearColor && shader == p2.shader &&
-                (vb == vb) && (ib == ib);
+            return true;// clearColor == p2.clearColor && shader == p2.shader && clear == p2.clear;
         }
 
-        bool operator!= (PipelineState& p2) {
+        bool operator!= (PipelineStateVK& p2) {
             return !(*this == p2);
         }
     };
 
-    //class VertexBufferVK {
-    //    explicit VertexBufferVK(VertexBuffer* v) : vb(v)  {}
-    //private:
-    //    VertexBuffer* vb;
-    //};
+    struct DrawCallVK {
+        VertexBufferVK* vb;
+        IndexBufferVK* ib;
+        ShaderVK* shader;
+        MeshTopology topology;
+        PipelineStateVK* pso;
+    };
 
-    class GPUProgramVulkan :public GPUProgram {
+    struct RenderPassVK {
+        VkRenderPass renderPass;
+        VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+        FrameBufferVK* fb;
+        bool clear = false;
+        bool msaa = false;
+        Vector4f clearColor;
+        const char* name;
+        std::vector<DrawCallVK*> dcs;
+    };
+
+
+    class GPUProgramVulkan : public GPUProgram {
     public:
         GPUProgramVulkan();
         //VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
         void SetDevice(VulkanContext* ctx) { vkCtxPtr = ctx; }
-        void SetShader(PipelineState& pso);
-        void CreateVertexBuffer(PipelineState& pso, VertexBuffer* vb);
-        void CreateIndexBuffer(PipelineState& pso, IndexBuffer* ib);
+        void SetShader(ShaderVK* shader);
+        void CreateVertexBuffer(VertexBufferVK* vb);
+        void CreateIndexBuffer(IndexBufferVK* ib);
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         void CreateTextureImage(TextureVK* tex);
         void CreateTextureImageView(TextureVK* tex);
         VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT, uint32_t mipLevels = 1);
-        void CreateTextureSampler(PipelineState& pso);
+        void CreateTextureSampler(RenderPassVK* pass, int i);
         void CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         //inline VkBuffer* GetVertexBuffer() { return &vertexBuffer; }
@@ -135,27 +206,27 @@ namespace Joestar {
         void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
         void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
         void GenerateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-        void CreateRenderPass(PipelineState& pso);
-        void CreateGraphicsPipeline(PipelineState& pso);
-        void CreateDescriptorSetLayout(PipelineState& pso);
-        VKPipelineContext* GetPipelineContext(PipelineState& pso);
+        void CreateRenderPass(RenderPassVK* pass);
+        void CreateGraphicsPipeline(RenderPassVK* pass, int i);
+        void CreateDescriptorSetLayout(RenderPassVK* pass, int i);
+        void GetPipeline(RenderPassVK* pass, int i);
         VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
         VkFormat FindDepthFormat();
         //void CreateDescriptorSets();
         void CleanupSwapChain();
-        void CreateDepthResources(PipelineState& pso);
-        void CreateColorResources(PipelineState& pso);
+        void CreateDepthResources(RenderPassVK* pass);
+        void CreateColorResources(RenderPassVK* pass);
         void CreateUniformBuffers(UniformBufferVK* ub);
-        void CreateFrameBuffers(PipelineState& pso);
+        void CreateFrameBuffers(RenderPassVK* pass);
         void CreateDescriptorPool();
-        void CreateDescriptorSets(PipelineState& pso);
-        void UpdateDescriptorSets(PipelineState& pso);
+        void CreateDescriptorSets(DrawCallVK* pso);
+        void UpdateDescriptorSets(DrawCallVK* pso);
         void UpdateUniformBuffer(uint32_t currentImage);
-        void RecordCommandBuffer(std::vector<PipelineState*>& pso);
+        void RecordCommandBuffer(std::vector<RenderPassVK*>&);
         void ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx);
-        void RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso);
-        void RenderCmdUpdateUniformBufferObject(RenderCommand cmd, PipelineState& pso);
-        void RecordRenderPass(PipelineState& pso, int i);
+        //void RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso);
+        void RenderCmdUpdateUniformBufferObject(RenderCommand& cmd);
+        void RecordRenderPass(RenderPassVK* pass, int i);
 
     private:
         VulkanContext* vkCtxPtr;
@@ -166,14 +237,20 @@ namespace Joestar {
         VkMemoryAllocateInfo allocInfo{};
         uint32_t mipLevels;
         VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_2_BIT;
-        PipelineState currentPSO;
-        std::map<uint32_t, PipelineState> allPSOs;
-        std::map<uint32_t, TextureVK*> textureVKs;
+        //PipelineStateVK currentPSO;
+        //std::map<uint32_t, PipelineStateVK> allPSOs;
         //pending texture, will upload during UpdateUniform
+        //all resources
+        std::map<uint32_t, TextureVK*> textureVKs;
         std::map<uint32_t, TextureVK*> pendingTextureVKs;
         std::map<uint32_t, ShaderVK*> shaderVKs;
         std::map<uint32_t, UniformBufferVK*> uniformVKs;
-        std::vector<PipelineState*> psoChain;
+        std::map<uint32_t, VertexBufferVK*> vbs;
+        std::map<uint32_t, IndexBufferVK*> ibs;
+        std::map<uint32_t, FrameBufferVK*> fbs;
+        //std::vector<PipelineStateVK*> psoChain;
+
+        std::vector<RenderPassVK*> renderPassList;
     };
 
 }

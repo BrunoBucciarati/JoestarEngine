@@ -24,7 +24,7 @@ namespace Joestar {
      // render->mat_->SetDefault();
 
         GameObject* sphere = new GameObject;
-        //gameObjects.push_back(sphere);
+        gameObjects.push_back(sphere);
         sphere->render = NEW_OBJECT(Renderer);
         sphere->render->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
         sphere->render->mat = NEW_OBJECT(Material);
@@ -41,6 +41,7 @@ namespace Joestar {
 
     void Scene::RenderScene() {
         Graphics* graphics = GetSubsystem<Graphics>();
+        graphics->BeginRenderPass("Scene");
         graphics->Clear();
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera.GetProjectionMatrix());
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera.GetViewMatrix());
@@ -49,5 +50,6 @@ namespace Joestar {
                 (*iter)->render->Render(camera);
             }
         }
+        graphics->EndRenderPass("Scene");
     }
 }

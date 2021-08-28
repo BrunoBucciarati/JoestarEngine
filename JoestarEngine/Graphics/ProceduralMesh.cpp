@@ -20,6 +20,7 @@ namespace Joestar {
                 vertices[y * X_SEGMENTS + x].pos.Set(xPos, yPos, zPos);
                 vertices[y * X_SEGMENTS + x].normal.Set(xPos, yPos, zPos);
                 vertices[y * X_SEGMENTS + x].texCoord.Set(xSegment, ySegment);
+                vertices[y * X_SEGMENTS + x].color.Set(1.f, 1.f, 1.f);
             }
         }
 
@@ -42,7 +43,7 @@ namespace Joestar {
 
         VertexBuffer* vb = mesh->GetVB();
         vb->SetSize(vertices.size() * sizeof(VertexLoad));
-        vb->SetBuffer((uint8_t*)vertices.data());
+        vb->CopyBuffer((uint8_t*)vertices.data(), vertices.size() * sizeof(VertexLoad));
         vb->AppendVertexAttr(VERTEX_POS);
         vb->AppendVertexAttr(VERTEX_NORMAL);
         vb->AppendVertexAttr(VERTEX_COLOR);
@@ -51,7 +52,7 @@ namespace Joestar {
 
         IndexBuffer* ib = mesh->GetIB();
         ib->SetSize(indices.size() * sizeof(uint16_t));
-        ib->SetBuffer((uint8_t*)indices.data());
+        ib->CopyBuffer((uint8_t*)indices.data(), indices.size() * sizeof(uint16_t));
 
         mesh->SetTopology(MESH_TOPOLOGY_TRIANGLE_STRIP);
 

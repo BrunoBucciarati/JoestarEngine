@@ -19,7 +19,6 @@ namespace Joestar {
     public:
         unsigned int ID;
 
-
         GPUProgram() {}
         //virtual void SetShader(std::string& vertexPath, std::string& fragmentPath, std::string& geometryPath = nullptr) {}
         File* ShaderCodeFile(const char* file);

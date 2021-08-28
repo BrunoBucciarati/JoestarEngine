@@ -10,6 +10,49 @@ namespace Joestar {
 		
 	}
 
+	VkVertexInputBindingDescription VertexBufferVK::GetBindingDescription() {
+		VkVertexInputBindingDescription bindingDescription{};
+		bindingDescription.binding = 0;
+		uint32_t stride = 0;
+		for (int i = 0; i < vb->attrs.size(); ++i) {
+			stride += VERTEX_ATTRIBUTE_SIZE[vb->attrs[i]] * sizeof(float);
+		}
+		bindingDescription.stride = stride;
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		return bindingDescription;
+	}
+	std::vector<VkVertexInputAttributeDescription> VertexBufferVK::GetAttributeDescriptions() {
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+		attributeDescriptions.resize(vb->attrs.size());
+
+		uint32_t vaSize = 0, offset = 0;
+		for (int i = 0; i < vb->attrs.size(); ++i) {
+			attributeDescriptions[i].binding = 0;
+			attributeDescriptions[i].location = i;
+			attributeDescriptions[i].offset = offset;
+			vaSize = VERTEX_ATTRIBUTE_SIZE[vb->attrs[i]];
+			switch (vaSize) {
+			case 3: attributeDescriptions[i].format = VK_FORMAT_R32G32B32_SFLOAT; offset += 12; break;
+			case 2: attributeDescriptions[i].format = VK_FORMAT_R32G32_SFLOAT; offset += 8;  break;
+			default:break;
+			}
+		}
+
+		return attributeDescriptions;
+	}
+	VkPipelineVertexInputStateCreateInfo* VertexBufferVK::GetVertexInputInfo() {
+		bindingDescription = GetBindingDescription();
+		attributeDescriptions = GetAttributeDescriptions();
+		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+		return &vertexInputInfo;
+	}
+
+
 	VkFormat GPUProgramVulkan::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 		for (VkFormat format : candidates) {
 			VkFormatProperties props;
@@ -59,7 +102,7 @@ namespace Joestar {
 		//mesh->Load(path + "viking_room/viking_room.obj");
 	}
 	
-	void GPUProgramVulkan::SetShader(PipelineState& pso) {
+	void GPUProgramVulkan::SetShader(ShaderVK* shader) {
 		Application* app = Application::GetApplication();
 		FileSystem* fs = app->GetSubSystem<FileSystem>();
 		std::string path = fs->GetResourceDir();
@@ -68,7 +111,6 @@ namespace Joestar {
 		if (_getcwd(workDir, 260))
 			path = workDir + ("/" + path);
 
-		ShaderVK* shader = pso.shader;
 		//First Compile To Spir-V
 		std::string vertSpvPath = std::string(shader->GetName()) + "vert.spv";
 		std::string fragSpvPath = std::string(shader->GetName()) + "frag.spv";
@@ -100,28 +142,41 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::Clean() {
-		vkDestroyDescriptorSetLayout(vkCtxPtr->device, currentPSO.pipelineCtx->descriptorSetLayout, nullptr);
-		currentPSO.shader->Clear(vkCtxPtr->device);
-		vkDestroyBuffer(vkCtxPtr->device, currentPSO.vertexBuffer, nullptr);
-		vkFreeMemory(vkCtxPtr->device, currentPSO.vertexBufferMemory, nullptr);
-		vkDestroyBuffer(vkCtxPtr->device, currentPSO.indexBuffer, nullptr);
-		vkFreeMemory(vkCtxPtr->device, currentPSO.indexBufferMemory, nullptr);
-		vkDestroySampler(vkCtxPtr->device, currentPSO.textureSampler, nullptr);
+		//vkDestroyDescriptorSetLayout(vkCtxPtr->device, currentPSO.pipelineCtx->descriptorSetLayout, nullptr);
+		//currentPSO.shader->Clear(vkCtxPtr->device);
+
+		for (auto& shader : shaderVKs) {
+			shader.second->Clean(vkCtxPtr->device);
+		}
+
+		for (auto& buffer : uniformVKs) {
+			buffer.second->Clean(vkCtxPtr->device);
+		}
+
+		for (auto& buffer : ibs) {
+			buffer.second->Clean(vkCtxPtr->device);
+		}
+
+		for (auto& buffer : vbs) {
+			buffer.second->Clean(vkCtxPtr->device);
+		}
+
+		//vkDestroySampler(vkCtxPtr->device, currentPSO.textureSampler, nullptr);
 		//vkDestroyImageView(vkCtxPtr->device, currentPSO.textureImageView, nullptr);
 		//vkDestroyImage(vkCtxPtr->device, currentPSO.textureImage, nullptr);
 		//vkFreeMemory(vkCtxPtr->device, currentPSO.textureImageMemory, nullptr);
 		//delete mesh;
 
-		vkDestroyPipeline(vkCtxPtr->device, currentPSO.pipelineCtx->graphicsPipeline, nullptr);
-		vkDestroyPipelineLayout(vkCtxPtr->device, currentPSO.pipelineCtx->pipelineLayout, nullptr);
-		vkDestroyRenderPass(vkCtxPtr->device, currentPSO.pipelineCtx->renderPass, nullptr);
+		//vkDestroyPipeline(vkCtxPtr->device, currentPSO.pipelineCtx->graphicsPipeline, nullptr);
+		//vkDestroyPipelineLayout(vkCtxPtr->device, currentPSO.pipelineCtx->pipelineLayout, nullptr);
+		//vkDestroyRenderPass(vkCtxPtr->device, currentPSO.pipelineCtx->renderPass, nullptr);
 	}
 
 	//VkPipelineVertexInputStateCreateInfo* GPUProgramVulkan::GetVertexInputInfo() {
 	//	//return mesh->GetVB()->GetVKVertexInputInfo();
 	//}
 
-	void GPUProgramVulkan::CreateVertexBuffer(PipelineState& pso, VertexBuffer* vb) {
+	void GPUProgramVulkan::CreateVertexBuffer(VertexBufferVK* vb) {
 		VkDeviceSize bufferSize = vb->GetSize();
 
 		VkBuffer stagingBuffer;
@@ -132,14 +187,14 @@ namespace Joestar {
 		memcpy(data, vb->GetBuffer(), (size_t)bufferSize);
 		vkUnmapMemory(vkCtxPtr->device, stagingBufferMemory);
 
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, pso.vertexBuffer, pso.vertexBufferMemory);
-		CopyBuffer(stagingBuffer, pso.vertexBuffer, bufferSize);
+		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vb->buffer, vb->memory);
+		CopyBuffer(stagingBuffer, vb->buffer, bufferSize);
 
 		vkDestroyBuffer(vkCtxPtr->device, stagingBuffer, nullptr);
 		vkFreeMemory(vkCtxPtr->device, stagingBufferMemory, nullptr);
 	}
 
-	void GPUProgramVulkan::CreateIndexBuffer(PipelineState& pso, IndexBuffer* ib) {
+	void GPUProgramVulkan::CreateIndexBuffer(IndexBufferVK* ib) {
 		VkDeviceSize bufferSize = ib->GetSize();
 
 		VkBuffer stagingBuffer;
@@ -151,9 +206,9 @@ namespace Joestar {
 		memcpy(data, ib->GetBuffer(), (size_t)bufferSize);
 		vkUnmapMemory(vkCtxPtr->device, stagingBufferMemory);
 
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pso.indexBuffer, pso.indexBufferMemory);
+		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, ib->buffer, ib->memory);
 
-		CopyBuffer(stagingBuffer, pso.indexBuffer, bufferSize);
+		CopyBuffer(stagingBuffer, ib->buffer, bufferSize);
 
 		vkDestroyBuffer(vkCtxPtr->device, stagingBuffer, nullptr);
 		vkFreeMemory(vkCtxPtr->device, stagingBufferMemory, nullptr);
@@ -224,7 +279,7 @@ namespace Joestar {
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = usage;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.samples = numSamples;;
+		imageInfo.samples = numSamples;
 		imageInfo.flags = 0; // Optional  
 		if (vkCreateImage(vkCtxPtr->device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
 			LOGERROR("failed to create image!");
@@ -513,7 +568,8 @@ namespace Joestar {
 		}
 		return view;
 	}
-	void GPUProgramVulkan::CreateTextureSampler(PipelineState& pso) {
+	void GPUProgramVulkan::CreateTextureSampler(RenderPassVK* pass, int i) {
+		PipelineStateVK* pso = pass->dcs[i]->pso;
 		VkSamplerCreateInfo samplerInfo{};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -532,30 +588,30 @@ namespace Joestar {
 		samplerInfo.maxLod = static_cast<float>(mipLevels);
 		samplerInfo.mipLodBias = 0.0f;
 
-		if (vkCreateSampler(vkCtxPtr->device, &samplerInfo, nullptr, &pso.textureSampler) != VK_SUCCESS) {
+		if (vkCreateSampler(vkCtxPtr->device, &samplerInfo, nullptr, &pso->textureSampler) != VK_SUCCESS) {
 			LOGERROR("failed to create texture sampler!");
 		}
 	}
 
-	void GPUProgramVulkan::CreateRenderPass(PipelineState& pso) {
+	void GPUProgramVulkan::CreateRenderPass(RenderPassVK* pass) {
 		VkAttachmentDescription colorAttachment{};
 		colorAttachment.format = vkCtxPtr->swapChainImageFormat;
-		colorAttachment.samples = msaaSamples;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachment.samples = pass->msaaSamples;
+		colorAttachment.loadOp = pass->clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachment.finalLayout = pass->msaa ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colorAttachmentRef{};
 		colorAttachmentRef.attachment = 0;
-		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_GENERAL;
 
 		VkAttachmentDescription depthAttachment{};
 		depthAttachment.format = FindDepthFormat();
-		depthAttachment.samples = msaaSamples;
-		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depthAttachment.samples = pass->msaaSamples;
+		depthAttachment.loadOp = pass->clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -566,62 +622,92 @@ namespace Joestar {
 		depthAttachmentRef.attachment = 1;
 		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-		VkAttachmentDescription colorAttachmentResolve{};
-		colorAttachmentResolve.format = vkCtxPtr->swapChainImageFormat;
-		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference colorAttachmentResolveRef{};
-		colorAttachmentResolveRef.attachment = 2;
-		colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass{};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &colorAttachmentRef;
-		subpass.pDepthStencilAttachment = &depthAttachmentRef;
-		subpass.pResolveAttachments = &colorAttachmentResolveRef;
-
-		VkSubpassDependency dependency{};
-		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.srcAccessMask = 0;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-		std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
 		VkRenderPassCreateInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-		renderPassInfo.pAttachments = attachments.data();
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpass;
-		renderPassInfo.dependencyCount = 1;
-		renderPassInfo.pDependencies = &dependency;
+		if (pass->msaa) {
+			VkAttachmentDescription colorAttachmentResolve{};
+			colorAttachmentResolve.format = vkCtxPtr->swapChainImageFormat;
+			colorAttachmentResolve.samples = pass->msaaSamples;
+			colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-		if (vkCreateRenderPass(vkCtxPtr->device, &renderPassInfo, nullptr, &(pso.pipelineCtx->renderPass)) != VK_SUCCESS) {
-			LOGERROR("failed to create render pass!");
+			VkAttachmentReference colorAttachmentResolveRef{};
+			colorAttachmentResolveRef.attachment = 2;
+			colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescription subpass{};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.colorAttachmentCount = 1;
+			subpass.pColorAttachments = &colorAttachmentRef;
+			subpass.pDepthStencilAttachment = &depthAttachmentRef;
+			subpass.pResolveAttachments = &colorAttachmentResolveRef;
+
+			VkSubpassDependency dependency{};
+			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependency.dstSubpass = 0;
+			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependency.srcAccessMask = 0;
+			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+			std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			renderPassInfo.pAttachments = attachments.data();
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpass;
+			renderPassInfo.dependencyCount = 1;
+			renderPassInfo.pDependencies = &dependency;
+
+			if (vkCreateRenderPass(vkCtxPtr->device, &renderPassInfo, nullptr, &(pass->renderPass)) != VK_SUCCESS) {
+				LOGERROR("failed to create render pass!");
+			}
+		} else {
+			VkSubpassDescription subpass{};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.colorAttachmentCount = 1;
+			subpass.pColorAttachments = &colorAttachmentRef;
+			subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+			VkSubpassDependency dependency{};
+			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependency.dstSubpass = 0;
+			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependency.srcAccessMask = 0;
+			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+			std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());;
+			renderPassInfo.pAttachments = attachments.data();
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpass;
+			renderPassInfo.dependencyCount = 1;
+			renderPassInfo.pDependencies = &dependency;
+
+			if (vkCreateRenderPass(vkCtxPtr->device, &renderPassInfo, nullptr, &(pass->renderPass)) != VK_SUCCESS) {
+				LOGERROR("failed to create render pass!");
+			}
 		}
+
+		CreateFrameBuffers(pass);
 	}
 
-	void GPUProgramVulkan::CreateGraphicsPipeline(PipelineState& pso) {
-		//std::string vs = pso.shader + ".vert";
-		//std::string fs = pso.shader + ".frag";
-		//std::string gs = "";
-		SetShader(pso);
+	void GPUProgramVulkan::CreateGraphicsPipeline(RenderPassVK* pass, int i) {
+		DrawCallVK* dc = pass->dcs[i];
+		PipelineStateVK* pso = dc->pso;
+		SetShader(dc->shader);
 
-		VkPipelineShaderStageCreateInfo* info = pso.shader->shaderStage;
+		VkPipelineShaderStageCreateInfo* info = dc->shader->shaderStage;
 
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		if (pso.topology == MESH_TOPOLOGY_TRIANGLE_STRIP) {
+		if (dc->topology == MESH_TOPOLOGY_TRIANGLE_STRIP) {
 			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		} else {
 			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -663,7 +749,7 @@ namespace Joestar {
 		VkPipelineMultisampleStateCreateInfo multisampling{};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampling.sampleShadingEnable = VK_FALSE;
-		multisampling.rasterizationSamples = msaaSamples;
+		multisampling.rasterizationSamples = pass->msaaSamples;
 		multisampling.minSampleShading = 1.0f; // Optional
 		multisampling.pSampleMask = nullptr; // Optional
 		multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
@@ -711,17 +797,15 @@ namespace Joestar {
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1; // Optional
-		VkDescriptorSetLayout layouts[] = { pso.pipelineCtx->descriptorSetLayout };
+		VkDescriptorSetLayout layouts[] = { pso->descriptorSetLayout };
 		pipelineLayoutInfo.pSetLayouts = layouts; // Optional
 
-		if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(pso.pipelineCtx->pipelineLayout)) != VK_SUCCESS) {
+		if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(pso->pipelineLayout)) != VK_SUCCESS) {
 			LOGERROR("failed to create pipeline layout!");
 		}
 
-		CreateVertexBuffer(pso, pso.vb);
-		CreateIndexBuffer(pso, pso.ib);
 		//Create Vertex Buffer
-		VkPipelineVertexInputStateCreateInfo* vertexInputInfo = pso.vb->GetVKVertexInputInfo();
+		VkPipelineVertexInputStateCreateInfo* vertexInputInfo = dc->vb->GetVertexInputInfo();
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = 2;
@@ -735,18 +819,18 @@ namespace Joestar {
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = nullptr; // Optional
 
-		pipelineInfo.layout = pso.pipelineCtx->pipelineLayout;
-		pipelineInfo.renderPass = pso.pipelineCtx->renderPass;
+		pipelineInfo.layout = pso->pipelineLayout;
+		pipelineInfo.renderPass = pass->renderPass;
 		pipelineInfo.subpass = 0;
 
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 		//pipelineInfo.basePipelineIndex = -1; // Optional
-		if (vkCreateGraphicsPipelines(vkCtxPtr->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &(pso.pipelineCtx->graphicsPipeline)) != VK_SUCCESS) {
+		if (vkCreateGraphicsPipelines(vkCtxPtr->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &(pso->graphicsPipeline)) != VK_SUCCESS) {
 			LOGERROR("failed to create graphics pipeline!");
 		}
 	}
 
-	void GPUProgramVulkan::CreateDescriptorSetLayout(PipelineState& pso) {
+	void GPUProgramVulkan::CreateDescriptorSetLayout(RenderPassVK* pass, int i) {
 		VkDescriptorSetLayoutBinding uboLayoutBinding{};
 		uboLayoutBinding.binding = 0;
 		uboLayoutBinding.descriptorCount = 1;
@@ -767,69 +851,74 @@ namespace Joestar {
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 
-		if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(pso.pipelineCtx->descriptorSetLayout)) != VK_SUCCESS) {
+
+		PipelineStateVK* pso = pass->dcs[i]->pso;
+		if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(pso->descriptorSetLayout)) != VK_SUCCESS) {
 			LOGERROR("failed to create descriptor set layout!");
 		}
 	}
 
-	VKPipelineContext* GPUProgramVulkan::GetPipelineContext(PipelineState& pso) {
-		pso.pipelineCtx = new VKPipelineContext;
-		pso.fbCtx = new VKFrameBufferContext;
-		CreateRenderPass(pso);
-		CreateDescriptorSetLayout(pso);
-		CreateGraphicsPipeline(pso);
-		CreateColorResources(pso);
-        CreateDepthResources(pso);
-        //CreateUniformBuffers();
-        CreateFrameBuffers(pso);
-		//CreateVertexBuffer();
-		//CreateIndexBuffer();
-		//CreateTextureImage(pso);
-		//CreateTextureImageView(pso);
-		CreateTextureSampler(pso);
-		CreateDescriptorPool();
-		CreateDescriptorSets(pso);
+	void GPUProgramVulkan::GetPipeline(RenderPassVK* pass, int i) {
+		//pso.pipelineCtx = new VKPipelineContext;
+		//pso.fbCtx = new VKFrameBufferContext;
+		//CreateRenderPass(pso);
 
-		return pso.pipelineCtx;
+		CreateDescriptorSetLayout(pass, i);
+		CreateGraphicsPipeline(pass, i);
+        //CreateFrameBuffers(pso);
+		CreateTextureSampler(pass, i);
+		CreateDescriptorPool();
+		CreateDescriptorSets(pass->dcs[i]);
 	}
 
-	void GPUProgramVulkan::CreateColorResources(PipelineState& pso) {
+	void GPUProgramVulkan::CreateColorResources(RenderPassVK* pass) {
 		VkFormat colorFormat = vkCtxPtr->swapChainImageFormat;
 
-		CreateImage(vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pso.fbCtx->colorImage, pso.fbCtx->colorImageMemory);
-		pso.fbCtx->colorImageView = CreateImageView(pso.fbCtx->colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+		CreateImage(vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, pass->msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pass->fb->colorImage, pass->fb->colorImageMemory);
+		pass->fb->colorImageView = CreateImageView(pass->fb->colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 	}
 
-	void GPUProgramVulkan::CreateDepthResources(PipelineState& pso) {
+	void GPUProgramVulkan::CreateDepthResources(RenderPassVK* pass) {
 		VkFormat depthFormat = FindDepthFormat();
-		CreateImage(vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pso.fbCtx->depthImage, pso.fbCtx->depthImageMemory);
-		pso.fbCtx->depthImageView = CreateImageView(pso.fbCtx->depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
-		TransitionImageLayout(pso.fbCtx->depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+		CreateImage(vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, pass->msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pass->fb->depthImage, pass->fb->depthImageMemory);
+		pass->fb->depthImageView = CreateImageView(pass->fb->depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+		TransitionImageLayout(pass->fb->depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 	}
 
 	void GPUProgramVulkan::CreateUniformBuffers(UniformBufferVK* ub) {
 		VkDeviceSize bufferSize = ub->size;
 		
-		ub->uniformBuffers.resize(vkCtxPtr->swapChainImages.size());
-		ub->uniformBuffersMemory.resize(vkCtxPtr->swapChainImages.size());
-		
+		ub->buffers.resize(vkCtxPtr->swapChainImages.size());
+
 		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
-		    CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, ub->uniformBuffers[i], ub->uniformBuffersMemory[i]);
+		    CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, ub->buffers[i].buffer, ub->buffers[i].memory);
 		}
 	}
 
-	void GPUProgramVulkan::CreateFrameBuffers(PipelineState& pso) {
+	void GPUProgramVulkan::CreateFrameBuffers(RenderPassVK* pass) {
+		if (!vkCtxPtr->swapChainFramebuffers.empty()) return;
+		pass->fb = new FrameBufferVK;
+		CreateColorResources(pass);
+		CreateDepthResources(pass);
 		vkCtxPtr->swapChainFramebuffers.resize(vkCtxPtr->swapChainImageViews.size());
 		for (size_t i = 0; i < vkCtxPtr->swapChainImageViews.size(); i++) {
-			std::array<VkImageView, 3> attachments = {
-				pso.fbCtx->colorImageView,
-				pso.fbCtx->depthImageView,
-				vkCtxPtr->swapChainImageViews[i]
-			};
+			std::vector<VkImageView> attachments;
+			if (pass->msaa) {
+				attachments = {
+					pass->fb->colorImageView,
+					pass->fb->depthImageView,
+					vkCtxPtr->swapChainImageViews[i]
+				};
+			} else {
+				attachments = {
+					vkCtxPtr->swapChainImageViews[i],
+					pass->fb->depthImageView,
+				};
+			}
 
 			VkFramebufferCreateInfo framebufferInfo{};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass = pso.pipelineCtx->renderPass;
+			framebufferInfo.renderPass = pass->renderPass;
 			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 			framebufferInfo.pAttachments = attachments.data();
 			framebufferInfo.width = vkCtxPtr->swapChainExtent.width;
@@ -859,8 +948,8 @@ namespace Joestar {
 			LOGERROR("failed to create descriptor pool!");
 		}
 	}
-	void GPUProgramVulkan::CreateDescriptorSets(PipelineState& pso) {
-		std::vector<VkDescriptorSetLayout> layouts(vkCtxPtr->swapChainImages.size(), pso.pipelineCtx->descriptorSetLayout);
+	void GPUProgramVulkan::CreateDescriptorSets(DrawCallVK* dc) {
+		std::vector<VkDescriptorSetLayout> layouts(vkCtxPtr->swapChainImages.size(), dc->pso->descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = vkCtxPtr->descriptorPool;
@@ -872,24 +961,24 @@ namespace Joestar {
 			LOGERROR("failed to allocate descriptor sets!");
 		}
 
-		UpdateDescriptorSets(pso);
+		UpdateDescriptorSets(dc);
 	}
 
-	void GPUProgramVulkan::UpdateDescriptorSets(PipelineState& pso) {
+	void GPUProgramVulkan::UpdateDescriptorSets(DrawCallVK* dc) {
 		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); ++i) {
 			std::vector<VkWriteDescriptorSet> descriptorWrites{};
-			descriptorWrites.resize(pso.ubs.size());
+			descriptorWrites.resize(dc->shader->ubs.size());
 			int samplerCount = 0;
-			for (int j = 0; j < pso.ubs.size(); ++j) {
-				UniformBufferVK* ub = pso.ubs[j];
+			for (int j = 0; j < dc->shader->ubs.size(); ++j) {
+				UniformBufferVK* ub = uniformVKs[dc->shader->ubs[j]];
 
 				if (ub->texID > 0) {
 					VkDescriptorImageInfo imageInfo{};
 					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					std::map<uint32_t, TextureVK*>::iterator it = textureVKs.find(pso.textures[0]);
+					std::map<uint32_t, TextureVK*>::iterator it = textureVKs.find(dc->shader->textures[0]);
 					TextureVK* tex;
 					if (it == textureVKs.end()) {
-						it = pendingTextureVKs.find(pso.textures[0]);
+						it = pendingTextureVKs.find(dc->shader->textures[0]);
 						if (it == pendingTextureVKs.end()) {
 							LOGERROR("this texture didn't call Graphics::UpdateTexture!!!");
 						}
@@ -902,11 +991,11 @@ namespace Joestar {
 						tex = it->second;
 					}
 					imageInfo.imageView = tex->textureImageView;
-					imageInfo.sampler = pso.textureSampler;
+					imageInfo.sampler = dc->pso->textureSampler;
 
 					descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 					descriptorWrites[j].dstSet = vkCtxPtr->descriptorSets[i];
-					descriptorWrites[j].dstBinding = pso.shader->GetSamplerBinding(samplerCount++);
+					descriptorWrites[j].dstBinding = dc->shader->GetSamplerBinding(samplerCount++);
 					descriptorWrites[j].dstArrayElement = 0;
 					descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 					descriptorWrites[j].descriptorCount = 1;
@@ -914,13 +1003,13 @@ namespace Joestar {
 
 				} else {
 					VkDescriptorBufferInfo bufferInfo{};
-					bufferInfo.buffer = ub->uniformBuffers[i];
+					bufferInfo.buffer = ub->buffers[i].buffer;
 					bufferInfo.offset = 0;
 					bufferInfo.range = sizeof(UniformBufferObject);
 					
 					descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 					descriptorWrites[j].dstSet = vkCtxPtr->descriptorSets[i];
-					descriptorWrites[j].dstBinding = pso.shader->GetUniformBindingByName(ub->name);
+					descriptorWrites[j].dstBinding = dc->shader->GetUniformBindingByName(ub->name);
 					descriptorWrites[j].dstArrayElement = 0;
 					descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 					descriptorWrites[j].descriptorCount = 1;
@@ -937,40 +1026,51 @@ namespace Joestar {
 
 		for (auto& ub : uniformVKs) {
 			if (ub.second->texID > 0) continue;
-			vkMapMemory(vkCtxPtr->device, ub.second->uniformBuffersMemory[currentImage], 0, ub.second->size, 0, &data);
+			vkMapMemory(vkCtxPtr->device, ub.second->buffers[currentImage].memory, 0, ub.second->size, 0, &data);
 			memcpy(data, ub.second->data, ub.second->size);
-			vkUnmapMemory(vkCtxPtr->device, ub.second->uniformBuffersMemory[currentImage]);
+			vkUnmapMemory(vkCtxPtr->device, ub.second->buffers[currentImage].memory);
 		}
 	}
 
-	void GPUProgramVulkan::RecordRenderPass(PipelineState& pso, int i) {
+	void GPUProgramVulkan::RecordRenderPass(RenderPassVK* pass, int i) {
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = pso.pipelineCtx->renderPass;
+		CreateRenderPass(pass);
+		renderPassInfo.renderPass = pass->renderPass;
 		renderPassInfo.framebuffer = vkCtxPtr->swapChainFramebuffers[i];
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = vkCtxPtr->swapChainExtent;
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = { pso.clearColor.x, pso.clearColor.y, pso.clearColor.z, pso.clearColor.w };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+		if (pass->clear) {
+			clearValues[0].color = { pass->clearColor.x, pass->clearColor.y, pass->clearColor.z, pass->clearColor.w };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+			renderPassInfo.pClearValues = clearValues.data();
+		} else {
 
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
+			//renderPassInfo.pClearValues = clearValues.data();
+		}
+
 		vkCmdBeginRenderPass(vkCtxPtr->commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		vkCmdBindPipeline(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->graphicsPipeline);
 
-		VkBuffer vertexBuffer = pso.vertexBuffer;
-		VkBuffer vertexBuffers[] = { vertexBuffer };
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], pso.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		for (int j = 0; j < pass->dcs.size(); ++j) {
+			DrawCallVK* dc = pass->dcs[j];
+			GetPipeline(pass, j);
+			vkCmdBindPipeline(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->graphicsPipeline);
 
-		vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pso.pipelineCtx->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
-		vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], pso.ib->GetIndexCount(), 1, 0, 0, 0);
+			VkBuffer vertexBuffer = dc->vb->buffer;
+			VkBuffer vertexBuffers[] = { vertexBuffer };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, 1, vertexBuffers, offsets);
+			vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], dc->ib->buffer, 0, VK_INDEX_TYPE_UINT16);
+
+			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
+			vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), 1, 0, 0, 0);
+		}
 		vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
 	}
 
-	void GPUProgramVulkan::RecordCommandBuffer(std::vector<PipelineState*>& pso) {
+	void GPUProgramVulkan::RecordCommandBuffer(std::vector<RenderPassVK*>& passes) {
 		for (size_t i = 0; i < vkCtxPtr->commandBuffers.size(); i++) {
 			VkCommandBufferBeginInfo beginInfo{};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -980,8 +1080,8 @@ namespace Joestar {
 			if (vkBeginCommandBuffer(vkCtxPtr->commandBuffers[i], &beginInfo) != VK_SUCCESS) {
 				LOGERROR("failed to begin recording command buffer!");
 			}
-			for (int j = 0; j < pso.size(); ++j) {
-				RecordRenderPass(*pso[j], i);
+			for (int j = 0; j < passes.size(); ++j) {
+				RecordRenderPass(passes[j], i);
 			}
 			if (vkEndCommandBuffer(vkCtxPtr->commandBuffers[i]) != VK_SUCCESS) {
 				LOGERROR("failed to record command buffer!");
@@ -989,7 +1089,7 @@ namespace Joestar {
 		}
 	}
 
-	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(RenderCommand cmd, PipelineState& pso) {
+	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(RenderCommand& cmd) {
 		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
 		std::string name = "UniformBufferObject";
 		//built in name
@@ -1002,22 +1102,18 @@ namespace Joestar {
 			uniformVKs[hashID]->data = new UniformBufferObject;
 
 			CreateUniformBuffers(uniformVKs[hashID]);
-
 		}
+
 		switch (flag) {
-			//case BUILTIN_MATRIX_MODEL: pso.ubo.model = *(Matrix4x4f*)cmd.data; break;
 			case BUILTIN_MATRIX_VIEW: {
-				//pso.ubo.view = *(Matrix4x4f*)cmd.data;
 				((UniformBufferObject*)uniformVKs[hashID]->data)->view = *(Matrix4x4f*)cmd.data;
 				break; 
 			}
 			case BUILTIN_MATRIX_PROJECTION: { 
-				//pso.ubo.proj = *(Matrix4x4f*)cmd.data; name = "proj"; 
 				((UniformBufferObject*)uniformVKs[hashID]->data)->proj = *(Matrix4x4f*)cmd.data;
 				break; 
 			}
 			case BUILTIN_MATRIX_MODEL: {
-				//pso.ubo.proj = *(Matrix4x4f*)cmd.data; name = "proj"; 
 				((UniformBufferObject*)uniformVKs[hashID]->data)->model = *(Matrix4x4f*)cmd.data;
 				break;
 			}
@@ -1027,65 +1123,84 @@ namespace Joestar {
 			LOGERROR("update ubo but type not recognize!");
 			return;
 		}
-
-		bool hasUBO = false;
-		for (auto& ub : pso.ubs) {
-			if (ub->id == hashID) {
-				hasUBO = true;
-				break;
-			}
-		}
-		if (!hasUBO)
-			pso.ubs.push_back(uniformVKs[hashID]);
 	}
 
-	void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso) {
-		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
-		switch (flag) {
-		case BUILTIN_MATRIX_MODEL: {
-			//built in name
-			std::string name = "model";
-			uint32_t hashID = hashString(name.c_str()) + cmd.size;
-			if (uniformVKs.find(hashID) == uniformVKs.end()) {
-				uniformVKs[hashID] = new UniformBufferVK;
-				uniformVKs[hashID]->name = name;
-				uniformVKs[hashID]->size = cmd.size;
-				uniformVKs[hashID]->id = hashID;
-				uniformVKs[hashID]->data = cmd.data;
+	//void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso) {
+	//	BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
+	//	switch (flag) {
+	//	case BUILTIN_MATRIX_MODEL: {
+	//		//built in name
+	//		std::string name = "model";
+	//		uint32_t hashID = hashString(name.c_str()) + cmd.size;
+	//		if (uniformVKs.find(hashID) == uniformVKs.end()) {
+	//			uniformVKs[hashID] = new UniformBufferVK;
+	//			uniformVKs[hashID]->name = name;
+	//			uniformVKs[hashID]->size = cmd.size;
+	//			uniformVKs[hashID]->id = hashID;
+	//			uniformVKs[hashID]->data = cmd.data;
 
-				CreateUniformBuffers(uniformVKs[hashID]);
-			}
-			pso.ubs.push_back(uniformVKs[hashID]);
-			break; 
-		}
-		default: break;
-		}
-	}
+	//			CreateUniformBuffers(uniformVKs[hashID]);
+	//		}
+	//		pso.ubs.push_back(uniformVKs[hashID]);
+	//		break; 
+	//	}
+	//	default: break;
+	//	}
+	//}
 
-	void RenderCmdUpdateVertexBuffer(RenderCommand cmd, PipelineState& pso) {
-		
-	}
-
+#define CHECK_PASS() if(pass == nullptr) LOGERROR("PLEASE START PASS FIRST!\n");
 	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx) {
 		if (cmdIdx == 0) return;
+		//for test, we only record once now
+		if (!renderPassList.empty()) return;
 
-		std::vector<PipelineState*> framePSOChain;
-		PipelineState* pso = new PipelineState;
-		bool needRecord = false;
+		RenderPassVK* pass = nullptr;
+		DrawCallVK* drawcall = new DrawCallVK;
+		drawcall->pso = new PipelineStateVK;
+		/*std::vector<RenderPassVK*> passList;*/
+		//std::vector<PipelineState*> framePSOChain;
+		//PipelineState* pso = new PipelineState;
+		bool needRecord = true;
 		int curPSOIdx = 0;
 		for (int i = 0; i < cmdIdx; ++i) {
 			switch (cmdBuffer[i].typ) {
-			case RenderCMD_Clear: pso->clearColor = *((Vector4f*)cmdBuffer[i].data); break;
-			case RenderCMD_UpdateUniformBufferObject: RenderCmdUpdateUniformBufferObject(cmdBuffer[i], *pso); break;
-			case RenderCMD_UpdateUniformBuffer: RenderCmdUpdateUniformBuffer(cmdBuffer[i], *pso); break;
+			case RenderCMD_BeginRenderPass: {
+				pass = new RenderPassVK;
+				pass->name = ((const char*)cmdBuffer[i].data);
+				break;
+			}
+			case RenderCMD_EndRenderPass: {
+				CHECK_PASS()
+				renderPassList.push_back(pass);
+				break;
+			}
+			case RenderCMD_Clear: {
+				CHECK_PASS()
+				pass->clear = true;
+				pass->clearColor = *((Vector4f*)cmdBuffer[i].data);
+				break; 
+			}
+			case RenderCMD_UpdateUniformBufferObject: {
+				RenderCmdUpdateUniformBufferObject(cmdBuffer[i]);
+				break; 
+			}
+			//case RenderCMD_UpdateUniformBuffer: RenderCmdUpdateUniformBuffer(cmdBuffer[i], *pso); break;
 			case RenderCMD_UpdateVertexBuffer: {
 				VertexBuffer* vb = (VertexBuffer*)cmdBuffer[i].data;
-				pso->vb = vb;
+				if (vbs.find(vb->id) == vbs.end()) {
+					vbs[vb->id] = new VertexBufferVK(vb);
+					CreateVertexBuffer(vbs[vb->id]);
+				}
+				drawcall->vb = vbs[vb->id];
 				break;
 			}
 			case RenderCMD_UpdateIndexBuffer: {
 				IndexBuffer* ib = (IndexBuffer*)cmdBuffer[i].data;
-				pso->ib = ib;
+				if (ibs.find(ib->id) == ibs.end()) {
+					ibs[ib->id] = new IndexBufferVK(ib);
+					CreateIndexBuffer(ibs[ib->id]);
+				}
+				drawcall->ib = ibs[ib->id];
 				break;
 			}
 			case RenderCMD_UseShader: {
@@ -1093,29 +1208,32 @@ namespace Joestar {
 				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
 					shaderVKs[shader->id] = new ShaderVK(shader);
 				}
-				pso->shader = shaderVKs[shader->id];
+				drawcall->shader = shaderVKs[shader->id];
 				break;
 			}
 			case RenderCMD_UpdateTexture: {
 				Texture* tex = (Texture*)cmdBuffer[i].data;
+				U8 binding = cmdBuffer[i].flag;
 				//check if uniform buffer is ready
 				if (textureVKs.find(tex->id) == textureVKs.end() && pendingTextureVKs.find(tex->id) == pendingTextureVKs.end()) {
 					TextureVK* vkTex = new TextureVK(tex);
 					pendingTextureVKs[vkTex->ID()] = vkTex;
 				}
-				pso->textures.push_back(tex->id);
+				drawcall->shader->textures.push_back(tex->id);
 
 				if (uniformVKs.find(tex->id) == uniformVKs.end()) {
 					UniformBufferVK* texUB = new UniformBufferVK;
 					texUB->texID = tex->id;
 					uniformVKs[tex->id] = texUB;
 				}
-				pso->ubs.push_back(uniformVKs[tex->id]);
+				//update binding tex
+				drawcall->shader->ubs[binding] = tex->id;
+				//drawcall->shader->ubs.push_back(tex->id);
 				break;
 			}
 			case RenderCMD_Draw: {
 				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
-				pso->topology = topology;
+				drawcall->topology = topology;
 				//if (framePSOChain.empty) {
 				//	framePSOChain;
 				//	currentPSO = pso;
@@ -1133,15 +1251,21 @@ namespace Joestar {
 			}
 			case RenderCMD_DrawIndexed: {
 				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
-				pso->topology = topology;
-				if (psoChain.size() > curPSOIdx && *psoChain[curPSOIdx] == *pso) {
-					framePSOChain.push_back(psoChain[curPSOIdx]);
-					++curPSOIdx;
-				} else {
-					GetPipelineContext(*pso);
-					framePSOChain.push_back(pso);
-					needRecord = true;
-				}
+				drawcall->topology = topology;
+				pass->dcs.push_back(drawcall);
+				drawcall = new DrawCallVK;
+				drawcall->pso = new PipelineStateVK;
+				//if (psoChain.size() > curPSOIdx && *psoChain[curPSOIdx] == *pso) {
+				//	framePSOChain.push_back(psoChain[curPSOIdx]);
+				//	++curPSOIdx;
+				//	delete pso;
+				//	pso = new PipelineState;
+				//} else {
+				//	GetPipelineContext(*pso);
+				//	framePSOChain.push_back(pso);
+				//	needRecord = true;
+				//	pso = new PipelineState;
+				//}
 				break;
 			}
 			default: break;
@@ -1159,23 +1283,25 @@ namespace Joestar {
 		//	}
 		//}
 		if (needRecord) {
-			RecordCommandBuffer(framePSOChain);
-			for (auto& pso : psoChain) {
-				if (std::find(framePSOChain.begin(), framePSOChain.end(), pso) == framePSOChain.end()) {
-					delete pso;
-				}
-			}
-			psoChain.clear();
-			psoChain.swap(framePSOChain);
+			RecordCommandBuffer(renderPassList);
+			//for (auto& pso : psoChain) {
+			//	if (std::find(framePSOChain.begin(), framePSOChain.end(), pso) == framePSOChain.end()) {
+			//		delete pso;
+			//	}
+			//}
+			//psoChain.clear();
+			//psoChain.swap(framePSOChain);
 		}
+
+		delete drawcall;
 	}
 
 	void GPUProgramVulkan::CleanupSwapChain() {
-		vkDestroyImageView(vkCtxPtr->device, currentPSO.fbCtx->colorImageView, nullptr);
-		vkDestroyImage(vkCtxPtr->device, currentPSO.fbCtx->colorImage, nullptr);
-		vkFreeMemory(vkCtxPtr->device, currentPSO.fbCtx->colorImageMemory, nullptr);
-		vkDestroyImageView(vkCtxPtr->device, currentPSO.fbCtx->depthImageView, nullptr);
-		vkDestroyImage(vkCtxPtr->device, currentPSO.fbCtx->depthImage, nullptr);
-		vkFreeMemory(vkCtxPtr->device, currentPSO.fbCtx->depthImageMemory, nullptr);
+		//vkDestroyImageView(vkCtxPtr->device, currentPSO.fbCtx->colorImageView, nullptr);
+		//vkDestroyImage(vkCtxPtr->device, currentPSO.fbCtx->colorImage, nullptr);
+		//vkFreeMemory(vkCtxPtr->device, currentPSO.fbCtx->colorImageMemory, nullptr);
+		//vkDestroyImageView(vkCtxPtr->device, currentPSO.fbCtx->depthImageView, nullptr);
+		//vkDestroyImage(vkCtxPtr->device, currentPSO.fbCtx->depthImage, nullptr);
+		//vkFreeMemory(vkCtxPtr->device, currentPSO.fbCtx->depthImageMemory, nullptr);
 	}
 }

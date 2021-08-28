@@ -21,6 +21,7 @@ enum ClassIDType {
 	DefineClassID(ProceduralMesh, 12)
 	DefineClassID(Mesh, 13)
 	DefineClassID(MemoryManager, 14)
+	DefineClassID(ProgramCPU, 15)
 
 	kClassIDCount
 };

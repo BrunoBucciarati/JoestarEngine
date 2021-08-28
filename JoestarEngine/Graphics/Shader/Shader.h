@@ -16,8 +16,8 @@ namespace Joestar {
 		uint16_t GetUniformBindingByName(std::string& name);
 		uint16_t GetSamplerBinding(int count);
 		uint32_t id;
+		ShaderInfo info;
 	private:
 		std::string name;
-		ShaderInfo info;
 	};
 }

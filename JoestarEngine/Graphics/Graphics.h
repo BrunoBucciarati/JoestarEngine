@@ -10,6 +10,7 @@
 #include "Material.h"
 #include "../Math/Matrix4x4.h"
 #include "Shader/Shader.h"
+#include "ProgramCPU.h"
 namespace Joestar {
 	class Graphics : public SubSystem {
 		REGISTER_SUBSYSTEM(Graphics)
@@ -25,8 +26,11 @@ namespace Joestar {
 		void UpdateIndexBuffer(IndexBuffer* ib);
 		void UpdateMaterial(Material* mat);
 		void UseShader(const Shader* shader);
-		void UpdateTexture(Texture*);
+		void UpdateTexture(Texture*, U8 binding = 0);
 		void DrawIndexed(Mesh* mesh);
+		void UpdateProgram(ProgramCPU* p);
+		void BeginRenderPass(const char* name);
+		void EndRenderPass(const char* name);
 
 	private:
 		RenderThread* renderThread;

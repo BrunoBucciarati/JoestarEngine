@@ -13,6 +13,5 @@ namespace Joestar {
 
 	private:
 		GLFWwindow* window;
-		VkInstance instance;
 	};
 }

@@ -85,14 +85,22 @@ namespace Joestar {
 		UseShader(mat->GetShader());
 		std::vector<Texture*>& textures = mat->GetTextures();
 		for (int i = 0; i < textures.size(); i++) {
-			UpdateTexture(textures[i]);
+			UpdateTexture(textures[i], 1);
 		}
 	}
 
-	void Graphics::UpdateTexture(Texture* t) {
+	void Graphics::UpdateTexture(Texture* t, U8 binding) {
 		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateTexture;
 		cmdBuffer[cmdIdx].size = sizeof(Texture*);
+		cmdBuffer[cmdIdx].flag = binding;
 		cmdBuffer[cmdIdx].data = (void*)t;
+		++cmdIdx;
+	}
+
+	void Graphics::UpdateProgram(ProgramCPU* p) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateProgram;
+		cmdBuffer[cmdIdx].size = sizeof(ProgramCPU*);
+		cmdBuffer[cmdIdx].data = (void*)p;
 		++cmdIdx;
 	}
 
@@ -101,5 +109,19 @@ namespace Joestar {
 		UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
 		UpdateIndexBuffer(mesh->GetIB());
 		DrawIndexed(mesh);
+	}
+
+	void Graphics::BeginRenderPass(const char* name) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_BeginRenderPass;
+		cmdBuffer[cmdIdx].size = sizeof(const char*);
+		cmdBuffer[cmdIdx].data = (void*)name;
+		++cmdIdx;
+	}
+
+	void Graphics::EndRenderPass(const char* name) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_EndRenderPass;
+		cmdBuffer[cmdIdx].size = sizeof(const char*);
+		cmdBuffer[cmdIdx].data = (void*)name;
+		++cmdIdx;
 	}
 }
