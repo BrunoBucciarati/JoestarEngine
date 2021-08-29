@@ -16,8 +16,8 @@ namespace Joestar {
     };
 
     // Default camera values
-    const float YAW = 90.0f;
-    const float PITCH = 0.0f;
+    const float YAW = -90.0f;
+    const float PITCH = -30.0f;
     const float SPEED = 1.f;
     const float SENSITIVITY = .3f;
     const float ZOOM = 45.0f;
@@ -43,7 +43,7 @@ namespace Joestar {
         float MouseSensitivity;
         float Zoom;
         // constructor with vectors
-        Camera(Vector3f position = Vector3f(0.0, 0.0, -2.0f), Vector3f up = Vector3f(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(Vector3f(0.0f, 0.0f, 1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+        Camera(Vector3f position = Vector3f(0.0, 2.0, 6.0f), Vector3f up = Vector3f(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(Vector3f(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
         {
             Position = position;
             WorldUp = up;

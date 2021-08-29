@@ -20,8 +20,6 @@ namespace Joestar {
         render->mesh->Load(path + "viking_room/viking_room.obj");
         render->mat = NEW_OBJECT(Material);
         render->mat->SetDefault();
-     // render->mat_ = new Material;
-     // render->mat_->SetDefault();
 
         GameObject* sphere = NEW_OBJECT(GameObject);
         gameObjects.push_back(sphere);
@@ -29,6 +27,13 @@ namespace Joestar {
         sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
         sr->mat = NEW_OBJECT(Material);
         sr->mat->SetDefault();
+
+        GameObject* plane = NEW_OBJECT(GameObject);
+        gameObjects.push_back(plane);
+        Renderer* pr = plane->GetComponent<Renderer>();
+        pr->mesh = GetSubsystem<ProceduralMesh>()->GetPlane();
+        pr->mat = NEW_OBJECT(Material);
+        pr->mat->SetDefault();
 
         selection = sphere;
     }

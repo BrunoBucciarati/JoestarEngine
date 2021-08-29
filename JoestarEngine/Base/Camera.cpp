@@ -25,7 +25,7 @@ namespace Joestar {
         if (offset[0] != 0.f || offset[1] != 0.f) {
             Yaw += offset[0] * MouseSensitivity;
             //LOG("offsetY: %.2f\n", offset[1]);
-            Pitch -= offset[1] * MouseSensitivity;
+            Pitch += offset[1] * MouseSensitivity;
             if (Pitch > 89.0f)
                 Pitch = 89.0f;
             if (Pitch < -89.0f)

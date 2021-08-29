@@ -281,7 +281,8 @@ namespace Joestar {
         void UpdateDescriptorSets(DrawCallVK* pso);
         void UpdateUniformBuffer(uint32_t currentImage);
         void RecordCommandBuffer(std::vector<RenderPassVK*>&);
-        void ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imageIdx);
+        bool ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imageIdx);
+        void CreateCommandBuffers();
         void RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc);
         void RenderCmdUpdateUniformBufferObject(RenderCommand& cmd);
         void RecordRenderPass(RenderPassVK* pass, int i);
@@ -313,6 +314,7 @@ namespace Joestar {
         std::vector<CommandBufferVK*> subCommandBuffers;
 
         U16 curImageIdx = 0;
+        bool firstRecord;
     };
 
 }

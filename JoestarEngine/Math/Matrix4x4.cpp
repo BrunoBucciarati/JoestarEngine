@@ -27,7 +27,7 @@ namespace Joestar {
 		Vector3f up1 = Normalize(Cross(right, dir));
 
 		Get(0, 0) = right.x;		Get(0, 1) = up1.x;		Get(0, 2) = dir.x;		Get(0, 3) = -Dot(pos, right);;
-		Get(1, 0) = right.y;		Get(1, 1) = up1.y;		Get(1, 2) = dir.y;		Get(1, 3) = -Dot(pos, up1);
+		Get(1, 0) = -right.y;		Get(1, 1) = -up1.y;		Get(1, 2) = -dir.y;		Get(1, 3) = Dot(pos, up1);
 		Get(2, 0) = -right.z;		Get(2, 1) = -up1.z;		Get(2, 2) = -dir.z;		Get(2, 3) = Dot(pos, dir);
 		Get(3, 0) = 0.0;			Get(3, 1) = 0.0;		Get(3, 2) = 0.0;		Get(3, 3) = 1.0;
 

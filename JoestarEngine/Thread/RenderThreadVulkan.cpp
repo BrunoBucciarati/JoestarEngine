@@ -626,9 +626,7 @@ void RenderThreadVulkan::DrawFrame(std::vector<RenderCommand>& cmdBuffer, uint16
     }
 
     //no incoming draw call
-    if (cmdIdx == 0) return;
     currentProgram->ExecuteRenderCommand(cmdBuffer, cmdIdx, imageIndex);
-    if (vkCtx.commandBuffers.empty()) return;
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 

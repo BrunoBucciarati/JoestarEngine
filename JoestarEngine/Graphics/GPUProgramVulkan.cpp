@@ -89,7 +89,7 @@ namespace Joestar {
 		return shaderModule;
 	}
 
-	GPUProgramVulkan::GPUProgramVulkan() : dynamicCommandBuffer(false) {
+	GPUProgramVulkan::GPUProgramVulkan() : dynamicCommandBuffer(false), firstRecord(true) {
 	}
 	
 	void GPUProgramVulkan::SetShader(ShaderVK* shader) {
@@ -1073,24 +1073,26 @@ namespace Joestar {
 
 	void GPUProgramVulkan::RecordCommandBuffer(std::vector<RenderPassVK*>& passes) {
 		//record into next frame's command buffer
+		//if (vkCtxPtr->commandBuffers.empty()) CreateCommandBuffers();
 		int nextIdx = curImageIdx == vkCtxPtr->swapChainImages.size() - 1 ? 0 : curImageIdx + 1;
-		VkCommandBuffer& buf = vkCtxPtr->commandBuffers[nextIdx];
-		//for (size_t i = 0; i < vkCtxPtr->commandBuffers.size(); i++) {
+		for (size_t i = (firstRecord ? 0 : nextIdx); i < (firstRecord ? vkCtxPtr->swapChainImages.size() : nextIdx + 1); i++) {
 			VkCommandBufferBeginInfo beginInfo{};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = 0; // Optional
 			beginInfo.pInheritanceInfo = nullptr; // Optional
 
+			VkCommandBuffer& buf = vkCtxPtr->commandBuffers[i];
 			if (vkBeginCommandBuffer(buf, &beginInfo) != VK_SUCCESS) {
 				LOGERROR("failed to begin recording command buffer!");
 			}
 			for (int j = 0; j < passes.size(); ++j) {
-				RecordRenderPass(passes[j], nextIdx);
+				RecordRenderPass(passes[j], i);
 			}
 			if (vkEndCommandBuffer(buf) != VK_SUCCESS) {
 				LOGERROR("failed to record command buffer!");
 			}
-		//}
+		}
+		firstRecord = false;
 	}
 
 	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(RenderCommand& cmd) {
@@ -1160,11 +1162,27 @@ namespace Joestar {
 		}
 	}
 
+	void GPUProgramVulkan::CreateCommandBuffers() {
+		vkCtxPtr->commandBuffers.resize(vkCtxPtr->swapChainImageViews.size());
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = vkCtxPtr->commandPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = (uint32_t)vkCtxPtr->commandBuffers.size();
+
+		if (vkAllocateCommandBuffers(vkCtxPtr->device, &allocInfo, vkCtxPtr->commandBuffers.data()) != VK_SUCCESS) {
+			LOGERROR("failed to allocate command buffers!");
+		}
+	}
+
+
 #define CHECK_PASS() if(pass == nullptr) {LOGERROR("PLEASE START PASS FIRST!\n");}
-	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imgIdx) {
-		if (cmdIdx == 0) return;
+	bool GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imgIdx) {
+		if (cmdIdx == 0) return false;
 		renderPassList.clear();
 		curImageIdx = imgIdx;
+
+		bool ret = !lastRenderPassList.empty();
 
 		RenderPassVK* pass = nullptr;
 		DrawCallVK* drawcall = new DrawCallVK;
@@ -1321,6 +1339,8 @@ namespace Joestar {
 
 		delete drawcall->pso;
 		delete drawcall;
+
+		return ret;
 	}
 
 	CommandBufferVK* GPUProgramVulkan::GetCommandBuffer(bool dynamic) {
