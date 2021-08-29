@@ -14,5 +14,6 @@ namespace Joestar {
 		void Update();
 	private:
 		Camera camera;
+		GameObject* selection;
 	};
 }

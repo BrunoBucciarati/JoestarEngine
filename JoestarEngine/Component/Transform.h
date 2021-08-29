@@ -12,12 +12,16 @@ namespace Joestar {
 		Vector3f& GetScale() { return scale; }
 		Vector3f GetLocalEulerAngles() { return QuaternionToEuler(rotation); }
 		Quaternionf& GetRotation() { return rotation; }
-		Matrix4x4f& GetAfflineTransform() { return mat;  }
-		void SetPosition(Vector3f& v) { translate = v; }
-		void SetScale(Vector3f& v) { scale = v; }
-		void SetRotation(Quaternionf& q) { rotation = q; }
+		Matrix4x4f& GetAfflineTransform();
+		void SetPosition(Vector3f& v) {
+			translate = v;
+			dirty = true;
+		}
+		void SetScale(Vector3f& v) { scale = v; dirty = true;}
+		void SetRotation(Quaternionf& q) { rotation = q; dirty = true;}
 		void SetLocalEulerAngles(Vector3f& euler) {
 			rotation = EulerToQuaternion(euler);
+			dirty = true;
 		}
 		
 	private:
@@ -25,6 +29,6 @@ namespace Joestar {
 		Vector3f translate;
 		Vector3f scale;
 		Quaternionf rotation;
-		bool matDirty = false;
+		bool dirty = false;
 	};
 }

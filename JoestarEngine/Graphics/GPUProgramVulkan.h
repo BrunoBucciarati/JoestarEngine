@@ -3,6 +3,7 @@
 #include "VulkanHeader.h"
 #include "../IO/FileSystem.h"
 #include "../IO/File.h"
+#include "../IO/Log.h"
 #include <array>
 #include "GraphicDefines.h"
 #include "../Graphics/VertexData.h"
@@ -151,7 +152,8 @@ namespace Joestar {
     };
 
     struct PushConstsVK : PushConsts {
-
+        bool operator ==(PushConstsVK& p2) { return model == p2.model; }
+        bool operator !=(PushConstsVK& p2) { return !(*this == p2); }
     };
 
     struct DrawCallVK {
@@ -184,6 +186,58 @@ namespace Joestar {
             hash *= 10;
             hash += i;
         }
+    };
+
+    class CommandBufferVK {
+    public:
+        VkCommandBuffer commandBuffer;
+        explicit CommandBufferVK(VkCommandPool* p, VulkanContext* c, bool dynamic = false) {
+            pool = p;
+            ctx = c;
+            VkCommandBufferAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocInfo.commandPool = *p;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            allocInfo.commandBufferCount = 1;
+
+            if (vkAllocateCommandBuffers(ctx->device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
+                LOGERROR("failed to allocate sub command buffer!\n");
+            }
+        }
+        void Begin() {
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = 0; // Optional
+            beginInfo.pInheritanceInfo = nullptr; // Optional
+
+            if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+                LOGERROR("failed to begin recording command buffer!");
+            }
+        }
+        void End() {
+            if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+                LOGERROR("failed to record command buffer!");
+            }
+            VkSubmitInfo submitInfo = {};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &commandBuffer;
+
+            vkQueueSubmit(ctx->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(ctx->graphicsQueue);
+
+            if (dynamic) {
+                vkFreeCommandBuffers(ctx->device, *pool, 1, &commandBuffer);
+            }
+        }
+
+        ~CommandBufferVK() {
+            vkFreeCommandBuffers(ctx->device, *pool, 1, &commandBuffer);
+        }
+    private:
+        VkCommandPool* pool;
+        VulkanContext* ctx;
+        bool dynamic;
     };
 
 
@@ -231,7 +285,10 @@ namespace Joestar {
         void RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc);
         void RenderCmdUpdateUniformBufferObject(RenderCommand& cmd);
         void RecordRenderPass(RenderPassVK* pass, int i);
+        CommandBufferVK* GetCommandBuffer(bool dynamic = false);
+        void PushConstants(std::vector<RenderPassVK*>& passes);
 
+        VkCommandPool subCommandPool;
     private:
         VulkanContext* vkCtxPtr;
         bool dynamicCommandBuffer;
@@ -252,6 +309,9 @@ namespace Joestar {
 
         std::vector<RenderPassVK*> renderPassList;
         std::vector<RenderPassVK*> lastRenderPassList;
+
+        std::vector<CommandBufferVK*> subCommandBuffers;
+
         U16 curImageIdx = 0;
     };
 

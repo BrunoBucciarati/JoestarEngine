@@ -8,6 +8,10 @@ namespace Joestar {
 		KEY_S,
 		KEY_A,
 		KEY_D,
+		KEY_UP,
+		KEY_DOWN,
+		KEY_LEFT,
+		KEY_RIGHT,
 		KEY_ESCAPE
 	};
 	class HID : public SubSystem {

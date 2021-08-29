@@ -29,11 +29,34 @@ namespace Joestar {
         sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
         sr->mat = NEW_OBJECT(Material);
         sr->mat->SetDefault();
+
+        selection = sphere;
     }
 
     void Scene::Update() {
         HID* hid = GetSubsystem<HID>();
         camera.ProcessHID(hid, 0.01f);
+
+        //Test Selection Movement
+        if (selection) {
+            Vector3f p = selection->GetPosition();
+            if (hid->CheckKeyboardInput(KEY_UP)) {
+                p.y = p.y + 0.01;
+                selection->SetPosition(p);
+            }
+            if (hid->CheckKeyboardInput(KEY_LEFT)) {
+                p.x = p.x - 0.01;
+                selection->SetPosition(p);
+            }
+            if (hid->CheckKeyboardInput(KEY_RIGHT)) {
+                p.x = p.x + 0.01;
+                selection->SetPosition(p);
+            }
+            if (hid->CheckKeyboardInput(KEY_DOWN)) {
+                p.y = p.y - 0.01;
+                selection->SetPosition(p);
+            }
+        }
 
         Graphics* graphics = GetSubsystem<Graphics>();
         RenderScene();

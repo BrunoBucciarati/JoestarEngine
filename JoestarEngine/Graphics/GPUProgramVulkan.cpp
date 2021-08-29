@@ -797,11 +797,15 @@ namespace Joestar {
 			pushConstantRange.size = sizeof(PushConsts);
 			pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
 			pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
+			if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(pso->pipelineLayout)) != VK_SUCCESS) {
+				LOGERROR("failed to create pipeline layout!");
+			}
+		} else {
+			if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(pso->pipelineLayout)) != VK_SUCCESS) {
+				LOGERROR("failed to create pipeline layout!");
+			}
 		}
 
-		if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(pso->pipelineLayout)) != VK_SUCCESS) {
-			LOGERROR("failed to create pipeline layout!");
-		}
 
 		//Create Vertex Buffer
 		VkPipelineVertexInputStateCreateInfo* vertexInputInfo = dc->vb->GetVertexInputInfo();
@@ -1028,7 +1032,6 @@ namespace Joestar {
 	void GPUProgramVulkan::RecordRenderPass(RenderPassVK* pass, int i) {
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		CreateRenderPass(pass);
 		renderPassInfo.renderPass = pass->renderPass;
 		renderPassInfo.framebuffer = vkCtxPtr->swapChainFramebuffers[i];
 		renderPassInfo.renderArea.offset = { 0, 0 };
@@ -1040,7 +1043,6 @@ namespace Joestar {
 			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 			renderPassInfo.pClearValues = clearValues.data();
 		} else {
-
 			//renderPassInfo.pClearValues = clearValues.data();
 		}
 
@@ -1049,7 +1051,7 @@ namespace Joestar {
 		std::string pushConsts;
 		for (int j = 0; j < pass->dcs.size(); ++j) {
 			DrawCallVK* dc = pass->dcs[j];
-			GetPipeline(pass, j);
+			//only get pipeline at first command buffer and reuse
 			vkCmdBindPipeline(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->graphicsPipeline);
 
 			VkBuffer vertexBuffer = dc->vb->buffer;
@@ -1060,32 +1062,35 @@ namespace Joestar {
 
 			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
 
-			pushConsts = dc->shader->GetPushConsts();
-			if (!pushConsts.empty()) {
+			if (dc->pc) {
 				vkCmdPushConstants(vkCtxPtr->commandBuffers[i], dc->pso->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConsts), dc->pc);
 			}
+
 			vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), 1, 0, 0, 0);
 		}
 		vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
 	}
 
 	void GPUProgramVulkan::RecordCommandBuffer(std::vector<RenderPassVK*>& passes) {
-		for (size_t i = 0; i < vkCtxPtr->commandBuffers.size(); i++) {
+		//record into next frame's command buffer
+		int nextIdx = curImageIdx == vkCtxPtr->swapChainImages.size() - 1 ? 0 : curImageIdx + 1;
+		VkCommandBuffer& buf = vkCtxPtr->commandBuffers[nextIdx];
+		//for (size_t i = 0; i < vkCtxPtr->commandBuffers.size(); i++) {
 			VkCommandBufferBeginInfo beginInfo{};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = 0; // Optional
 			beginInfo.pInheritanceInfo = nullptr; // Optional
 
-			if (vkBeginCommandBuffer(vkCtxPtr->commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+			if (vkBeginCommandBuffer(buf, &beginInfo) != VK_SUCCESS) {
 				LOGERROR("failed to begin recording command buffer!");
 			}
 			for (int j = 0; j < passes.size(); ++j) {
-				RecordRenderPass(passes[j], i);
+				RecordRenderPass(passes[j], nextIdx);
 			}
-			if (vkEndCommandBuffer(vkCtxPtr->commandBuffers[i]) != VK_SUCCESS) {
+			if (vkEndCommandBuffer(buf) != VK_SUCCESS) {
 				LOGERROR("failed to record command buffer!");
 			}
-		}
+		//}
 	}
 
 	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(RenderCommand& cmd) {
@@ -1124,6 +1129,24 @@ namespace Joestar {
 		}
 	}
 
+	void GPUProgramVulkan::PushConstants(std::vector<RenderPassVK*>& passes) {
+		for (auto& pass : passes) {
+			//for (auto& dc : pass->dcs) {
+			//	if (dc->pc) {
+			//		vkCmdPushConstants(cb->commandBuffer, dc->pso->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConsts), dc->pc);
+			//	}
+			//}
+			for (int j = pass->dcs.size() - 1; j >= 0; --j) {
+				if (pass->dcs[j]->pc) {
+					CommandBufferVK* cb = GetCommandBuffer(true);
+					cb->Begin();
+					vkCmdPushConstants(cb->commandBuffer, pass->dcs[j]->pso->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConsts), pass->dcs[j]->pc);
+					cb->End();
+				}
+			}
+		}
+	}
+
 	void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc) {
 		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
 		switch (flag) {
@@ -1140,8 +1163,7 @@ namespace Joestar {
 #define CHECK_PASS() if(pass == nullptr) {LOGERROR("PLEASE START PASS FIRST!\n");}
 	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imgIdx) {
 		if (cmdIdx == 0) return;
-		//for test, we only record once now
-		if (!renderPassList.empty()) return;
+		renderPassList.clear();
 		curImageIdx = imgIdx;
 
 		RenderPassVK* pass = nullptr;
@@ -1252,34 +1274,61 @@ namespace Joestar {
 			}
 		}
 
-		bool needRecord = false;
+
+		bool needRecord = false, needPushConstant = false;
 		if (lastRenderPassList.size() != renderPassList.size()) {
 			needRecord = true;
+			//needPushConstant = true;
 		} else {
 			for (int i = 0; i < lastRenderPassList.size(); ++i) {
 				if (lastRenderPassList[i]->hash != renderPassList[i]->hash) {
 					needRecord = true;
+					//needPushConstant = true;
 					break;
 				} else {
 					//update push consts
 					for (int j = 0; j < renderPassList[i]->dcs.size(); ++j) {
 						if (renderPassList[i]->dcs[j]->pc) {
-							*(lastRenderPassList[i]->dcs[j]->pc) = *(renderPassList[i]->dcs[j]->pc);
+							if (*(lastRenderPassList[i]->dcs[j]->pc) != *(renderPassList[i]->dcs[j]->pc)) {
+								//needPushConstant = true;
+								*(lastRenderPassList[i]->dcs[j]->pc) = *(renderPassList[i]->dcs[j]->pc);
+							}
 						}
 					}
 				}
 			}
 		}
-		if (needRecord) {
-			RecordCommandBuffer(renderPassList);
-		}
 
+		if (needRecord) {
+			//CreateRenderPass
+			for (auto& pass : renderPassList) {
+				CreateRenderPass(pass);
+				for (int i = 0; i < pass->dcs.size(); ++i) {
+					GetPipeline(pass, i);
+				}
+			}
+			//if (needPushConstant)
+			//	PushConstants(renderPassList);
+			
+			RecordCommandBuffer(renderPassList);
+			lastRenderPassList.clear();
+			lastRenderPassList.swap(renderPassList);
+		} else {
+			//if (needPushConstant)
+			//	PushConstants(lastRenderPassList);
+			RecordCommandBuffer(lastRenderPassList);
+		}
 
 		delete drawcall->pso;
 		delete drawcall;
+	}
 
-		lastRenderPassList.clear();
-		lastRenderPassList.swap(renderPassList);
+	CommandBufferVK* GPUProgramVulkan::GetCommandBuffer(bool dynamic) {
+		if (dynamic) return new CommandBufferVK(&subCommandPool, vkCtxPtr, dynamic);
+		if (subCommandBuffers.empty()) {
+			subCommandBuffers.push_back(new CommandBufferVK(&subCommandPool, vkCtxPtr));
+		}
+		return subCommandBuffers[0];
 	}
 
 	void GPUProgramVulkan::CleanupSwapChain() {

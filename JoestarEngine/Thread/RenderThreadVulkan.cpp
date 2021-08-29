@@ -510,11 +510,17 @@ void RenderThreadVulkan::CreateCommandPool() {
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
-    poolInfo.flags = 0; // Optional
-    
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
+    //create sub command pool
+    if (vkCreateCommandPool(vkCtx.device, &poolInfo, nullptr, &(currentProgram->subCommandPool)) != VK_SUCCESS) {
+        LOGERROR("failed to create command pool!");
+    }
+
+    //poolInfo.flags = 0; // Optional
     if (vkCreateCommandPool(vkCtx.device, &poolInfo, nullptr, &(vkCtx.commandPool)) != VK_SUCCESS) {
         LOGERROR("failed to create command pool!");
     }
+
 }
  
 void RenderThreadVulkan::CreateCommandBuffers() {
@@ -549,7 +555,10 @@ void RenderThreadVulkan::CreateSyncObjects() {
         }
     }
 }
-
+#define GetGLKey(KEY) \
+        if (glfwGetKey(window, GLFW_##KEY) == GLFW_PRESS) { \
+            inputFlag |= 1 << KEY; \
+        }
 void RenderThreadVulkan::ProcessInputVulkan() {
     uint32_t inputFlag = 0;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -557,18 +566,38 @@ void RenderThreadVulkan::ProcessInputVulkan() {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetWindowShouldClose(window, true);
     }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        inputFlag |= 1 << KEY_W;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        inputFlag |= 1 << KEY_S;
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        inputFlag |= 1 << KEY_A;
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        inputFlag |= 1 << KEY_D;
-    }
+        GetGLKey(KEY_W)
+        GetGLKey(KEY_S)
+        GetGLKey(KEY_A)
+        GetGLKey(KEY_D)
+        GetGLKey(KEY_UP)
+        GetGLKey(KEY_DOWN)
+        GetGLKey(KEY_LEFT)
+        GetGLKey(KEY_RIGHT)
+    //if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    //    inputFlag |= 1 << KEY_W;
+    //}
+    //if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    //    inputFlag |= 1 << KEY_S;
+    //}
+    //if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    //    inputFlag |= 1 << KEY_A;
+    //}
+    //if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    //    inputFlag |= 1 << KEY_D;
+    //}
+    //if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    //    inputFlag |= 1 << KEY_D;
+    //}
+    //if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+    //    inputFlag |= 1 << KEY_UP;
+    //}
+    //if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+    //    inputFlag |= 1 << KEY_DOWN;
+    //}
+    //if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+    //    inputFlag |= 1 << KEY_DOWN;
+    //}
     Application::GetApplication()->GetSubSystem<HID>()->SetKeyboardInputs(inputFlag);
     Application::GetApplication()->GetSubSystem<HID>()->SetMouseInputs(xoffset, yoffset, scrollX, scrollY);
     //reset
