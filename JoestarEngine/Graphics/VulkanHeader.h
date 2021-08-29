@@ -24,8 +24,6 @@ struct VulkanContext {
 	std::vector<VkImageView> swapChainImageViews;
 	VkDescriptorPool descriptorPool;
 	std::vector<VkDescriptorSet> descriptorSets;
-	//std::vector<VkBuffer> uniformBuffers;
-	//std::vector<VkDeviceMemory> uniformBuffersMemory;
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 	std::vector<VkCommandBuffer> commandBuffers;
 };

@@ -15,6 +15,7 @@ namespace Joestar {
 		uint32_t GetVertexAttributeFlag();
 		uint16_t GetUniformBindingByName(std::string& name);
 		uint16_t GetSamplerBinding(int count);
+		std::string GetPushConsts();
 		uint32_t id;
 		ShaderInfo info;
 	private:

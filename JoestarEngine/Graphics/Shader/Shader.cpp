@@ -34,4 +34,13 @@ namespace Joestar {
 		}
 		return 0;
 	}
+
+	std::string Shader::GetPushConsts() {
+		for (int i = 0; i < info.uniforms.size(); i++) {
+			if (info.uniforms[i].dataType == ShaderDataTypePushConst) {
+				return info.uniforms[i].name;
+			}
+		}
+		return "";
+	}
 }

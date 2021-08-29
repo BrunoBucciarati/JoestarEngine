@@ -12,6 +12,8 @@ namespace Joestar {
 		ShaderDataTypeVec3,
 		ShaderDataTypeVec4,
 		ShaderDataTypeMat4,
+		ShaderDataTypeUBO,
+		ShaderDataTypePushConst,
 		ShaderDataTypeSampler,
 		SamplerType2D,
 		SamplerTypeCube,

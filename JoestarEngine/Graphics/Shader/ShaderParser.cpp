@@ -28,6 +28,7 @@
 #define TOKEN_IN_COLOR "inColor"
 #define TOKEN_IN_TEXCOORD "inTexCoord"
 #define TOKEN_IN_NORMAL "inNormal"
+#define TOKEN_PUSH_CONSTANT "push_constant"
 
 #define SET_DATATYPE_BY_TOKEN(val, token) \
 	if (token == TOKEN_FLOAT) val = ShaderDataTypeFloat; \
@@ -129,32 +130,32 @@ namespace Joestar {
 		if (tokenStream.AcceptToken(TOKEN_UNIFORM)) {
 			std::string tok;
 			if (tokenStream.AcceptDataTypeToken(tok)) {
-				if (binding == -1) binding = shaderInfo.uniforms.size();
-				if (shaderInfo.uniforms.size() < binding + 1) {
-					shaderInfo.uniforms.resize(binding + 1);
-				}
+				shaderInfo.uniforms.push_back(UniformDef{});
+				UniformDef& def = shaderInfo.uniforms.back();
 
-				SET_DATATYPE_BY_TOKEN(shaderInfo.uniforms[binding].dataType, tok)
-				tokenStream.AcceptString(shaderInfo.uniforms[binding].name);
-				shaderInfo.uniforms[binding].binding = binding;
+				SET_DATATYPE_BY_TOKEN(def.dataType, tok)
+				tokenStream.AcceptString(def.name);
+				def.binding = binding;
 				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
-			//} else if(tokenStream.AcceptSamplerTypeToken(tok)) {
-			//	if (binding == -1) binding = shaderInfo.uniforms.size();
-			//	if (shaderInfo.uniforms.size() < binding + 1) {
-			//		shaderInfo.uniforms.resize(binding + 1);
-			//	}
-
-			//	SET_DATATYPE_BY_TOKEN(shaderInfo.uniforms[binding].dataType, tok);
-
+			} else if (binding == 99) {
+				//means push constant
+				tokenStream.AcceptString(tok);
+				shaderInfo.uniforms.push_back(UniformDef{});
+				UniformDef& def = shaderInfo.uniforms.back();
+				def.name = tok;
+				def.binding = binding;
+				def.dataType = ShaderDataTypePushConst;
+				tokenStream.AcceptToken(TOKEN_LB);
+				tokenStream.AcceptTokenForward(TOKEN_RB);
+				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
 			} else {
 				//must be a UBO
 				tokenStream.AcceptString(tok);
-				if (binding == -1) binding = shaderInfo.uniforms.size();
-				if (shaderInfo.uniforms.size() < binding + 1) {
-					shaderInfo.uniforms.resize(binding + 1);
-				}
-				shaderInfo.uniforms[binding].name = tok;
-				shaderInfo.uniforms[binding].binding = binding;
+				shaderInfo.uniforms.push_back(UniformDef{});
+				UniformDef& def = shaderInfo.uniforms.back();
+				def.name = tok;
+				def.binding = binding;
+				def.dataType = ShaderDataTypeUBO;
 				tokenStream.AcceptToken(TOKEN_LB);
 				tokenStream.AcceptTokenForward(TOKEN_RB);
 				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
@@ -175,6 +176,14 @@ namespace Joestar {
 		}
 		tokenStream.AcceptToken(TOKEN_RP);
 		return TryParseUniform(tokenStream, shaderInfo, binding);
+	}
+
+	bool TryParsePushConstant(TokenStream& tokenStream, ShaderInfo& shaderInfo) {
+		if (!tokenStream.AcceptToken(TOKEN_PUSH_CONSTANT)) {
+			return false;
+		}
+		tokenStream.AcceptToken(TOKEN_RP);
+		return TryParseUniform(tokenStream, shaderInfo, 99);
 	}
 
 	bool TryParseAttribute(TokenStream& tokenStream, ShaderInfo& shaderInfo) {
@@ -258,7 +267,9 @@ namespace Joestar {
 					tokenStream.AcceptToken(TOKEN_LP);
 					if (!TryParseAttribute(tokenStream, shaderInfo)) {
 						//uniform
-						TryParseBindingUniform(tokenStream, shaderInfo);
+						if (!TryParseBindingUniform(tokenStream, shaderInfo)) {
+							TryParsePushConstant(tokenStream, shaderInfo);
+						}
 					}
 				} else if (TryParseUniform(tokenStream, shaderInfo)) {
 					flag = true;

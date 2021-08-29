@@ -37,7 +37,9 @@ namespace Joestar {
     public:
         explicit ShaderVK(Shader* _shader) : shader(_shader) {
             for (auto& uniform : shader->info.uniforms) {
-                if (uniform.dataType > ShaderDataTypeSampler) {
+                if (uniform.dataType == ShaderDataTypePushConst) {
+                    continue;
+                } else if (uniform.dataType > ShaderDataTypeSampler) {
                     ubs.push_back(uniform.binding);
                 } else {
                     ubs.push_back(hashString(uniform.name.c_str()));
@@ -52,6 +54,7 @@ namespace Joestar {
             return shader->GetSamplerBinding(count);
         }
         U32 ID() { return shader->id; }
+        std::string GetPushConsts() { return shader->GetPushConsts(); }
         Shader* shader;
         VkShaderModule vertShaderModule{}, fragShaderModule{};
         VkPipelineShaderStageCreateInfo shaderStage[2];
@@ -147,12 +150,17 @@ namespace Joestar {
         }
     };
 
+    struct PushConstsVK : PushConsts {
+
+    };
+
     struct DrawCallVK {
         VertexBufferVK* vb;
         IndexBufferVK* ib;
         ShaderVK* shader;
         MeshTopology topology;
         PipelineStateVK* pso;
+        PushConstsVK* pc = nullptr;
         U32 hash = 0;
         //ez hash, i guess that's ok
         void HashInsert(U32 i) {
@@ -195,13 +203,7 @@ namespace Joestar {
         void CreateTextureSampler(RenderPassVK* pass, int i);
         void CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-        //inline VkBuffer* GetVertexBuffer() { return &vertexBuffer; }
-        //inline VkBuffer* GetIndexBuffer() { return &indexBuffer; }
-        //inline uint32_t GetIndexSize() { return mesh->GetIB()->GetSize(); }
-        //inline uint32_t GetIndexCount() { return mesh->GetIB()->GetIndexCount(); }
-        //inline uint32_t GetVertexSize() { return vertices.size(); }
-        void Clean();        
-        //inline VkPipelineShaderStageCreateInfo* GetShaderStage() { return mShaderStage; };
+        void Clean();
         VkShaderModule CreateShaderModule(File* code);
         VkCommandBuffer BeginSingleTimeCommands();
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -225,8 +227,8 @@ namespace Joestar {
         void UpdateDescriptorSets(DrawCallVK* pso);
         void UpdateUniformBuffer(uint32_t currentImage);
         void RecordCommandBuffer(std::vector<RenderPassVK*>&);
-        void ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx);
-        //void RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso);
+        void ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imageIdx);
+        void RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc);
         void RenderCmdUpdateUniformBufferObject(RenderCommand& cmd);
         void RecordRenderPass(RenderPassVK* pass, int i);
 
@@ -237,23 +239,20 @@ namespace Joestar {
         VkBufferCreateInfo bufferInfo{};
         VkMemoryRequirements memRequirements;
         VkMemoryAllocateInfo allocInfo{};
-        uint32_t mipLevels;
+        U32 mipLevels;
         VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_2_BIT;
-        //PipelineStateVK currentPSO;
-        //std::map<uint32_t, PipelineStateVK> allPSOs;
-        //pending texture, will upload during UpdateUniform
-        //all resources
-        std::map<uint32_t, TextureVK*> textureVKs;
-        std::map<uint32_t, TextureVK*> pendingTextureVKs;
-        std::map<uint32_t, ShaderVK*> shaderVKs;
-        std::map<uint32_t, UniformBufferVK*> uniformVKs;
-        std::map<uint32_t, VertexBufferVK*> vbs;
-        std::map<uint32_t, IndexBufferVK*> ibs;
-        std::map<uint32_t, FrameBufferVK*> fbs;
-        //std::vector<PipelineStateVK*> psoChain;
+        std::map<U32, TextureVK*> textureVKs;
+        std::map<U32, TextureVK*> pendingTextureVKs;
+        std::map<U32, ShaderVK*> shaderVKs;
+        std::map<U32, UniformBufferVK*> uniformVKs;
+        std::map<U32, VertexBufferVK*> vbs;
+        std::map<U32, IndexBufferVK*> ibs;
+        std::map<U32, FrameBufferVK*> fbs;
+        //std::map<U32, PushConstsVK*> fbs;
 
         std::vector<RenderPassVK*> renderPassList;
         std::vector<RenderPassVK*> lastRenderPassList;
+        U16 curImageIdx = 0;
     };
 
 }

@@ -2,6 +2,7 @@
 #include "ObjectDefines.h"
 #include "ClassIDs.h"
 #include <stdint.h>
+#include <string>
 namespace Joestar {
 	class EngineContext;
 	class Object {
@@ -16,8 +17,12 @@ namespace Joestar {
 		T* GetSubsystem() const {
 			return static_cast<T*>(GetSubsystem(T::GetClassIDStatic()));
 		}
+
+		std::string GetName() { return mName; }
+		void SetName(std::string n) { mName = n; }
 	protected:
 		EngineContext* mContext;
+		std::string mName;
 	};
 
 }

@@ -582,11 +582,6 @@ void RenderThreadVulkan::DrawFrame(std::vector<RenderCommand>& cmdBuffer, uint16
     //if (glfwWindowShouldClose(window)) {
     //    return;
     //}
-
-    //no incoming draw call
-    if (cmdIdx == 0) return;
-    currentProgram->ExecuteRenderCommand(cmdBuffer, cmdIdx);
-    if (vkCtx.commandBuffers.empty()) return;
     vkWaitForFences(vkCtx.device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t >::max());
     vkResetFences(vkCtx.device, 1, &inFlightFences[currentFrame]);
 
@@ -600,7 +595,11 @@ void RenderThreadVulkan::DrawFrame(std::vector<RenderCommand>& cmdBuffer, uint16
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         LOGERROR("failed to acquire swap chain image!");
     }
-    currentProgram->UpdateUniformBuffer(imageIndex);
+
+    //no incoming draw call
+    if (cmdIdx == 0) return;
+    currentProgram->ExecuteRenderCommand(cmdBuffer, cmdIdx, imageIndex);
+    if (vkCtx.commandBuffers.empty()) return;
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 

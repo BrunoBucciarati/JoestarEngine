@@ -73,6 +73,5 @@ namespace Joestar {
 		}
 	private:
 		std::vector<Component*> components;
-		//Renderer* render;
 	};
 }

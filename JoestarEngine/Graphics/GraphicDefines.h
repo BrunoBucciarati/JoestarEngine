@@ -41,13 +41,16 @@ namespace Joestar {
 		4
 	};
 
+	struct PushConsts {
+		Matrix4x4f model;
+	};
 
 	struct UniformBufferObject {
-		Matrix4x4f model;
+		//Matrix4x4f model;
 		Matrix4x4f view;
 		Matrix4x4f proj;
 		bool operator== (UniformBufferObject& ub) {
-			return view == ub.view && proj == ub.proj && model == ub.model;
+			return view == ub.view && proj == ub.proj;//&& model == ub.model;
 		}
 	};
 }

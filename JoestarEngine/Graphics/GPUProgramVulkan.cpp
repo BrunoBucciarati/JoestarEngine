@@ -90,16 +90,6 @@ namespace Joestar {
 	}
 
 	GPUProgramVulkan::GPUProgramVulkan() : dynamicCommandBuffer(false) {
-
-		//Application* app = Application::GetApplication();
-		//FileSystem* fs = app->GetSubSystem<FileSystem>();
-		//std::string path = fs->GetResourceDir();
-		//path += "Models/";
-		//char workDir[260];
-		//if (_getcwd(workDir, 260))
-		//	path = workDir + ("/" + path);
-		//mesh = new Mesh;
-		//mesh->Load(path + "viking_room/viking_room.obj");
 	}
 	
 	void GPUProgramVulkan::SetShader(ShaderVK* shader) {
@@ -704,7 +694,6 @@ namespace Joestar {
 
 		VkPipelineShaderStageCreateInfo* info = dc->shader->shaderStage;
 
-
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		if (dc->topology == MESH_TOPOLOGY_TRIANGLE_STRIP) {
@@ -799,6 +788,16 @@ namespace Joestar {
 		pipelineLayoutInfo.setLayoutCount = 1; // Optional
 		VkDescriptorSetLayout layouts[] = { pso->descriptorSetLayout };
 		pipelineLayoutInfo.pSetLayouts = layouts; // Optional
+		
+		std::string pushConstsName = dc->shader->GetPushConsts();
+		if (!pushConstsName.empty()) {
+			VkPushConstantRange pushConstantRange{};
+			pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+			pushConstantRange.offset = 0;
+			pushConstantRange.size = sizeof(PushConsts);
+			pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
+			pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
+		}
 
 		if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(pso->pipelineLayout)) != VK_SUCCESS) {
 			LOGERROR("failed to create pipeline layout!");
@@ -966,7 +965,6 @@ namespace Joestar {
 			int samplerCount = 0;
 			for (int j = 0; j < dc->shader->ubs.size(); ++j) {
 				UniformBufferVK* ub = uniformVKs[dc->shader->ubs[j]];
-
 				if (ub->texID > 0) {
 					VkDescriptorImageInfo imageInfo{};
 					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -1048,6 +1046,7 @@ namespace Joestar {
 
 		vkCmdBeginRenderPass(vkCtxPtr->commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+		std::string pushConsts;
 		for (int j = 0; j < pass->dcs.size(); ++j) {
 			DrawCallVK* dc = pass->dcs[j];
 			GetPipeline(pass, j);
@@ -1060,6 +1059,11 @@ namespace Joestar {
 			vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], dc->ib->buffer, 0, VK_INDEX_TYPE_UINT16);
 
 			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
+
+			pushConsts = dc->shader->GetPushConsts();
+			if (!pushConsts.empty()) {
+				vkCmdPushConstants(vkCtxPtr->commandBuffers[i], dc->pso->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConsts), dc->pc);
+			}
 			vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), 1, 0, 0, 0);
 		}
 		vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
@@ -1108,10 +1112,10 @@ namespace Joestar {
 				((UniformBufferObject*)uniformVKs[hashID]->data)->proj = *(Matrix4x4f*)cmd.data;
 				break; 
 			}
-			case BUILTIN_MATRIX_MODEL: {
-				((UniformBufferObject*)uniformVKs[hashID]->data)->model = *(Matrix4x4f*)cmd.data;
-				break;
-			}
+			//case BUILTIN_MATRIX_MODEL: {
+			//	((UniformBufferObject*)uniformVKs[hashID]->data)->model = *(Matrix4x4f*)cmd.data;
+			//	break;
+			//}
 			default: break;
 		}
 		if (name.empty()) {
@@ -1120,34 +1124,25 @@ namespace Joestar {
 		}
 	}
 
-	//void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(RenderCommand cmd, PipelineState& pso) {
-	//	BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
-	//	switch (flag) {
-	//	case BUILTIN_MATRIX_MODEL: {
-	//		//built in name
-	//		std::string name = "model";
-	//		uint32_t hashID = hashString(name.c_str()) + cmd.size;
-	//		if (uniformVKs.find(hashID) == uniformVKs.end()) {
-	//			uniformVKs[hashID] = new UniformBufferVK;
-	//			uniformVKs[hashID]->name = name;
-	//			uniformVKs[hashID]->size = cmd.size;
-	//			uniformVKs[hashID]->id = hashID;
-	//			uniformVKs[hashID]->data = cmd.data;
-
-	//			CreateUniformBuffers(uniformVKs[hashID]);
-	//		}
-	//		pso.ubs.push_back(uniformVKs[hashID]);
-	//		break; 
-	//	}
-	//	default: break;
-	//	}
-	//}
+	void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc) {
+		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
+		switch (flag) {
+		case BUILTIN_MATRIX_MODEL: {
+			//built in name
+			dc->pc = new PushConstsVK;
+			dc->pc->model = *(Matrix4x4f*)cmd.data;
+			break; 
+		}
+		default: break;
+		}
+	}
 
 #define CHECK_PASS() if(pass == nullptr) {LOGERROR("PLEASE START PASS FIRST!\n");}
-	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx) {
+	void GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imgIdx) {
 		if (cmdIdx == 0) return;
 		//for test, we only record once now
 		if (!renderPassList.empty()) return;
+		curImageIdx = imgIdx;
 
 		RenderPassVK* pass = nullptr;
 		DrawCallVK* drawcall = new DrawCallVK;
@@ -1175,9 +1170,13 @@ namespace Joestar {
 			}
 			case RenderCMD_UpdateUniformBufferObject: {
 				RenderCmdUpdateUniformBufferObject(cmdBuffer[i]);
+				UpdateUniformBuffer(imgIdx);
 				break; 
 			}
-			//case RenderCMD_UpdateUniformBuffer: RenderCmdUpdateUniformBuffer(cmdBuffer[i], *pso); break;
+			case RenderCMD_UpdateUniformBuffer: {
+				RenderCmdUpdateUniformBuffer(cmdBuffer[i], drawcall);
+				break; 
+			}
 			case RenderCMD_UpdateVertexBuffer: {
 				CHECK_PASS()
 				VertexBuffer* vb = (VertexBuffer*)cmdBuffer[i].data;
@@ -1244,6 +1243,7 @@ namespace Joestar {
 				drawcall->topology = topology;
 				drawcall->HashInsert(topology);
 				pass->dcs.push_back(drawcall);
+
 				drawcall = new DrawCallVK;
 				drawcall->pso = new PipelineStateVK;
 				break;
@@ -1260,6 +1260,13 @@ namespace Joestar {
 				if (lastRenderPassList[i]->hash != renderPassList[i]->hash) {
 					needRecord = true;
 					break;
+				} else {
+					//update push consts
+					for (int j = 0; j < renderPassList[i]->dcs.size(); ++j) {
+						if (renderPassList[i]->dcs[j]->pc) {
+							*(lastRenderPassList[i]->dcs[j]->pc) = *(renderPassList[i]->dcs[j]->pc);
+						}
+					}
 				}
 			}
 		}
