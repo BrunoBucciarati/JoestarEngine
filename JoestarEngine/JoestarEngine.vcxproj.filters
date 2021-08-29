@@ -39,7 +39,7 @@
     <ClCompile Include="Base\GameObject.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Base\Renderer.cpp">
+    <ClCompile Include="Component\Renderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Base\Scene.cpp">
@@ -114,6 +114,18 @@
     <ClCompile Include="Graphics\ProgramCPU.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Math\Matrix3x3.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Component\Transform.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Component\Component.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Quaternion.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -149,7 +161,7 @@
     <ClInclude Include="Base\GameObject.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Base\Renderer.h">
+    <ClInclude Include="Component\Renderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Base\Scene.h">
@@ -246,6 +258,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\ProgramCPU.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\Transform.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\Component.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Quaternion.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Matrix3x3.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

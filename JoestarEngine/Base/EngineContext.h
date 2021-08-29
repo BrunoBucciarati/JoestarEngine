@@ -9,7 +9,7 @@ namespace Joestar {
 		Object* GetSubSystem(uint32_t classID);
 		template<class T>
 		T* GetSubSystem() {
-			Object* obj = GetSubSystem(T::GetClassID());
+			Object* obj = GetSubSystem(T::GetClassIDStatic());
 			return static_cast<T*>(obj);
 		}
 	};

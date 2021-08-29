@@ -25,6 +25,10 @@ namespace Joestar {
 		std::string path = "Models/viking_room/viking_room.png";
 		textures[0]->TextureFromImage(path);
 	}
+
+	void SetShader(Shader* shader) {
+		program->shader = shader;
+	}
 	std::string& GetShaderName() { return program->shader->GetName(); }
 	Shader* GetShader() { return program->shader; }
 	ProgramCPU* GetProgram() { return program; }

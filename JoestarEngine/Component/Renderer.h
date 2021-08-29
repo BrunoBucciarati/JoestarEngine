@@ -1,17 +1,17 @@
 #pragma once
 #include "../Graphics/Mesh.h"
 #include "../Graphics/Material.h"
-#include "Camera.h"
+#include "../Base/Camera.h"
 #include "../Base/ObjectDefines.h"
 #include "../Math/Matrix4x4.h"
+#include "../Component/Component.h"
 namespace Joestar {
-	class Renderer : public Object {
-		REGISTER_OBJECT(Renderer, Object);
+	class Renderer : public Component {
+		REGISTER_COMPONENT(Renderer);
 	public:
-		explicit Renderer(EngineContext* ctx);
+		void Init();
 		Mesh* mesh;
 		Material* mat;
-		Matrix4x4f model;
 		void Render(Camera cam);
 	};
 }

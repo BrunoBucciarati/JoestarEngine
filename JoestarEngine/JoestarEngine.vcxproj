@@ -150,8 +150,10 @@
     <ClCompile Include="Base\Object.cpp" />
     <ClCompile Include="Base\StringHash.cpp" />
     <ClCompile Include="Base\SubSystem.cpp" />
-    <ClCompile Include="Base\Renderer.cpp" />
+    <ClCompile Include="Component\Component.cpp" />
+    <ClCompile Include="Component\Renderer.cpp" />
     <ClCompile Include="Base\Scene.cpp" />
+    <ClCompile Include="Component\Transform.cpp" />
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
     <ClCompile Include="Graphics\Image.cpp" />
     <ClCompile Include="Graphics\Mesh.cpp" />
@@ -164,7 +166,9 @@
     <ClCompile Include="IO\File.cpp" />
     <ClCompile Include="IO\FileSystem.cpp" />
     <ClCompile Include="IO\HID.cpp" />
+    <ClCompile Include="Math\Matrix3x3.cpp" />
     <ClCompile Include="Math\Matrix4x4.cpp" />
+    <ClCompile Include="Math\Quaternion.cpp" />
     <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector3.cpp" />
     <ClCompile Include="Thread\RenderThreadVulkan.cpp" />
@@ -187,8 +191,10 @@
     <ClInclude Include="Base\ObjectDefines.h" />
     <ClInclude Include="Base\StringHash.h" />
     <ClInclude Include="Base\SubSystem.h" />
-    <ClInclude Include="Base\Renderer.h" />
+    <ClInclude Include="Component\Renderer.h" />
     <ClInclude Include="Base\Scene.h" />
+    <ClInclude Include="Component\Component.h" />
+    <ClInclude Include="Component\Transform.h" />
     <ClInclude Include="Graphics\GPUProgramVulkan.h" />
     <ClInclude Include="Graphics\GraphicDefines.h" />
     <ClInclude Include="Graphics\Image.h" />
@@ -204,7 +210,9 @@
     <ClInclude Include="IO\HID.h" />
     <ClInclude Include="IO\MemoryManager.h" />
     <ClInclude Include="Math\FloatMath.h" />
+    <ClInclude Include="Math\Matrix3x3.h" />
     <ClInclude Include="Math\Matrix4x4.h" />
+    <ClInclude Include="Math\Quaternion.h" />
     <ClInclude Include="Math\Vector2.h" />
     <ClInclude Include="Math\Vector3.h" />
     <ClInclude Include="Math\Vector4.h" />

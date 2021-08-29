@@ -22,6 +22,9 @@ enum ClassIDType {
 	DefineClassID(Mesh, 13)
 	DefineClassID(MemoryManager, 14)
 	DefineClassID(ProgramCPU, 15)
+	DefineClassID(Component, 16)
+	DefineClassID(GameObject, 17)
+	DefineClassID(Transform, 18)
 
 	kClassIDCount
 };

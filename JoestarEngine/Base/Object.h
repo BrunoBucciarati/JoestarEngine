@@ -14,7 +14,7 @@ namespace Joestar {
 
 		template <class T>
 		T* GetSubsystem() const {
-			return static_cast<T*>(GetSubsystem(T::GetClassID()));
+			return static_cast<T*>(GetSubsystem(T::GetClassIDStatic()));
 		}
 	protected:
 		EngineContext* mContext;
