@@ -10,11 +10,13 @@
 #include "../Graphics/Shader/ShaderParser.h"
 #include "../Graphics/ProceduralMesh.h"
 #include "../IO/MemoryManager.h"
+#include "TimeManager.h"
 
 namespace Joestar {
 	void Application::Start() {
 		gContext = new EngineContext;
 		InitSubSystem(MemoryManager, gContext)
+		InitSubSystem(TimeManager, gContext)
 		InitSubSystem(GlobalConfig, gContext)
 		int GFX_API = GFX_API_VULKAN;
 		GetSubSystem<GlobalConfig>()->UpdateConfig("GFX_API", GFX_API);
@@ -41,8 +43,11 @@ namespace Joestar {
 	}
 
 	void Application::Update() {
-		GetSubSystem<Scene>()->Update();
+		float dt = GetSubSystem<TimeManager>()->GetElapseTime();
+		GetSubSystem<TimeManager>()->BeginFrame();
+		GetSubSystem<Scene>()->Update(dt);
 		GetSubSystem<Graphics>()->MainLoop();
+		GetSubSystem<TimeManager>()->EndFrame();
 	}
 
 	static Application* appInstance;

@@ -44,9 +44,6 @@ namespace Joestar {
                 else {
                     indices.push_back(it - vertices.begin());
                 }
-                //for test
-                ++count;
-                if (count == 300000) break;
             }
         }
 

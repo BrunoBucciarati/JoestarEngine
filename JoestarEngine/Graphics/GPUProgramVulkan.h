@@ -17,6 +17,8 @@
 #include "Shader/Shader.h"
 
 namespace Joestar {
+    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice device);
+
     struct FrameBufferVK {
         VkImage depthImage;
         VkDeviceMemory depthImageMemory;
@@ -70,27 +72,125 @@ namespace Joestar {
         std::vector<U32> textures;
     };
 
+
+    struct ImageVK {
+        VulkanContext* ctx;
+        U32 width;
+        U32 height;
+        U32 mipLevels;
+        VkSampleCountFlagBits numSamples;
+        VkFormat format;
+        VkImageTiling tiling;
+        VkImageUsageFlags usage;
+        VkMemoryPropertyFlags properties;
+        VkImageType imageType;
+        VkImage image;
+        VkDeviceMemory imageMemory;
+        VkImageView imageView;
+        U32 memoryTypeIdx;
+
+        void Create() {
+            VkImageCreateInfo imageInfo{};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = imageType;
+            imageInfo.extent.width = width;
+            imageInfo.extent.height = height;
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = mipLevels;
+            imageInfo.arrayLayers = 1;
+            imageInfo.format = format;
+            imageInfo.tiling = tiling;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.usage = usage;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.samples = numSamples;
+            imageInfo.flags = 0; // Optional  
+            if (vkCreateImage(ctx->device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+                LOGERROR("failed to create image!");
+            }
+
+            VkMemoryRequirements memRequirements;
+            vkGetImageMemoryRequirements(ctx->device, image, &memRequirements);
+            memoryTypeIdx = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, ctx->physicalDevice);
+
+            VkMemoryAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            allocInfo.allocationSize = memRequirements.size;
+            allocInfo.memoryTypeIndex = memoryTypeIdx;
+
+            if (vkAllocateMemory(ctx->device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+                throw std::runtime_error("failed to allocate image memory!");
+            }
+
+            vkBindImageMemory(ctx->device, image, imageMemory, 0);
+        }
+    };
+
     class TextureVK {
     public:
         explicit TextureVK(Texture*);
-        inline uint32_t ID() { return texture->id; }
-        inline uint32_t GetSize() { return texture->GetSize(); }
-        inline bool HasMipmap() { return texture->hasMipMap; }
-        VkImage textureImage;
-        VkDeviceMemory textureImageMemory;
-        VkImageView textureImageView;
+        U32 ID() { return texture->id; }
+        U32 GetSize() { return texture->GetSize(); }
+        U32 GetWidth() { return texture->GetWidth(); }
+        U32 GetHeight() { return texture->GetHeight(); }
+        void* GetData() { return texture->GetData(); }
+        bool HasMipmap() { return texture->hasMipMap; }
+        TEXTURE_TYPE Type() { return texture->typ; }
+        //VkImage textureImage;
+        //VkDeviceMemory textureImageMemory;
+        //VkImageView textureImageView;
+        ImageVK* image;
     private:
         Texture* texture;
     };
 
-    class BufferVK {
+    struct BufferVK {
     public:
+        VulkanContext* ctx;
+        VkDeviceSize size;
+        VkBufferUsageFlags usage;
+        VkMemoryPropertyFlags properties;
         VkBuffer buffer;
         VkDeviceMemory memory;
+        U32 memoryTypeIdx;
 
-        void Clean(VkDevice& dev) {
-            vkDestroyBuffer(dev, buffer, nullptr);
-            vkFreeMemory(dev, memory, nullptr);
+        void Create() {
+            VkBufferCreateInfo bufferInfo{};
+            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            bufferInfo.size = size;
+            bufferInfo.usage = usage;
+            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+            if (vkCreateBuffer(ctx->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create buffer!");
+            }
+
+            VkMemoryRequirements memRequirements;
+            vkGetBufferMemoryRequirements(ctx->device, buffer, &memRequirements);
+            memoryTypeIdx = FindMemoryType(memRequirements.memoryTypeBits, properties, ctx->physicalDevice);
+
+            VkMemoryAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            allocInfo.allocationSize = memRequirements.size;
+            allocInfo.memoryTypeIndex = memoryTypeIdx; 
+
+            if (vkAllocateMemory(ctx->device, &allocInfo, nullptr, &memory) != VK_SUCCESS) {
+                throw std::runtime_error("failed to allocate buffer memory!");
+            }
+
+            vkBindBufferMemory(ctx->device, buffer, memory, 0);
+        }
+
+        void CopyBuffer(U8* cpuData) {
+            void* data;
+            vkMapMemory(ctx->device, memory, 0, size, 0, &data);
+            memcpy(data, cpuData, size);
+            vkUnmapMemory(ctx->device, memory);
+        }
+
+        void Clean() {
+            vkDestroyBuffer(ctx->device, buffer, nullptr);
+            vkFreeMemory(ctx->device, memory, nullptr);
         }
     };
 
@@ -256,6 +356,7 @@ namespace Joestar {
         VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT, uint32_t mipLevels = 1);
         void CreateTextureSampler(RenderPassVK* pass, int i);
         void CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        //void CreateImage(ImageVK* image);
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         void Clean();
         VkShaderModule CreateShaderModule(File* code);

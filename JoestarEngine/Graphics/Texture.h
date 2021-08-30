@@ -10,16 +10,17 @@ namespace Joestar {
 		explicit Texture(EngineContext* ctx) : Super(ctx), hasMipMap(true) {
 			
 		}
-		void TextureFromImage(std::string& path);
-		uint32_t id;
+		virtual void TextureFromImage(std::string& path) {}
+		U32 id;
 		TEXTURE_FORMAT fmt;
+		TEXTURE_TYPE typ;
 		bool hasMipMap;
-		inline uint32_t GetSize() { return width * height * TEXTURE_FORMAT_SIZE[fmt]; }
-		inline uint32_t GetWidth() { return width; }
-		inline uint32_t GetHeight() { return height; }
-	private:
-		Image* img;
-		uint32_t width;
-		uint32_t height;
+		virtual U32 GetSize() { return width * height * TEXTURE_FORMAT_SIZE[fmt]; }
+		virtual U32 GetWidth() { return width; }
+		virtual U32 GetHeight() { return height; }
+		virtual U8* GetData() { return nullptr; }
+	protected:
+		U32 width;
+		U32 height;
 	};
 }

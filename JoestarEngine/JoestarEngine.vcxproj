@@ -162,6 +162,8 @@
     <ClCompile Include="Graphics\Shader\Shader.cpp" />
     <ClCompile Include="Graphics\Shader\ShaderParser.cpp" />
     <ClCompile Include="Graphics\Texture.cpp" />
+    <ClCompile Include="Graphics\Texture2D.cpp" />
+    <ClCompile Include="Graphics\TextureCube.cpp" />
     <ClCompile Include="Graphics\VertexData.cpp" />
     <ClCompile Include="IO\File.cpp" />
     <ClCompile Include="IO\FileSystem.cpp" />
@@ -171,6 +173,7 @@
     <ClCompile Include="Math\Quaternion.cpp" />
     <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector3.cpp" />
+    <ClCompile Include="Misc\TimeManager.cpp" />
     <ClCompile Include="Thread\RenderThreadVulkan.cpp" />
     <ClCompile Include="Thread\Thread.cpp" />
     <ClCompile Include="Graphics\glad.c" />
@@ -204,6 +207,8 @@
     <ClInclude Include="Graphics\Shader\ShaderParser.h" />
     <ClInclude Include="Graphics\Shader\ShaderDefs.h" />
     <ClInclude Include="Graphics\Texture.h" />
+    <ClInclude Include="Graphics\Texture2D.h" />
+    <ClInclude Include="Graphics\TextureCube.h" />
     <ClInclude Include="Graphics\VertexData.h" />
     <ClInclude Include="Graphics\VulkanHeader.h" />
     <ClInclude Include="IO\File.h" />
@@ -216,6 +221,7 @@
     <ClInclude Include="Math\Vector2.h" />
     <ClInclude Include="Math\Vector3.h" />
     <ClInclude Include="Math\Vector4.h" />
+    <ClInclude Include="Misc\TimeManager.h" />
     <ClInclude Include="Thread\RenderThread.h" />
     <ClInclude Include="Thread\RenderThreadGL.h" />
     <ClInclude Include="Thread\RenderThreadVulkan.h" />

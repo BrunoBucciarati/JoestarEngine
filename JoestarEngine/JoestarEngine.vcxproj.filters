@@ -126,6 +126,15 @@
     <ClCompile Include="Math\Quaternion.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Misc\TimeManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Texture2D.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\TextureCube.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -270,6 +279,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Math\Matrix3x3.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\TimeManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Texture2D.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\TextureCube.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,6 +6,7 @@
 #include "../Math/Vector2.h"
 #include "../Graphics/ProceduralMesh.h"
 #include "../Math/Vector3.h"
+#include "../Graphics/TextureCube.h"
 #include "../Component/Renderer.h"
 namespace Joestar {
     Scene::Scene(EngineContext* ctx) : Super(ctx) {
@@ -38,7 +39,7 @@ namespace Joestar {
         selection = sphere;
     }
 
-    void Scene::Update() {
+    void Scene::Update(float dt) {
         HID* hid = GetSubsystem<HID>();
         camera.ProcessHID(hid, 0.01f);
 
@@ -80,6 +81,23 @@ namespace Joestar {
                 render->Render(camera);
             }
         }
+
+        //RenderSkybox();
         graphics->EndRenderPass("Scene");
+    }
+
+    void Scene::RenderSkybox() {
+        if (!skyboxMat) {
+            skyboxMat = NEW_OBJECT(Material);
+            Shader* shader = NEW_OBJECT(Shader);
+            shader->SetName("skybox");
+            skyboxMat->SetShader(shader);
+
+            TextureCube* cube = NEW_OBJECT(TextureCube);
+            std::string skydir = "Textures/skybox/";
+            cube->TextureFromImage(skydir);
+            skyboxMat->SetTexture(cube);
+        }
+        GetSubsystem<Graphics>()->DrawMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere(), skyboxMat);
     }
 }

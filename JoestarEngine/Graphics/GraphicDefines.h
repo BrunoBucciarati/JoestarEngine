@@ -37,6 +37,11 @@ namespace Joestar {
 		TEXTURE_FORMAT_RGBA8 = 0,
 		TEXTURE_FORMAT_FORMATCOUNT
 	};
+
+	enum TEXTURE_TYPE {
+		TEXTURE_2D = 0,
+		TEXTURE_CUBEMAP
+	};
 	const int TEXTURE_FORMAT_SIZE[] = {
 		4
 	};

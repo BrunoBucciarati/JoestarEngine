@@ -6,7 +6,19 @@
 #include "Image.h"
 
 namespace Joestar {
-	TextureVK::TextureVK(Texture* t) : texture(t) {
+	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice device) {
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(device, &memProperties);
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
+			}
+		}
+
+
+		LOGERROR("failed to find suitable memory type!");
+	}
+	TextureVK::TextureVK(Texture* t) : texture(t), image(nullptr) {
 		
 	}
 
@@ -144,11 +156,11 @@ namespace Joestar {
 		}
 
 		for (auto& buffer : ibs) {
-			buffer.second->Clean(vkCtxPtr->device);
+			buffer.second->Clean();
 		}
 
 		for (auto& buffer : vbs) {
-			buffer.second->Clean(vkCtxPtr->device);
+			buffer.second->Clean();
 		}
 
 		//vkDestroySampler(vkCtxPtr->device, currentPSO.textureSampler, nullptr);
@@ -291,31 +303,42 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::CreateTextureImage(TextureVK* tex) {
-		Image* img = new Image("Models/viking_room/viking_room.png");
+		if (tex->image) return;
 		VkDeviceSize imageSize = tex->GetSize();
-		mipLevels = static_cast<uint32_t>(std::floor(std::log2(Max(img->GetWidth(), img->GetHeight())))) + 1;
+		mipLevels = static_cast<uint32_t>(std::floor(std::log2(Max(tex->GetWidth(), tex->GetHeight())))) + 1;
+		tex->image = new ImageVK;
+		tex->image->ctx = vkCtxPtr;
+		tex->image->width = tex->GetWidth();
+		tex->image->height = tex->GetHeight();
+		tex->image->mipLevels = mipLevels;
+		tex->image->numSamples = VK_SAMPLE_COUNT_1_BIT;
+		tex->image->format = VK_FORMAT_R8G8B8A8_SRGB;
+		tex->image->tiling = VK_IMAGE_TILING_OPTIMAL;
+		tex->image->usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+		tex->image->properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+		tex->image->imageType = VK_IMAGE_TYPE_2D;
+		tex->image->Create();
 
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-		void* data;
-		vkMapMemory(vkCtxPtr->device, stagingBufferMemory, 0, imageSize, 0, &data);
-		memcpy(data, img->GetData(), static_cast<size_t>(imageSize));
-		vkUnmapMemory(vkCtxPtr->device, stagingBufferMemory);
+		BufferVK stagingBuffer{
+			vkCtxPtr,
+			imageSize,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		};
+		stagingBuffer.Create();
+		stagingBuffer.CopyBuffer((U8*)tex->GetData());
+		//CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stageingBuffer.buffer, stageingBuffer.memory);
 
-		CreateImage(img->GetWidth(), img->GetHeight(), mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, tex->textureImage, tex->textureImageMemory);
+
+		//CreateImage(tex->GetWidth(), tex->GetHeight(), mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, tex->textureImage, tex->textureImageMemory);
 		//for mipmap
-		TransitionImageLayout(tex->textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
-		CopyBufferToImage(stagingBuffer, tex->textureImage, static_cast<uint32_t>(img->GetWidth()), static_cast<uint32_t>(img->GetHeight()));
+		TransitionImageLayout(tex->image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+		CopyBufferToImage(stagingBuffer.buffer, tex->image->image, tex->GetWidth(), tex->GetHeight());
 		if (tex->HasMipmap()) {
-			GenerateMipmaps(tex->textureImage, VK_FORMAT_R8G8B8A8_SRGB, img->GetWidth(), img->GetHeight(), mipLevels);
+			GenerateMipmaps(tex->image->image, VK_FORMAT_R8G8B8A8_SRGB, tex->GetWidth(), tex->GetHeight(), mipLevels);
 		} else {
-			TransitionImageLayout(tex->textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
+			TransitionImageLayout(tex->image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
 		}
-
-		delete img;
-		vkDestroyBuffer(vkCtxPtr->device, stagingBuffer, nullptr);
-		vkFreeMemory(vkCtxPtr->device, stagingBufferMemory, nullptr);
 	}
 
 	void GPUProgramVulkan::GenerateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
@@ -539,7 +562,7 @@ namespace Joestar {
 		EndSingleTimeCommands(commandBuffer);
 	}
 	void GPUProgramVulkan::CreateTextureImageView(TextureVK* tex) {
-		tex->textureImageView = CreateImageView(tex->textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+		tex->image->imageView = CreateImageView(tex->image->image, VK_FORMAT_R8G8B8A8_SRGB);
 	}
 	VkImageView GPUProgramVulkan::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels) {
 		VkImageViewCreateInfo viewInfo{};
@@ -987,7 +1010,7 @@ namespace Joestar {
 					} else {
 						tex = it->second;
 					}
-					imageInfo.imageView = tex->textureImageView;
+					imageInfo.imageView = tex->image->imageView;
 					imageInfo.sampler = dc->pso->textureSampler;
 
 					descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1170,9 +1193,7 @@ namespace Joestar {
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)vkCtxPtr->commandBuffers.size();
 
-		if (vkAllocateCommandBuffers(vkCtxPtr->device, &allocInfo, vkCtxPtr->commandBuffers.data()) != VK_SUCCESS) {
-			LOGERROR("failed to allocate command buffers!");
-		}
+		VK_CHECK(vkAllocateCommandBuffers(vkCtxPtr->device, &allocInfo, vkCtxPtr->commandBuffers.data()))
 	}
 
 

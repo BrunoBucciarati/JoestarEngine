@@ -25,6 +25,9 @@ enum ClassIDType {
 	DefineClassID(Component, 16)
 	DefineClassID(GameObject, 17)
 	DefineClassID(Transform, 18)
+	DefineClassID(TimeManager, 19)
+	DefineClassID(Texture2D, 20)
+	DefineClassID(TextureCube, 21)
 
 	kClassIDCount
 };

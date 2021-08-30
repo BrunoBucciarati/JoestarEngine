@@ -8,6 +8,10 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
+#define VK_CHECK(f) \
+	VkResult result = f; \
+	if (result != VK_SUCCESS) LOGERROR("[VK_ERROR]:%s", #f);
+
 
 struct VulkanContext {
 	VkInstance instance;

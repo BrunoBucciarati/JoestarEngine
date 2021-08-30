@@ -9,5 +9,6 @@ namespace Joestar {
 		REGISTER_OBJECT(SubSystem, Object)
 	public:
 		explicit SubSystem(EngineContext* context);
+		virtual void Update(float dt) {}
 	};
 }

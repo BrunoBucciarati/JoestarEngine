@@ -4,8 +4,8 @@
 #include "Shader/Shader.h"
 #include <vector>
 #include "../Base/Object.h"
-#include "Texture.h"
 #include "ProgramCPU.h"
+#include "Texture2D.h"
 
 namespace Joestar {
 	class Material : public Object {
@@ -21,7 +21,7 @@ namespace Joestar {
 			program->shader = NEW_OBJECT(Shader);
 			program->shader->SetName("test");
 		}
-		textures.push_back(NEW_OBJECT(Texture));
+		textures.push_back(NEW_OBJECT(Texture2D));
 		std::string path = "Models/viking_room/viking_room.png";
 		textures[0]->TextureFromImage(path);
 	}
@@ -29,8 +29,14 @@ namespace Joestar {
 	void SetShader(Shader* shader) {
 		program->shader = shader;
 	}
-	std::string& GetShaderName() { return program->shader->GetName(); }
+
+	void SetTexture(Texture* tex, U8 slot = 0) {
+		if (slot >= textures.size())
+			textures.resize(slot + 1);
+		textures[slot] = tex;
+	}
 	Shader* GetShader() { return program->shader; }
+	std::string& GetShaderName() { return program->shader->GetName(); }
 	ProgramCPU* GetProgram() { return program; }
 	std::vector<Texture*>& GetTextures() {
 		return textures;
