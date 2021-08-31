@@ -124,4 +124,11 @@ namespace Joestar {
 		cmdBuffer[cmdIdx].data = (void*)name;
 		++cmdIdx;
 	}
+
+	void Graphics::SetDepthCompare(DepthCompareFunc func) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_SetDepthCompare;
+		cmdBuffer[cmdIdx].size = sizeof(DepthCompareFunc);
+		cmdBuffer[cmdIdx].flag = func;
+		++cmdIdx;
+	}
 }

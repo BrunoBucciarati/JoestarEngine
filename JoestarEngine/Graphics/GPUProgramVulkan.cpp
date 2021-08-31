@@ -18,6 +18,13 @@ namespace Joestar {
 
 		LOGERROR("failed to find suitable memory type!");
 	}
+
+
+	VkCompareOp VKCompareOps[] = {
+		VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_LESS, VK_COMPARE_OP_LESS_OR_EQUAL,
+		VK_COMPARE_OP_GREATER, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_EQUAL, VK_COMPARE_OP_NOT_EQUAL
+	};
+
 	TextureVK::TextureVK(Texture* t) : texture(t), image(nullptr) {
 		
 	}
@@ -249,38 +256,35 @@ namespace Joestar {
 		allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
 		if (vkAllocateMemory(vkCtxPtr->device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-			throw std::runtime_error("failed to allocate buffer memory!");
+			LOGERROR("failed to allocate buffer memory!");
 		}
 
 		vkBindBufferMemory(vkCtxPtr->device, buffer, bufferMemory, 0);
 	}
 
 	void GPUProgramVulkan::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+		CommandBufferVK cb{ vkCtxPtr };
+		cb.Begin();
 
 		VkBufferCopy copyRegion{};
 		copyRegion.srcOffset = 0; // Optional
 		copyRegion.dstOffset = 0; // Optional
 		copyRegion.size = size;
-		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+		vkCmdCopyBuffer(cb.commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-		EndSingleTimeCommands(commandBuffer);
+		cb.End();
 	}
 
 	void GPUProgramVulkan::CreateTextureImage(TextureVK* tex) {
 		if (tex->image) return;
 		VkDeviceSize imageSize = tex->GetSize();
-		mipLevels = static_cast<uint32_t>(std::floor(std::log2(Max(tex->GetWidth(), tex->GetHeight())))) + 1;
+		mipLevels = tex->HasMipmap() ? static_cast<uint32_t>(std::floor(std::log2(Max(tex->GetWidth(), tex->GetHeight())))) + 1 : 1;
 		tex->image = new ImageVK;
 		tex->image->ctx = vkCtxPtr;
 		tex->image->width = tex->GetWidth();
 		tex->image->height = tex->GetHeight();
 		tex->image->mipLevels = mipLevels;
-		tex->image->numSamples = VK_SAMPLE_COUNT_1_BIT;
-		tex->image->format = VK_FORMAT_R8G8B8A8_SRGB;
-		tex->image->tiling = VK_IMAGE_TILING_OPTIMAL;
-		tex->image->usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		tex->image->properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+		tex->image->viewType = (tex->Type() == TEXTURE_CUBEMAP ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D);
 		tex->image->imageType = VK_IMAGE_TYPE_2D;
 		tex->image->Create();
 
@@ -294,47 +298,17 @@ namespace Joestar {
 		stagingBuffer.CopyBuffer((U8*)tex->GetData());
 
 		//for mipmap
-		tex->image->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		tex->image->CopyBufferToImage(stagingBuffer);
+		CommandBufferVK cb{ vkCtxPtr };
+		cb.Begin();
+		tex->image->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, cb);
+		tex->image->CopyBufferToImage(stagingBuffer, cb);
 		if (tex->HasMipmap()) {
-			tex->image->GenerateMipmaps();
+			tex->image->GenerateMipmaps(cb);
 		} else {
-			tex->image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			tex->image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
 		}
-		tex->image->CreateImageView(VK_FORMAT_R8G8B8A8_SRGB);
-	}
-
-	VkCommandBuffer GPUProgramVulkan::BeginSingleTimeCommands() {
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = vkCtxPtr->commandPool;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(vkCtxPtr->device, &allocInfo, &commandBuffer);
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-		return commandBuffer;
-	}
-
-	void GPUProgramVulkan::EndSingleTimeCommands(VkCommandBuffer commandBuffer) {
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		vkQueueSubmit(vkCtxPtr->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(vkCtxPtr->graphicsQueue);
-
-		vkFreeCommandBuffers(vkCtxPtr->device, vkCtxPtr->commandPool, 1, &commandBuffer);
+		tex->image->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT, cb);
+		cb.End();
 	}
 
 	void GPUProgramVulkan::CreateTextureSampler(RenderPassVK* pass, int i) {
@@ -527,7 +501,7 @@ namespace Joestar {
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencil.depthTestEnable = VK_TRUE;
 		depthStencil.depthWriteEnable = VK_TRUE;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencil.depthCompareOp = dc->depthOp;
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 		depthStencil.stencilTestEnable = VK_FALSE;
 
@@ -653,8 +627,11 @@ namespace Joestar {
 		pass->fb->colorImage = new ImageVK{
 			vkCtxPtr, vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, pass->msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		};
+		CommandBufferVK cb{ vkCtxPtr };
+		cb.Begin();
 		pass->fb->colorImage->Create();
-		pass->fb->colorImage->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT);
+		pass->fb->colorImage->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT, cb);
+		cb.End();
 		//pass->fb->colorImageView = CreateImageView(pass->fb->colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 	}
 
@@ -666,9 +643,12 @@ namespace Joestar {
 			1, pass->msaaSamples,  depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		};
 		pass->fb->depthImage->Create();
+		CommandBufferVK cb{ vkCtxPtr };
+		cb.Begin();
 		//CreateImage(vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, pass->msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pass->fb->depthImage, pass->fb->depthImageMemory);
-		pass->fb->depthImage->CreateImageView(VK_IMAGE_ASPECT_DEPTH_BIT);
-		pass->fb->depthImage->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		pass->fb->depthImage->CreateImageView(VK_IMAGE_ASPECT_DEPTH_BIT, cb);
+		pass->fb->depthImage->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, cb);
+		cb.End();
 	}
 
 	void GPUProgramVulkan::CreateUniformBuffers(UniformBufferVK* ub) {
@@ -677,7 +657,8 @@ namespace Joestar {
 		ub->buffers.resize(vkCtxPtr->swapChainImages.size());
 
 		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
-		    CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, ub->buffers[i].buffer, ub->buffers[i].memory);
+			ub->buffers[i] = { vkCtxPtr, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
+			ub->buffers[i].Create();
 		}
 	}
 
@@ -742,8 +723,8 @@ namespace Joestar {
 		allocInfo.descriptorSetCount = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
 		allocInfo.pSetLayouts = layouts.data();
 
-		vkCtxPtr->descriptorSets.resize(vkCtxPtr->swapChainImages.size());
-		if (vkAllocateDescriptorSets(vkCtxPtr->device, &allocInfo, vkCtxPtr->descriptorSets.data()) != VK_SUCCESS) {
+		dc->descriptorSets.resize(vkCtxPtr->swapChainImages.size());
+		if (vkAllocateDescriptorSets(vkCtxPtr->device, &allocInfo, dc->descriptorSets.data()) != VK_SUCCESS) {
 			LOGERROR("failed to allocate descriptor sets!");
 		}
 
@@ -778,7 +759,7 @@ namespace Joestar {
 					imageInfo.sampler = dc->pso->textureSampler;
 
 					descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrites[j].dstSet = vkCtxPtr->descriptorSets[i];
+					descriptorWrites[j].dstSet = dc->descriptorSets[i];
 					descriptorWrites[j].dstBinding = dc->shader->GetSamplerBinding(samplerCount++);
 					descriptorWrites[j].dstArrayElement = 0;
 					descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -792,7 +773,7 @@ namespace Joestar {
 					bufferInfo.range = sizeof(UniformBufferObject);
 					
 					descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrites[j].dstSet = vkCtxPtr->descriptorSets[i];
+					descriptorWrites[j].dstSet = dc->descriptorSets[i];
 					descriptorWrites[j].dstBinding = dc->shader->GetUniformBindingByName(ub->name);
 					descriptorWrites[j].dstArrayElement = 0;
 					descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -810,9 +791,7 @@ namespace Joestar {
 
 		for (auto& ub : uniformVKs) {
 			if (ub.second->texID > 0) continue;
-			vkMapMemory(vkCtxPtr->device, ub.second->buffers[currentImage].memory, 0, ub.second->size, 0, &data);
-			memcpy(data, ub.second->data, ub.second->size);
-			vkUnmapMemory(vkCtxPtr->device, ub.second->buffers[currentImage].memory);
+			ub.second->buffers[currentImage].CopyBuffer((U8*)ub.second->data);
 		}
 	}
 
@@ -847,7 +826,7 @@ namespace Joestar {
 			vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], dc->ib->buffer, 0, VK_INDEX_TYPE_UINT16);
 
-			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->pipelineLayout, 0, 1, &vkCtxPtr->descriptorSets[i], 0, nullptr);
+			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->pipelineLayout, 0, 1, &dc->descriptorSets[i], 0, nullptr);
 
 			if (dc->pc) {
 				vkCmdPushConstants(vkCtxPtr->commandBuffers[i], dc->pso->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConsts), dc->pc);
@@ -1057,9 +1036,15 @@ namespace Joestar {
 			}
 			case RenderCMD_Draw: {
 				CHECK_PASS()
-				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
+					MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
 				drawcall->topology = topology;
 				drawcall->HashInsert(topology);
+				break;
+			}
+			case RenderCMD_SetDepthCompare: {
+				CHECK_PASS()
+				drawcall->depthOp = VKCompareOps[cmdBuffer[i].flag];
+				drawcall->HashInsert(cmdBuffer[i].flag);
 				break;
 			}
 			case RenderCMD_DrawIndexed: {

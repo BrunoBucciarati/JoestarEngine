@@ -10,8 +10,10 @@ namespace Joestar {
 			typ = TEXTURE_CUBEMAP;
 		}
 		void TextureFromImage(std::string& path);
+		virtual U32 GetSize() { return 6 * width * height * TEXTURE_FORMAT_SIZE[fmt]; }
 		U8* GetData();
 	private:
 		std::vector<Image*> imgs;
+		U8* buffer;
 	};
 }

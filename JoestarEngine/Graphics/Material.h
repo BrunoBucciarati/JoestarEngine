@@ -24,6 +24,7 @@ namespace Joestar {
 		textures.push_back(NEW_OBJECT(Texture2D));
 		std::string path = "Models/viking_room/viking_room.png";
 		textures[0]->TextureFromImage(path);
+		//textures[0]->hasMipMap = false;
 	}
 
 	void SetShader(Shader* shader) {

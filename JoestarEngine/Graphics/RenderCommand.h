@@ -15,6 +15,7 @@ enum RenderCommandType {
 	RenderCMD_EndRenderPass,
 	RenderCMD_BeginDrawCall,
 	RenderCMD_EndDrawCall,
+	RenderCMD_SetDepthCompare,
 
 
 

@@ -23,7 +23,7 @@ namespace Joestar {
         render->mat->SetDefault();
 
         GameObject* sphere = NEW_OBJECT(GameObject);
-        gameObjects.push_back(sphere);
+        //gameObjects.push_back(sphere);
         Renderer* sr = sphere->GetComponent<Renderer>();
         sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
         sr->mat = NEW_OBJECT(Material);
@@ -72,6 +72,7 @@ namespace Joestar {
         Graphics* graphics = GetSubsystem<Graphics>();
         graphics->BeginRenderPass("Scene");
         graphics->Clear();
+        GetSubsystem<Graphics>()->SetDepthCompare(DEPTH_COMPARE_LESS);
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera.GetProjectionMatrix());
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera.GetViewMatrix());
         Renderer* render;
@@ -82,11 +83,12 @@ namespace Joestar {
             }
         }
 
-        //RenderSkybox();
+        RenderSkybox();
         graphics->EndRenderPass("Scene");
     }
 
     void Scene::RenderSkybox() {
+        GetSubsystem<Graphics>()->SetDepthCompare(DEPTH_COMPARE_LESSEQUAL);
         if (!skyboxMat) {
             skyboxMat = NEW_OBJECT(Material);
             Shader* shader = NEW_OBJECT(Shader);
@@ -94,6 +96,7 @@ namespace Joestar {
             skyboxMat->SetShader(shader);
 
             TextureCube* cube = NEW_OBJECT(TextureCube);
+            //cube->hasMipMap = false;
             std::string skydir = "Textures/skybox/";
             cube->TextureFromImage(skydir);
             skyboxMat->SetTexture(cube);

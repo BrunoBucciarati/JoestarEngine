@@ -36,7 +36,7 @@ namespace Joestar {
             bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
             if (vkCreateBuffer(ctx->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create buffer!");
+                LOGERROR("failed to create buffer!");
             }
 
             VkMemoryRequirements memRequirements;
@@ -49,7 +49,7 @@ namespace Joestar {
             allocInfo.memoryTypeIndex = memoryTypeIdx;
 
             if (vkAllocateMemory(ctx->device, &allocInfo, nullptr, &memory) != VK_SUCCESS) {
-                throw std::runtime_error("failed to allocate buffer memory!");
+                LOGERROR("failed to allocate buffer memory!");
             }
 
             vkBindBufferMemory(ctx->device, buffer, memory, 0);
@@ -147,13 +147,15 @@ namespace Joestar {
         VulkanContext* ctx;
         U32 width;
         U32 height;
-        U32 mipLevels;
-        VkSampleCountFlagBits numSamples;
-        VkFormat format;
-        VkImageTiling tiling;
-        VkImageUsageFlags usage;
-        VkMemoryPropertyFlags properties;
+        U32 mipLevels = 1;
+        VkSampleCountFlagBits numSamples = VK_SAMPLE_COUNT_1_BIT;
+        VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+        VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL;
+        VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D;
         VkImageType imageType = VK_IMAGE_TYPE_2D;
+
         VkImage image;
         VkDeviceMemory imageMemory;
         VkImageView imageView;
@@ -165,6 +167,10 @@ namespace Joestar {
             vkFreeMemory(ctx->device, imageMemory, nullptr);
         }
 
+        U32 GetLayerCount() {
+            return viewType == VK_IMAGE_VIEW_TYPE_CUBE ? 6 : 1;
+        }
+
         void Create() {
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -173,14 +179,15 @@ namespace Joestar {
             imageInfo.extent.height = height;
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = mipLevels;
-            imageInfo.arrayLayers = 1;
+            imageInfo.arrayLayers = GetLayerCount();
             imageInfo.format = format;
             imageInfo.tiling = tiling;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageInfo.usage = usage;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.samples = numSamples;
-            imageInfo.flags = 0; // Optional  
+            imageInfo.flags = viewType == VK_IMAGE_VIEW_TYPE_CUBE ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0; // Optional  
+            // Cube faces count as array layers in Vulkan
             if (vkCreateImage(ctx->device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
                 LOGERROR("failed to create image!");
             }
@@ -201,7 +208,7 @@ namespace Joestar {
             vkBindImageMemory(ctx->device, image, imageMemory, 0);
         }
          
-        void GenerateMipmaps() {
+        void GenerateMipmaps(CommandBufferVK& cb) {
             VkFormatProperties formatProperties;
             vkGetPhysicalDeviceFormatProperties(ctx->physicalDevice, format, &formatProperties);
 
@@ -209,8 +216,9 @@ namespace Joestar {
                 LOGERROR("texture image format does not support linear blitting!");
             }
 
-            CommandBufferVK cb{ctx};
-            cb.Begin();
+            U32 faces = GetLayerCount();
+            int mipWidth = width;
+            int mipHeight = height;
 
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -219,24 +227,19 @@ namespace Joestar {
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseArrayLayer = 0;
-            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.layerCount = faces;
             barrier.subresourceRange.levelCount = 1;
-
-            int32_t mipWidth = width;
-            int32_t mipHeight = height;
-
-            for (uint32_t i = 1; i < mipLevels; i++) {
+            for (U32 i = 1; i < mipLevels; i++) {
                 barrier.subresourceRange.baseMipLevel = i - 1;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                 barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                 barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-                vkCmdPipelineBarrier(cb.commandBuffer,
-                    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-                    0, nullptr,
-                    0, nullptr,
-                    1, &barrier);
+                vkCmdPipelineBarrier(cb.commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                        0, nullptr,
+                        0, nullptr,
+                        1, &barrier);
 
                 VkImageBlit blit{};
                 blit.srcOffsets[0] = { 0, 0, 0 };
@@ -244,13 +247,13 @@ namespace Joestar {
                 blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 blit.srcSubresource.mipLevel = i - 1;
                 blit.srcSubresource.baseArrayLayer = 0;
-                blit.srcSubresource.layerCount = 1;
+                blit.srcSubresource.layerCount = faces;
                 blit.dstOffsets[0] = { 0, 0, 0 };
                 blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
                 blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 blit.dstSubresource.mipLevel = i;
                 blit.dstSubresource.baseArrayLayer = 0;
-                blit.dstSubresource.layerCount = 1;
+                blit.dstSubresource.layerCount = faces;
 
                 vkCmdBlitImage(cb.commandBuffer,
                     image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -268,11 +271,9 @@ namespace Joestar {
                     0, nullptr,
                     0, nullptr,
                     1, &barrier);
-
                 if (mipWidth > 1) mipWidth /= 2;
                 if (mipHeight > 1) mipHeight /= 2;
             }
-
             barrier.subresourceRange.baseMipLevel = mipLevels - 1;
             barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
             barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -284,23 +285,22 @@ namespace Joestar {
                 0, nullptr,
                 0, nullptr,
                 1, &barrier);
-
-            cb.End();
         }
 
-        void CopyBufferToImage(BufferVK& buffer) {
-            CommandBufferVK cb{ctx};
-            cb.Begin();
-
+        void CopyBufferToImage(BufferVK& buffer, CommandBufferVK& cb) {
+            U32 face = GetLayerCount();
             VkBufferImageCopy region{};
-            region.bufferOffset = 0;
+            U32 offset = 0;
+            
+            region = {};
+            region.bufferOffset = offset;
             region.bufferRowLength = 0;
             region.bufferImageHeight = 0;
 
             region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             region.imageSubresource.mipLevel = 0;
             region.imageSubresource.baseArrayLayer = 0;
-            region.imageSubresource.layerCount = 1;
+            region.imageSubresource.layerCount = face;
 
             region.imageOffset = { 0, 0, 0 };
             region.imageExtent = {
@@ -309,41 +309,30 @@ namespace Joestar {
                 1
             };
 
-            vkCmdCopyBufferToImage(
-                cb.commandBuffer,
-                buffer.buffer,
-                image,
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                1,
-                &region
-            );
-
-            cb.End();
+            vkCmdCopyBufferToImage(cb.commandBuffer,buffer.buffer,image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1, &region);
         }
 
         bool HasStencilComponent(VkFormat format) {
             return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
         }
 
-        void CreateImageView(VkImageAspectFlags aspectFlags) {
+        void CreateImageView(VkImageAspectFlags aspectFlags, CommandBufferVK& cb) {
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = image;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.viewType = viewType;
             viewInfo.format = format;
             viewInfo.subresourceRange.aspectMask = aspectFlags;
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = mipLevels;
             viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
+            viewInfo.subresourceRange.layerCount = GetLayerCount();
             if (vkCreateImageView(ctx->device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
                 LOGERROR("failed to create texture image view!");
             }
         }
 
-        void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout) {
-            CommandBufferVK cb{ctx};
-            cb.Begin();
+        void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, CommandBufferVK& cb) {
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.oldLayout = oldLayout;
@@ -355,7 +344,7 @@ namespace Joestar {
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = mipLevels;
             barrier.subresourceRange.baseArrayLayer = 0;
-            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.layerCount = GetLayerCount();
 
             VkPipelineStageFlags sourceStage;
             VkPipelineStageFlags destinationStage;
@@ -403,8 +392,6 @@ namespace Joestar {
                 0, nullptr,
                 1, &barrier
             );
-
-            cb.End();
         }
     };
 
@@ -495,6 +482,14 @@ namespace Joestar {
         bool operator !=(PushConstsVK& p2) { return !(*this == p2); }
     };
 
+    //DEPTH_COMPARE_NEVER = 0,
+    //    DEPTH_COMPARE_ALWAYS,
+    //    DEPTH_COMPARE_LESS,
+    //    DEPTH_COMPARE_LESSEQUAL,
+    //    DEPTH_COMPARE_GREATER,
+    //    DEPTH_COMPARE_GREATEREQUAL,
+    //    DEPTH_COMPARE_EQUAL,
+    //    DEPTH_COMPARE_NOTEQUAL,
     struct DrawCallVK {
         VertexBufferVK* vb;
         IndexBufferVK* ib;
@@ -502,6 +497,8 @@ namespace Joestar {
         MeshTopology topology;
         PipelineStateVK* pso;
         PushConstsVK* pc = nullptr;
+        VkCompareOp depthOp = VK_COMPARE_OP_LESS;
+        std::vector<VkDescriptorSet> descriptorSets;
         U32 hash = 0;
         //ez hash, i guess that's ok
         void HashInsert(U32 i) {
@@ -545,15 +542,12 @@ namespace Joestar {
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         void Clean();
         VkShaderModule CreateShaderModule(File* code);
-        VkCommandBuffer BeginSingleTimeCommands();
-        void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
         void CreateRenderPass(RenderPassVK* pass);
         void CreateGraphicsPipeline(RenderPassVK* pass, int i);
         void CreateDescriptorSetLayout(RenderPassVK* pass, int i);
         void GetPipeline(RenderPassVK* pass, int i);
         VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
         VkFormat FindDepthFormat();
-        //void CreateDescriptorSets();
         void CleanupSwapChain();
         void CreateDepthResources(RenderPassVK* pass);
         void CreateColorResources(RenderPassVK* pass);

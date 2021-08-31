@@ -11,8 +11,6 @@ namespace Joestar {
 			"front.jpg",
 			"back.jpg"
 		};
-		int width, height, nrChannels;
-		unsigned char* data;
 		imgs.reserve(6);
 		Image* img;
 		for (unsigned int i = 0; i < faces.size(); i++)
@@ -23,9 +21,10 @@ namespace Joestar {
 			width = img->GetWidth();
 			height = img->GetHeight();
 			fmt = TEXTURE_FORMAT_RGBA8;
+			if (!buffer) buffer = new U8[GetSize()];
+			memcpy(buffer + i * width * height * TEXTURE_FORMAT_SIZE[fmt], img->GetData(), width * height * TEXTURE_FORMAT_SIZE[fmt]);
 		}
 		id = hashString(path.c_str());
-
 	}
 
 	TextureCube::~TextureCube() {
@@ -34,6 +33,6 @@ namespace Joestar {
 	}
 
 	U8* TextureCube::GetData() {
-		return (U8*)imgs.data();
+		return buffer;
 	}
 }

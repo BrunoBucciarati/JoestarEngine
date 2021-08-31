@@ -31,6 +31,7 @@ namespace Joestar {
 		void UpdateProgram(ProgramCPU* p);
 		void BeginRenderPass(const char* name);
 		void EndRenderPass(const char* name);
+		void SetDepthCompare(DepthCompareFunc fun);
 
 	private:
 		RenderThread* renderThread;

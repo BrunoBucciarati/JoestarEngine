@@ -15,5 +15,5 @@ void main()
     mat4 view1 = ubo.view;
     view1[3].xyz = vec3(0.0);
     gl_Position = ubo.proj * view1 * vec4(inPosition, 1.0);
-    gl_Position.w = gl_Position.z + 0.0001;
+    gl_Position.w = gl_Position.z;
 }
