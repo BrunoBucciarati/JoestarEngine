@@ -17,15 +17,15 @@ namespace Joestar {
                 float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
                 float yPos = std::cos(ySegment * PI);
                 float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-                vertices[y * X_SEGMENTS + x].pos.Set(xPos, yPos, zPos);
-                vertices[y * X_SEGMENTS + x].normal.Set(xPos, yPos, zPos);
-                vertices[y * X_SEGMENTS + x].texCoord.Set(xSegment, ySegment);
-                vertices[y * X_SEGMENTS + x].color.Set(1.f, 1.f, 1.f);
+                vertices[y * (X_SEGMENTS + 1) + x].pos.Set(xPos, yPos, zPos);
+                vertices[y * (X_SEGMENTS + 1) + x].normal.Set(xPos, yPos, zPos);
+                vertices[y * (X_SEGMENTS + 1) + x].texCoord.Set(xSegment, ySegment);
+                vertices[y * (X_SEGMENTS + 1) + x].color.Set(1.f, 1.f, 1.f);
             }
         }
 
         bool oddRow = false;
-        for (unsigned int y = 0; y < Y_SEGMENTS; ++y) {
+        for (unsigned int y = 0; y <= Y_SEGMENTS; ++y) {
             if (!oddRow) {
                 for (unsigned int x = 0; x <= X_SEGMENTS; ++x) {
                     indices.push_back(y * (X_SEGMENTS + 1) + x);
