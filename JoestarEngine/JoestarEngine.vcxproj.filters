@@ -135,6 +135,9 @@
     <ClCompile Include="Graphics\TextureCube.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Base\Light.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -288,6 +291,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\TextureCube.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Base\Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

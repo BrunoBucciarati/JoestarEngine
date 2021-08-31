@@ -123,6 +123,9 @@ namespace Joestar {
         U16 GetUniformBindingByName(std::string& name) {
             return shader->GetUniformBindingByName(name);
         }
+        U16 GetUniformBindingByHash(U32 hash) {
+            return shader->GetUniformBindingByHash(hash);
+        }
         U16 GetSamplerBinding(int count) {
             return shader->GetSamplerBinding(count);
         }
@@ -544,7 +547,7 @@ namespace Joestar {
         VkShaderModule CreateShaderModule(File* code);
         void CreateRenderPass(RenderPassVK* pass);
         void CreateGraphicsPipeline(RenderPassVK* pass, int i);
-        void CreateDescriptorSetLayout(RenderPassVK* pass, int i);
+        void CreateDescriptorSetLayout(DrawCallVK* pass);
         void GetPipeline(RenderPassVK* pass, int i);
         VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
         VkFormat FindDepthFormat();

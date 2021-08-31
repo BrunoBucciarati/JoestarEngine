@@ -14,6 +14,7 @@ namespace Joestar {
 		void SetName(std::string n);
 		uint32_t GetVertexAttributeFlag();
 		uint16_t GetUniformBindingByName(std::string& name);
+		U16 GetUniformBindingByHash(U32 hash);
 		uint16_t GetSamplerBinding(int count);
 		std::string GetPushConsts();
 		uint32_t id;

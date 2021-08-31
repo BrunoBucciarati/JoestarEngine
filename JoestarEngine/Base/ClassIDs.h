@@ -28,6 +28,10 @@ enum ClassIDType {
 	DefineClassID(TimeManager, 19)
 	DefineClassID(Texture2D, 20)
 	DefineClassID(TextureCube, 21)
+	DefineClassID(Light, 22)
+	DefineClassID(DirectionalLight, 23)
+	DefineClassID(PointLight, 24)
+	DefineClassID(SpotLight, 25)
 
 	kClassIDCount
 };

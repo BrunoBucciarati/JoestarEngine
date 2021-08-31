@@ -151,6 +151,7 @@
     <ClCompile Include="Base\StringHash.cpp" />
     <ClCompile Include="Base\SubSystem.cpp" />
     <ClCompile Include="Component\Component.cpp" />
+    <ClCompile Include="Base\Light.cpp" />
     <ClCompile Include="Component\Renderer.cpp" />
     <ClCompile Include="Base\Scene.cpp" />
     <ClCompile Include="Component\Transform.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="Base\ObjectDefines.h" />
     <ClInclude Include="Base\StringHash.h" />
     <ClInclude Include="Base\SubSystem.h" />
+    <ClInclude Include="Base\Light.h" />
     <ClInclude Include="Component\Renderer.h" />
     <ClInclude Include="Base\Scene.h" />
     <ClInclude Include="Component\Component.h" />

@@ -37,6 +37,12 @@ namespace Joestar {
         pr->mat->SetDefault();
 
         selection = sphere;
+
+        CreateLights();
+    }
+
+    void Scene::CreateLights() {
+
     }
 
     void Scene::Update(float dt) {
@@ -83,8 +89,13 @@ namespace Joestar {
             }
         }
 
+        RenderLights();
+
         RenderSkybox();
         graphics->EndRenderPass("Scene");
+    }
+
+    void Scene::RenderLights() {
     }
 
     void Scene::RenderSkybox() {

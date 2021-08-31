@@ -8,7 +8,7 @@ namespace Joestar {
 		GetSubsystem<ShaderParser>()->ParseShader(n, info);
 	}
 
-	uint32_t Shader::GetVertexAttributeFlag() {
+	U32 Shader::GetVertexAttributeFlag() {
 		uint32_t flag = 0;
 		for (int i = 0; i < info.attrs.size(); ++i) {
 			flag = flag | 1 << info.attrs[i].attr;
@@ -16,7 +16,7 @@ namespace Joestar {
 		return flag;
 	}
 
-	uint16_t Shader::GetUniformBindingByName(std::string& name) {
+	U16 Shader::GetUniformBindingByName(std::string& name) {
 		for (int i = 0; i < info.uniforms.size(); i++) {
 			if (info.uniforms[i].name == name) {
 				return info.uniforms[i].binding;
@@ -24,7 +24,15 @@ namespace Joestar {
 		}
 	}
 
-	uint16_t Shader::GetSamplerBinding(int count) {
+	U16 Shader::GetUniformBindingByHash(U32 hash) {
+		for (int i = 0; i < info.uniforms.size(); i++) {
+			if (hashString(info.uniforms[i].name.c_str()) == hash) {
+				return info.uniforms[i].binding;
+			}
+		}
+	}
+
+	U16 Shader::GetSamplerBinding(int count) {
 		for (int i = 0; i < info.uniforms.size(); i++) {
 			if (info.uniforms[i].dataType > ShaderDataTypeSampler) {
 				if (count == 0)

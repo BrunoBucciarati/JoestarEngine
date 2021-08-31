@@ -586,36 +586,58 @@ namespace Joestar {
 		}
 	}
 
-	void GPUProgramVulkan::CreateDescriptorSetLayout(RenderPassVK* pass, int i) {
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = 0;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.pImmutableSamplers = nullptr;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	void GPUProgramVulkan::CreateDescriptorSetLayout(DrawCallVK* dc) {
+		std::vector<VkDescriptorSetLayoutBinding> bindings;
+		bindings.reserve(dc->shader->ubs.size());
+		for (int i = 0; i < dc->shader->ubs.size(); ++i) {
+			UniformBufferVK* ubvk = uniformVKs[dc->shader->ubs[i]];
+			VkDescriptorSetLayoutBinding layoutBinding{};
+			if (ubvk->texID > 0) {
+				layoutBinding.binding = i;
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				//need to know shader stage in shader parser, temp write, --todo
+				layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			} else {
+				layoutBinding.binding = dc->shader->GetUniformBindingByHash(dc->shader->ubs[i]);
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				//need to know shader stage in shader parser, temp write, --todo
+				layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+			}
+			layoutBinding.descriptorCount = 1;
+			layoutBinding.pImmutableSamplers = nullptr;
 
-		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-		samplerLayoutBinding.binding = 1;
-		samplerLayoutBinding.descriptorCount = 1;
-		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		samplerLayoutBinding.pImmutableSamplers = nullptr;
-		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			bindings.push_back(layoutBinding);
+		}
 
-		std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+
+		//VkDescriptorSetLayoutBinding uboLayoutBinding{};
+		//uboLayoutBinding.binding = 0;
+		//uboLayoutBinding.descriptorCount = 1;
+		//uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//uboLayoutBinding.pImmutableSamplers = nullptr;
+		//uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+		//VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+		//samplerLayoutBinding.binding = 1;
+		//samplerLayoutBinding.descriptorCount = 1;
+		//samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		//samplerLayoutBinding.pImmutableSamplers = nullptr;
+		//samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+		//std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 
-
-		PipelineStateVK* pso = pass->dcs[i]->pso;
+		PipelineStateVK* pso = dc->pso;
 		if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(pso->descriptorSetLayout)) != VK_SUCCESS) {
 			LOGERROR("failed to create descriptor set layout!");
 		}
 	}
 
 	void GPUProgramVulkan::GetPipeline(RenderPassVK* pass, int i) {
-		CreateDescriptorSetLayout(pass, i);
+		CreateDescriptorSetLayout(pass->dcs[i]);
 		CreateGraphicsPipeline(pass, i);
 		CreateTextureSampler(pass, i);
 		CreateDescriptorPool();

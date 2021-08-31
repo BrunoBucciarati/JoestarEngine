@@ -1,17 +1,12 @@
-﻿  ProceduralMesh.cpp
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(7,46): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(8,42): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\Vector2.h(54,76): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
+﻿  GPUProgramVulkan.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
 D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\ProceduralMesh.cpp(11,39): warning C4305: “初始化”: 从“double”到“float”截断
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\ProceduralMesh.cpp(45,57): warning C4267: “参数”: 从“size_t”转换到“U32”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\ProceduralMesh.cpp(46,87): warning C4267: “参数”: 从“size_t”转换到“U32”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\ProceduralMesh.cpp(54,54): warning C4267: “参数”: 从“size_t”转换到“U32”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\ProceduralMesh.cpp(55,83): warning C4267: “参数”: 从“size_t”转换到“U32”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\ProceduralMesh.cpp(102,57): warning C4267: “参数”: 从“size_t”转换到“U32”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\ProceduralMesh.cpp(103,87): warning C4267: “参数”: 从“size_t”转换到“U32”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\ProceduralMesh.cpp(111,54): warning C4267: “参数”: 从“size_t”转换到“U32”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\ProceduralMesh.cpp(112,83): warning C4267: “参数”: 从“size_t”转换到“U32”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(281,112): warning C4244: “参数”: 从“U32”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(281,94): warning C4244: “参数”: 从“U32”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(812,9): warning C4101: “data”: 未引用的局部变量
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(877,34): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(20): warning C4715: “Joestar::FindMemoryType”: 不是所有的控件路径都返回值
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(89): warning C4715: “Joestar::GPUProgramVulkan::FindSupportedFormat”: 不是所有的控件路径都返回值
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.cpp(237): warning C4715: “Joestar::GPUProgramVulkan::FindMemoryType”: 不是所有的控件路径都返回值
   JoestarEngine.vcxproj -> D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe
