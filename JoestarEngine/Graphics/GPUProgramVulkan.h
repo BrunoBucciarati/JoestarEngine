@@ -21,9 +21,9 @@ namespace Joestar {
 
     struct BufferVK {
         VulkanContext* ctx;
-        VkDeviceSize size;
+        VkDeviceSize size = 0;
         VkBufferUsageFlags usage;
-        VkMemoryPropertyFlags properties;
+        VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
         VkBuffer buffer;
         VkDeviceMemory memory;
         U32 memoryTypeIdx;
@@ -65,6 +65,9 @@ namespace Joestar {
         void Clean() {
             vkDestroyBuffer(ctx->device, buffer, nullptr);
             vkFreeMemory(ctx->device, memory, nullptr);
+        }
+        ~BufferVK() {
+            Clean();
         }
     };
 
@@ -423,9 +426,9 @@ namespace Joestar {
         Texture* texture;
     };
 
-    class VertexBufferVK : public BufferVK {
+    class VertexBufferVK {
     public:
-        explicit VertexBufferVK(VertexBuffer* b) { vb = b; }
+        explicit VertexBufferVK(VertexBuffer* b, VulkanContext* ctx) { vb = b; buffer.ctx = ctx; }
         VertexBuffer* vb;
         U32 ID() { return vb->id; }
         U32 GetSize() { return vb->GetSize(); }
@@ -434,6 +437,10 @@ namespace Joestar {
         VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
         VkVertexInputBindingDescription GetBindingDescription();
         std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
+        void Clean() {
+            buffer.Clean();
+        }
+        BufferVK buffer;
 
     private:
         std::vector<VkVertexInputAttributeDescription>attributeDescriptions;
@@ -441,14 +448,18 @@ namespace Joestar {
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     };
 
-    class IndexBufferVK : public BufferVK {
+    class IndexBufferVK {
     public:
-        explicit IndexBufferVK(IndexBuffer* b) { ib = b; }
+        explicit IndexBufferVK(IndexBuffer* b, VulkanContext* ctx) { ib = b; buffer.ctx = ctx;}
         U32 GetIndexCount() { return ib->GetIndexCount(); }
         IndexBuffer* ib;
         U32 ID() { return ib->id; }
         U32 GetSize() { return ib->GetSize(); }
         U8* GetBuffer() { return ib->GetBuffer(); }
+        BufferVK buffer;
+        void Clean() {
+            buffer.Clean();
+        }
     };
 
     struct UniformBufferVK {
@@ -495,7 +506,7 @@ namespace Joestar {
     //    DEPTH_COMPARE_EQUAL,
     //    DEPTH_COMPARE_NOTEQUAL,
     struct DrawCallVK {
-        VertexBufferVK* vb = nullptr;
+        std::vector<VertexBufferVK*> vbs{1};
         IndexBufferVK* ib = nullptr;
         ShaderVK* shader;
         MeshTopology topology;
@@ -539,8 +550,7 @@ namespace Joestar {
         void SetShader(ShaderVK* shader);
         void CreateVertexBuffer(VertexBufferVK* vb);
         void CreateIndexBuffer(IndexBufferVK* ib);
-        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-        void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+        void CopyBuffer(BufferVK& srcBuffer, BufferVK& dstBuffer, VkDeviceSize size);
         void CreateTextureImage(TextureVK* tex);
         void CreateTextureSampler(RenderPassVK* pass, int i);
 
