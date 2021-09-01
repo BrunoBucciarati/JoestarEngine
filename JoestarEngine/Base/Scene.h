@@ -22,5 +22,6 @@ namespace Joestar {
 		Camera camera;
 		GameObject* selection;
 		Material* skyboxMat;
+		Material* lightMat;
 	};
 }

@@ -11,11 +11,14 @@ namespace Joestar {
     public:
         explicit ProceduralMesh(EngineContext* ctx);
         Mesh* GetUVSphere() { return uvSphere; }
-        Mesh* GetPlane() { return planeSphere; }
+        Mesh* GetPlane() { return plane; }
+        Mesh* GetLine() { return line; }
     private:
         Mesh* uvSphere;
-        Mesh* planeSphere;
+        Mesh* plane;
+        Mesh* line;
         Mesh* GenUVSphere();
-        Mesh* GenPlaneSphere();
+        Mesh* GenPlane();
+        Mesh* GenLine();
     };
 }

@@ -22,6 +22,7 @@ namespace Joestar {
             buffer = new U8[size];
         }
         U32 GetSize() { return size; }
+        U32 GetCount();
         void AppendVertexAttr(VERTEX_ATTRIBUTE v);
         ~VertexBuffer() {
             delete buffer;
@@ -50,6 +51,6 @@ namespace Joestar {
         U32 id;
     private:
         U8* buffer;
-        U32 size; //size of data
+        U32 size = 0; //size of data
     };
 }

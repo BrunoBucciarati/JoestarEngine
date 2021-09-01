@@ -50,31 +50,8 @@ namespace Joestar {
 
 		Matrix4x4f& LookAt(const Vector3f& pos, const Vector3f& target, const Vector3f& up);
 
-		//bool IsIdentity(float epsilon = Vector3f::epsilon) const;
-
-		//double GetDeterminant() const;
-
-		//Matrix4x4f& Invert_Full() {
-		//	InvertMatrix4x4_Full(m_Data, m_Data);
-		//	return *this;
-		//}
-		//static bool Invert_Full(const Matrix4x4f& inM, Matrix4x4f& outM) {
-		//	return InvertMatrix4x4_Full(inM.m_Data, outM.m_Data);
-		//}
-		//static bool Invert_General3D(const Matrix4x4f& inM, Matrix4x4f& outM) {
-		//	return InvertMatrix4x4_General3D(inM.m_Data, outM.m_Data);
-		//}
-
-		//Matrix4x4f& Transpose();
-
-		//Matrix4x4f& Copy(const Matrix4x4f& inM);
-
 		Matrix4x4f& SetIdentity();
 		Matrix4x4f& SetPerspective(float fovy, float aspect, float zNear, float zFar);
-		//// rad = Deg2Rad(fovy/2), contanHalfFOV = cos(rad)/sin(rad)
-		//Matrix4x4f& SetPerspectiveCotan(float cotanHalfFOV, float zNear, float zFar);
-		//Matrix4x4f& SetOrtho(float left, float right, float bottom, float top, float zNear, float zFar);
-		//Matrix4x4f& SetFrustum(float left, float right, float bottom, float top, float nearval, float farval);
 
 		Vector3f GetAxisX() const;
 		Vector3f GetAxisY() const;
@@ -89,46 +66,14 @@ namespace Joestar {
 		void SetPosition(const Vector3f& v);
 		void SetRow(int row, const Vector4f& v);
 		void SetColumn(int col, const Vector4f& v);
+		void SetScale(float s);
+		void SetScale(float x, float y, float z);
 
-		//Matrix4x4f& SetTranslate(const Vector3f& inTrans);
-		//Matrix4x4f& SetOrthoNormalBasis(const Vector3f& inX, const Vector3f& inY, const Vector3f& inZ);
-		//Matrix4x4f& SetOrthoNormalBasisInverse(const Vector3f& inX, const Vector3f& inY, const Vector3f& inZ);
-		//Matrix4x4f& SetScale(const Vector3f& inScale);
-		//Matrix4x4f& SetPositionAndOrthoNormalBasis(const Vector3f& inPosition, const Vector3f& inX, const Vector3f& inY, const Vector3f& inZ);
-
-		//Matrix4x4f& Translate(const Vector3f& inTrans);
-		//Matrix4x4f& Scale(const Vector3f& inScale);
-
-		//Matrix4x4f& SetFromToRotation(const Vector3f& from, const Vector3f& to);
-
-		//void SetTR(const Vector3f& pos, const Quaternionf& q);
-		//void SetTRS(const Vector3f& pos, const Quaternionf& q, const Vector3f& s);
-		//void SetTRInverse(const Vector3f& pos, const Quaternionf& q);
+		Matrix4x4f& SetFromToRotation(const Vector3f& from, const Vector3f& to);
 
 		static const Matrix4x4f identity;
 	};
 
-	//bool CompareApproximately(const Matrix4x4f& lhs, const Matrix4x4f& rhs, float dist = Vector3f::epsilon);
-
-	///// Transforms an array of vertices. input may be the same as output.
-	//void TransformPoints3x3(const Matrix4x4f& matrix, const Vector3f* input, Vector3f* ouput, int count);
-	//void TransformPoints3x4(const Matrix4x4f& matrix, const Vector3f* input, Vector3f* ouput, int count);
-	//void TransformPoints3x3(const Matrix4x4f& matrix, const Vector3f* input, size_t inStride, Vector3f* ouput, size_t outStride, int count);
-	//void TransformPoints3x4(const Matrix4x4f& matrix, const Vector3f* input, size_t inStride, Vector3f* ouput, size_t outStride, int count);
-
-	//void MultiplyMatrices3x4(const Matrix4x4f& lhs, const Matrix4x4f& rhs, Matrix4x4f& res);
-
-	//void MultiplyMatrices4x4REF(const Matrix4x4f* __restrict lhs, const Matrix4x4f* __restrict rhs, Matrix4x4f* __restrict res);
-	//void CopyMatrixREF(const float* __restrict lhs, float* __restrict res);
-	//void TransposeMatrix4x4REF(const Matrix4x4f* __restrict lhs, Matrix4x4f* __restrict res);
-
-	//// foreach R[i] = A[i] * B[i]
-	//void MultiplyMatrixArray4x4REF(const Matrix4x4f* __restrict arrayA, const Matrix4x4f* __restrict arrayB,
-	//	Matrix4x4f* __restrict arrayRes, size_t count);
-	//// foreach R[i] = BASE * A[i] * B[i]
-	//void MultiplyMatrixArrayWithBase4x4REF(const Matrix4x4f* __restrict base,
-	//	const Matrix4x4f* __restrict arrayA, const Matrix4x4f* __restrict arrayB,
-	//	Matrix4x4f* __restrict arrayRes, size_t count);
 
 	inline Vector3f Matrix4x4f::GetAxisX() const {
 		return Vector3f(Get(0, 0), Get(1, 0), Get(2, 0));
@@ -165,6 +110,12 @@ namespace Joestar {
 	}
 	inline void Matrix4x4f::SetColumn(int col, const Vector4f& v) {
 		Get(0, col) = v.x; Get(1, col) = v.y; Get(2, col) = v.z; Get(3, col) = v.w;
+	}
+	inline void Matrix4x4f::SetScale(float s) {
+		Get(0, 0) = s; Get(1, 1) = s; Get(2, 2) = s;
+	}
+	inline void Matrix4x4f::SetScale(float x, float y, float z) {
+		Get(0, 0) = x; Get(1, 1) = y; Get(2, 2) = z;
 	}
 
 

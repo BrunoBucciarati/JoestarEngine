@@ -60,6 +60,7 @@ namespace Joestar {
 		Matrix3x3f& SetOrthoNormalBasisInverse(const Vector3f& inX, const Vector3f& inY, const Vector3f& inZ);
 		Matrix3x3f& SetScale(const Vector3f& inScale);
 		Matrix3x3f& Scale(const Vector3f& inScale);
+		Matrix3x3f& SetFromToRotation(const Vector3f& from, const Vector3f& to);
 
 		bool IsIdentity(float threshold = Vector3f::epsilon);
 

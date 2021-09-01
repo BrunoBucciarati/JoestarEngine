@@ -59,7 +59,8 @@ namespace Joestar {
         return mesh;
     }
 
-    Mesh* ProceduralMesh::GenPlaneSphere() {
+
+    Mesh* ProceduralMesh::GenPlane() {
         Mesh* mesh = NEW_OBJECT(Mesh);
         std::vector<VertexLoad> vertices;
         std::vector<uint16_t> indices;
@@ -116,8 +117,26 @@ namespace Joestar {
         return mesh;
     }
 
+    Mesh* ProceduralMesh::GenLine() {
+        Mesh* mesh = NEW_OBJECT(Mesh);
+        std::vector<float> attrs = {
+            0.f, 0.f, 0.f, 1.f, 1.f, 1.f,
+            0.f, 0.f, 10.f, 1.f, 1.f, 1.f
+        };
+        VertexBuffer* vb = mesh->GetVB();
+        vb->SetSize(attrs.size() * sizeof(float));
+        vb->CopyBuffer((uint8_t*)attrs.data(), attrs.size() * sizeof(float));
+        vb->AppendVertexAttr(VERTEX_POS);
+        vb->AppendVertexAttr(VERTEX_COLOR);
+
+        mesh->SetTopology(MESH_TOPOLOGY_LINE);
+
+        return mesh;
+    }
+
 	ProceduralMesh::ProceduralMesh(EngineContext* ctx) : Super(ctx) {
         uvSphere = GenUVSphere();
-        planeSphere = GenPlaneSphere();
+        plane = GenPlane();
+        line = GenLine();
 	}
 }

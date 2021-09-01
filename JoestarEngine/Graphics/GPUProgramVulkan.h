@@ -430,6 +430,7 @@ namespace Joestar {
         U32 ID() { return vb->id; }
         U32 GetSize() { return vb->GetSize(); }
         U8* GetBuffer() { return vb->GetBuffer(); }
+        U32 GetVertexCount() { return vb->GetCount(); }
         VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
         VkVertexInputBindingDescription GetBindingDescription();
         std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
@@ -494,13 +495,14 @@ namespace Joestar {
     //    DEPTH_COMPARE_EQUAL,
     //    DEPTH_COMPARE_NOTEQUAL,
     struct DrawCallVK {
-        VertexBufferVK* vb;
-        IndexBufferVK* ib;
+        VertexBufferVK* vb = nullptr;
+        IndexBufferVK* ib = nullptr;
         ShaderVK* shader;
         MeshTopology topology;
         PipelineStateVK* pso;
         PushConstsVK* pc = nullptr;
         VkCompareOp depthOp = VK_COMPARE_OP_LESS;
+        VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
         std::vector<VkDescriptorSet> descriptorSets;
         U32 hash = 0;
         //ez hash, i guess that's ok

@@ -28,10 +28,12 @@ namespace Joestar {
 		void UseShader(const Shader* shader);
 		void UpdateTexture(Texture*, U8 binding = 0);
 		void DrawIndexed(Mesh* mesh);
+		void DrawArray(Mesh* mesh);
 		void UpdateProgram(ProgramCPU* p);
 		void BeginRenderPass(const char* name);
 		void EndRenderPass(const char* name);
 		void SetDepthCompare(DepthCompareFunc fun);
+		void SetPolygonMode(PolygonMode fun);
 
 	private:
 		RenderThread* renderThread;

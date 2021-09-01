@@ -11,7 +11,9 @@
 namespace Joestar {
     enum MeshTopology {
         MESH_TOPOLOGY_TRIANGLE = 0,
-        MESH_TOPOLOGY_TRIANGLE_STRIP
+        MESH_TOPOLOGY_TRIANGLE_STRIP,
+        MESH_TOPOLOGY_LINE,
+        MESH_TOPOLOGY_LINE_STRIP,
     };
     struct VertexLoad {
         Vector3f pos;

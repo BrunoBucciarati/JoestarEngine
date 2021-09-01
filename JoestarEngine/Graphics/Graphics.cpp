@@ -71,6 +71,13 @@ namespace Joestar {
 		++cmdIdx;
 	}
 
+	void Graphics::DrawArray(Mesh* mesh) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_Draw;
+		cmdBuffer[cmdIdx].size = 0;
+		cmdBuffer[cmdIdx].flag = mesh->GetTopology();
+		++cmdIdx;
+	}
+
 
 	void Graphics::UseShader(const Shader* shader) {
 		cmdBuffer[cmdIdx].typ = RenderCMD_UseShader;
@@ -107,8 +114,12 @@ namespace Joestar {
 	void Graphics::DrawMesh(Mesh* mesh, Material* mat) {
 		UpdateMaterial(mat);
 		UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
-		UpdateIndexBuffer(mesh->GetIB());
-		DrawIndexed(mesh);
+		if (mesh->GetIB()->GetSize() > 0) {
+			UpdateIndexBuffer(mesh->GetIB());
+			DrawIndexed(mesh);
+		} else {
+			DrawArray(mesh);
+		}
 	}
 
 	void Graphics::BeginRenderPass(const char* name) {
@@ -129,6 +140,13 @@ namespace Joestar {
 		cmdBuffer[cmdIdx].typ = RenderCMD_SetDepthCompare;
 		cmdBuffer[cmdIdx].size = sizeof(DepthCompareFunc);
 		cmdBuffer[cmdIdx].flag = func;
+		++cmdIdx;
+	}
+
+	void Graphics::SetPolygonMode(PolygonMode mode) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_SetPolygonMode;
+		cmdBuffer[cmdIdx].size = sizeof(PolygonMode);
+		cmdBuffer[cmdIdx].flag = mode;
 		++cmdIdx;
 	}
 }

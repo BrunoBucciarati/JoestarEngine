@@ -112,8 +112,8 @@ namespace Joestar {
 
 	void QuaternionToMatrix(const Quaternionf& q, Matrix3x3f& m);
 
-	void MatrixToQuaternion(const Matrix3x3f& m, Quaternionf& q);
-	void MatrixToQuaternion(const Matrix4x4f& m, Quaternionf& q);
+	//void MatrixToQuaternion(const Matrix3x3f& m, Quaternionf& q);
+	//void MatrixToQuaternion(const Matrix4x4f& m, Quaternionf& q);
 
 	void QuaternionToMatrix(const Quaternionf& q, Matrix4x4f& m);
 
@@ -124,6 +124,7 @@ namespace Joestar {
 	/// Generates a Right handed Quat from a look rotation. Returns if conversion was successful.
 	bool LookRotationToQuaternion(const Vector3f& viewVec, const Vector3f& upVec, Quaternionf* res);
 
+	Quaternionf FromToQuaternion(const Vector3f& from, const Vector3f& to);
 
 	inline Vector3f RotateVectorByQuat(const Quaternionf& lhs, const Vector3f& rhs)
 	{

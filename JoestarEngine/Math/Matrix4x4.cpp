@@ -1,4 +1,5 @@
 #include "Matrix4x4.h"
+#include "Matrix3x3.h"
 
 namespace Joestar {
 	Matrix4x4f CreateIdentityMatrix4x4f() {
@@ -50,6 +51,17 @@ namespace Joestar {
 		Get(2, 0) = 0.0F;               Get(2, 1) = 0.0F;      Get(2, 2) = (zFar + zNear) / deltaZ; Get(2, 3) = 2.0F * zNear * zFar / deltaZ;
 		Get(3, 0) = 0.0F;               Get(3, 1) = 0.0F;      Get(3, 2) = -1.0F;                   Get(3, 3) = 0.0F;
 
+		return *this;
+	}
+
+	Matrix4x4f& Matrix4x4f::SetFromToRotation(const Vector3f& from, const Vector3f& to) {
+
+		Matrix3x3f mat;
+		mat.SetFromToRotation(from, to);
+		Get(0, 0) = mat[0];		Get(0, 1) = mat[1];		Get(0, 2) = mat[2];		Get(0, 3) = 0.0;
+		Get(1, 0) = mat[3];		Get(1, 1) = mat[4];		Get(1, 2) = mat[5];		Get(1, 3) = 0.0;
+		Get(2, 0) = mat[6];		Get(2, 1) = mat[7];		Get(2, 2) = mat[8];		Get(2, 3) = 0.0;
+		Get(3, 0) = 0.0;		Get(3, 1) = 0.0;		Get(3, 2) = 0.0;		Get(3, 3) = 1.0;
 		return *this;
 	}
 }

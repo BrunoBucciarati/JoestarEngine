@@ -25,6 +25,10 @@ namespace Joestar {
 		VK_COMPARE_OP_GREATER, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_EQUAL, VK_COMPARE_OP_NOT_EQUAL
 	};
 
+	VkPolygonMode VKPolygonModes[] = {
+		VK_POLYGON_MODE_FILL, VK_POLYGON_MODE_LINE
+	};
+
 	TextureVK::TextureVK(Texture* t) : texture(t), image(nullptr) {
 		
 	}
@@ -451,6 +455,10 @@ namespace Joestar {
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		if (dc->topology == MESH_TOPOLOGY_TRIANGLE_STRIP) {
 			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		} else if (dc->topology == MESH_TOPOLOGY_LINE) {
+			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+		} else if (dc->topology == MESH_TOPOLOGY_LINE_STRIP) {
+			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
 		} else {
 			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		}
@@ -479,7 +487,7 @@ namespace Joestar {
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizer.depthClampEnable = VK_FALSE;
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
-		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+		rasterizer.polygonMode = dc->polygonMode;
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = VK_CULL_MODE_NONE;
 		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
@@ -846,7 +854,6 @@ namespace Joestar {
 			VkBuffer vertexBuffers[] = { vertexBuffer };
 			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, 1, vertexBuffers, offsets);
-			vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], dc->ib->buffer, 0, VK_INDEX_TYPE_UINT16);
 
 			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->pipelineLayout, 0, 1, &dc->descriptorSets[i], 0, nullptr);
 
@@ -854,7 +861,12 @@ namespace Joestar {
 				vkCmdPushConstants(vkCtxPtr->commandBuffers[i], dc->pso->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConsts), dc->pc);
 			}
 
-			vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), 1, 0, 0, 0);
+			if (dc->ib) {
+				vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], dc->ib->buffer, 0, VK_INDEX_TYPE_UINT16);
+				vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), 1, 0, 0, 0);
+			} else {
+				vkCmdDraw(vkCtxPtr->commandBuffers[i], dc->vb->GetVertexCount(), 1, 0, 0);
+			}
 		}
 		vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
 	}
@@ -974,6 +986,7 @@ namespace Joestar {
 		DrawCallVK* drawcall = new DrawCallVK;
 		drawcall->pso = new PipelineStateVK;
 		for (int i = 0; i < cmdIdx; ++i) {
+			drawcall->HashInsert(cmdBuffer[i].typ);
 			switch (cmdBuffer[i].typ) {
 			case RenderCMD_BeginRenderPass: {
 				pass = new RenderPassVK;
@@ -1056,20 +1069,30 @@ namespace Joestar {
 				drawcall->HashInsert(tex->id);
 				break;
 			}
-			case RenderCMD_Draw: {
-				CHECK_PASS()
-					MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
-				drawcall->topology = topology;
-				drawcall->HashInsert(topology);
-				break;
-			}
 			case RenderCMD_SetDepthCompare: {
 				CHECK_PASS()
 				drawcall->depthOp = VKCompareOps[cmdBuffer[i].flag];
 				drawcall->HashInsert(cmdBuffer[i].flag);
 				break;
 			}
+			case RenderCMD_SetPolygonMode: {
+				CHECK_PASS()
+				drawcall->polygonMode = VKPolygonModes[cmdBuffer[i].flag];
+				drawcall->HashInsert(cmdBuffer[i].flag);
+				break;
+			}
 			case RenderCMD_DrawIndexed: {
+				CHECK_PASS()
+				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
+				drawcall->topology = topology;
+				drawcall->HashInsert(topology);
+				pass->dcs.push_back(drawcall);
+
+				drawcall = new DrawCallVK;
+				drawcall->pso = new PipelineStateVK;
+				break;
+			}
+			case RenderCMD_Draw: {
 				CHECK_PASS()
 				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
 				drawcall->topology = topology;

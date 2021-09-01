@@ -54,6 +54,11 @@ namespace Joestar {
 		DEPTH_COMPARE_NOTEQUAL,
 	};
 
+	enum PolygonMode {
+		POLYGON_MODE_FILL = 0,
+		POLYGON_MODE_LINE
+	};
+
 	const int TEXTURE_FORMAT_SIZE[] = {
 		4
 	};

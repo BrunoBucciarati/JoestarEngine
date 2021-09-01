@@ -220,6 +220,20 @@ void EulerToMatrix(const Vector3f& v, Matrix3x3f& matrix)
 	matrix.Get(2, 2) = cx * cy;
 }
 
+void fromToRotation(Vector3f&, Vector3f&, float mtx[3][3]);
+
+Matrix3x3f& Matrix3x3f::SetFromToRotation(const Vector3f& from, const Vector3f& to)
+{
+	float mtx[3][3];
+	Vector3f f = from;
+	Vector3f t = to;
+	fromToRotation(f, t, mtx);
+	Get(0, 0) = mtx[0][0];	Get(0, 1) = mtx[0][1];	Get(0, 2) = mtx[0][2];
+	Get(1, 0) = mtx[1][0];	Get(1, 1) = mtx[1][1];	Get(1, 2) = mtx[1][2];
+	Get(2, 0) = mtx[2][0];	Get(2, 1) = mtx[2][1];	Get(2, 2) = mtx[2][2];
+	return *this;
+}
+
 /// This is YXZ euler conversion
 bool MatrixToEuler(const Matrix3x3f& matrix, Vector3f& v)
 {
@@ -254,6 +268,72 @@ bool MatrixToEuler(const Matrix3x3f& matrix, Vector3f& v)
 		v.z = 0.0F;
 		SanitizeEuler(v);
 		return false;
+	}
+}
+
+void fromToRotation(Vector3f& from, Vector3f& to, float mtx[3][3])
+{
+	Vector3f v;
+	float e, h;
+	v = Cross(from, to);
+	e = Dot(from, to);
+	if (e > 1.0 - EPSILON)     /* "from" almost or equal to "to"-vector? */
+	{
+		/* return identity */
+		mtx[0][0] = 1.0; mtx[0][1] = 0.0; mtx[0][2] = 0.0;
+		mtx[1][0] = 0.0; mtx[1][1] = 1.0; mtx[1][2] = 0.0;
+		mtx[2][0] = 0.0; mtx[2][1] = 0.0; mtx[2][2] = 1.0;
+	}
+	else if (e < -1.0 + EPSILON) /* "from" almost or equal to negated "to"? */
+	{
+		Vector3f up, left;
+		float invlen;
+		float fxx, fyy, fzz, fxy, fxz, fyz;
+		float uxx, uyy, uzz, uxy, uxz, uyz;
+		float lxx, lyy, lzz, lxy, lxz, lyz;
+		/* left=CROSS(from, (1,0,0)) */
+		left[0] = 0.0; left[1] = from[2]; left[2] = -from[1];
+		if (Dot(left, left) < EPSILON) /* was left=CROSS(from,(1,0,0)) a good choice? */
+		{
+			/* here we now that left = CROSS(from, (1,0,0)) will be a good choice */
+			left[0] = -from[2]; left[1] = 0.0; left[2] = from[0];
+		}
+		/* normalize "left" */
+		invlen = 1.0f / sqrt(Dot(left, left));
+		left[0] *= invlen;
+		left[1] *= invlen;
+		left[2] *= invlen;
+		up = Cross(left, from);
+		/* now we have a coordinate system, i.e., a basis;    */
+		/* M=(from, up, left), and we want to rotate to:      */
+		/* N=(-from, up, -left). This is done with the matrix:*/
+		/* N*M^T where M^T is the transpose of M              */
+		fxx = -from[0] * from[0]; fyy = -from[1] * from[1]; fzz = -from[2] * from[2];
+		fxy = -from[0] * from[1]; fxz = -from[0] * from[2]; fyz = -from[1] * from[2];
+
+		uxx = up[0] * up[0]; uyy = up[1] * up[1]; uzz = up[2] * up[2];
+		uxy = up[0] * up[1]; uxz = up[0] * up[2]; uyz = up[1] * up[2];
+
+		lxx = -left[0] * left[0]; lyy = -left[1] * left[1]; lzz = -left[2] * left[2];
+		lxy = -left[0] * left[1]; lxz = -left[0] * left[2]; lyz = -left[1] * left[2];
+		/* symmetric matrix */
+		mtx[0][0] = fxx + uxx + lxx; mtx[0][1] = fxy + uxy + lxy; mtx[0][2] = fxz + uxz + lxz;
+		mtx[1][0] = mtx[0][1];   mtx[1][1] = fyy + uyy + lyy; mtx[1][2] = fyz + uyz + lyz;
+		mtx[2][0] = mtx[0][2];   mtx[2][1] = mtx[1][2];   mtx[2][2] = fzz + uzz + lzz;
+	}
+	else  /* the most common case, unless "from"="to", or "from"=-"to" */
+	{
+		/* ...otherwise use this hand optimized version (9 mults less) */
+		float hvx, hvz, hvxy, hvxz, hvyz;
+		h = (1.0f - e) / Dot(v, v);
+		hvx = h * v[0];
+		hvz = h * v[2];
+		hvxy = hvx * v[1];
+		hvxz = hvx * v[2];
+		hvyz = hvz * v[1];
+		mtx[0][0] = e + hvx * v[0]; mtx[0][1] = hvxy - v[2];     mtx[0][2] = hvxz + v[1];
+		mtx[1][0] = hvxy + v[2];  mtx[1][1] = e + h * v[1] * v[1]; mtx[1][2] = hvyz - v[0];
+		mtx[2][0] = hvxz - v[1];  mtx[2][1] = hvyz + v[0];     mtx[2][2] = e + hvz * v[2];
 	}
 }
 
