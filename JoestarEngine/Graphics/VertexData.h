@@ -22,7 +22,7 @@ namespace Joestar {
             buffer = new U8[size];
         }
         U32 GetSize() { return size; }
-        U32 GetCount();
+        U32 GetVertexCount();
         void AppendVertexAttr(VERTEX_ATTRIBUTE v);
         ~VertexBuffer() {
             delete buffer;
@@ -31,7 +31,23 @@ namespace Joestar {
         U32 flags; //flag of vertex channel
         U8* buffer; //raw data
         U32 size; //size of data
+        U32 instanceCount;
         std::vector<VERTEX_ATTRIBUTE> attrs; //size of vertex channels
+    };
+
+    class InstanceBuffer : public VertexBuffer {
+    public:
+        InstanceBuffer();
+        void SetCount(U32 count) { instanceCount = count; }
+        U32 GetCount() { return instanceCount; }
+        void PrepareInstanceData(U32 flag);
+        void SetElementData(U8* data, U32 idx) {
+            memcpy(buffer + idx * elementSize, data, elementSize);
+        }
+        ~InstanceBuffer() {
+            delete buffer;
+        }
+        U32 elementSize;
     };
 
     class IndexBuffer {

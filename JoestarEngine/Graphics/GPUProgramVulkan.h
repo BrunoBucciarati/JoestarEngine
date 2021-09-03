@@ -428,24 +428,35 @@ namespace Joestar {
 
     class VertexBufferVK {
     public:
-        explicit VertexBufferVK(VertexBuffer* b, VulkanContext* ctx) { vb = b; buffer.ctx = ctx; }
+        explicit VertexBufferVK(VertexBuffer* b, VulkanContext* ctx) {
+            vb = b; buffer.ctx = ctx; instance = b->instanceCount > 1; binding = instance ? 1 : 0;
+        }
         VertexBuffer* vb;
-        U32 ID() { return vb->id; }
-        U32 GetSize() { return vb->GetSize(); }
-        U8* GetBuffer() { return vb->GetBuffer(); }
-        U32 GetVertexCount() { return vb->GetCount(); }
-        VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
+        U32 ID() {
+            return vb->id;
+        }
+        U32 GetSize() {
+            return vb->GetSize();
+        }
+        U8* GetBuffer() {
+            return vb->GetBuffer();
+        }
+        U32 GetVertexCount() { return vb->GetVertexCount(); }
+        U32 GetInstanceCount() { return static_cast<InstanceBuffer*>(vb)->GetCount(); }
+        //void GetVertexInputInfo(VkPipelineVertexInputStateCreateInfo&);
         VkVertexInputBindingDescription GetBindingDescription();
-        std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
+        //std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
         void Clean() {
             buffer.Clean();
         }
         BufferVK buffer;
+        bool instance = false;
+        U32 binding = 0;
 
     private:
-        std::vector<VkVertexInputAttributeDescription>attributeDescriptions;
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
         VkVertexInputBindingDescription bindingDescription;
-        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+
     };
 
     class IndexBufferVK {
@@ -515,11 +526,45 @@ namespace Joestar {
         VkCompareOp depthOp = VK_COMPARE_OP_LESS;
         VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
         std::vector<VkDescriptorSet> descriptorSets;
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+        std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+        U32 instanceCount = 0;
         U32 hash = 0;
         //ez hash, i guess that's ok
         void HashInsert(U32 i) {
             hash *= 10;
             hash += i;
+        }
+
+        VkPipelineVertexInputStateCreateInfo& GetVertexInputInfo() {
+            bindingDescriptions.resize(vbs.size());
+
+            U32 vaSize = 0, idx = 0;
+            for (int i = 0; i < vbs.size(); ++i) {
+                U32 offset = 0;
+                bindingDescriptions[i] = vbs[i]->GetBindingDescription();
+                attributeDescriptions.resize(vbs[i]->vb->attrs.size() + attributeDescriptions.size());
+                for (auto& attr : vbs[i]->vb->attrs) {
+                    attributeDescriptions[idx].binding = i;
+                    attributeDescriptions[idx].location = idx;
+                    attributeDescriptions[idx].offset = offset;
+                    vaSize = VERTEX_ATTRIBUTE_SIZE[attr];
+                    switch (vaSize) {
+                    case 3: attributeDescriptions[idx].format = VK_FORMAT_R32G32B32_SFLOAT; offset += 12; break;
+                    case 2: attributeDescriptions[idx].format = VK_FORMAT_R32G32_SFLOAT; offset += 8;  break;
+                    default:break;
+                    }
+                    ++idx;
+                }
+            }
+            	
+            vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+            vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
+            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<U32>(attributeDescriptions.size());
+            vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+            vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+            return vertexInputInfo;
         }
     };
 

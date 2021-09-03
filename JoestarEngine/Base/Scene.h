@@ -19,9 +19,11 @@ namespace Joestar {
 	private:
 		std::vector<GameObject*> gameObjects;
 		std::vector<Light*> lights;
+		Light* mainLight;
 		Camera camera;
 		GameObject* selection;
 		Material* skyboxMat;
 		Material* lightMat;
+		LightBatch* lightBatch;
 	};
 }

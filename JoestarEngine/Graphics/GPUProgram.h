@@ -22,7 +22,7 @@ namespace Joestar {
         GPUProgram() {}
         //virtual void SetShader(std::string& vertexPath, std::string& fragmentPath, std::string& geometryPath = nullptr) {}
         File* ShaderCodeFile(const char* file);
-        virtual void SetShader(const char* shaderPath, ShaderType typ) {}
+        virtual void SetShader(const char* shaderPath, ShaderStage stage) {}
         virtual const char* GetShaderDirectory() { return ""; }
         virtual void Use() {}
         virtual void SetBool(const std::string& name, bool value) const {}

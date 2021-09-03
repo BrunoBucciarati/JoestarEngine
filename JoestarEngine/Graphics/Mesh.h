@@ -35,6 +35,7 @@ public:
     //std::vector<Texture>      textures;
     VertexBuffer* vb;
     IndexBuffer* ib;
+    InstanceBuffer* instanceBuffer;
     unsigned int cachedVAO;
     bool cachedDirty;
     explicit Mesh(EngineContext* ctx);

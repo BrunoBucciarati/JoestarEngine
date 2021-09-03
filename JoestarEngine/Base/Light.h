@@ -2,6 +2,9 @@
 #include "../Base/Object.h"
 #include "../Math/Vector3.h"
 #include "../Math/Matrix4x4.h"
+#include "../Graphics/VertexData.h"
+#include "../Graphics/Material.h"
+#include "../Graphics/Mesh.h"
 namespace Joestar {
 	enum LightType {
 		DIRECTIONAL_LIGHT = 0,
@@ -63,5 +66,21 @@ namespace Joestar {
 		}
 	public:
 		void Init();
+	};
+
+	class LightBatch : public Object {
+		REGISTER_OBJECT(LightBatch, Object)
+		explicit LightBatch(EngineContext* ctx);
+		void SetLights(std::vector<Light*>& ls);
+		InstanceBuffer* GetInstanceBuffer() { return instanceBuffer; }
+		Material* GetMaterial() { return mat; }
+		Mesh* GetMesh() { return mesh; }
+		Matrix4x4f& GetModelMatrix() { return modelMatrix; }
+	private:
+		InstanceBuffer* instanceBuffer;
+		std::vector<Light*> lights;
+		Material* mat;
+		Mesh* mesh;
+		Matrix4x4f modelMatrix;
 	};
 }

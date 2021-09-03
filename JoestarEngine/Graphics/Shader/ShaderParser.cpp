@@ -25,6 +25,7 @@
 #define TOKEN_RB "}"
 #define TOKEN_SEMICOLON ";"
 #define TOKEN_IN_POSITION "inPosition"
+#define TOKEN_INSTANCE_POSITION "instancePos"
 #define TOKEN_IN_COLOR "inColor"
 #define TOKEN_IN_TEXCOORD "inTexCoord"
 #define TOKEN_IN_NORMAL "inNormal"
@@ -136,6 +137,7 @@ namespace Joestar {
 				SET_DATATYPE_BY_TOKEN(def.dataType, tok)
 				tokenStream.AcceptString(def.name);
 				def.binding = binding;
+				def.stageFlag |= shaderInfo.curStage;
 				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
 			} else if (binding == 99) {
 				//means push constant
@@ -144,6 +146,7 @@ namespace Joestar {
 				UniformDef& def = shaderInfo.uniforms.back();
 				def.name = tok;
 				def.binding = binding;
+				def.stageFlag |= shaderInfo.curStage;
 				def.dataType = ShaderDataTypePushConst;
 				tokenStream.AcceptToken(TOKEN_LB);
 				tokenStream.AcceptTokenForward(TOKEN_RB);
@@ -155,6 +158,7 @@ namespace Joestar {
 				UniformDef& def = shaderInfo.uniforms.back();
 				def.name = tok;
 				def.binding = binding;
+				def.stageFlag |= shaderInfo.curStage;
 				def.dataType = ShaderDataTypeUBO;
 				tokenStream.AcceptToken(TOKEN_LB);
 				tokenStream.AcceptTokenForward(TOKEN_RB);
@@ -222,6 +226,10 @@ namespace Joestar {
 				else if (tokenStream.AcceptToken(TOKEN_IN_NORMAL)) {
 					vd.attr = VERTEX_NORMAL;
 				}
+				else if (tokenStream.AcceptToken(TOKEN_INSTANCE_POSITION)) {
+					vd.attr = VERTEX_POS;
+					vd.instancing = true;
+				}
 			}
 			tokenStream.AcceptToken(TOKEN_SEMICOLON);
 			return true;
@@ -255,6 +263,7 @@ namespace Joestar {
 	void ParseVertexShader(char* buffer, uint32_t idx, uint32_t size, ShaderInfo& shaderInfo) {
 		TokenStream tokenStream;
 		GetTokenStream(buffer, idx, size, tokenStream);
+		shaderInfo.curStage = kVertexShader;
 		if (tokenStream.AcceptToken(TOKEN_GL_VERSION)) {
 			tokenStream.AcceptInt16(shaderInfo.version);
 
@@ -284,6 +293,7 @@ namespace Joestar {
 		TokenStream tokenStream;
 		GetTokenStream(buffer, idx, size, tokenStream);
 
+		shaderInfo.curStage = kFragmentShader;
 		if (tokenStream.AcceptToken(TOKEN_GL_VERSION)) {
 			tokenStream.AcceptInt16(shaderInfo.version);
 

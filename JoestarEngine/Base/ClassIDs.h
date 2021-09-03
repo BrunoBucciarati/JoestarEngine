@@ -32,6 +32,7 @@ enum ClassIDType {
 	DefineClassID(DirectionalLight, 23)
 	DefineClassID(PointLight, 24)
 	DefineClassID(SpotLight, 25)
+	DefineClassID(LightBatch, 26)
 
 	kClassIDCount
 };

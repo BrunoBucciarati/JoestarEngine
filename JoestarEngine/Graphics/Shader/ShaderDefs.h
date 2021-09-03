@@ -2,7 +2,7 @@
 #ifndef _JOESTAR_SHADER_DEFS_H_
 #define _JOESTAR_SHADER_DEFS_H_
 
-enum ShaderType {
+enum ShaderStage {
     kVertexShader = 0,
     kFragmentShader,
     kGeometryShader,

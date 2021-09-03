@@ -9,9 +9,19 @@ namespace Joestar {
 	}
 
 	U32 Shader::GetVertexAttributeFlag() {
-		uint32_t flag = 0;
+		U32 flag = 0;
 		for (int i = 0; i < info.attrs.size(); ++i) {
-			flag = flag | 1 << info.attrs[i].attr;
+			if (!info.attrs[i].instancing)
+				flag = flag | 1 << info.attrs[i].attr;
+		}
+		return flag;
+	}
+
+	U32 Shader::GetInstanceAttributeFlag() {
+		U32 flag = 0;
+		for (int i = 0; i < info.attrs.size(); ++i) {
+			if (info.attrs[i].instancing)
+				flag = flag | 1 << info.attrs[i].attr;
 		}
 		return flag;
 	}

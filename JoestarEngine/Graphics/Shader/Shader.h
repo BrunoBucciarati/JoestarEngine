@@ -12,12 +12,13 @@ namespace Joestar {
 		explicit Shader(EngineContext* ctx) : Super(ctx) {}
 		inline std::string& GetName() { return name; };
 		void SetName(std::string n);
-		uint32_t GetVertexAttributeFlag();
-		uint16_t GetUniformBindingByName(std::string& name);
+		U32 GetVertexAttributeFlag();
+		U32 GetInstanceAttributeFlag();
+		U16 GetUniformBindingByName(std::string& name);
 		U16 GetUniformBindingByHash(U32 hash);
-		uint16_t GetSamplerBinding(int count);
+		U16 GetSamplerBinding(int count);
 		std::string GetPushConsts();
-		uint32_t id;
+		U32 id;
 		ShaderInfo info;
 	private:
 		std::string name;

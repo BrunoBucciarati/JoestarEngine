@@ -3,6 +3,7 @@
 #include "../../Base/SubSystem.h"
 #include <vector>
 #include <string>
+#include "ShaderDefs.h"
 
 namespace Joestar {
 	enum ShaderDataType {
@@ -22,12 +23,14 @@ namespace Joestar {
 	struct VertexDef {
 		VERTEX_ATTRIBUTE attr;
 		ShaderDataType dataType;
-		uint16_t location;
+		U16 location;
+		bool instancing = false;
 	};
 	struct UniformDef {
 		std::string name;
 		ShaderDataType dataType;
-		uint16_t binding;
+		U16 binding;
+		U32 stageFlag = 0;
 	};
 /*	struct SamplerDef {
 		std::string name;
@@ -37,17 +40,17 @@ namespace Joestar {
 	//	std::string name;
 	//};
 	struct ShaderInfo {
-		uint16_t version;
+		U16 version;
 		std::vector<VertexDef> attrs;
 		std::vector<UniformDef> uniforms;
-		//std::vector<SamplerDef> samplers;
-		//std::vector<UBODef> ubos;
 		std::string entryFunction = "main";
+		ShaderStage curStage;
 	};
 	class ShaderParser : public SubSystem {
 		REGISTER_SUBSYSTEM(ShaderParser)
 	public:
 		explicit ShaderParser(EngineContext* ctx) : Super(ctx) {}
 		void ParseShader(std::string& name, ShaderInfo& si);
+	private:
 	};
 }

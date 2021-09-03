@@ -64,16 +64,23 @@ namespace Joestar {
 		++cmdIdx;
 	}
 
-	void Graphics::DrawIndexed(Mesh* mesh) {
+	void Graphics::UpdateInstanceBuffer(InstanceBuffer* ib) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateInstanceBuffer;
+		cmdBuffer[cmdIdx].size = sizeof(InstanceBuffer*);
+		cmdBuffer[cmdIdx].data = ib;
+		++cmdIdx;
+	}
+
+	void Graphics::DrawIndexed(Mesh* mesh, U32 count) {
 		cmdBuffer[cmdIdx].typ = RenderCMD_DrawIndexed;
-		cmdBuffer[cmdIdx].size = 0;
+		cmdBuffer[cmdIdx].size = count;
 		cmdBuffer[cmdIdx].flag = mesh->GetTopology();
 		++cmdIdx;
 	}
 
-	void Graphics::DrawArray(Mesh* mesh) {
+	void Graphics::DrawArray(Mesh* mesh, U32 count) {
 		cmdBuffer[cmdIdx].typ = RenderCMD_Draw;
-		cmdBuffer[cmdIdx].size = 0;
+		cmdBuffer[cmdIdx].size = count;
 		cmdBuffer[cmdIdx].flag = mesh->GetTopology();
 		++cmdIdx;
 	}
@@ -119,6 +126,19 @@ namespace Joestar {
 			DrawIndexed(mesh);
 		} else {
 			DrawArray(mesh);
+		}
+	}
+
+	void Graphics::DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib) {
+		UpdateMaterial(mat);
+		UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
+		UpdateInstanceBuffer(ib);
+		if (mesh->GetIB()->GetSize() > 0) {
+			UpdateIndexBuffer(mesh->GetIB());
+			DrawIndexed(mesh, ib->GetCount());
+		}
+		else {
+			DrawArray(mesh, ib->GetCount());
 		}
 	}
 

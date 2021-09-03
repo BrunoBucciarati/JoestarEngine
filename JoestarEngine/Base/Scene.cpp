@@ -38,20 +38,21 @@ namespace Joestar {
 
         selection = sphere;
 
+        lightBatch = NEW_OBJECT(LightBatch);
+
         CreateLights();
     }
 
     void Scene::CreateLights() {
-        DirectionalLight* mainLight = NEW_OBJECT(DirectionalLight);
+        mainLight = NEW_OBJECT(DirectionalLight);
         mainLight->SetDirection(0.0, -1.0, 0.0);
         mainLight->SetPosition(0.0, 3.0, 0.0);
-        lights.push_back(mainLight);
 
         std::vector<Vector3f> lightPos = {
-            {5.0, 1.0, 1.0},
-            {-5.0, 3.0, 5.0},
+            {5.0, 4.0, 4.0},
+            {-5.0, 4.0, 5.0},
             {-5.0, 4.0, -4.0},
-            {-5.0, -3.0, -2.0},
+            {5.0, 4.0, -4.0}
         };
 
         for (int i = 0; i < lightPos.size(); ++i) {
@@ -64,6 +65,8 @@ namespace Joestar {
         Shader* shader = NEW_OBJECT(Shader);
         shader->SetName("light");
         lightMat->SetShader(shader);
+
+        lightBatch->SetLights(lights);
     }
 
     void Scene::Update(float dt) {
@@ -117,19 +120,21 @@ namespace Joestar {
     }
 
     void Scene::RenderLights() {
-        //Draw Main Light as Wireframe
+        //Draw Main Light as Wireframe //maybe don't need
         //Draw Point Light as Sphere
         Graphics* graphics = GetSubsystem<Graphics>();
-        for (int i = 0; i < lights.size(); ++i) {
-            graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lights[i]->GetModelMatrix());
-            if (lights[i]->GetType() == DIRECTIONAL_LIGHT) {
-                graphics->SetPolygonMode(POLYGON_MODE_LINE);
-                graphics->DrawMesh(GetSubsystem<ProceduralMesh>()->GetLine(), lightMat);
-            } else {
-                graphics->SetPolygonMode(POLYGON_MODE_FILL);
-                graphics->DrawMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere(), lightMat);
-            }
-        }
+        //for (int i = 0; i < lights.size(); ++i) {
+        //    graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lights[i]->GetModelMatrix());
+        //    if (lights[i]->GetType() == DIRECTIONAL_LIGHT) {
+        //        //graphics->SetPolygonMode(POLYGON_MODE_LINE);
+        //        //graphics->DrawMesh(GetSubsystem<ProceduralMesh>()->GetLine(), lightMat);
+        //        break;
+        //    }
+        //}
+
+        graphics->SetPolygonMode(POLYGON_MODE_FILL);
+        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lightBatch->GetModelMatrix());
+        graphics->DrawMeshInstanced(lightBatch->GetMesh(), lightBatch->GetMaterial(), lightBatch->GetInstanceBuffer());
     }
 
     void Scene::RenderSkybox() {

@@ -8,6 +8,7 @@ enum RenderCommandType {
 	RenderCMD_UpdateUniformBufferObject,
 	RenderCMD_UpdateVertexBuffer,
 	RenderCMD_UpdateIndexBuffer,
+	RenderCMD_UpdateInstanceBuffer,
 	RenderCMD_UseShader,
 	RenderCMD_UpdateTexture,
 	RenderCMD_UpdateProgram,

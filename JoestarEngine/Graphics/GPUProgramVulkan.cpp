@@ -33,17 +33,22 @@ namespace Joestar {
 
 	VkVertexInputBindingDescription VertexBufferVK::GetBindingDescription() {
 		VkVertexInputBindingDescription bindingDescription{};
-		bindingDescription.binding = 0;
+		bindingDescription.binding = binding;
 		uint32_t stride = 0;
+
 		for (int i = 0; i < vb->attrs.size(); ++i) {
 			stride += VERTEX_ATTRIBUTE_SIZE[vb->attrs[i]] * sizeof(float);
 		}
+		if (instance) {
+			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+		} else {
+			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		}
 		bindingDescription.stride = stride;
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 		return bindingDescription;
 	}
-	std::vector<VkVertexInputAttributeDescription> VertexBufferVK::GetAttributeDescriptions() {
+	/*std::vector<VkVertexInputAttributeDescription> VertexBufferVK::GetAttributeDescriptions() {
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 		attributeDescriptions.resize(vb->attrs.size());
 
@@ -61,17 +66,19 @@ namespace Joestar {
 		}
 
 		return attributeDescriptions;
-	}
-	VkPipelineVertexInputStateCreateInfo* VertexBufferVK::GetVertexInputInfo() {
-		bindingDescription = GetBindingDescription();
-		attributeDescriptions = GetAttributeDescriptions();
-		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 1;
-		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-		return &vertexInputInfo;
-	}
+	}*/
+
+	//void VertexBufferVK::GetVertexInputInfo(VkPipelineVertexInputStateCreateInfo& vertexInputInfo) {
+	//	bindingDescription = GetBindingDescription();
+	//	attributeDescriptions = GetAttributeDescriptions();
+	//	
+	//	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	//	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	//	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	//	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	//	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+	//	return &vertexInputInfo;
+	//}
 
 
 	VkFormat GPUProgramVulkan::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
@@ -529,12 +536,12 @@ namespace Joestar {
 
 
 		//Create Vertex Buffer
-		VkPipelineVertexInputStateCreateInfo* vertexInputInfo = dc->vbs[0]->GetVertexInputInfo();
+		VkPipelineVertexInputStateCreateInfo& vertexInputInfo = dc->GetVertexInputInfo();
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = 2;
 		pipelineInfo.pStages = info;
-		pipelineInfo.pVertexInputState = vertexInputInfo;
+		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &inputAssembly;
 		pipelineInfo.pViewportState = &viewportState;
 		pipelineInfo.pRasterizationState = &rasterizer;
@@ -792,10 +799,13 @@ namespace Joestar {
 			//only get pipeline at first command buffer and reuse
 			vkCmdBindPipeline(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->graphicsPipeline);
 
-			VkBuffer vertexBuffer = dc->vbs[0]->buffer.buffer;
-			VkBuffer vertexBuffers[] = { vertexBuffer };
-			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, 1, vertexBuffers, offsets);
+			std::vector<VkBuffer> vertexBuffers;
+			vertexBuffers.resize(dc->vbs.size());
+			for (int idx = 0; idx < dc->vbs.size(); ++idx) {
+				vertexBuffers[idx] = dc->vbs[idx]->buffer.buffer;
+			}
+			VkDeviceSize offsets[] = { 0, 0 };
+			vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, vertexBuffers.size(), vertexBuffers.data(), offsets);
 
 			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pso->pipelineLayout, 0, 1, &dc->descriptorSets[i], 0, nullptr);
 
@@ -805,7 +815,11 @@ namespace Joestar {
 
 			if (dc->ib) {
 				vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], dc->ib->buffer.buffer, 0, VK_INDEX_TYPE_UINT16);
-				vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), 1, 0, 0, 0);
+				if (dc->vbs.size() > 1)
+					vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), dc->vbs[1]->GetInstanceCount(), 0, 0, 0);
+				else
+					vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), 1, 0, 0, 0);
+
 			} else {
 				vkCmdDraw(vkCtxPtr->commandBuffers[i], dc->vbs[0]->GetVertexCount(), 1, 0, 0);
 			}
@@ -980,6 +994,19 @@ namespace Joestar {
 				drawcall->HashInsert(ib->id);
 				break;
 			}
+			case RenderCMD_UpdateInstanceBuffer: {
+				CHECK_PASS()
+				InstanceBuffer* ib = (InstanceBuffer*)cmdBuffer[i].data;
+				if (vbs.find(ib->id) == vbs.end()) {
+					vbs[ib->id] = new VertexBufferVK(ib, vkCtxPtr);
+					CreateVertexBuffer(vbs[ib->id]);
+				}
+				if (drawcall->vbs.size() < 2)
+					drawcall->vbs.resize(2);
+				drawcall->vbs[1] = vbs[ib->id];
+				drawcall->HashInsert(ib->id);
+				break;
+			}
 			case RenderCMD_UseShader: {
 				CHECK_PASS()
 				Shader* shader = (Shader*)cmdBuffer[i].data;
@@ -1026,6 +1053,9 @@ namespace Joestar {
 			case RenderCMD_DrawIndexed: {
 				CHECK_PASS()
 				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
+				U32 instanceCount = cmdBuffer[i].size;
+				drawcall->instanceCount = instanceCount;
+				drawcall->HashInsert(instanceCount);
 				drawcall->topology = topology;
 				drawcall->HashInsert(topology);
 				pass->dcs.push_back(drawcall);
@@ -1037,6 +1067,9 @@ namespace Joestar {
 			case RenderCMD_Draw: {
 				CHECK_PASS()
 				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
+				U32 instanceCount = cmdBuffer[i].size;
+				drawcall->instanceCount = instanceCount;
+				drawcall->HashInsert(instanceCount);
 				drawcall->topology = topology;
 				drawcall->HashInsert(topology);
 				pass->dcs.push_back(drawcall);
