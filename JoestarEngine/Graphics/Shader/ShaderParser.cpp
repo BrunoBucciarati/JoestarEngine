@@ -403,22 +403,22 @@ namespace Joestar {
 		FileSystem* fs = GetSubsystem<FileSystem>();
 		const char* dir = fs->GetShaderDir();
 
-		if (stage & 1 << kVertexShader) {
+		if (stage & kVertexShader) {
 			std::string vertPath = dir + name + ".vert";
 			File* vertFile = fs->ReadFile(vertPath.c_str());
 			ParseVertexShader((char*)vertFile->GetBuffer(), 0, vertFile->Size(), info);
 		}
 
-		if (stage & 1 << kFragmentShader) {
+		if (stage & kFragmentShader) {
 			std::string fragPath = dir + name + ".frag";
 			File* fragFile = fs->ReadFile(fragPath.c_str());
 			ParseFragmentShader((char*)fragFile->GetBuffer(), 0, fragFile->Size(), info);
 		}
 
-		if (stage & 1 << kComputeShader) {
-			std::string fragPath = dir + name + ".comp";
-			File* fragFile = fs->ReadFile(fragPath.c_str());
-			ParseComputeShader((char*)fragFile->GetBuffer(), 0, fragFile->Size(), info);
+		if (stage & kComputeShader) {
+			std::string compPath = dir + name + ".comp";
+			File* compFile = fs->ReadFile(compPath.c_str());
+			ParseComputeShader((char*)compFile->GetBuffer(), 0, compFile->Size(), info);
 		}
 	}
 }

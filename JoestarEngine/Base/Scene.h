@@ -11,6 +11,7 @@ namespace Joestar {
 		REGISTER_SUBSYSTEM(Scene);
 	public:
 		explicit Scene(EngineContext* ctx);
+		void PreRenderCompute();
 		void RenderScene();
 		void RenderLights();
 		void RenderSkybox();
@@ -25,5 +26,7 @@ namespace Joestar {
 		Material* skyboxMat;
 		Material* lightMat;
 		LightBatch* lightBatch;
+		ComputeBuffer* computeBuffer;
+		Shader* computeShader;
 	};
 }

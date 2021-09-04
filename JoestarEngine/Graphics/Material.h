@@ -19,7 +19,7 @@ namespace Joestar {
 	void SetDefault() {
 		if (!program->shader) {
 			program->shader = NEW_OBJECT(Shader);
-			program->shader->SetName("test");
+			program->shader->SetShader("test");
 		}
 		textures.push_back(NEW_OBJECT(Texture2D));
 		std::string path = "Models/viking_room/viking_room.png";

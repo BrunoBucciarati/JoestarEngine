@@ -41,6 +41,9 @@ namespace Joestar {
         lightBatch = NEW_OBJECT(LightBatch);
 
         CreateLights();
+
+        computeShader = NEW_OBJECT(Shader);
+        computeShader->SetShader("computeTest", kComputeShader);
     }
 
     void Scene::CreateLights() {
@@ -63,7 +66,7 @@ namespace Joestar {
 
         lightMat = NEW_OBJECT(Material);
         Shader* shader = NEW_OBJECT(Shader);
-        shader->SetName("light");
+        shader->SetShader("light");
         lightMat->SetShader(shader);
 
         lightBatch->SetLights(lights);
@@ -94,8 +97,19 @@ namespace Joestar {
             }
         }
 
-        Graphics* graphics = GetSubsystem<Graphics>();
+        PreRenderCompute();
         RenderScene();
+    }
+
+    void Scene::PreRenderCompute() {
+        //test
+        Graphics* graphics = GetSubsystem<Graphics>();
+        graphics->BeginCompute("TEST COMPUTE");
+
+        graphics->UpdateComputeBuffer(computeBuffer);
+
+        graphics->DispatchCompute();
+        graphics->EndCompute("TEST COMPUTE");
     }
 
     void Scene::RenderScene() {
@@ -142,7 +156,7 @@ namespace Joestar {
         if (!skyboxMat) {
             skyboxMat = NEW_OBJECT(Material);
             Shader* shader = NEW_OBJECT(Shader);
-            shader->SetName("skybox");
+            shader->SetShader("skybox");
             skyboxMat->SetShader(shader);
 
             TextureCube* cube = NEW_OBJECT(TextureCube);

@@ -19,7 +19,7 @@ namespace Joestar {
 	LightBatch::LightBatch(EngineContext* ctx) : Super(ctx) {
 		mat = NEW_OBJECT(Material);
 		Shader* shader = NEW_OBJECT(Shader);
-		shader->SetName("light");
+		shader->SetShader("light");
 		mat->SetShader(shader);
 
 		mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();

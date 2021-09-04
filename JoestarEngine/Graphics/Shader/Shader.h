@@ -11,6 +11,7 @@ namespace Joestar {
 	public:
 		explicit Shader(EngineContext* ctx) : Super(ctx) {}
 		inline std::string& GetName() { return name; };
+		void SetShader(std::string n, U32 flag = kVertexShader | kFragmentShader);
 		void SetName(std::string n);
 		U32 GetVertexAttributeFlag();
 		U32 GetInstanceAttributeFlag();

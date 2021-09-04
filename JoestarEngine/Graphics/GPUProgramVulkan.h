@@ -611,6 +611,7 @@ namespace Joestar {
         VkDescriptorSet descriptorSet;
         VkPipelineLayout pipelineLayout;
         VkPipeline pipeline;
+        ShaderVK* shader;
 
         void Prepare() {
 
