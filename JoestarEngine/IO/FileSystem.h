@@ -5,22 +5,33 @@
 namespace Joestar {
 	typedef void ReadFileCallback(File*);
 	class FileSystem : public SubSystem {
-		REGISTER_OBJECT(FileSystem, SubSystem)
-		static const char* GetResourceDir() {
+		REGISTER_SUBSYSTEM(FileSystem)
+		explicit FileSystem(EngineContext* ctx) : Super(ctx){}
+		const char* GetResourceDir() {
 			return "../Resources/";
 		}
-		static const char* GetModelDir() {
+		const char* GetModelDir() {
 			return "../Resources/Models/";
 		}
-		static const char* GetTextureDir() {
+		const char* GetTextureDir() {
 			return "../Resources/Textures/";
 		}
-		static const char* GetShaderDir() {
+		const char* GetShaderDir() {
 			return "../Resources/Shaders/";
+		}
+
+		std::string GetShaderDirAbsolute() {
+			std::string path = GetShaderDir();
+			char workDir[260];
+			if (_getcwd(workDir, 260))
+				path = workDir + ("/" + path);
+			return path;
 		}
 
 		void ReadFileAsync(const char* filePath, ReadFileCallback callback);
 		File* ReadFile(const char* filePath);
 		File* OpenFile(const char* filePath);
+
+		File* GetShaderCodeFile(const char* file);
 	};
 }

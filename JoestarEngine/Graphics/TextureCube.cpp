@@ -15,7 +15,8 @@ namespace Joestar {
 		Image* img;
 		for (unsigned int i = 0; i < faces.size(); i++)
 		{
-			img = new Image((path + faces[i]).c_str());
+			img = NEW_OBJECT(Image);
+			img->Load((path + faces[i]).c_str());
 			imgs.push_back(img);
 			//目前认为六个面必须一样的尺寸
 			width = img->GetWidth();
@@ -28,8 +29,8 @@ namespace Joestar {
 	}
 
 	TextureCube::~TextureCube() {
-		for (auto& img : imgs)
-			delete img;
+		//for (auto& img : imgs)
+		//	delete img;
 	}
 
 	U8* TextureCube::GetData() {

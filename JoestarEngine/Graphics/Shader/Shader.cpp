@@ -2,10 +2,11 @@
 #include "ShaderParser.h"
 
 namespace Joestar {
-	void Shader::SetShader(std::string n, U32 flag) {
+	void Shader::SetShader(std::string n, U32 f) {
 		name = n;
 		id = hashString(n.c_str());
-		GetSubsystem<ShaderParser>()->ParseShader(n, info, flag);
+		GetSubsystem<ShaderParser>()->ParseShader(n, info, f);
+		flag = f;
 	}
 	U32 Shader::GetVertexAttributeFlag() {
 		U32 flag = 0;

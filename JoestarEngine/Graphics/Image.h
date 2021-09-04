@@ -1,9 +1,11 @@
 #pragma once
+#include "../Base/Object.h"
 namespace Joestar {
-	class Image {
+	class Image : public Object {
+		REGISTER_OBJECT(Image, Object)
 	public:
-		Image(const char* path);
-		~Image();
+		explicit Image(EngineContext* ctx) : Super(ctx) {}
+		void Load(const char* path);
 		inline int GetWidth() { return width; }
 		inline int GetHeight() { return height; }
 		inline int GetSize() { return width * height; }

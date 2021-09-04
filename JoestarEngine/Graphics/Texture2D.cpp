@@ -3,7 +3,8 @@
 
 namespace Joestar {
 	void Texture2D::TextureFromImage(std::string& path) {
-		img = new Image(path.c_str());// "Models/viking_room/viking_room.png");
+		img = NEW_OBJECT(Image);
+		img->Load(path.c_str());// "Models/viking_room/viking_room.png");
 		width = img->GetWidth();
 		height = img->GetHeight();
 		id = hashString(path.c_str());
@@ -11,7 +12,7 @@ namespace Joestar {
 	}
 
 	Texture2D::~Texture2D() {
-		delete img;
+		//delete img;
 	}
 
 	U8* Texture2D::GetData() {

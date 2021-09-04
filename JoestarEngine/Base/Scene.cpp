@@ -105,9 +105,8 @@ namespace Joestar {
         //test
         Graphics* graphics = GetSubsystem<Graphics>();
         graphics->BeginCompute("TEST COMPUTE");
-
+        graphics->UseShader(computeShader);
         graphics->UpdateComputeBuffer(computeBuffer);
-
         graphics->DispatchCompute();
         graphics->EndCompute("TEST COMPUTE");
     }

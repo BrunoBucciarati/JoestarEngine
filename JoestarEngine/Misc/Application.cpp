@@ -10,6 +10,7 @@
 #include "../Graphics/Shader/ShaderParser.h"
 #include "../Graphics/ProceduralMesh.h"
 #include "../IO/MemoryManager.h"
+#include "../IO/FileSystem.h"
 #include "TimeManager.h"
 
 namespace Joestar {
@@ -17,6 +18,7 @@ namespace Joestar {
 		gContext = new EngineContext;
 		InitSubSystem(MemoryManager, gContext)
 		InitSubSystem(TimeManager, gContext)
+		InitSubSystem(FileSystem, gContext)
 		InitSubSystem(GlobalConfig, gContext)
 		int GFX_API = GFX_API_VULKAN;
 		GetSubSystem<GlobalConfig>()->UpdateConfig("GFX_API", GFX_API);

@@ -177,6 +177,7 @@ namespace Joestar {
 		cmdBuffer[cmdIdx].data = (void*)name;
 		++cmdIdx;
 	}
+
 	void Graphics::DispatchCompute() {
 		cmdBuffer[cmdIdx].typ = RenderCMD_DispatchCompute;
 		++cmdIdx;

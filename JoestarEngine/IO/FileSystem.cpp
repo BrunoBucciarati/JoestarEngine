@@ -18,4 +18,12 @@ namespace Joestar {
 		File* file = new File(filename);
 		return file;
 	}
+
+	File* FileSystem::GetShaderCodeFile(const char* file) {
+		std::string path = GetResourceDir();
+		path += "Shaders/";
+		path += file;
+		File* f = ReadFile(path.c_str());
+		return f;
+	}
 }

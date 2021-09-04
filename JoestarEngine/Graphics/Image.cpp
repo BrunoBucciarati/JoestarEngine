@@ -4,8 +4,8 @@
 #include <stb_image.h>
 
 namespace Joestar {
-	Image::Image(const char* path) {
-		std::string resDir = FileSystem::GetResourceDir();
+	void Image::Load(const char* path) {
+		std::string resDir = GetSubsystem<FileSystem>()->GetResourceDir();
 		data = (char*)stbi_load((resDir + path).c_str(), &width, &height, &channels, STBI_rgb_alpha);
 	}
 	Image::~Image() {

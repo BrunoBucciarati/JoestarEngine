@@ -71,60 +71,8 @@ namespace Joestar {
 			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 		);
 	}
-	VkShaderModule GPUProgramVulkan::CreateShaderModule(File* file) {
-		VkShaderModuleCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		size_t codeSize = file->Size();
-		createInfo.codeSize = codeSize;
-		createInfo.pCode = reinterpret_cast<const uint32_t*>(file->GetBuffer());
-
-		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(vkCtxPtr->device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-			LOGERROR("failed to create shader module!");
-		}
-		return shaderModule;
-	}
 
 	GPUProgramVulkan::GPUProgramVulkan() : dynamicCommandBuffer(false), firstRecord(true) {
-	}
-	
-	void GPUProgramVulkan::SetShader(ShaderVK* shader) {
-		Application* app = Application::GetApplication();
-		FileSystem* fs = app->GetSubSystem<FileSystem>();
-		std::string path = fs->GetResourceDir();
-		path += "Shaders/";
-		char workDir[260];
-		if (_getcwd(workDir, 260))
-			path = workDir + ("/" + path);
-
-		//First Compile To Spir-V
-		std::string vertSpvPath = std::string(shader->GetName()) + "vert.spv";
-		std::string fragSpvPath = std::string(shader->GetName()) + "frag.spv";
-		std::string compileVertSpv = path + "glslc.exe " + (path + shader->GetName() + ".vert") + " -o " + (path + vertSpvPath);
-		std::string compileFragSpv = path + "glslc.exe " + (path + shader->GetName() + ".frag") + " -o " + (path + fragSpvPath);
-		system(compileVertSpv.c_str());
-		system(compileFragSpv.c_str());
-		File* vShaderCode = ShaderCodeFile(vertSpvPath.c_str());
-		File* fShaderCode = ShaderCodeFile(fragSpvPath.c_str());
-
-		shader->vertShaderModule = CreateShaderModule(vShaderCode);
-		shader->fragShaderModule = CreateShaderModule(fShaderCode);
-
-		VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertShaderStageInfo.module = shader->vertShaderModule;
-		vertShaderStageInfo.pName = "main";
-
-		VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragShaderStageInfo.module = shader->fragShaderModule;
-		fragShaderStageInfo.pName = "main";
-
-		//VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-		shader->shaderStage[0] = vertShaderStageInfo;
-		shader->shaderStage[1] = fragShaderStageInfo;
 	}
 
 	void GPUProgramVulkan::Clean() {
@@ -382,9 +330,7 @@ namespace Joestar {
 	void GPUProgramVulkan::CreateGraphicsPipeline(RenderPassVK* pass, int i) {
 		DrawCallVK* dc = pass->dcs[i];
 		PipelineStateVK* pso = dc->pso;
-		SetShader(dc->shader);
-
-		VkPipelineShaderStageCreateInfo* info = dc->shader->shaderStage;
+		dc->shader->Prepare();
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -504,10 +450,11 @@ namespace Joestar {
 
 		//Create Vertex Buffer
 		VkPipelineVertexInputStateCreateInfo& vertexInputInfo = dc->GetVertexInputInfo();
+		VkPipelineShaderStageCreateInfo* shaderCreateInfo = dc->shader->shaderStage.data();
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = 2;
-		pipelineInfo.pStages = info;
+		pipelineInfo.pStages = shaderCreateInfo;
 		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &inputAssembly;
 		pipelineInfo.pViewportState = &viewportState;
@@ -897,7 +844,8 @@ namespace Joestar {
 	}
 
 
-#define CHECK_PASS() if(pass == nullptr) {LOGERROR("PLEASE START PASS FIRST!\n");}
+#define CHECK_PASS() if(nullptr == pass) {LOGERROR("PLEASE START PASS FIRST!\n");}
+#define CHECK_PASS_OR_COMPUTE() if(nullptr == pass && nullptr == computePipeline) {LOGERROR("PLEASE START PASS OR COMPUTE FIRST!\n");}
 	bool GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imgIdx) {
 		if (cmdIdx == 0) return false;
 		renderPassList.clear();
@@ -912,7 +860,8 @@ namespace Joestar {
 		DrawCallVK* drawcall = new DrawCallVK;
 		drawcall->pso = new PipelineStateVK;
 		for (int i = 0; i < cmdIdx; ++i) {
-			drawcall->HashInsert(cmdBuffer[i].typ);
+			if (isCompute) computePipeline->HashInsert(cmdBuffer[i].typ);
+			else drawcall->HashInsert(cmdBuffer[i].typ);
 			switch (cmdBuffer[i].typ) {
 			case RenderCMD_BeginRenderPass: {
 				pass = new RenderPassVK;
@@ -978,13 +927,19 @@ namespace Joestar {
 				break;
 			}
 			case RenderCMD_UseShader: {
-				CHECK_PASS()
+				CHECK_PASS_OR_COMPUTE()
 				Shader* shader = (Shader*)cmdBuffer[i].data;
 				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
-					shaderVKs[shader->id] = new ShaderVK(shader);
+					shaderVKs[shader->id] = new ShaderVK(shader, vkCtxPtr);
 				}
-				drawcall->shader = shaderVKs[shader->id];
-				drawcall->HashInsert(shader->id);
+
+				if (isCompute) {
+					computePipeline->shader = shaderVKs[shader->id];
+					computePipeline->HashInsert(shader->id);
+				} else {
+					drawcall->shader = shaderVKs[shader->id];
+					drawcall->HashInsert(shader->id);
+				}
 				break;
 			}
 			case RenderCMD_UpdateTexture: {
@@ -1061,6 +1016,7 @@ namespace Joestar {
 				break;
 			}
 			case RenderCMD_DispatchCompute: {
+				computePipeline->Prepare();
 				break;
 			}
 			case RenderCMD_UpdateComputeBuffer: {

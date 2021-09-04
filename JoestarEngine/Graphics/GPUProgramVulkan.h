@@ -15,6 +15,15 @@
 #include <string>
 #include "Texture.h"
 #include "Shader/Shader.h"
+#include "../Misc/Application.h"
+
+//ez hash, i guess that's ok
+#define REGISTER_HASH\
+    U32 hash = 0;\
+    void HashInsert(U32 i) {\
+        hash *= 10;\
+        hash += i;\
+    }
 
 namespace Joestar {
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device);
@@ -110,9 +119,8 @@ namespace Joestar {
         }
     };
 
-    class ShaderVK {
-    public:
-        explicit ShaderVK(Shader* _shader) : shader(_shader) {
+    struct ShaderVK {
+        explicit ShaderVK(Shader* _shader, VulkanContext* c) : shader(_shader), ctx(c) {
             for (auto& uniform : shader->info.uniforms) {
                 if (uniform.dataType == ShaderDataTypePushConst) {
                     continue;
@@ -136,17 +144,56 @@ namespace Joestar {
         U32 ID() { return shader->id; }
         std::string GetPushConsts() { return shader->GetPushConsts(); }
         Shader* shader;
-        VkShaderModule vertShaderModule{}, fragShaderModule{};
-        VkPipelineShaderStageCreateInfo shaderStage[2];
+        std::vector <VkShaderModule> shaderModules;// vertShaderModule{}, fragShaderModule{}, computeShaderModule{};
+        std::vector<VkPipelineShaderStageCreateInfo> shaderStage;
         bool operator ==(ShaderVK& s2) {
             return GetName() == s2.GetName();
         }
         void Clean(VkDevice& dev) {
-            vkDestroyShaderModule(dev, vertShaderModule, nullptr);
-            vkDestroyShaderModule(dev, fragShaderModule, nullptr);
+            for (auto& modu : shaderModules)
+                vkDestroyShaderModule(dev, modu, nullptr);
+        }
+        bool HasStage(ShaderStage stage) {
+            return shader->flag & stage;
+        }
+        VkShaderModule CreateShaderModule(File* file) {
+            VkShaderModuleCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            size_t codeSize = file->Size();
+            createInfo.codeSize = codeSize;
+            createInfo.pCode = reinterpret_cast<const uint32_t*>(file->GetBuffer());
+
+            VkShaderModule shaderModule;
+            if (vkCreateShaderModule(ctx->device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+                LOGERROR("failed to create shader module!");
+            }
+            return shaderModule;
+        }
+#define CHECK_ADD_SHADER_STAGE(STAGE, SUFFIX, BIT)\
+        if (HasStage(STAGE)) {\
+            std::string spvPath = std::string(GetName()) + SUFFIX + ".spv";\
+            std::string compileSpvCmd = path + "glslc.exe " + (path + GetName() + "." + SUFFIX) + " -o " + (path + spvPath);\
+            system(compileSpvCmd.c_str());\
+            File* shaderCode = fs->GetShaderCodeFile(spvPath.c_str());\
+            shaderModules.push_back(CreateShaderModule(shaderCode));\
+            shaderStage.push_back(VkPipelineShaderStageCreateInfo{});\
+            shaderStage.back().sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;\
+            shaderStage.back().stage = BIT;\
+            shaderStage.back().module = shaderModules.back();\
+            shaderStage.back().pName = "main";\
+        }
+        void Prepare() {
+            Application* app = Application::GetApplication();
+            FileSystem* fs = app->GetSubSystem<FileSystem>();
+            std::string path = fs->GetShaderDirAbsolute();
+
+            CHECK_ADD_SHADER_STAGE(kVertexShader, "vert", VK_SHADER_STAGE_VERTEX_BIT)
+            CHECK_ADD_SHADER_STAGE(kFragmentShader, "frag", VK_SHADER_STAGE_FRAGMENT_BIT)
+            CHECK_ADD_SHADER_STAGE(kComputeShader, "comp", VK_SHADER_STAGE_COMPUTE_BIT)
         }
         std::vector<U32> ubs;
         std::vector<U32> textures;
+        VulkanContext* ctx;
     };
 
 
@@ -494,12 +541,13 @@ namespace Joestar {
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
         VkSampler textureSampler;
-        U32 hash = 0;
-        //ez hash, i guess that's ok
-        void HashInsert(U32 i) {
-            hash *= 10;
-            hash += i;
-        }
+        REGISTER_HASH
+        //U32 hash = 0;
+        ////ez hash, i guess that's ok
+        //void HashInsert(U32 i) {
+        //    hash *= 10;
+        //    hash += i;
+        //}
     };
 
     struct PushConstsVK : PushConsts {
@@ -529,12 +577,8 @@ namespace Joestar {
         std::vector<VkVertexInputBindingDescription> bindingDescriptions;
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
         U32 instanceCount = 0;
-        U32 hash = 0;
-        //ez hash, i guess that's ok
-        void HashInsert(U32 i) {
-            hash *= 10;
-            hash += i;
-        }
+        REGISTER_HASH
+
 
         VkPipelineVertexInputStateCreateInfo& GetVertexInputInfo() {
             bindingDescriptions.resize(vbs.size());
@@ -576,12 +620,7 @@ namespace Joestar {
         Vector4f clearColor;
         const char* name;
         std::vector<DrawCallVK*> dcs;
-        U32 hash = 0;
-        //ez hash, i guess that's ok
-        void HashInsert(U32 i) {
-            hash *= 10;
-            hash += i;
-        }
+        REGISTER_HASH
     };
 
     struct ComputeContextVK {
@@ -612,6 +651,7 @@ namespace Joestar {
         VkPipelineLayout pipelineLayout;
         VkPipeline pipeline;
         ShaderVK* shader;
+        REGISTER_HASH
 
         void Prepare() {
 
@@ -623,7 +663,6 @@ namespace Joestar {
         GPUProgramVulkan();
         //VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
         void SetDevice(VulkanContext* ctx) { vkCtxPtr = ctx; }
-        void SetShader(ShaderVK* shader);
         void CreateVertexBuffer(VertexBufferVK* vb);
         void CreateIndexBuffer(IndexBufferVK* ib);
         void CopyBuffer(BufferVK& srcBuffer, BufferVK& dstBuffer, VkDeviceSize size);
@@ -632,7 +671,6 @@ namespace Joestar {
 
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         void Clean();
-        VkShaderModule CreateShaderModule(File* code);
         void CreateRenderPass(RenderPassVK* pass);
         void CreateGraphicsPipeline(RenderPassVK* pass, int i);
         void CreateDescriptorSetLayout(DrawCallVK* pass);
