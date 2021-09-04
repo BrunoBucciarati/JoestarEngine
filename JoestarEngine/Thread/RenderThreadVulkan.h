@@ -6,10 +6,6 @@
 #include "../Graphics/RenderCommand.h"
 namespace Joestar {
 	const int MAX_FRAMES_IN_FLIGHT = 2;
-	struct QueueFamilyIndices {
-		uint32_t graphicsFamily;
-		uint32_t presentFamily;
-	};
 	struct SwapChainSupportDetails {
 		VkSurfaceCapabilitiesKHR capabilities;
 		std::vector<VkSurfaceFormatKHR> formats;
@@ -36,7 +32,7 @@ namespace Joestar {
 		void RecreateSwapChain();
 
 		inline void SetFrameBufferResized(bool flag) { framebufferResized = flag; }
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+		QueueFamilyIndices FindQueueFamilies();
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		bool IsDeviceSuitable(VkPhysicalDevice device);
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);

@@ -30,6 +30,8 @@
 #define TOKEN_IN_TEXCOORD "inTexCoord"
 #define TOKEN_IN_NORMAL "inNormal"
 #define TOKEN_PUSH_CONSTANT "push_constant"
+#define TOKEN_BUFFER "buffer"
+#define TOKEN_COMMA ","
 
 #define SET_DATATYPE_BY_TOKEN(val, token) \
 	if (token == TOKEN_FLOAT) val = ShaderDataTypeFloat; \
@@ -322,16 +324,101 @@ namespace Joestar {
 		}
 	}
 
-	void ShaderParser::ParseShader(std::string& name, ShaderInfo& info) {
+	bool TryParseBuffer(TokenStream& tokenStream, ShaderInfo& shaderInfo, uint16_t binding = 0) {
+		if (tokenStream.AcceptToken(TOKEN_BUFFER)) {
+			std::string tok;
+			//must be a UBO
+			tokenStream.AcceptString(tok);
+			shaderInfo.uniforms.push_back(UniformDef{});
+			UniformDef& def = shaderInfo.uniforms.back();
+			def.name = tok;
+			def.binding = binding;
+			def.stageFlag |= shaderInfo.curStage;
+			def.dataType = ShaderDataTypeBuffer;
+			tokenStream.AcceptToken(TOKEN_LB);
+			tokenStream.AcceptTokenForward(TOKEN_RB);
+			tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
+		} else {
+			return false;
+		}
+		return true;
+	}
+
+
+	bool TryParseBindingBuffer(TokenStream& tokenStream, ShaderInfo& shaderInfo) {
+		uint16_t binding;
+		if (tokenStream.AcceptToken(TOKEN_BINDING)) {
+			tokenStream.AcceptToken(TOKEN_EQ);
+			tokenStream.AcceptInt16(binding);
+		} else {
+			return false;
+		}
+
+		if (tokenStream.AcceptToken(TOKEN_COMMA)) {
+			tokenStream.AcceptTokenForward(TOKEN_RP);
+		} else {
+			tokenStream.AcceptToken(TOKEN_RP);
+		}
+
+		return TryParseBuffer(tokenStream, shaderInfo, binding);
+	}
+	void ParseComputeShader(char* buffer, uint32_t idx, uint32_t size, ShaderInfo& shaderInfo) {
+		TokenStream tokenStream;
+		GetTokenStream(buffer, idx, size, tokenStream);
+
+		shaderInfo.curStage = kComputeShader;
+		if (tokenStream.AcceptToken(TOKEN_GL_VERSION)) {
+			tokenStream.AcceptInt16(shaderInfo.version);
+
+			bool flag = true;
+			//Accept all layout info
+			while (flag) {
+				flag = false;
+				if (tokenStream.AcceptToken(TOKEN_LAYOUT)) {
+					flag = true;
+					tokenStream.AcceptToken(TOKEN_LP);
+					//if (!TryParseAttribute(tokenStream, shaderInfo)) {
+						//uniform
+					//}
+					if (!TryParseBindingBuffer(tokenStream, shaderInfo)) {
+						tokenStream.AcceptTokenForward(TOKEN_RP);
+						tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
+					}
+					if (!TryParseBindingUniform(tokenStream, shaderInfo)) {
+						tokenStream.AcceptTokenForward(TOKEN_RP);
+						tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
+					}
+				}
+				else if (TryParseUniform(tokenStream, shaderInfo)) {
+					flag = true;
+				}
+			}
+		}
+		else {
+			LOGERROR("[SHADERPARSER] NO GL VERSION FOUND");
+		}
+	}
+
+	void ShaderParser::ParseShader(std::string& name, ShaderInfo& info, U32 stage) {
 		FileSystem* fs = GetSubsystem<FileSystem>();
 		const char* dir = fs->GetShaderDir();
-		std::string vertPath = dir + name + ".vert";
-		std::string fragPath = dir + name + ".frag";
 
-		File* vertFile = fs->ReadFile(vertPath.c_str());
-		File* fragFile = fs->ReadFile(fragPath.c_str());
+		if (stage & 1 << kVertexShader) {
+			std::string vertPath = dir + name + ".vert";
+			File* vertFile = fs->ReadFile(vertPath.c_str());
+			ParseVertexShader((char*)vertFile->GetBuffer(), 0, vertFile->Size(), info);
+		}
 
-		ParseVertexShader((char*)vertFile->GetBuffer(), 0, vertFile->Size(), info);
-		ParseFragmentShader((char*)fragFile->GetBuffer(), 0, fragFile->Size(), info);
+		if (stage & 1 << kFragmentShader) {
+			std::string fragPath = dir + name + ".frag";
+			File* fragFile = fs->ReadFile(fragPath.c_str());
+			ParseFragmentShader((char*)fragFile->GetBuffer(), 0, fragFile->Size(), info);
+		}
+
+		if (stage & 1 << kComputeShader) {
+			std::string fragPath = dir + name + ".comp";
+			File* fragFile = fs->ReadFile(fragPath.c_str());
+			ParseComputeShader((char*)fragFile->GetBuffer(), 0, fragFile->Size(), info);
+		}
 	}
 }

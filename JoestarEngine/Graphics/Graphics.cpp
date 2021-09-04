@@ -169,4 +169,30 @@ namespace Joestar {
 		cmdBuffer[cmdIdx].flag = mode;
 		++cmdIdx;
 	}
+
+
+	void Graphics::BeginCompute(const char* name) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_BeginCompute;
+		cmdBuffer[cmdIdx].size = sizeof(const char*);
+		cmdBuffer[cmdIdx].data = (void*)name;
+		++cmdIdx;
+	}
+	void Graphics::DispatchCompute() {
+		cmdBuffer[cmdIdx].typ = RenderCMD_DispatchCompute;
+		++cmdIdx;
+	}
+
+	void Graphics::EndCompute(const char* name) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_EndCompute;
+		cmdBuffer[cmdIdx].size = sizeof(const char*);
+		cmdBuffer[cmdIdx].data = (void*)name;
+		++cmdIdx;
+	}
+
+	void Graphics::UpdateComputeBuffer(ComputeBuffer* cb) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateComputeBuffer;
+		cmdBuffer[cmdIdx].size = sizeof(ComputeBuffer*);
+		cmdBuffer[cmdIdx].data = cb;
+		++cmdIdx;
+	}
 }

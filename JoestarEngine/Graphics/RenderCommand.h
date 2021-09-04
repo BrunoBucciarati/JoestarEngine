@@ -19,6 +19,10 @@ enum RenderCommandType {
 	RenderCMD_SetDepthCompare,
 	RenderCMD_SetDepthWrite,
 	RenderCMD_SetPolygonMode,
+	RenderCMD_DispatchCompute,
+	RenderCMD_BeginCompute,
+	RenderCMD_UpdateComputeBuffer,
+	RenderCMD_EndCompute,
 
 
 

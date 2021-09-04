@@ -48,38 +48,6 @@ namespace Joestar {
 
 		return bindingDescription;
 	}
-	/*std::vector<VkVertexInputAttributeDescription> VertexBufferVK::GetAttributeDescriptions() {
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-		attributeDescriptions.resize(vb->attrs.size());
-
-		uint32_t vaSize = 0, offset = 0;
-		for (int i = 0; i < vb->attrs.size(); ++i) {
-			attributeDescriptions[i].binding = 0;
-			attributeDescriptions[i].location = i;
-			attributeDescriptions[i].offset = offset;
-			vaSize = VERTEX_ATTRIBUTE_SIZE[vb->attrs[i]];
-			switch (vaSize) {
-			case 3: attributeDescriptions[i].format = VK_FORMAT_R32G32B32_SFLOAT; offset += 12; break;
-			case 2: attributeDescriptions[i].format = VK_FORMAT_R32G32_SFLOAT; offset += 8;  break;
-			default:break;
-			}
-		}
-
-		return attributeDescriptions;
-	}*/
-
-	//void VertexBufferVK::GetVertexInputInfo(VkPipelineVertexInputStateCreateInfo& vertexInputInfo) {
-	//	bindingDescription = GetBindingDescription();
-	//	attributeDescriptions = GetAttributeDescriptions();
-	//	
-	//	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	//	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	//	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	//	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-	//	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-	//	return &vertexInputInfo;
-	//}
-
 
 	VkFormat GPUProgramVulkan::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 		for (VkFormat format : candidates) {
@@ -534,7 +502,6 @@ namespace Joestar {
 			}
 		}
 
-
 		//Create Vertex Buffer
 		VkPipelineVertexInputStateCreateInfo& vertexInputInfo = dc->GetVertexInputInfo();
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -935,10 +902,13 @@ namespace Joestar {
 		if (cmdIdx == 0) return false;
 		renderPassList.clear();
 		curImageIdx = imgIdx;
+		hasCompute = false;
+		bool isCompute = false;
 
 		bool ret = !lastRenderPassList.empty();
 
 		RenderPassVK* pass = nullptr;
+		ComputePipelineVK* computePipeline = nullptr;
 		DrawCallVK* drawcall = new DrawCallVK;
 		drawcall->pso = new PipelineStateVK;
 		for (int i = 0; i < cmdIdx; ++i) {
@@ -1076,6 +1046,24 @@ namespace Joestar {
 
 				drawcall = new DrawCallVK;
 				drawcall->pso = new PipelineStateVK;
+				break;
+			}
+			case RenderCMD_BeginCompute: {
+				if (!computeCtx) {
+					computeCtx = new ComputeContextVK(vkCtxPtr);
+				}
+				hasCompute = isCompute = true;
+				computePipeline = new ComputePipelineVK{ computeCtx };
+				break;
+			}
+			case RenderCMD_EndCompute: {
+				isCompute = false;
+				break;
+			}
+			case RenderCMD_DispatchCompute: {
+				break;
+			}
+			case RenderCMD_UpdateComputeBuffer: {
 				break;
 			}
 			default: break;

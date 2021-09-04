@@ -15,6 +15,8 @@ namespace Joestar {
 		ShaderDataTypeMat4,
 		ShaderDataTypeUBO,
 		ShaderDataTypePushConst,
+		ShaderDataTypeBuffer,
+
 		ShaderDataTypeSampler,
 		SamplerType2D,
 		SamplerTypeCube,
@@ -50,7 +52,7 @@ namespace Joestar {
 		REGISTER_SUBSYSTEM(ShaderParser)
 	public:
 		explicit ShaderParser(EngineContext* ctx) : Super(ctx) {}
-		void ParseShader(std::string& name, ShaderInfo& si);
+		void ParseShader(std::string& name, ShaderInfo& si, U32 flag = 1 << kVertexShader | 1 << kFragmentShader);
 	private:
 	};
 }

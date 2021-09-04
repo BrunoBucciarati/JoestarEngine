@@ -73,11 +73,12 @@ namespace Joestar {
 
     struct CommandBufferVK {
         VulkanContext* ctx;
+        VkCommandPool pool = VK_NULL_HANDLE;
         VkCommandBuffer commandBuffer;
         void Begin() {
             VkCommandBufferAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            allocInfo.commandPool = ctx->commandPool;
+            allocInfo.commandPool = pool == VK_NULL_HANDLE ? ctx->commandPool : pool;
             allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
             allocInfo.commandBufferCount = 1;
 
@@ -443,9 +444,7 @@ namespace Joestar {
         }
         U32 GetVertexCount() { return vb->GetVertexCount(); }
         U32 GetInstanceCount() { return static_cast<InstanceBuffer*>(vb)->GetCount(); }
-        //void GetVertexInputInfo(VkPipelineVertexInputStateCreateInfo&);
         VkVertexInputBindingDescription GetBindingDescription();
-        //std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
         void Clean() {
             buffer.Clean();
         }
@@ -585,7 +584,38 @@ namespace Joestar {
         }
     };
 
+    struct ComputeContextVK {
+        VulkanContext* ctx;
+        VkQueue queue;
+        VkCommandPool commandPool;
+        CommandBufferVK commandBuffer;
+        VkSemaphore semaphore;
+        ComputeContextVK(VulkanContext* c) : ctx(c) {
+            queue = c->computeQueue;
 
+            VkCommandPoolCreateInfo poolInfo{};
+            poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            poolInfo.queueFamilyIndex = ctx->queueFamilyIndices.computeFamily;
+            poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
+            //create sub command pool
+            if (vkCreateCommandPool(ctx->device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+                LOGERROR("failed to create command pool!");
+            }
+            commandBuffer = { c, commandPool };
+        }
+    };
+
+    struct ComputePipelineVK {
+        ComputeContextVK* ctx;
+        VkDescriptorSetLayout descriptorSetLayout;
+        VkDescriptorSet descriptorSet;
+        VkPipelineLayout pipelineLayout;
+        VkPipeline pipeline;
+
+        void Prepare() {
+
+        }
+    };
 
     class GPUProgramVulkan : public GPUProgram {
     public:
@@ -629,13 +659,14 @@ namespace Joestar {
         VkCommandPool subCommandPool;
     private:
         VulkanContext* vkCtxPtr;
+        ComputeContextVK* computeCtx;
         bool dynamicCommandBuffer;
+        bool hasCompute = false;
 
         VkBufferCreateInfo bufferInfo{};
         VkMemoryRequirements memRequirements;
         VkMemoryAllocateInfo allocInfo{};
         U32 mipLevels;
-        VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_2_BIT;
         std::map<U32, TextureVK*> textureVKs;
         std::map<U32, TextureVK*> pendingTextureVKs;
         std::map<U32, ShaderVK*> shaderVKs;

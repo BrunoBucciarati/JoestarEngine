@@ -8,9 +8,12 @@ namespace Joestar {
 		std::map<uint32_t, Object*> subSystems;
 		Object* GetSubSystem(uint32_t classID);
 		template<class T>
-		T* GetSubSystem() {
-			Object* obj = GetSubSystem(T::GetClassIDStatic());
-			return static_cast<T*>(obj);
-		}
+		T* GetSubSystem();
 	};
+
+	template<class T>
+	T* EngineContext::GetSubSystem() {
+		Object* obj = GetSubSystem(T::GetClassIDStatic());
+		return static_cast<T*>(obj);
+	}
 }

@@ -69,4 +69,8 @@ namespace Joestar {
         U8* buffer;
         U32 size = 0; //size of data
     };
+
+    class ComputeBuffer {
+
+    };
 }

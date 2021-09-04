@@ -138,6 +138,7 @@ namespace Joestar {
         SetupDebugMessenger();
         CreateSurface();
         PickPhysicalDevice();
+        FindQueueFamilies();
         CreateLogicalDevice();
         CreateSwapChain();
         CreateImageViews();
@@ -309,27 +310,30 @@ bool RenderThreadVulkan::IsDeviceSuitable(VkPhysicalDevice device) {
     return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader && extensionsSupported && swapChainAdequate;
 }
 
-QueueFamilyIndices RenderThreadVulkan::FindQueueFamilies(VkPhysicalDevice device) {
+QueueFamilyIndices RenderThreadVulkan::FindQueueFamilies() {
     QueueFamilyIndices indices;
     // Logic to find queue family indices to populate struct with
     uint32_t queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(vkCtx.physicalDevice, &queueFamilyCount, nullptr);
 
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(vkCtx.physicalDevice, &queueFamilyCount, queueFamilies.data());
     int i = 0;
     for (const auto& queueFamily : queueFamilies) {
         VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, vkCtx.surface, &presentSupport);
+        vkGetPhysicalDeviceSurfaceSupportKHR(vkCtx.physicalDevice, i, vkCtx.surface, &presentSupport);
         if (presentSupport) {
             indices.presentFamily = i;
         }
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             indices.graphicsFamily = i;
-            if (presentSupport) break;
+        }
+        if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+            indices.computeFamily = i;
         }
         i++;
     }
+    vkCtx.queueFamilyIndices = indices;
     return indices;
 }
 
@@ -355,11 +359,10 @@ void RenderThreadVulkan::PickPhysicalDevice() {
 }
 
 void RenderThreadVulkan::CreateLogicalDevice() {
-    QueueFamilyIndices indices = FindQueueFamilies(vkCtx.physicalDevice);
 
     float queuePriority = 1.0f;
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
+    std::set<uint32_t> uniqueQueueFamilies = { vkCtx.queueFamilyIndices.graphicsFamily, vkCtx.queueFamilyIndices.presentFamily };
     for (uint32_t queueFamily : uniqueQueueFamilies) {
         VkDeviceQueueCreateInfo queueCreateInfo{};
         queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -393,8 +396,9 @@ void RenderThreadVulkan::CreateLogicalDevice() {
         LOGERROR("failed to create logical vkCtx.device!");
     }
 
-    vkGetDeviceQueue(vkCtx.device, indices.graphicsFamily, 0, &vkCtx.graphicsQueue);
-    vkGetDeviceQueue(vkCtx.device, indices.presentFamily, 0, &vkCtx.presentQueue);
+    vkGetDeviceQueue(vkCtx.device, vkCtx.queueFamilyIndices.graphicsFamily, 0, &vkCtx.graphicsQueue);
+    vkGetDeviceQueue(vkCtx.device, vkCtx.queueFamilyIndices.presentFamily, 0, &vkCtx.presentQueue);
+    vkGetDeviceQueue(vkCtx.device, vkCtx.queueFamilyIndices.computeFamily, 0, &vkCtx.computeQueue);
 }
 
 VkSurfaceFormatKHR RenderThreadVulkan::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
@@ -450,10 +454,9 @@ void RenderThreadVulkan::CreateSwapChain() {
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices = FindQueueFamilies(vkCtx.physicalDevice);
-    uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
+    uint32_t queueFamilyIndices[] = { vkCtx.queueFamilyIndices.graphicsFamily, vkCtx.queueFamilyIndices.presentFamily };
 
-    if (indices.graphicsFamily != indices.presentFamily) {
+    if (vkCtx.queueFamilyIndices.graphicsFamily != vkCtx.queueFamilyIndices.presentFamily) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
         createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -506,11 +509,9 @@ void RenderThreadVulkan::CreateImageViews() {
 }
 
 void RenderThreadVulkan::CreateCommandPool() {
-    QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(vkCtx.physicalDevice);
-
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
+    poolInfo.queueFamilyIndex = vkCtx.queueFamilyIndices.graphicsFamily;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
     //create sub command pool
     if (vkCreateCommandPool(vkCtx.device, &poolInfo, nullptr, &(currentProgram->subCommandPool)) != VK_SUCCESS) {

@@ -35,7 +35,11 @@ namespace Joestar {
 		void SetDepthCompare(DepthCompareFunc fun);
 		void SetPolygonMode(PolygonMode fun);
 		void UpdateInstanceBuffer(InstanceBuffer* ib);
+		void DispatchCompute();
+		void BeginCompute(const char* name);
+		void EndCompute(const char* name);
 		void DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib);
+		void UpdateComputeBuffer(ComputeBuffer* cb);
 
 	private:
 		RenderThread* renderThread;
