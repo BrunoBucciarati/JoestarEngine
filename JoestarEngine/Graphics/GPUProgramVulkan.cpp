@@ -994,6 +994,7 @@ namespace Joestar {
 				break;
 			}
 			case ComputeCMD_WriteBackComputeBuffer: {
+				computePipeline->writeBack = true;
 				break;
 			}
 			case ComputeCMD_UseShader: {

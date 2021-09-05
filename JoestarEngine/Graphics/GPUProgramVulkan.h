@@ -715,6 +715,7 @@ namespace Joestar {
         ShaderVK* shader;
         VkSampler textureSampler;
         std::vector<UniformBufferVK*> computeBuffers;
+        bool writeBack = false;
         REGISTER_HASH
 
         void CreatePipeline(U32 flags = 0) {
@@ -758,69 +759,69 @@ namespace Joestar {
             vkCmdBindDescriptorSets(ctx->commandBuffer.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSets[0], 0, 0);
             vkCmdDispatch(ctx->commandBuffer.commandBuffer, 32, 1, 1);
 
+            if (writeBack) {
+                // Barrier to ensure that shader writes are finished before buffer is read back from GPU
+                bufferMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                bufferMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                bufferMemoryBarrier.buffer = deviceBuffer;
+                bufferMemoryBarrier.size = VK_WHOLE_SIZE;
+                bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-            // Barrier to ensure that shader writes are finished before buffer is read back from GPU
-            bufferMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-            bufferMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-            bufferMemoryBarrier.buffer = deviceBuffer;
-            bufferMemoryBarrier.size = VK_WHOLE_SIZE;
-            bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                vkCmdPipelineBarrier(
+                    ctx->commandBuffer.commandBuffer,
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    0,
+                    0, nullptr,
+                    1, &bufferMemoryBarrier,
+                    0, nullptr);
 
-            vkCmdPipelineBarrier(
-                ctx->commandBuffer.commandBuffer,
-                VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                VK_PIPELINE_STAGE_TRANSFER_BIT,
-                0,
-                0, nullptr,
-                1, &bufferMemoryBarrier,
-                0, nullptr);
+                // Read back to host visible buffer
+                VkBufferCopy copyRegion = {};
+                copyRegion.size = buffer.size;
+                ComputeBufferVK* cb = static_cast<ComputeBufferVK*>(computeBuffers[0]);
+                BufferVK hostBuffer{ ctx->ctx, buffer.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT };
+                hostBuffer.Create();
+                vkCmdCopyBuffer(ctx->commandBuffer.commandBuffer, deviceBuffer, hostBuffer.buffer, 1, &copyRegion);
 
-            // Read back to host visible buffer
-            VkBufferCopy copyRegion = {};
-            copyRegion.size = buffer.size;
-            ComputeBufferVK* cb = static_cast<ComputeBufferVK*>(computeBuffers[0]);
-            BufferVK hostBuffer{ctx->ctx, buffer.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT };
-            hostBuffer.Create();
-            vkCmdCopyBuffer(ctx->commandBuffer.commandBuffer, deviceBuffer, hostBuffer.buffer, 1, &copyRegion);
+                // Barrier to ensure that buffer copy is finished before host reading from it
+                bufferMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                bufferMemoryBarrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+                bufferMemoryBarrier.buffer = hostBuffer.buffer;
+                bufferMemoryBarrier.size = VK_WHOLE_SIZE;
+                bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-            // Barrier to ensure that buffer copy is finished before host reading from it
-            bufferMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            bufferMemoryBarrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
-            bufferMemoryBarrier.buffer = hostBuffer.buffer;
-            bufferMemoryBarrier.size = VK_WHOLE_SIZE;
-            bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                vkCmdPipelineBarrier(
+                    ctx->commandBuffer.commandBuffer,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_PIPELINE_STAGE_HOST_BIT,
+                    0,
+                    0, nullptr,
+                    1, &bufferMemoryBarrier,
+                    0, nullptr);
 
-            vkCmdPipelineBarrier(
-                ctx->commandBuffer.commandBuffer,
-                VK_PIPELINE_STAGE_TRANSFER_BIT,
-                VK_PIPELINE_STAGE_HOST_BIT,
-                0,
-                0, nullptr,
-                1, &bufferMemoryBarrier,
-                0, nullptr);
+                ctx->commandBuffer.End(false);
+                // Submit compute work
+                vkResetFences(ctx->ctx->device, 1, &ctx->fence);
+                ctx->commandBuffer.Submit(VK_PIPELINE_STAGE_TRANSFER_BIT, ctx->fence);
+                VK_CHECK(vkWaitForFences(ctx->ctx->device, 1, &ctx->fence, VK_TRUE, UINT64_MAX));
 
-            ctx->commandBuffer.End(false);
-            // Submit compute work
-            vkResetFences(ctx->ctx->device, 1, &ctx->fence);
-            ctx->commandBuffer.Submit(VK_PIPELINE_STAGE_TRANSFER_BIT, ctx->fence);
-            VK_CHECK(vkWaitForFences(ctx->ctx->device, 1, &ctx->fence, VK_TRUE, UINT64_MAX));
+                void* mapped;
+                vkMapMemory(ctx->ctx->device, hostBuffer.memory, 0, VK_WHOLE_SIZE, 0, &mapped);
+                VkMappedMemoryRange mappedRange{};
+                mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+                mappedRange.memory = hostBuffer.memory;
+                mappedRange.offset = 0;
+                mappedRange.size = VK_WHOLE_SIZE;
+                vkInvalidateMappedMemoryRanges(ctx->ctx->device, 1, &mappedRange);
 
-            void* mapped;
-            vkMapMemory(ctx->ctx->device, hostBuffer.memory, 0, VK_WHOLE_SIZE, 0, &mapped);
-            VkMappedMemoryRange mappedRange{};
-            mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-            mappedRange.memory = hostBuffer.memory;
-            mappedRange.offset = 0;
-            mappedRange.size = VK_WHOLE_SIZE;
-            vkInvalidateMappedMemoryRanges(ctx->ctx->device, 1, &mappedRange);
-
-            memcpy(cb->computeBuffer->GetBuffer(), mapped, buffer.size);
-            vkUnmapMemory(ctx->ctx->device, hostBuffer.memory);
-            U8* data = cb->computeBuffer->GetBuffer();
-            for (int i = 0; i < 32; i+=4) {
-                LOGWARN("%u", reinterpret_cast<U32*>(data[i]));
+                memcpy(cb->computeBuffer->GetBuffer(), mapped, buffer.size);
+                vkUnmapMemory(ctx->ctx->device, hostBuffer.memory);
+                U8* data = cb->computeBuffer->GetBuffer();
+            } else {
+                ctx->commandBuffer.End();
             }
         }
     };
