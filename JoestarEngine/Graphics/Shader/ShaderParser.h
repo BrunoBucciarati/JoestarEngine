@@ -33,6 +33,11 @@ namespace Joestar {
 		ShaderDataType dataType;
 		U16 binding;
 		U32 stageFlag = 0;
+		U32 id = 0;
+		
+		bool IsSampler() {
+			return dataType > ShaderDataTypeSampler;
+		}
 	};
 	struct BufferDef {
 		std::string name;
@@ -51,7 +56,7 @@ namespace Joestar {
 		U16 version;
 		std::vector<VertexDef> attrs;
 		std::vector<UniformDef> uniforms;
-		std::vector<BufferDef> buffers;
+		//std::vector<BufferDef> buffers;
 		std::string entryFunction = "main";
 		ShaderStage curStage;
 	};

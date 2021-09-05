@@ -479,7 +479,7 @@ namespace Joestar {
 		std::vector<VkDescriptorSetLayoutBinding> bindings;
 		bindings.reserve(dc->shader->ubs.size());
 		for (int i = 0; i < dc->shader->ubs.size(); ++i) {
-			UniformBufferVK* ubvk = uniformVKs[dc->shader->ubs[i]];
+			UniformBufferVK* ubvk = uniformVKs[dc->shader->ubs[i].id];
 			VkDescriptorSetLayoutBinding layoutBinding{};
 			if (ubvk->texID > 0) {
 				layoutBinding.binding = i;
@@ -487,7 +487,7 @@ namespace Joestar {
 				//need to know shader stage in shader parser, temp write, --todo
 				layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 			} else {
-				layoutBinding.binding = dc->shader->GetUniformBindingByHash(dc->shader->ubs[i]);
+				layoutBinding.binding = i;
 				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				//need to know shader stage in shader parser, temp write, --todo
 				layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -597,7 +597,7 @@ namespace Joestar {
 		std::vector<VkDescriptorPoolSize> poolSizes;
 		poolSizes.resize(dc->shader->ubs.size());
 		for (int i = 0; i < dc->shader->ubs.size(); ++i) {
-			UniformBufferVK* ubvk = uniformVKs[dc->shader->ubs[i]];
+			UniformBufferVK* ubvk = uniformVKs[dc->shader->ubs[i].id];
 			poolSizes[i].type = ubvk->GetDescriptorType();
 			poolSizes[i].descriptorCount = static_cast<U32>(vkCtxPtr->swapChainImages.size());
 		}
@@ -634,7 +634,7 @@ namespace Joestar {
 			descriptorWrites.resize(dc->shader->ubs.size());
 			int samplerCount = 0;
 			for (int j = 0; j < dc->shader->ubs.size(); ++j) {
-				UniformBufferVK* ub = uniformVKs[dc->shader->ubs[j]];
+				UniformBufferVK* ub = uniformVKs[dc->shader->ubs[j].id];
 				if (ub->texID > 0) {
 					VkDescriptorImageInfo imageInfo{};
 					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -671,7 +671,7 @@ namespace Joestar {
 					
 					descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 					descriptorWrites[j].dstSet = dc->descriptorSets[i];
-					descriptorWrites[j].dstBinding = dc->shader->GetUniformBindingByName(ub->name);
+					descriptorWrites[j].dstBinding = dc->shader->GetUniformBindingByName(ub->def.name);
 					descriptorWrites[j].dstArrayElement = 0;
 					descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 					descriptorWrites[j].descriptorCount = 1;
@@ -776,9 +776,9 @@ namespace Joestar {
 		uint32_t hashID = hashString(name.c_str());
 		if (uniformVKs.find(hashID) == uniformVKs.end()) {
 			uniformVKs[hashID] = new UniformBufferVK;
-			uniformVKs[hashID]->name = name;
+			uniformVKs[hashID]->def.name = name;
+			uniformVKs[hashID]->def.id = hashID;
 			uniformVKs[hashID]->size = sizeof(UniformBufferObject);
-			uniformVKs[hashID]->id = hashID;
 			uniformVKs[hashID]->data = new UniformBufferObject;
 
 			CreateUniformBuffers(uniformVKs[hashID]);
@@ -962,7 +962,7 @@ namespace Joestar {
 					uniformVKs[tex->id] = texUB;
 				}
 				//update binding tex
-				drawcall->shader->ubs[binding] = tex->id;
+				drawcall->shader->ubs[binding].id = tex->id;
 				drawcall->HashInsert(tex->id);
 				break;
 			}

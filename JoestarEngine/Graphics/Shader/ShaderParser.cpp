@@ -329,8 +329,8 @@ namespace Joestar {
 			std::string tok;
 			//must be a UBO
 			tokenStream.AcceptString(tok);
-			shaderInfo.buffers.push_back(BufferDef{});
-			BufferDef& def = shaderInfo.buffers.back();
+			shaderInfo.uniforms.push_back(UniformDef{});
+			UniformDef& def = shaderInfo.uniforms.back();
 			def.name = tok;
 			def.binding = binding;
 			def.stageFlag |= shaderInfo.curStage;

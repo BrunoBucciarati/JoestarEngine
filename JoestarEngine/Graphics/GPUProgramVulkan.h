@@ -124,12 +124,19 @@ namespace Joestar {
             for (auto& uniform : shader->info.uniforms) {
                 if (uniform.dataType == ShaderDataTypePushConst) {
                     continue;
-                } else if (uniform.dataType > ShaderDataTypeSampler) {
-                    ubs.push_back(uniform.binding);
+                } else if (uniform.IsSampler()) {
+                    ubs.push_back(uniform);
+                } else if (uniform.dataType == ShaderDataTypeBuffer) {
+                    uniform.id = hashString(uniform.name.c_str());
+                    ubs.push_back(uniform);
                 } else {
-                    ubs.push_back(hashString(uniform.name.c_str()));
+                    uniform.id = hashString(uniform.name.c_str());
+                    ubs.push_back(uniform);
                 }
             }
+            std::sort(ubs.begin(), ubs.end(), [&](UniformDef& a, UniformDef& b) {
+                return a.binding < b.binding;
+            });
         }
         std::string& GetName() { return shader->GetName(); }
         U16 GetUniformBindingByName(std::string& name) {
@@ -193,7 +200,7 @@ namespace Joestar {
             CHECK_ADD_SHADER_STAGE(kFragmentShader, "frag", VK_SHADER_STAGE_FRAGMENT_BIT)
             CHECK_ADD_SHADER_STAGE(kComputeShader, "comp", VK_SHADER_STAGE_COMPUTE_BIT)
         }
-        std::vector<U32> ubs;
+        std::vector<UniformDef> ubs;
         std::vector<U32> textures;
         VulkanContext* ctx;
     };
@@ -523,11 +530,12 @@ namespace Joestar {
 
     struct UniformBufferVK {
         std::vector<BufferVK> buffers;
-        uint32_t size;
+        U32 size;
         void* data;
-        uint32_t id;
-        std::string name;
-        uint32_t texID = 0;
+        //U32 id;
+        //std::string name;
+        U32 texID = 0;
+        UniformDef def;
 
         void Clean(VkDevice& dev) {
             for (auto& buf: buffers) {
@@ -539,6 +547,7 @@ namespace Joestar {
 
         VkDescriptorType GetDescriptorType() {
             if (texID > 0) return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            //if ()
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         }
     };
