@@ -7,30 +7,34 @@
 #include <vector>
 
 namespace Joestar {
-    class VertexBuffer {
+    class BaseBuffer {
     public:
-        VertexBuffer();
-        void SetFlag(U32 f) { flags = f; }
-        U32 GetFlag() { return flags; }
+        ~BaseBuffer() {
+            delete buffer;
+        }
+        U32 GetSize() { return size; }
+        void SetSize(U32 s) {
+            size = s;
+            buffer = new U8[size];
+        }
         void CopyBuffer(U8* data, U32 sz) {
             if (!buffer) SetSize(sz);
             memcpy(buffer, data, sz);
         }
         U8* GetBuffer() { return buffer; }
-        void SetSize(U32 s) {
-            size = s;
-            buffer = new U8[size];
-        }
-        U32 GetSize() { return size; }
-        U32 GetVertexCount();
-        void AppendVertexAttr(VERTEX_ATTRIBUTE v);
-        ~VertexBuffer() {
-            delete buffer;
-        }
         U32 id;
-        U32 flags; //flag of vertex channel
         U8* buffer; //raw data
         U32 size; //size of data
+    };
+
+    class VertexBuffer : public BaseBuffer {
+    public:
+        VertexBuffer();
+        void SetFlag(U32 f) { flags = f; }
+        U32 GetFlag() { return flags; }
+        U32 GetVertexCount();
+        void AppendVertexAttr(VERTEX_ATTRIBUTE v);
+        U32 flags; //flag of vertex channel
         U32 instanceCount;
         std::vector<VERTEX_ATTRIBUTE> attrs; //size of vertex channels
     };
@@ -44,33 +48,17 @@ namespace Joestar {
         void SetElementData(U8* data, U32 idx) {
             memcpy(buffer + idx * elementSize, data, elementSize);
         }
-        ~InstanceBuffer() {
-            delete buffer;
-        }
         U32 elementSize;
     };
 
-    class IndexBuffer {
+    class IndexBuffer : public BaseBuffer {
     public:
         IndexBuffer();
-        U8* GetBuffer() { return buffer; }
-        void CopyBuffer(U8* data, U32 sz) {
-            if (!buffer) SetSize(sz);
-            memcpy(buffer, data, sz);
-        }
-        void SetSize(U32 s) { size = s; buffer = new U8[size]; }
-        U32 GetSize() { return size; }
         U32 GetIndexCount() { return size / 2; }
-        ~IndexBuffer() {
-            delete buffer;
-        }
-        U32 id;
-    private:
-        U8* buffer;
-        U32 size = 0; //size of data
     };
 
-    class ComputeBuffer {
-
+    class ComputeBuffer : public BaseBuffer {
+    public:
+        ComputeBuffer();
     };
 }

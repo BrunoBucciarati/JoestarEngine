@@ -17,6 +17,7 @@ namespace Joestar {
 		void RenderSkybox();
 		void Update(float);
 		void CreateLights();
+		void CreateCompute();
 	private:
 		std::vector<GameObject*> gameObjects;
 		std::vector<Light*> lights;

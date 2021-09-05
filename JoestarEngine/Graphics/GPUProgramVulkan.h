@@ -120,7 +120,7 @@ namespace Joestar {
     };
 
     struct ShaderVK {
-        explicit ShaderVK(Shader* _shader, VulkanContext* c) : shader(_shader), ctx(c) {
+        explicit ShaderVK(Shader* s, VulkanContext* c) : shader(s), ctx(c) {
             for (auto& uniform : shader->info.uniforms) {
                 if (uniform.dataType == ShaderDataTypePushConst) {
                     continue;
@@ -151,7 +151,7 @@ namespace Joestar {
         U32 ID() { return shader->id; }
         std::string GetPushConsts() { return shader->GetPushConsts(); }
         Shader* shader;
-        std::vector <VkShaderModule> shaderModules;// vertShaderModule{}, fragShaderModule{}, computeShaderModule{};
+        std::vector <VkShaderModule> shaderModules;
         std::vector<VkPipelineShaderStageCreateInfo> shaderStage;
         bool operator ==(ShaderVK& s2) {
             return GetName() == s2.GetName();
@@ -532,10 +532,13 @@ namespace Joestar {
         std::vector<BufferVK> buffers;
         U32 size;
         void* data;
-        //U32 id;
-        //std::string name;
         U32 texID = 0;
         UniformDef def;
+        U32 id = 0;
+
+        U32 ID() {
+            return id;
+        }
 
         void Clean(VkDevice& dev) {
             for (auto& buf: buffers) {
@@ -545,18 +548,43 @@ namespace Joestar {
             buffers.clear();
         }
 
+        bool IsSampler() {
+            return def.IsSampler();
+        }
+
+        bool IsBuffer() {
+            return def.IsBuffer();
+        }
+
+        bool IsUniform() {
+            return def.IsUniform();
+        }
+
+
         VkDescriptorType GetDescriptorType() {
-            if (texID > 0) return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            //if ()
+            if (IsSampler()) return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            if (IsBuffer()) return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        }
+
+        VkShaderStageFlags GetStageFlags() {
+            VkShaderStageFlags flags;
+            if (def.stageFlag & kVertexShader) {
+                flags |= VK_SHADER_STAGE_VERTEX_BIT;
+            }
+            if (def.stageFlag & kFragmentShader) {
+                flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+            }
+            if (def.stageFlag & kComputeShader) {
+                flags |= VK_SHADER_STAGE_COMPUTE_BIT;
+            }
+            return flags;
         }
     };
 
     struct PipelineStateVK {
-        VkDescriptorSetLayout descriptorSetLayout;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
-        VkSampler textureSampler;
         REGISTER_HASH
     };
 
@@ -570,7 +598,9 @@ namespace Joestar {
         IndexBufferVK* ib = nullptr;
         ShaderVK* shader;
         MeshTopology topology;
-        PipelineStateVK* pso;
+        VkPipelineLayout pipelineLayout;
+        VkPipeline graphicsPipeline;
+        //PipelineStateVK* pso;
         PushConstsVK* pc = nullptr;
         VkCompareOp depthOp = VK_COMPARE_OP_LESS;
         VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
@@ -579,6 +609,8 @@ namespace Joestar {
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
         std::vector<VkDescriptorSet> descriptorSets;
+        VkDescriptorSetLayout descriptorSetLayout;
+        VkSampler textureSampler;
         U32 instanceCount = 0;
         REGISTER_HASH
 
@@ -646,16 +678,32 @@ namespace Joestar {
         }
     };
 
+    struct ComputeBufferVK : UniformBufferVK {
+        ComputeBuffer* computeBuffer;
+        ComputeBufferVK(ComputeBuffer* cb) : computeBuffer(cb) {
+
+        }
+    };
+
     struct ComputePipelineVK {
         ComputeContextVK* ctx;
         VkDescriptorSetLayout descriptorSetLayout;
-        VkDescriptorSet descriptorSet;
+        std::vector<VkDescriptorSet> descriptorSets;
+        VkDescriptorPool descriptorPool;
         VkPipelineLayout pipelineLayout;
         VkPipeline pipeline;
         ShaderVK* shader;
+        VkSampler textureSampler;
+        std::vector<UniformBufferVK*> computeBuffers;
         REGISTER_HASH
 
-        void Prepare() {
+        void CreatePipeline() {
+            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutInfo.setLayoutCount = 1; // Optional
+            VkDescriptorSetLayout layouts[] = { descriptorSetLayout };
+            pipelineLayoutInfo.pSetLayouts = layouts; // Optional
+
 
         }
     };
@@ -669,13 +717,12 @@ namespace Joestar {
         void CreateIndexBuffer(IndexBufferVK* ib);
         void CopyBuffer(BufferVK& srcBuffer, BufferVK& dstBuffer, VkDeviceSize size);
         void CreateTextureImage(TextureVK* tex);
-        void CreateTextureSampler(RenderPassVK* pass, int i);
+        void CreateTextureSampler(DrawCallVK*);
 
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         void Clean();
         void CreateRenderPass(RenderPassVK* pass);
         void CreateGraphicsPipeline(RenderPassVK* pass, int i);
-        void CreateDescriptorSetLayout(DrawCallVK* pass);
         void GetPipeline(RenderPassVK* pass, int i);
         VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
         VkFormat FindDepthFormat();
@@ -683,10 +730,18 @@ namespace Joestar {
         void CreateDepthResources(RenderPassVK* pass);
         void CreateColorResources(RenderPassVK* pass);
         void CreateUniformBuffers(UniformBufferVK* ub);
+        void CreateComputeBuffers(ComputeBufferVK* ub);
         void CreateFrameBuffers(RenderPassVK* pass);
         void CreateDescriptorPool(DrawCallVK* dc);
-        void CreateDescriptorSets(DrawCallVK* dc);
-        void UpdateDescriptorSets(DrawCallVK* dc);
+
+        template <class T>
+        void CreateDescriptorPool(T* call);
+        template <class T>
+        void CreateDescriptorSets(T* call);
+        template <class T>
+        void UpdateDescriptorSets(T* call);
+        template <class T>
+        void CreateDescriptorSetLayout(T* call);
         void UpdateUniformBuffer(uint32_t currentImage);
         void RecordCommandBuffer(std::vector<RenderPassVK*>&);
         bool ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imageIdx);
@@ -697,6 +752,9 @@ namespace Joestar {
         void RecordRenderPass(RenderPassVK* pass, int i);
         CommandBufferVK* GetCommandBuffer(bool dynamic = false);
         void PushConstants(std::vector<RenderPassVK*>& passes);
+        void PrepareCompute(ComputePipelineVK* compute);
+        template<class T>
+        void CreatePipelineLayout(T* call);
 
         VkCommandPool subCommandPool;
     private:
@@ -716,6 +774,8 @@ namespace Joestar {
         std::map<U32, VertexBufferVK*> vbs;
         std::map<U32, IndexBufferVK*> ibs;
         std::map<U32, FrameBufferVK*> fbs;
+        std::map<U32, ComputeBufferVK*> cbs;
+        std::map<U32, ComputePipelineVK*> computePipelines;
         //std::map<U32, PushConstsVK*> fbs;
 
         std::vector<RenderPassVK*> renderPassList;
@@ -727,4 +787,153 @@ namespace Joestar {
         bool firstRecord;
     };
 
+    template <class T>
+    void GPUProgramVulkan::CreateDescriptorPool(T* call) {
+        //already exist
+        if (call->descriptorPool != VK_NULL_HANDLE) return;
+        std::vector<VkDescriptorPoolSize> poolSizes;
+        poolSizes.resize(call->shader->ubs.size());
+        for (int i = 0; i < call->shader->ubs.size(); ++i) {
+            UniformBufferVK* ubvk = uniformVKs[call->shader->ubs[i].id];
+            poolSizes[i].type = ubvk->GetDescriptorType();
+            poolSizes[i].descriptorCount = static_cast<U32>(vkCtxPtr->swapChainImages.size());
+        }
+
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = static_cast<U32>(poolSizes.size());
+        poolInfo.pPoolSizes = poolSizes.data();
+        poolInfo.maxSets = static_cast<U32>(vkCtxPtr->swapChainImages.size());
+
+        if (vkCreateDescriptorPool(vkCtxPtr->device, &poolInfo, nullptr, &call->descriptorPool) != VK_SUCCESS) {
+            LOGERROR("failed to create descriptor pool!");
+        }
+    }
+
+    template <class T>
+    void GPUProgramVulkan::CreateDescriptorSets(T* call) {
+        std::vector<VkDescriptorSetLayout> layouts(vkCtxPtr->swapChainImages.size(), call->descriptorSetLayout);
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = call->descriptorPool;
+        allocInfo.descriptorSetCount = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
+        allocInfo.pSetLayouts = layouts.data();
+
+        call->descriptorSets.resize(vkCtxPtr->swapChainImages.size());
+        if (vkAllocateDescriptorSets(vkCtxPtr->device, &allocInfo, call->descriptorSets.data()) != VK_SUCCESS) {
+            LOGERROR("failed to allocate descriptor sets!");
+        }
+
+        UpdateDescriptorSets(call);
+    }
+
+    template <class T>
+    void GPUProgramVulkan::UpdateDescriptorSets(T* call) {
+        for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); ++i) {
+            std::vector<VkWriteDescriptorSet> descriptorWrites{};
+            descriptorWrites.resize(call->shader->ubs.size());
+            int samplerCount = 0;
+            for (int j = 0; j < call->shader->ubs.size(); ++j) {
+                UniformBufferVK* ub = uniformVKs[call->shader->ubs[j].id];
+                if (ub->def.IsSampler()) {
+                    VkDescriptorImageInfo imageInfo{};
+                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    std::map<uint32_t, TextureVK*>::iterator it = textureVKs.find(call->shader->textures[0]);
+                    TextureVK* tex;
+                    if (it == textureVKs.end()) {
+                        it = pendingTextureVKs.find(call->shader->textures[0]);
+                        if (it == pendingTextureVKs.end()) {
+                            LOGERROR("this texture didn't call Graphics::UpdateTexture!!!");
+                        }
+                        CreateTextureImage(it->second);
+                        textureVKs[it->first] = it->second;
+                        tex = it->second;
+                        pendingTextureVKs.erase(it);
+                    }
+                    else {
+                        tex = it->second;
+                    }
+                    imageInfo.imageView = tex->image->imageView;
+                    imageInfo.sampler = call->textureSampler;
+
+                    descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[j].dstSet = call->descriptorSets[i];
+                    descriptorWrites[j].dstBinding = call->shader->GetSamplerBinding(samplerCount++);
+                    descriptorWrites[j].dstArrayElement = 0;
+                    descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrites[j].descriptorCount = 1;
+                    descriptorWrites[j].pImageInfo = &imageInfo;
+                } else {
+                    VkDescriptorBufferInfo bufferInfo{};
+                    bufferInfo.buffer = ub->buffers[i].buffer;
+                    bufferInfo.offset = 0;
+                    bufferInfo.range = ub->size;// sizeof(UniformBufferObject);
+
+                    descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[j].dstSet = call->descriptorSets[i];
+                    descriptorWrites[j].dstBinding = call->shader->GetUniformBindingByName(ub->def.name);
+                    descriptorWrites[j].dstArrayElement = 0;
+                    descriptorWrites[j].descriptorType = ub->IsBuffer() ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    descriptorWrites[j].descriptorCount = 1;
+                    descriptorWrites[j].pBufferInfo = &bufferInfo;
+                }
+            }
+            vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+            //descriptorWrites.clear();
+        }
+    }
+
+    template <class T>
+    void GPUProgramVulkan::CreateDescriptorSetLayout(T* call) {
+        std::vector<VkDescriptorSetLayoutBinding> bindings;
+        bindings.reserve(call->shader->ubs.size());
+        for (int i = 0; i < call->shader->ubs.size(); ++i) {
+            UniformBufferVK* ubvk = uniformVKs[call->shader->ubs[i].id];
+            VkDescriptorSetLayoutBinding layoutBinding{};
+            layoutBinding.binding = i;
+            layoutBinding.descriptorType = ubvk->GetDescriptorType();// VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                //need to know shader stage in shader parser, temp write, --todo
+            layoutBinding.stageFlags = ubvk->GetStageFlags();// VK_SHADER_STAGE_FRAGMENT_BIT;
+            layoutBinding.descriptorCount = 1;
+            layoutBinding.pImmutableSamplers = nullptr;
+
+            bindings.push_back(layoutBinding);
+        }
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+        layoutInfo.pBindings = bindings.data();
+
+        if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(call->descriptorSetLayout)) != VK_SUCCESS) {
+            LOGERROR("failed to create descriptor set layout!");
+        }
+    }
+
+    template<class T>
+    void GPUProgramVulkan::CreatePipelineLayout(T* call) {
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.setLayoutCount = 1; // Optional
+        VkDescriptorSetLayout layouts[] = { call->descriptorSetLayout };
+        pipelineLayoutInfo.pSetLayouts = layouts; // Optional
+
+        std::string pushConstsName = call->shader->GetPushConsts();
+        if (!pushConstsName.empty()) {
+            VkPushConstantRange pushConstantRange{};
+            pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+            pushConstantRange.offset = 0;
+            pushConstantRange.size = sizeof(PushConsts);
+            pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
+            pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
+            if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)) != VK_SUCCESS) {
+                LOGERROR("failed to create pipeline layout!");
+            }
+        }
+        else {
+            if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)) != VK_SUCCESS) {
+                LOGERROR("failed to create pipeline layout!");
+            }
+        }
+    }
 }

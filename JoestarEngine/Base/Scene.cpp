@@ -42,8 +42,15 @@ namespace Joestar {
 
         CreateLights();
 
+        CreateCompute();
+    }
+
+    void Scene::CreateCompute() {
         computeShader = NEW_OBJECT(Shader);
         computeShader->SetShader("computeTest", kComputeShader);
+
+        computeBuffer = new ComputeBuffer;
+        computeBuffer->SetSize(10000);
     }
 
     void Scene::CreateLights() {
@@ -106,7 +113,7 @@ namespace Joestar {
         Graphics* graphics = GetSubsystem<Graphics>();
         graphics->BeginCompute("TEST COMPUTE");
         graphics->UseShader(computeShader);
-        graphics->UpdateComputeBuffer(computeBuffer);
+        graphics->UpdateComputeBuffer(computeBuffer, 0);
         graphics->DispatchCompute();
         graphics->EndCompute("TEST COMPUTE");
     }

@@ -87,10 +87,17 @@ namespace Joestar {
 
 
 	void Graphics::UseShader(const Shader* shader) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_UseShader;
-		cmdBuffer[cmdIdx].size = sizeof(Shader*);
-		cmdBuffer[cmdIdx].data = (void*)shader;
-		++cmdIdx;
+		if (isCompute) {
+			computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UseShader;
+			computeCmdBuffer[computeCmdIdx].size = sizeof(Shader*);
+			computeCmdBuffer[computeCmdIdx].data = (void*)shader;
+			++computeCmdIdx;
+		} else {
+			cmdBuffer[cmdIdx].typ = RenderCMD_UseShader;
+			cmdBuffer[cmdIdx].size = sizeof(Shader*);
+			cmdBuffer[cmdIdx].data = (void*)shader;
+			++cmdIdx;
+		}
 
 	}
 
@@ -179,6 +186,7 @@ namespace Joestar {
 		computeCmdBuffer[computeCmdIdx].size = sizeof(const char*);
 		computeCmdBuffer[computeCmdIdx].data = (void*)name;
 		++computeCmdIdx;
+		isCompute = true;
 	}
 
 	void Graphics::DispatchCompute() {
@@ -192,11 +200,13 @@ namespace Joestar {
 		computeCmdBuffer[computeCmdIdx].data = (void*)name;
 		++computeCmdIdx;
 		renderThread->DispatchCompute(computeCmdBuffer, computeCmdIdx);
+		isCompute = false;
 	}
 
-	void Graphics::UpdateComputeBuffer(ComputeBuffer* cb) {
+	void Graphics::UpdateComputeBuffer(ComputeBuffer* cb, U16 binding) {
 		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UpdateComputeBuffer;
 		computeCmdBuffer[computeCmdIdx].size = sizeof(ComputeBuffer*);
+		computeCmdBuffer[computeCmdIdx].flag = binding;
 		computeCmdBuffer[computeCmdIdx].data = cb;
 		++computeCmdIdx;
 	}

@@ -39,7 +39,7 @@ namespace Joestar {
 		void BeginCompute(const char* name);
 		void EndCompute(const char* name);
 		void DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib);
-		void UpdateComputeBuffer(ComputeBuffer* cb);
+		void UpdateComputeBuffer(ComputeBuffer* cb, U16 binding = 0);
 
 	private:
 		RenderThread* renderThread;
@@ -48,5 +48,6 @@ namespace Joestar {
 		U32 cmdIdx;
 		U32 computeCmdIdx;
 		Vector4f defaultClearColor;
+		bool isCompute = false;
 	};
 }

@@ -31,6 +31,7 @@ enum ComputeCommandType {
 	ComputeCMD_UpdateComputeBuffer,
 	ComputeCMD_WriteBackComputeBuffer,
 	ComputeCMD_UpdateUniformBuffer,
+	ComputeCMD_UseShader,
 	ComputeCMD_EndCompute
 };
 

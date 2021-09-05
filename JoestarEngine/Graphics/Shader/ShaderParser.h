@@ -38,6 +38,14 @@ namespace Joestar {
 		bool IsSampler() {
 			return dataType > ShaderDataTypeSampler;
 		}
+
+		bool IsBuffer() {
+			return dataType == ShaderDataTypeBuffer;
+		}
+
+		bool IsUniform() {
+			return dataType == ShaderDataTypeUBO;
+		}
 	};
 	struct BufferDef {
 		std::string name;
