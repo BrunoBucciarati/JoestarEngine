@@ -2,7 +2,7 @@
 #include "../IO/Log.h"
 #include "../Misc/Application.h"
 #include <array>
-#include <direct.h>
+#include "../IO/MemoryManager.h"
 #include "Image.h"
 
 namespace Joestar {
@@ -513,7 +513,7 @@ namespace Joestar {
 		CreateDescriptorSetLayout(pass->dcs[i]);
 		CreateGraphicsPipeline(pass, i);
 		CreateTextureSampler(pass, i);
-		CreateDescriptorPool();
+		CreateDescriptorPool(pass->dcs[i]);
 		CreateDescriptorSets(pass->dcs[i]);
 	}
 
@@ -591,20 +591,24 @@ namespace Joestar {
 		}
 	}
 
-	void GPUProgramVulkan::CreateDescriptorPool() {
-		std::array<VkDescriptorPoolSize, 2> poolSizes{};
-		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
-		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
+	void GPUProgramVulkan::CreateDescriptorPool(DrawCallVK* dc) {
+		//already exist
+		if (dc->descriptorPool != VK_NULL_HANDLE) return;
+		std::vector<VkDescriptorPoolSize> poolSizes;
+		poolSizes.resize(dc->shader->ubs.size());
+		for (int i = 0; i < dc->shader->ubs.size(); ++i) {
+			UniformBufferVK* ubvk = uniformVKs[dc->shader->ubs[i]];
+			poolSizes[i].type = ubvk->GetDescriptorType();
+			poolSizes[i].descriptorCount = static_cast<U32>(vkCtxPtr->swapChainImages.size());
+		}
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+		poolInfo.poolSizeCount = static_cast<U32>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
+		poolInfo.maxSets = static_cast<U32>(vkCtxPtr->swapChainImages.size());
 
-		if (vkCreateDescriptorPool(vkCtxPtr->device, &poolInfo, nullptr, &vkCtxPtr->descriptorPool) != VK_SUCCESS) {
+		if (vkCreateDescriptorPool(vkCtxPtr->device, &poolInfo, nullptr, &dc->descriptorPool) != VK_SUCCESS) {
 			LOGERROR("failed to create descriptor pool!");
 		}
 	}
@@ -612,7 +616,7 @@ namespace Joestar {
 		std::vector<VkDescriptorSetLayout> layouts(vkCtxPtr->swapChainImages.size(), dc->pso->descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = vkCtxPtr->descriptorPool;
+		allocInfo.descriptorPool = dc->descriptorPool;
 		allocInfo.descriptorSetCount = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
 		allocInfo.pSetLayouts = layouts.data();
 
@@ -850,7 +854,6 @@ namespace Joestar {
 		if (cmdIdx == 0) return false;
 		renderPassList.clear();
 		curImageIdx = imgIdx;
-		hasCompute = false;
 		bool isCompute = false;
 
 		bool ret = !lastRenderPassList.empty();
@@ -927,10 +930,10 @@ namespace Joestar {
 				break;
 			}
 			case RenderCMD_UseShader: {
-				CHECK_PASS_OR_COMPUTE()
+				CHECK_PASS()
 				Shader* shader = (Shader*)cmdBuffer[i].data;
 				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
-					shaderVKs[shader->id] = new ShaderVK(shader, vkCtxPtr);
+					shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
 				}
 
 				if (isCompute) {
@@ -1003,25 +1006,6 @@ namespace Joestar {
 				drawcall->pso = new PipelineStateVK;
 				break;
 			}
-			case RenderCMD_BeginCompute: {
-				if (!computeCtx) {
-					computeCtx = new ComputeContextVK(vkCtxPtr);
-				}
-				hasCompute = isCompute = true;
-				computePipeline = new ComputePipelineVK{ computeCtx };
-				break;
-			}
-			case RenderCMD_EndCompute: {
-				isCompute = false;
-				break;
-			}
-			case RenderCMD_DispatchCompute: {
-				computePipeline->Prepare();
-				break;
-			}
-			case RenderCMD_UpdateComputeBuffer: {
-				break;
-			}
 			default: break;
 			}
 		}
@@ -1075,6 +1059,36 @@ namespace Joestar {
 		delete drawcall;
 
 		return ret;
+	}
+
+	bool GPUProgramVulkan::ExecuteComputeCommand(std::vector<ComputeCommand>& cmdBuffer, uint16_t cmdIdx) {
+		if (!computeCtx) computeCtx = JOJO_NEW(ComputeContextVK(vkCtxPtr), MEMORY_GFX_STRUCT);
+		ComputePipelineVK* computePipeline = nullptr;
+		for (int i = 0; i < cmdIdx; ++i) {
+			if (computePipeline != nullptr) computePipeline->HashInsert(cmdBuffer[i].typ);
+			switch (cmdBuffer[i].typ) {
+			case ComputeCMD_BeginCompute: {
+				hasCompute = true;
+				computePipeline = new ComputePipelineVK{ computeCtx };
+				break;
+			}
+			case ComputeCMD_EndCompute: {
+				break;
+			}
+			case ComputeCMD_DispatchCompute: {
+				computePipeline->Prepare();
+				break;
+			}
+			case ComputeCMD_UpdateComputeBuffer: {
+				break;
+			}
+			case ComputeCMD_WriteBackComputeBuffer: {
+				break;
+			}
+			default: break;
+			}
+		}
+		return true;
 	}
 
 	void GPUProgramVulkan::CleanupSwapChain() {

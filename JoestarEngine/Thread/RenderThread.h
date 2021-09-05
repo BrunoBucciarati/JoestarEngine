@@ -7,5 +7,6 @@ namespace Joestar {
 	public:
 		virtual void InitRenderContext() {}
 		virtual void DrawFrame(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx) {}
+		virtual void DispatchCompute(std::vector<ComputeCommand>& cmdBuffer, uint16_t cmdIdx) {}
 	};
 }

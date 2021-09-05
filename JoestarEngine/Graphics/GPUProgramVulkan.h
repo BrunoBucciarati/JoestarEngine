@@ -169,6 +169,7 @@ namespace Joestar {
             }
             return shaderModule;
         }
+
 #define CHECK_ADD_SHADER_STAGE(STAGE, SUFFIX, BIT)\
         if (HasStage(STAGE)) {\
             std::string spvPath = std::string(GetName()) + SUFFIX + ".spv";\
@@ -182,6 +183,7 @@ namespace Joestar {
             shaderStage.back().module = shaderModules.back();\
             shaderStage.back().pName = "main";\
         }
+
         void Prepare() {
             Application* app = Application::GetApplication();
             FileSystem* fs = app->GetSubSystem<FileSystem>();
@@ -534,6 +536,11 @@ namespace Joestar {
             }
             buffers.clear();
         }
+
+        VkDescriptorType GetDescriptorType() {
+            if (texID > 0) return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        }
     };
 
     struct PipelineStateVK {
@@ -542,12 +549,6 @@ namespace Joestar {
         VkPipeline graphicsPipeline;
         VkSampler textureSampler;
         REGISTER_HASH
-        //U32 hash = 0;
-        ////ez hash, i guess that's ok
-        //void HashInsert(U32 i) {
-        //    hash *= 10;
-        //    hash += i;
-        //}
     };
 
     struct PushConstsVK : PushConsts {
@@ -555,14 +556,6 @@ namespace Joestar {
         bool operator !=(PushConstsVK& p2) { return !(*this == p2); }
     };
 
-    //DEPTH_COMPARE_NEVER = 0,
-    //    DEPTH_COMPARE_ALWAYS,
-    //    DEPTH_COMPARE_LESS,
-    //    DEPTH_COMPARE_LESSEQUAL,
-    //    DEPTH_COMPARE_GREATER,
-    //    DEPTH_COMPARE_GREATEREQUAL,
-    //    DEPTH_COMPARE_EQUAL,
-    //    DEPTH_COMPARE_NOTEQUAL,
     struct DrawCallVK {
         std::vector<VertexBufferVK*> vbs{1};
         IndexBufferVK* ib = nullptr;
@@ -572,13 +565,13 @@ namespace Joestar {
         PushConstsVK* pc = nullptr;
         VkCompareOp depthOp = VK_COMPARE_OP_LESS;
         VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
-        std::vector<VkDescriptorSet> descriptorSets;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         std::vector<VkVertexInputBindingDescription> bindingDescriptions;
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+        VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+        std::vector<VkDescriptorSet> descriptorSets;
         U32 instanceCount = 0;
         REGISTER_HASH
-
 
         VkPipelineVertexInputStateCreateInfo& GetVertexInputInfo() {
             bindingDescriptions.resize(vbs.size());
@@ -682,12 +675,13 @@ namespace Joestar {
         void CreateColorResources(RenderPassVK* pass);
         void CreateUniformBuffers(UniformBufferVK* ub);
         void CreateFrameBuffers(RenderPassVK* pass);
-        void CreateDescriptorPool();
-        void CreateDescriptorSets(DrawCallVK* pso);
-        void UpdateDescriptorSets(DrawCallVK* pso);
+        void CreateDescriptorPool(DrawCallVK* dc);
+        void CreateDescriptorSets(DrawCallVK* dc);
+        void UpdateDescriptorSets(DrawCallVK* dc);
         void UpdateUniformBuffer(uint32_t currentImage);
         void RecordCommandBuffer(std::vector<RenderPassVK*>&);
         bool ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imageIdx);
+        bool ExecuteComputeCommand(std::vector<ComputeCommand>& cmdBuffer, uint16_t cmdIdx);
         void CreateCommandBuffers();
         void RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc);
         void RenderCmdUpdateUniformBufferObject(RenderCommand& cmd);

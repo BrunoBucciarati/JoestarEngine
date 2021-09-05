@@ -138,6 +138,9 @@
     <ClCompile Include="Base\Light.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="IO\MemoryManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">

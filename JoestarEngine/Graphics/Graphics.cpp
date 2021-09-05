@@ -172,28 +172,32 @@ namespace Joestar {
 
 
 	void Graphics::BeginCompute(const char* name) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_BeginCompute;
-		cmdBuffer[cmdIdx].size = sizeof(const char*);
-		cmdBuffer[cmdIdx].data = (void*)name;
-		++cmdIdx;
+		computeCmdIdx = 0;
+		computeCmdBuffer.clear();
+		computeCmdBuffer.resize(10);
+		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_BeginCompute;
+		computeCmdBuffer[computeCmdIdx].size = sizeof(const char*);
+		computeCmdBuffer[computeCmdIdx].data = (void*)name;
+		++computeCmdIdx;
 	}
 
 	void Graphics::DispatchCompute() {
-		cmdBuffer[cmdIdx].typ = RenderCMD_DispatchCompute;
-		++cmdIdx;
+		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_DispatchCompute;
+		++computeCmdIdx;
 	}
 
 	void Graphics::EndCompute(const char* name) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_EndCompute;
-		cmdBuffer[cmdIdx].size = sizeof(const char*);
-		cmdBuffer[cmdIdx].data = (void*)name;
-		++cmdIdx;
+		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_EndCompute;
+		computeCmdBuffer[computeCmdIdx].size = sizeof(const char*);
+		computeCmdBuffer[computeCmdIdx].data = (void*)name;
+		++computeCmdIdx;
+		renderThread->DispatchCompute(computeCmdBuffer, computeCmdIdx);
 	}
 
 	void Graphics::UpdateComputeBuffer(ComputeBuffer* cb) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateComputeBuffer;
-		cmdBuffer[cmdIdx].size = sizeof(ComputeBuffer*);
-		cmdBuffer[cmdIdx].data = cb;
-		++cmdIdx;
+		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UpdateComputeBuffer;
+		computeCmdBuffer[computeCmdIdx].size = sizeof(ComputeBuffer*);
+		computeCmdBuffer[computeCmdIdx].data = cb;
+		++computeCmdIdx;
 	}
 }

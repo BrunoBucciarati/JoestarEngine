@@ -36,7 +36,7 @@ struct VulkanContext {
 	QueueFamilyIndices queueFamilyIndices;
 	std::vector<VkImage> swapChainImages;
 	std::vector<VkImageView> swapChainImageViews;
-	VkDescriptorPool descriptorPool;
+	//VkDescriptorPool descriptorPool;
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 	std::vector<VkCommandBuffer> commandBuffers;
 };

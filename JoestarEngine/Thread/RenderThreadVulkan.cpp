@@ -267,7 +267,7 @@ namespace Joestar {
         //    vkDestroyBuffer(vkCtx.device, vkCtx.uniformBuffers[i], nullptr);
         //    vkFreeMemory(vkCtx.device, vkCtx.uniformBuffersMemory[i], nullptr);
         //}
-        vkDestroyDescriptorPool(vkCtx.device, vkCtx.descriptorPool, nullptr);
+        //vkDestroyDescriptorPool(vkCtx.device, vkCtx.descriptorPool, nullptr);
         vkDestroySwapchainKHR(vkCtx.device, vkCtx.swapChain, nullptr);
     }
 
@@ -607,7 +607,11 @@ void RenderThreadVulkan::ProcessInputVulkan() {
 }
 
 
-void RenderThreadVulkan::DrawFrame(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx) {
+void RenderThreadVulkan::DispatchCompute(std::vector<ComputeCommand>& computeCommandBuffer, U16 cmdIdx) {
+    currentProgram->ExecuteComputeCommand(computeCommandBuffer, cmdIdx);
+}
+
+void RenderThreadVulkan::DrawFrame(std::vector<RenderCommand>& cmdBuffer, U16 cmdIdx) {
     ProcessInputVulkan();
     glfwPollEvents();
     //if (glfwWindowShouldClose(window)) {

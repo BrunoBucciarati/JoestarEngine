@@ -169,6 +169,7 @@
     <ClCompile Include="IO\File.cpp" />
     <ClCompile Include="IO\FileSystem.cpp" />
     <ClCompile Include="IO\HID.cpp" />
+    <ClCompile Include="IO\MemoryManager.cpp" />
     <ClCompile Include="Math\Matrix3x3.cpp" />
     <ClCompile Include="Math\Matrix4x4.cpp" />
     <ClCompile Include="Math\Quaternion.cpp" />
