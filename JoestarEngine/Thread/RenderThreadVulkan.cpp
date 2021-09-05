@@ -576,30 +576,6 @@ void RenderThreadVulkan::ProcessInputVulkan() {
         GetGLKey(KEY_DOWN)
         GetGLKey(KEY_LEFT)
         GetGLKey(KEY_RIGHT)
-    //if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-    //    inputFlag |= 1 << KEY_W;
-    //}
-    //if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-    //    inputFlag |= 1 << KEY_S;
-    //}
-    //if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-    //    inputFlag |= 1 << KEY_A;
-    //}
-    //if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-    //    inputFlag |= 1 << KEY_D;
-    //}
-    //if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-    //    inputFlag |= 1 << KEY_D;
-    //}
-    //if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-    //    inputFlag |= 1 << KEY_UP;
-    //}
-    //if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-    //    inputFlag |= 1 << KEY_DOWN;
-    //}
-    //if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-    //    inputFlag |= 1 << KEY_DOWN;
-    //}
     Application::GetApplication()->GetSubSystem<HID>()->SetKeyboardInputs(inputFlag);
     Application::GetApplication()->GetSubSystem<HID>()->SetMouseInputs(xoffset, yoffset, scrollX, scrollY);
     //reset

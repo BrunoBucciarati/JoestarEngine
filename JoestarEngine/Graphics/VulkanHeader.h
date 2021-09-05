@@ -9,10 +9,8 @@
 #include <vector>
 #include "../IO/Log.h"
 #include "../Base/ObjectDefines.h"
-
 #define VK_CHECK(f) \
-	VkResult result = f; \
-	if (result != VK_SUCCESS) LOGERROR("[VK_ERROR]:%s", #f);
+	if (VK_SUCCESS != f) {LOGERROR("[VK_ERROR:%d]%s\n", f, #f)};
 
 
 struct QueueFamilyIndices {

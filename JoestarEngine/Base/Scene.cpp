@@ -50,7 +50,7 @@ namespace Joestar {
         computeShader->SetShader("computeTest", kComputeShader);
 
         computeBuffer = new ComputeBuffer;
-        computeBuffer->SetSize(10000);
+        computeBuffer->SetSize(128);
     }
 
     void Scene::CreateLights() {

@@ -76,18 +76,25 @@ namespace Joestar {
             vkFreeMemory(ctx->device, memory, nullptr);
         }
         ~BufferVK() {
-            Clean();
+           // Clean();
         }
     };
 
     struct CommandBufferVK {
         VulkanContext* ctx;
         VkCommandPool pool = VK_NULL_HANDLE;
+        VkQueue queue = VK_NULL_HANDLE;
         VkCommandBuffer commandBuffer;
+        VkQueue& GetQueue() {
+            return (VK_NULL_HANDLE == queue ? ctx->graphicsQueue : queue);
+        }
+        VkCommandPool& GetPool() {
+            return (VK_NULL_HANDLE == pool ? ctx->commandPool : pool);
+        }
         void Begin() {
             VkCommandBufferAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            allocInfo.commandPool = pool == VK_NULL_HANDLE ? ctx->commandPool : pool;
+            allocInfo.commandPool = GetPool();
             allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
             allocInfo.commandBufferCount = 1;
 
@@ -103,19 +110,26 @@ namespace Joestar {
                 LOGERROR("failed to begin recording command buffer!");
             }
         }
-        void End() {
+        void End(bool submit = true) {
             if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
                 LOGERROR("failed to record command buffer!");
             }
+
+            if (submit) {
+                Submit();
+            }
+        }
+
+        void Submit(VkPipelineStageFlags waitMask = 0, VkFence fence = VK_NULL_HANDLE) {
             VkSubmitInfo submitInfo = {};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = 1;
+            submitInfo.pWaitDstStageMask = &waitMask;
             submitInfo.pCommandBuffers = &commandBuffer;
 
-            vkQueueSubmit(ctx->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-            vkQueueWaitIdle(ctx->graphicsQueue);
-
-            vkFreeCommandBuffers(ctx->device, ctx->commandPool, 1, &commandBuffer);
+            vkQueueSubmit(GetQueue(), 1, &submitInfo, fence);
+            vkQueueWaitIdle(GetQueue());
+            vkFreeCommandBuffers(ctx->device, GetPool(), 1, &commandBuffer);
         }
     };
 
@@ -663,6 +677,7 @@ namespace Joestar {
         VkCommandPool commandPool;
         CommandBufferVK commandBuffer;
         VkSemaphore semaphore;
+        VkFence fence;
         ComputeContextVK(VulkanContext* c) : ctx(c) {
             queue = c->computeQueue;
 
@@ -674,7 +689,12 @@ namespace Joestar {
             if (vkCreateCommandPool(ctx->device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
                 LOGERROR("failed to create command pool!");
             }
-            commandBuffer = { c, commandPool };
+            commandBuffer = { c, commandPool, queue };
+
+            VkFenceCreateInfo fenceCreateInfo{};
+            fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+            VK_CHECK(vkCreateFence(ctx->device, &fenceCreateInfo, nullptr, &fence));
         }
     };
 
@@ -697,14 +717,111 @@ namespace Joestar {
         std::vector<UniformBufferVK*> computeBuffers;
         REGISTER_HASH
 
-        void CreatePipeline() {
-            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipelineLayoutInfo.setLayoutCount = 1; // Optional
-            VkDescriptorSetLayout layouts[] = { descriptorSetLayout };
-            pipelineLayoutInfo.pSetLayouts = layouts; // Optional
+        void CreatePipeline(U32 flags = 0) {
+            VkComputePipelineCreateInfo computePipelineCreateInfo{};
+            computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+            computePipelineCreateInfo.layout = pipelineLayout;
+            computePipelineCreateInfo.flags = flags;
+
+            VkPipelineShaderStageCreateInfo* shaderStage = shader->shaderStage.data();
+            computePipelineCreateInfo.stage = *shaderStage;
+            VK_CHECK(vkCreateComputePipelines(ctx->ctx->device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &pipeline))
+        }
+
+        void Record(int index) {
+            ctx->commandBuffer.Begin();
+            // Barrier to ensure that input buffer transfer is finished before compute shader reads from it
+            VkBufferMemoryBarrier bufferMemoryBarrier{};
+            BufferVK buffer = computeBuffers[0]->buffers[0];
+            VkBuffer deviceBuffer = buffer.buffer;
+            bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+            bufferMemoryBarrier.buffer = deviceBuffer;
+            bufferMemoryBarrier.size = VK_WHOLE_SIZE;
+            bufferMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+            bufferMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+            vkCmdPipelineBarrier(
+                ctx->commandBuffer.commandBuffer,
+                VK_PIPELINE_STAGE_HOST_BIT,
+                VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                0,
+                0, nullptr,
+                1, &bufferMemoryBarrier,
+                0, nullptr);
+
+            vkCmdBindPipeline(ctx->commandBuffer.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+            vkCmdBindDescriptorSets(ctx->commandBuffer.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSets[0], 0, 0);
+            vkCmdDispatch(ctx->commandBuffer.commandBuffer, 32, 1, 1);
 
 
+            // Barrier to ensure that shader writes are finished before buffer is read back from GPU
+            bufferMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+            bufferMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            bufferMemoryBarrier.buffer = deviceBuffer;
+            bufferMemoryBarrier.size = VK_WHOLE_SIZE;
+            bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+            vkCmdPipelineBarrier(
+                ctx->commandBuffer.commandBuffer,
+                VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                VK_PIPELINE_STAGE_TRANSFER_BIT,
+                0,
+                0, nullptr,
+                1, &bufferMemoryBarrier,
+                0, nullptr);
+
+            // Read back to host visible buffer
+            VkBufferCopy copyRegion = {};
+            copyRegion.size = buffer.size;
+            ComputeBufferVK* cb = static_cast<ComputeBufferVK*>(computeBuffers[0]);
+            BufferVK hostBuffer{ctx->ctx, buffer.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT };
+            hostBuffer.Create();
+            vkCmdCopyBuffer(ctx->commandBuffer.commandBuffer, deviceBuffer, hostBuffer.buffer, 1, &copyRegion);
+
+            // Barrier to ensure that buffer copy is finished before host reading from it
+            bufferMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            bufferMemoryBarrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+            bufferMemoryBarrier.buffer = hostBuffer.buffer;
+            bufferMemoryBarrier.size = VK_WHOLE_SIZE;
+            bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+            vkCmdPipelineBarrier(
+                ctx->commandBuffer.commandBuffer,
+                VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VK_PIPELINE_STAGE_HOST_BIT,
+                0,
+                0, nullptr,
+                1, &bufferMemoryBarrier,
+                0, nullptr);
+
+            ctx->commandBuffer.End(false);
+            // Submit compute work
+            vkResetFences(ctx->ctx->device, 1, &ctx->fence);
+            ctx->commandBuffer.Submit(VK_PIPELINE_STAGE_TRANSFER_BIT, ctx->fence);
+            VK_CHECK(vkWaitForFences(ctx->ctx->device, 1, &ctx->fence, VK_TRUE, UINT64_MAX));
+
+            void* mapped;
+            vkMapMemory(ctx->ctx->device, hostBuffer.memory, 0, VK_WHOLE_SIZE, 0, &mapped);
+            VkMappedMemoryRange mappedRange{};
+            mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            mappedRange.memory = hostBuffer.memory;
+            mappedRange.offset = 0;
+            mappedRange.size = VK_WHOLE_SIZE;
+            vkInvalidateMappedMemoryRanges(ctx->ctx->device, 1, &mappedRange);
+
+            memcpy(cb->computeBuffer->GetBuffer(), mapped, buffer.size);
+            vkUnmapMemory(ctx->ctx->device, hostBuffer.memory);
+            U8* data = cb->computeBuffer->GetBuffer();
+            for (int i = 0; i < 32; i+=4) {
+                LOGWARN("%u", reinterpret_cast<U32*>(data[i]));
+            }
         }
     };
 
@@ -755,6 +872,7 @@ namespace Joestar {
         void PrepareCompute(ComputePipelineVK* compute);
         template<class T>
         void CreatePipelineLayout(T* call);
+        void DispatchCompute(ComputePipelineVK* compute);
 
         VkCommandPool subCommandPool;
     private:
@@ -776,11 +894,8 @@ namespace Joestar {
         std::map<U32, FrameBufferVK*> fbs;
         std::map<U32, ComputeBufferVK*> cbs;
         std::map<U32, ComputePipelineVK*> computePipelines;
-        //std::map<U32, PushConstsVK*> fbs;
-
         std::vector<RenderPassVK*> renderPassList;
         std::vector<RenderPassVK*> lastRenderPassList;
-
         std::vector<CommandBufferVK*> subCommandBuffers;
 
         U16 curImageIdx = 0;
@@ -879,7 +994,6 @@ namespace Joestar {
                 }
             }
             vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-            //descriptorWrites.clear();
         }
     }
 
@@ -929,8 +1043,7 @@ namespace Joestar {
             if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)) != VK_SUCCESS) {
                 LOGERROR("failed to create pipeline layout!");
             }
-        }
-        else {
+        } else {
             if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)) != VK_SUCCESS) {
                 LOGERROR("failed to create pipeline layout!");
             }

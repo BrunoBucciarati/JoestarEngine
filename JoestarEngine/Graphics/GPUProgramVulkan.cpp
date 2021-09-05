@@ -537,7 +537,7 @@ namespace Joestar {
 		ub->buffers.resize(vkCtxPtr->swapChainImages.size());
 
 		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
-			ub->buffers[i] = { vkCtxPtr, bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
+			ub->buffers[i] = { vkCtxPtr, bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
 			ub->buffers[i].Create();
 		}
 	}
@@ -973,6 +973,7 @@ namespace Joestar {
 			}
 			case ComputeCMD_DispatchCompute: {
 				PrepareCompute(computePipeline);
+				DispatchCompute(computePipeline);
 				break;
 			}
 			case ComputeCMD_UpdateComputeBuffer: {
@@ -1025,8 +1026,16 @@ namespace Joestar {
 			CreateDescriptorSets<ComputePipelineVK>(compute);
 
 			CreatePipelineLayout<ComputePipelineVK>(compute);
+			compute->CreatePipeline();
+
 			computePipelines[compute->hash] = compute;
 		}
+	}
+
+	void GPUProgramVulkan::DispatchCompute(ComputePipelineVK* compute) {
+		compute = computePipelines[compute->hash];
+		int nextIdx = curImageIdx == vkCtxPtr->swapChainImages.size() - 1 ? 0 : curImageIdx + 1;
+		compute->Record(nextIdx);
 	}
 
 	void GPUProgramVulkan::CleanupSwapChain() {

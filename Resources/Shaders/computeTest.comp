@@ -27,6 +27,6 @@ void main()
 	uint index = gl_GlobalInvocationID.x;
 	if (index >= BUFFER_ELEMENTS) 
 		return;	
-	values[index] = fibonacci(values[index]);
+	values[index] = index;//fibonacci(values[index]);
 }
 
