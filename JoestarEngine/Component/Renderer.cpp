@@ -9,6 +9,7 @@ namespace Joestar {
 	void Renderer::Render(Camera cam) {
 		if (mesh && mat) {
 			Graphics* graphics = GetSubsystem<Graphics>();
+			graphics->UpdateMaterial(mat);
 			graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, gameObject->GetAfflineTransform());
 			graphics->DrawMesh(mesh, mat);
 		}

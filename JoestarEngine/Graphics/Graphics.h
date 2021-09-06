@@ -40,6 +40,7 @@ namespace Joestar {
 		void EndCompute(const char* name);
 		void DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib);
 		void UpdateComputeBuffer(ComputeBuffer* cb, U16 binding = 0);
+		void WriteBackComputeBuffer();
 
 	private:
 		RenderThread* renderThread;

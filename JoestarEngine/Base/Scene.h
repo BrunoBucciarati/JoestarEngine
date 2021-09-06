@@ -27,7 +27,7 @@ namespace Joestar {
 		Material* skyboxMat;
 		Material* lightMat;
 		LightBatch* lightBatch;
-		ComputeBuffer* computeBuffer;
-		Shader* computeShader;
+		ComputeBuffer* shComputeBuffer;
+		Shader* shComputeShader;
 	};
 }

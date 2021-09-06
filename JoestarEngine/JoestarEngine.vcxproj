@@ -165,6 +165,7 @@
     <ClCompile Include="Graphics\Texture.cpp" />
     <ClCompile Include="Graphics\Texture2D.cpp" />
     <ClCompile Include="Graphics\TextureCube.cpp" />
+    <ClCompile Include="Graphics\UniformData.cpp" />
     <ClCompile Include="Graphics\VertexData.cpp" />
     <ClCompile Include="IO\File.cpp" />
     <ClCompile Include="IO\FileSystem.cpp" />
@@ -212,6 +213,7 @@
     <ClInclude Include="Graphics\Texture.h" />
     <ClInclude Include="Graphics\Texture2D.h" />
     <ClInclude Include="Graphics\TextureCube.h" />
+    <ClInclude Include="Graphics\UniformData.h" />
     <ClInclude Include="Graphics\VertexData.h" />
     <ClInclude Include="Graphics\VulkanHeader.h" />
     <ClInclude Include="IO\File.h" />

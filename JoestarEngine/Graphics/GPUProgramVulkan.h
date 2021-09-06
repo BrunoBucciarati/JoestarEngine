@@ -16,6 +16,7 @@
 #include "Texture.h"
 #include "Shader/Shader.h"
 #include "../Misc/Application.h"
+#include "../Graphics/UniformData.h"
 
 //ez hash, i guess that's ok
 #define REGISTER_HASH\
@@ -80,6 +81,23 @@ namespace Joestar {
         }
     };
 
+    struct PushConstsVK {
+        U32 size = 0;
+        void* data;
+        UniformDef def;
+
+        VkShaderStageFlags GetStageFlags() {
+            VkShaderStageFlags flag = 0;
+            if (def.stageFlag & kVertexShader)
+                flag |= VK_SHADER_STAGE_VERTEX_BIT;
+            if (def.stageFlag & kFragmentShader)
+                flag |= VK_SHADER_STAGE_FRAGMENT_BIT;
+            if (def.stageFlag & kComputeShader)
+                flag |= VK_SHADER_STAGE_COMPUTE_BIT;
+            return flag;
+        }
+    };
+
     struct CommandBufferVK {
         VulkanContext* ctx;
         VkCommandPool pool = VK_NULL_HANDLE;
@@ -137,7 +155,8 @@ namespace Joestar {
         explicit ShaderVK(Shader* s, VulkanContext* c) : shader(s), ctx(c) {
             for (auto& uniform : shader->info.uniforms) {
                 if (uniform.dataType == ShaderDataTypePushConst) {
-                    continue;
+                    pushConst = new PushConstsVK;
+                    pushConst->def = uniform;
                 } else if (uniform.IsSampler()) {
                     ubs.push_back(uniform);
                 } else if (uniform.dataType == ShaderDataTypeBuffer) {
@@ -163,7 +182,7 @@ namespace Joestar {
             return shader->GetSamplerBinding(count);
         }
         U32 ID() { return shader->id; }
-        std::string GetPushConsts() { return shader->GetPushConsts(); }
+        PushConstsVK* GetPushConsts() { return pushConst; }
         Shader* shader;
         std::vector <VkShaderModule> shaderModules;
         std::vector<VkPipelineShaderStageCreateInfo> shaderStage;
@@ -182,7 +201,7 @@ namespace Joestar {
             createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
             size_t codeSize = file->Size();
             createInfo.codeSize = codeSize;
-            createInfo.pCode = reinterpret_cast<const uint32_t*>(file->GetBuffer());
+            createInfo.pCode = reinterpret_cast<const U32*>(file->GetBuffer());
 
             VkShaderModule shaderModule;
             if (vkCreateShaderModule(ctx->device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
@@ -216,6 +235,7 @@ namespace Joestar {
         }
         std::vector<UniformDef> ubs;
         std::vector<U32> textures;
+        PushConstsVK* pushConst = nullptr;
         VulkanContext* ctx;
     };
 
@@ -566,6 +586,10 @@ namespace Joestar {
             return def.IsSampler();
         }
 
+        bool IsImage() {
+            return def.IsImage();
+        }
+
         bool IsBuffer() {
             return def.IsBuffer();
         }
@@ -576,6 +600,9 @@ namespace Joestar {
 
 
         VkDescriptorType GetDescriptorType() {
+            if (IsImage()) {
+                return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            }
             if (IsSampler()) return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             if (IsBuffer()) return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -596,16 +623,11 @@ namespace Joestar {
         }
     };
 
-    struct PipelineStateVK {
-        VkPipelineLayout pipelineLayout;
-        VkPipeline graphicsPipeline;
-        REGISTER_HASH
-    };
-
-    struct PushConstsVK : PushConsts {
-        bool operator ==(PushConstsVK& p2) { return model == p2.model; }
-        bool operator !=(PushConstsVK& p2) { return !(*this == p2); }
-    };
+    //struct PipelineStateVK {
+    //    VkPipelineLayout pipelineLayout;
+    //    VkPipeline graphicsPipeline;
+    //    REGISTER_HASH
+    //};
 
     struct DrawCallVK {
         std::vector<VertexBufferVK*> vbs{1};
@@ -614,8 +636,6 @@ namespace Joestar {
         MeshTopology topology;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
-        //PipelineStateVK* pso;
-        PushConstsVK* pc = nullptr;
         VkCompareOp depthOp = VK_COMPARE_OP_LESS;
         VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
@@ -819,7 +839,6 @@ namespace Joestar {
 
                 memcpy(cb->computeBuffer->GetBuffer(), mapped, buffer.size);
                 vkUnmapMemory(ctx->ctx->device, hostBuffer.memory);
-                U8* data = cb->computeBuffer->GetBuffer();
             } else {
                 ctx->commandBuffer.End();
             }
@@ -1033,12 +1052,12 @@ namespace Joestar {
         VkDescriptorSetLayout layouts[] = { call->descriptorSetLayout };
         pipelineLayoutInfo.pSetLayouts = layouts; // Optional
 
-        std::string pushConstsName = call->shader->GetPushConsts();
-        if (!pushConstsName.empty()) {
+        PushConstsVK* pushConsts = call->shader->pushConst;
+        if (pushConsts) {
             VkPushConstantRange pushConstantRange{};
-            pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+            pushConstantRange.stageFlags = pushConsts->GetStageFlags();
             pushConstantRange.offset = 0;
-            pushConstantRange.size = sizeof(PushConsts);
+            pushConstantRange.size = pushConsts->size;
             pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
             pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
             if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)) != VK_SUCCESS) {

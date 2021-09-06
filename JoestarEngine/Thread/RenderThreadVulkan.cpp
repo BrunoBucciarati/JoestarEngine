@@ -18,7 +18,9 @@ namespace Joestar {
         "VK_LAYER_KHRONOS_validation"
     };
     const std::vector<const char*> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        //VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+        //VK_EXT_SHADER_ATOMIC_FLOAT_EXTENSION_NAME
     };
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
         LOGERROR("validation layer: %s\n", pCallbackData->pMessage);
@@ -64,7 +66,7 @@ namespace Joestar {
         }
         return details;
     }
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    bool CheckDeviceExtensionSupport(VkPhysicalDevice device) {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -300,7 +302,7 @@ bool RenderThreadVulkan::IsDeviceSuitable(VkPhysicalDevice device) {
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
     VkPhysicalDeviceFeatures deviceFeatures;
     vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-    bool extensionsSupported = checkDeviceExtensionSupport(device);
+    bool extensionsSupported = CheckDeviceExtensionSupport(device);
 
     bool swapChainAdequate = false;
     if (extensionsSupported) {
@@ -376,17 +378,26 @@ void RenderThreadVulkan::CreateLogicalDevice() {
     VkPhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
     deviceFeatures.fillModeNonSolid = VK_TRUE;
+    deviceFeatures.fragmentStoresAndAtomics = VK_TRUE;
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+    createInfo.queueCreateInfoCount = static_cast<U32>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.enabledExtensionCount = static_cast<U32>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
+    VkPhysicalDeviceShaderAtomicFloatFeaturesEXT floatFeatures{};
+    floatFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT;
+    floatFeatures.shaderBufferFloat32AtomicAdd = true; // this allows to perform atomic operations on storage buffers
+    floatFeatures.shaderSharedFloat32AtomicAdd = true; 
+    floatFeatures.shaderImageFloat32AtomicAdd = true;
+    floatFeatures.sparseImageFloat32AtomicAdd = true;
+    createInfo.pNext = &floatFeatures;
+
     if (enableValidationLayers) {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.enabledLayerCount = static_cast<U32>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
     }
     else {

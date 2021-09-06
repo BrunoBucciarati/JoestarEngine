@@ -16,6 +16,8 @@ namespace Joestar {
 		ShaderDataTypeUBO,
 		ShaderDataTypePushConst,
 		ShaderDataTypeBuffer,
+		ShaderDataTypeImage2D,
+		ShaderDataTypeImageCube,
 
 		ShaderDataTypeSampler,
 		SamplerType2D,
@@ -33,10 +35,20 @@ namespace Joestar {
 		ShaderDataType dataType;
 		U16 binding;
 		U32 stageFlag = 0;
+		bool writeFlag = true;
+		bool readFlag = true;
 		U32 id = 0;
 		
 		bool IsSampler() {
 			return dataType > ShaderDataTypeSampler;
+		}
+
+		bool IsImage() {
+			return dataType == ShaderDataTypeImage2D || dataType == ShaderDataTypeImageCube;
+		}
+
+		bool IsPushConsts() {
+			return dataType == ShaderDataTypePushConst;
 		}
 
 		bool IsBuffer() {

@@ -21,6 +21,8 @@
 #define TOKEN_SAMPLER2D "sampler2D"
 #define TOKEN_SAMPLERCUBE "samplerCube"
 #define TOKEN_SAMPLER3D "sampler3D"
+#define TOKEN_IMAGE2D "image2D"
+#define TOKEN_IMAGECUBE "imageCube"
 #define TOKEN_LB "{"
 #define TOKEN_RB "}"
 #define TOKEN_SEMICOLON ";"
@@ -32,6 +34,8 @@
 #define TOKEN_PUSH_CONSTANT "push_constant"
 #define TOKEN_BUFFER "buffer"
 #define TOKEN_COMMA ","
+#define TOKEN_READONLY "readonly"
+#define TOKEN_WRITEONLY "writeonly"
 
 #define SET_DATATYPE_BY_TOKEN(val, token) \
 	if (token == TOKEN_FLOAT) val = ShaderDataTypeFloat; \
@@ -41,7 +45,9 @@
 	if (token == TOKEN_MAT4) val = ShaderDataTypeMat4;\
 	if (token == TOKEN_SAMPLER2D) val = SamplerType2D; \
 	if (token == TOKEN_SAMPLERCUBE) val = SamplerTypeCube; \
-	if (token == TOKEN_SAMPLER3D) val = SamplerType3D;
+	if (token == TOKEN_SAMPLER3D) val = SamplerType3D; \
+	if (token == TOKEN_IMAGE2D) val = ShaderDataTypeImage2D; \
+	if (token == TOKEN_IMAGECUBE) val = ShaderDataTypeImageCube; 
 
 #define SET_SAMPLERTYPE_BY_TOKEN(val, token) \
 	if (token == TOKEN_SAMPLER2D) val = SamplerType2D; \
@@ -118,6 +124,8 @@ namespace Joestar {
 			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_SAMPLER2D);
 			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_SAMPLERCUBE);
 			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_SAMPLER3D);
+			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_IMAGE2D);
+			TRY_ACCEPT_DATATYPE_TOKEN(TOKEN_IMAGECUBE);
 			return false;
 		}
 
@@ -129,8 +137,36 @@ namespace Joestar {
 		}
 	};
 
+	bool TryParseBuffer(TokenStream& tokenStream, ShaderInfo& shaderInfo, uint16_t binding = 0) {
+		if (tokenStream.AcceptToken(TOKEN_BUFFER)) {
+			std::string tok;
+			//must be a UBO
+			tokenStream.AcceptString(tok);
+			shaderInfo.uniforms.push_back(UniformDef{});
+			UniformDef& def = shaderInfo.uniforms.back();
+			def.name = tok;
+			def.binding = binding;
+			def.stageFlag |= shaderInfo.curStage;
+			def.dataType = ShaderDataTypeBuffer;
+			tokenStream.AcceptToken(TOKEN_LB);
+			tokenStream.AcceptTokenForward(TOKEN_RB);
+			tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
+		}
+		else {
+			return false;
+		}
+		return true;
+	}
+
 	bool TryParseUniform(TokenStream& tokenStream, ShaderInfo& shaderInfo, uint16_t binding = 0) {
 		if (tokenStream.AcceptToken(TOKEN_UNIFORM)) {
+			bool readFlag = true, writeFlag = true;
+			if (tokenStream.AcceptToken(TOKEN_READONLY)) {
+				writeFlag = false;
+			}
+			if (tokenStream.AcceptToken(TOKEN_WRITEONLY)) {
+				readFlag = false;
+			}
 			std::string tok;
 			if (tokenStream.AcceptDataTypeToken(tok)) {
 				shaderInfo.uniforms.push_back(UniformDef{});
@@ -140,6 +176,8 @@ namespace Joestar {
 				tokenStream.AcceptString(def.name);
 				def.binding = binding;
 				def.stageFlag |= shaderInfo.curStage;
+				def.readFlag = readFlag;
+				def.writeFlag = writeFlag;
 				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
 			} else if (binding == 99) {
 				//means push constant
@@ -150,6 +188,8 @@ namespace Joestar {
 				def.binding = binding;
 				def.stageFlag |= shaderInfo.curStage;
 				def.dataType = ShaderDataTypePushConst;
+				def.readFlag = readFlag;
+				def.writeFlag = writeFlag;
 				tokenStream.AcceptToken(TOKEN_LB);
 				tokenStream.AcceptTokenForward(TOKEN_RB);
 				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
@@ -162,6 +202,8 @@ namespace Joestar {
 				def.binding = binding;
 				def.stageFlag |= shaderInfo.curStage;
 				def.dataType = ShaderDataTypeUBO;
+				def.readFlag = readFlag;
+				def.writeFlag = writeFlag;
 				tokenStream.AcceptToken(TOKEN_LB);
 				tokenStream.AcceptTokenForward(TOKEN_RB);
 				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
@@ -181,7 +223,9 @@ namespace Joestar {
 			return false;
 		}
 		tokenStream.AcceptToken(TOKEN_RP);
-		return TryParseUniform(tokenStream, shaderInfo, binding);
+		if (!TryParseUniform(tokenStream, shaderInfo, binding)) {
+			TryParseBuffer(tokenStream, shaderInfo, binding);
+		}
 	}
 
 	bool TryParsePushConstant(TokenStream& tokenStream, ShaderInfo& shaderInfo) {
@@ -243,7 +287,7 @@ namespace Joestar {
 	void GetTokenStream(char* buffer, uint32_t idx, uint32_t size, TokenStream& tokenStream) {
 		char c;
 		int tokenIdx = 0;
-		tokenStream.resize(1000);
+		tokenStream.resize(10000);
 		while (idx < size) {
 			c = buffer[idx];
 			switch (c) {
@@ -303,7 +347,7 @@ namespace Joestar {
 			//Accept all layout info
 			while (flag) {
 				flag = false;
-				if (tokenStream.AcceptToken(TOKEN_LAYOUT)) {
+				if (tokenStream.AcceptTokenForward(TOKEN_LAYOUT)) {
 					flag = true;
 					tokenStream.AcceptToken(TOKEN_LP);
 					//if (!TryParseAttribute(tokenStream, shaderInfo)) {
@@ -322,26 +366,6 @@ namespace Joestar {
 		else {
 			LOGERROR("[SHADERPARSER] NO GL VERSION FOUND");
 		}
-	}
-
-	bool TryParseBuffer(TokenStream& tokenStream, ShaderInfo& shaderInfo, uint16_t binding = 0) {
-		if (tokenStream.AcceptToken(TOKEN_BUFFER)) {
-			std::string tok;
-			//must be a UBO
-			tokenStream.AcceptString(tok);
-			shaderInfo.uniforms.push_back(UniformDef{});
-			UniformDef& def = shaderInfo.uniforms.back();
-			def.name = tok;
-			def.binding = binding;
-			def.stageFlag |= shaderInfo.curStage;
-			def.dataType = ShaderDataTypeBuffer;
-			tokenStream.AcceptToken(TOKEN_LB);
-			tokenStream.AcceptTokenForward(TOKEN_RB);
-			tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
-		} else {
-			return false;
-		}
-		return true;
 	}
 
 
@@ -374,16 +398,12 @@ namespace Joestar {
 			//Accept all layout info
 			while (flag) {
 				flag = false;
-				if (tokenStream.AcceptToken(TOKEN_LAYOUT)) {
+				if (tokenStream.AcceptTokenForward(TOKEN_LAYOUT)) {
 					flag = true;
 					tokenStream.AcceptToken(TOKEN_LP);
 					//if (!TryParseAttribute(tokenStream, shaderInfo)) {
 						//uniform
 					//}
-					if (!TryParseBindingBuffer(tokenStream, shaderInfo)) {
-						tokenStream.AcceptTokenForward(TOKEN_RP);
-						tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
-					}
 					if (!TryParseBindingUniform(tokenStream, shaderInfo)) {
 						tokenStream.AcceptTokenForward(TOKEN_RP);
 						tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);

@@ -622,8 +622,9 @@ namespace Joestar {
 
 			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pipelineLayout, 0, 1, &dc->descriptorSets[i], 0, nullptr);
 
-			if (dc->pc) {
-				vkCmdPushConstants(vkCtxPtr->commandBuffers[i], dc->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConsts), dc->pc);
+			PushConstsVK* pc = dc->shader->pushConst;
+			if (nullptr != pc) {
+				vkCmdPushConstants(vkCtxPtr->commandBuffers[i], dc->pipelineLayout, pc->GetStageFlags(), 0, pc->size, pc->data);
 			}
 
 			if (dc->ib) {
@@ -699,31 +700,21 @@ namespace Joestar {
 		}
 	}
 
-	void GPUProgramVulkan::PushConstants(std::vector<RenderPassVK*>& passes) {
-		for (auto& pass : passes) {
-			//for (auto& dc : pass->dcs) {
-			//	if (dc->pc) {
-			//		vkCmdPushConstants(cb->commandBuffer, dc->pso->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConsts), dc->pc);
-			//	}
-			//}
-			//for (int j = pass->dcs.size() - 1; j >= 0; --j) {
-			//	if (pass->dcs[j]->pc) {
-			//		CommandBufferVK* cb = GetCommandBuffer(true);
-			//		cb->Begin();
-			//		vkCmdPushConstants(cb->commandBuffer, pass->dcs[j]->pso->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConsts), pass->dcs[j]->pc);
-			//		cb->End();
-			//	}
-			//}
-		}
-	}
-
 	void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc) {
 		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
 		switch (flag) {
 		case BUILTIN_MATRIX_MODEL: {
 			//built in name
-			dc->pc = new PushConstsVK;
-			dc->pc->model = *(Matrix4x4f*)cmd.data;
+			if (!dc->shader) {
+				LOGERROR("can't update uniform buffer without use shader!!!");
+				return;
+			}
+			PushConstsVK* pc = dc->shader->pushConst;
+			if (pc->size == 0) {
+				pc->data = JOJO_NEW(U8[cmd.size], MEMORY_GFX_STRUCT);
+				pc->size = cmd.size;
+			}
+			memcpy(pc->data, cmd.data, cmd.size);
 			break; 
 		}
 		default: break;
@@ -829,13 +820,8 @@ namespace Joestar {
 					shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
 				}
 
-				if (isCompute) {
-					computePipeline->shader = shaderVKs[shader->id];
-					computePipeline->HashInsert(shader->id);
-				} else {
-					drawcall->shader = shaderVKs[shader->id];
-					drawcall->HashInsert(shader->id);
-				}
+				drawcall->shader = shaderVKs[shader->id];
+				drawcall->HashInsert(shader->id);
 				break;
 			}
 			case RenderCMD_UpdateTexture: {
@@ -914,15 +900,15 @@ namespace Joestar {
 					//needPushConstant = true;
 					break;
 				} else {
-					//update push consts
-					for (int j = 0; j < renderPassList[i]->dcs.size(); ++j) {
-						if (renderPassList[i]->dcs[j]->pc) {
-							if (*(lastRenderPassList[i]->dcs[j]->pc) != *(renderPassList[i]->dcs[j]->pc)) {
-								//needPushConstant = true;
-								*(lastRenderPassList[i]->dcs[j]->pc) = *(renderPassList[i]->dcs[j]->pc);
-							}
-						}
-					}
+					////update push consts
+					//for (int j = 0; j < renderPassList[i]->dcs.size(); ++j) {
+					//	if (renderPassList[i]->dcs[j]->pc) {
+					//		if (*(lastRenderPassList[i]->dcs[j]->pc) != *(renderPassList[i]->dcs[j]->pc)) {
+					//			//needPushConstant = true;
+					//			*(lastRenderPassList[i]->dcs[j]->pc) = *(renderPassList[i]->dcs[j]->pc);
+					//		}
+					//	}
+					//}
 				}
 			}
 		}

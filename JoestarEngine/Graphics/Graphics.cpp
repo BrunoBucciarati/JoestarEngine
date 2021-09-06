@@ -126,7 +126,7 @@ namespace Joestar {
 	}
 
 	void Graphics::DrawMesh(Mesh* mesh, Material* mat) {
-		UpdateMaterial(mat);
+		//UpdateMaterial(mat);
 		UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
 		if (mesh->GetIB()->GetSize() > 0) {
 			UpdateIndexBuffer(mesh->GetIB());
@@ -137,7 +137,7 @@ namespace Joestar {
 	}
 
 	void Graphics::DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib) {
-		UpdateMaterial(mat);
+		//UpdateMaterial(mat);
 		UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
 		UpdateInstanceBuffer(ib);
 		if (mesh->GetIB()->GetSize() > 0) {
@@ -191,6 +191,11 @@ namespace Joestar {
 
 	void Graphics::DispatchCompute() {
 		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_DispatchCompute;
+		++computeCmdIdx;
+	}
+
+	void Graphics::WriteBackComputeBuffer() {
+		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_WriteBackComputeBuffer;
 		++computeCmdIdx;
 	}
 

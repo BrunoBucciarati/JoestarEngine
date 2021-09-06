@@ -46,11 +46,11 @@ namespace Joestar {
     }
 
     void Scene::CreateCompute() {
-        computeShader = NEW_OBJECT(Shader);
-        computeShader->SetShader("computeTest", kComputeShader);
+        shComputeShader = NEW_OBJECT(Shader);
+        shComputeShader->SetShader("computeSH", kComputeShader);
 
-        computeBuffer = new ComputeBuffer;
-        computeBuffer->SetSize(128);
+        shComputeBuffer = new ComputeBuffer;
+        shComputeBuffer->SetSize(128);
     }
 
     void Scene::CreateLights() {
@@ -104,17 +104,18 @@ namespace Joestar {
             }
         }
 
-        PreRenderCompute();
+        //PreRenderCompute();
         RenderScene();
     }
 
     void Scene::PreRenderCompute() {
-        //test
+        //compute sh
         Graphics* graphics = GetSubsystem<Graphics>();
         graphics->BeginCompute("TEST COMPUTE");
-        graphics->UseShader(computeShader);
-        graphics->UpdateComputeBuffer(computeBuffer, 0);
+        graphics->UseShader(shComputeShader);
+        graphics->UpdateComputeBuffer(shComputeBuffer, 0);
         graphics->DispatchCompute();
+        graphics->WriteBackComputeBuffer();
         graphics->EndCompute("TEST COMPUTE");
     }
 
@@ -153,6 +154,7 @@ namespace Joestar {
         //}
 
         graphics->SetPolygonMode(POLYGON_MODE_FILL);
+        graphics->UpdateMaterial(lightBatch->GetMaterial());
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lightBatch->GetModelMatrix());
         graphics->DrawMeshInstanced(lightBatch->GetMesh(), lightBatch->GetMaterial(), lightBatch->GetInstanceBuffer());
     }
@@ -171,6 +173,7 @@ namespace Joestar {
             cube->TextureFromImage(skydir);
             skyboxMat->SetTexture(cube);
         }
+        GetSubsystem<Graphics>()->UpdateMaterial(skyboxMat);
         GetSubsystem<Graphics>()->DrawMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere(), skyboxMat);
     }
 }

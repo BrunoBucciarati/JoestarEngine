@@ -17,7 +17,7 @@ namespace Joestar {
 		U16 GetUniformBindingByName(std::string& name);
 		U16 GetUniformBindingByHash(U32 hash);
 		U16 GetSamplerBinding(int count);
-		std::string GetPushConsts();
+		UniformDef& GetPushConsts();
 		U32 id;
 		U32 flag;
 		ShaderInfo info;
