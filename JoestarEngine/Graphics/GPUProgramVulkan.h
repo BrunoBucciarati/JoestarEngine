@@ -45,9 +45,7 @@ namespace Joestar {
             bufferInfo.usage = usage;
             bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-            if (vkCreateBuffer(ctx->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-                LOGERROR("failed to create buffer!");
-            }
+            VK_CHECK(vkCreateBuffer(ctx->device, &bufferInfo, nullptr, &buffer));
 
             VkMemoryRequirements memRequirements;
             vkGetBufferMemoryRequirements(ctx->device, buffer, &memRequirements);
@@ -58,9 +56,7 @@ namespace Joestar {
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = memoryTypeIdx;
 
-            if (vkAllocateMemory(ctx->device, &allocInfo, nullptr, &memory) != VK_SUCCESS) {
-                LOGERROR("failed to allocate buffer memory!");
-            }
+            VK_CHECK(vkAllocateMemory(ctx->device, &allocInfo, nullptr, &memory));
 
             vkBindBufferMemory(ctx->device, buffer, memory, 0);
         }
@@ -183,6 +179,7 @@ namespace Joestar {
         }
         U32 ID() { return shader->id; }
         PushConstsVK* GetPushConsts() { return pushConst; }
+        UniformDef& GetPushConstsDef() { return shader->GetPushConsts(); }
         Shader* shader;
         std::vector <VkShaderModule> shaderModules;
         std::vector<VkPipelineShaderStageCreateInfo> shaderStage;
@@ -204,9 +201,7 @@ namespace Joestar {
             createInfo.pCode = reinterpret_cast<const U32*>(file->GetBuffer());
 
             VkShaderModule shaderModule;
-            if (vkCreateShaderModule(ctx->device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-                LOGERROR("failed to create shader module!");
-            }
+            VK_CHECK(vkCreateShaderModule(ctx->device, &createInfo, nullptr, &shaderModule))
             return shaderModule;
         }
 
@@ -429,7 +424,7 @@ namespace Joestar {
             }
         }
 
-        void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, CommandBufferVK& cb) {
+        void TransitionImageLayout(CommandBufferVK& cb, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT) {
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.oldLayout = oldLayout;
@@ -437,13 +432,108 @@ namespace Joestar {
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.image = image;
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.aspectMask = aspect;
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = mipLevels;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = GetLayerCount();
+            VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+            VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+            // Source layouts (old)
+        // Source access mask controls actions that have to be finished on the old layout
+        // before it will be transitioned to the new layout
+            switch (oldLayout)
+            {
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                // Image layout is undefined (or does not matter)
+                // Only valid as initial layout
+                // No flags required, listed only for completeness
+                barrier.srcAccessMask = 0;
+                break;
 
-            VkPipelineStageFlags sourceStage;
+            case VK_IMAGE_LAYOUT_PREINITIALIZED:
+                // Image is preinitialized
+                // Only valid as initial layout for linear images, preserves memory contents
+                // Make sure host writes have been finished
+                barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                // Image is a color attachment
+                // Make sure any writes to the color buffer have been finished
+                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                // Image is a depth/stencil attachment
+                // Make sure any writes to the depth/stencil buffer have been finished
+                barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                // Image is a transfer source
+                // Make sure any reads from the image have been finished
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // Image is a transfer destination
+                // Make sure any writes to the image have been finished
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                // Image is read by a shader
+                // Make sure any shader reads from the image have been finished
+                barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                break;
+            default:
+                // Other source layouts aren't handled (yet)
+                break;
+            }
+
+            // Target layouts (new)
+            // Destination access mask controls the dependency for the new image layout
+            switch (newLayout)
+            {
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // Image will be used as a transfer destination
+                // Make sure any writes to the image have been finished
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                // Image will be used as a transfer source
+                // Make sure any reads from the image have been finished
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                // Image will be used as a color attachment
+                // Make sure any writes to the color buffer have been finished
+                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                // Image layout will be used as a depth/stencil attachment
+                // Make sure any writes to depth/stencil buffer have been finished
+                barrier.dstAccessMask = barrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                // Image will be read in a shader (sampler, input attachment)
+                // Make sure any writes to the image have been finished
+                if (barrier.srcAccessMask == 0)
+                {
+                    barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+                }
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                break;
+            default:
+                // Other source layouts aren't handled (yet)
+                break;
+            }
+            /*VkPipelineStageFlags sourceStage;
             VkPipelineStageFlags destinationStage;
             if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -479,11 +569,11 @@ namespace Joestar {
             }
             else {
                 LOGERROR("unsupported layout transition!");
-            }
+            }*/
 
             vkCmdPipelineBarrier(
                 cb.commandBuffer,
-                sourceStage, destinationStage,
+                srcStageMask, dstStageMask,
                 0,
                 0, nullptr,
                 0, nullptr,
@@ -598,6 +688,10 @@ namespace Joestar {
             return def.IsUniform();
         }
 
+        VkImageLayout GetTargetImageLayout() {
+            if (IsImage()) return VK_IMAGE_LAYOUT_GENERAL;
+            return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
 
         VkDescriptorType GetDescriptorType() {
             if (IsImage()) {
@@ -734,6 +828,7 @@ namespace Joestar {
         VkPipeline pipeline;
         ShaderVK* shader;
         VkSampler textureSampler;
+        U32 group[3];
         std::vector<UniformBufferVK*> computeBuffers;
         bool writeBack = false;
         REGISTER_HASH
@@ -777,7 +872,10 @@ namespace Joestar {
 
             vkCmdBindPipeline(ctx->commandBuffer.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
             vkCmdBindDescriptorSets(ctx->commandBuffer.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSets[0], 0, 0);
-            vkCmdDispatch(ctx->commandBuffer.commandBuffer, 32, 1, 1);
+            if (shader->pushConst->size > 0) {
+                vkCmdPushConstants(ctx->commandBuffer.commandBuffer, pipelineLayout, shader->pushConst->GetStageFlags(), 0, shader->pushConst->size, shader->pushConst->data);
+            }
+            vkCmdDispatch(ctx->commandBuffer.commandBuffer, group[0], group[1], group[2]);
 
             if (writeBack) {
                 // Barrier to ensure that shader writes are finished before buffer is read back from GPU
@@ -853,7 +951,7 @@ namespace Joestar {
         void CreateVertexBuffer(VertexBufferVK* vb);
         void CreateIndexBuffer(IndexBufferVK* ib);
         void CopyBuffer(BufferVK& srcBuffer, BufferVK& dstBuffer, VkDeviceSize size);
-        void CreateTextureImage(TextureVK* tex);
+        void CreateTextureImage(TextureVK* tex, UniformBufferVK*);
         void CreateTextureSampler(DrawCallVK*);
 
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -893,6 +991,7 @@ namespace Joestar {
         template<class T>
         void CreatePipelineLayout(T* call);
         void DispatchCompute(ComputePipelineVK* compute);
+        void CMDUpdateTexture(Texture* tex, ShaderVK* shader, U16 binding = 0);
 
         VkCommandPool subCommandPool;
     private:
@@ -951,7 +1050,7 @@ namespace Joestar {
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.descriptorPool = call->descriptorPool;
-        allocInfo.descriptorSetCount = static_cast<uint32_t>(vkCtxPtr->swapChainImages.size());
+        allocInfo.descriptorSetCount = static_cast<U32>(vkCtxPtr->swapChainImages.size());
         allocInfo.pSetLayouts = layouts.data();
 
         call->descriptorSets.resize(vkCtxPtr->swapChainImages.size());
@@ -970,9 +1069,9 @@ namespace Joestar {
             int samplerCount = 0;
             for (int j = 0; j < call->shader->ubs.size(); ++j) {
                 UniformBufferVK* ub = uniformVKs[call->shader->ubs[j].id];
-                if (ub->def.IsSampler()) {
+                if (ub->IsSampler() || ub->IsImage()) {
                     VkDescriptorImageInfo imageInfo{};
-                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    imageInfo.imageLayout = ub->GetTargetImageLayout();
                     std::map<uint32_t, TextureVK*>::iterator it = textureVKs.find(call->shader->textures[0]);
                     TextureVK* tex;
                     if (it == textureVKs.end()) {
@@ -980,7 +1079,7 @@ namespace Joestar {
                         if (it == pendingTextureVKs.end()) {
                             LOGERROR("this texture didn't call Graphics::UpdateTexture!!!");
                         }
-                        CreateTextureImage(it->second);
+                        CreateTextureImage(it->second, ub);
                         textureVKs[it->first] = it->second;
                         tex = it->second;
                         pendingTextureVKs.erase(it);
@@ -993,9 +1092,9 @@ namespace Joestar {
 
                     descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[j].dstSet = call->descriptorSets[i];
-                    descriptorWrites[j].dstBinding = call->shader->GetSamplerBinding(samplerCount++);
+                    descriptorWrites[j].dstBinding = ub->def.binding;
                     descriptorWrites[j].dstArrayElement = 0;
-                    descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrites[j].descriptorType = ub->GetDescriptorType();
                     descriptorWrites[j].descriptorCount = 1;
                     descriptorWrites[j].pImageInfo = &imageInfo;
                 } else {
@@ -1006,14 +1105,14 @@ namespace Joestar {
 
                     descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[j].dstSet = call->descriptorSets[i];
-                    descriptorWrites[j].dstBinding = call->shader->GetUniformBindingByName(ub->def.name);
+                    descriptorWrites[j].dstBinding = ub->def.binding;
                     descriptorWrites[j].dstArrayElement = 0;
-                    descriptorWrites[j].descriptorType = ub->IsBuffer() ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    descriptorWrites[j].descriptorType = ub->GetDescriptorType();
                     descriptorWrites[j].descriptorCount = 1;
                     descriptorWrites[j].pBufferInfo = &bufferInfo;
                 }
             }
-            vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+            vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<U32>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
     }
 
@@ -1026,8 +1125,7 @@ namespace Joestar {
             VkDescriptorSetLayoutBinding layoutBinding{};
             layoutBinding.binding = i;
             layoutBinding.descriptorType = ubvk->GetDescriptorType();// VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                //need to know shader stage in shader parser, temp write, --todo
-            layoutBinding.stageFlags = ubvk->GetStageFlags();// VK_SHADER_STAGE_FRAGMENT_BIT;
+            layoutBinding.stageFlags = ubvk->GetStageFlags();
             layoutBinding.descriptorCount = 1;
             layoutBinding.pImmutableSamplers = nullptr;
 
@@ -1036,7 +1134,7 @@ namespace Joestar {
 
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+        layoutInfo.bindingCount = static_cast<U32>(bindings.size());
         layoutInfo.pBindings = bindings.data();
 
         if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(call->descriptorSetLayout)) != VK_SUCCESS) {
@@ -1060,9 +1158,7 @@ namespace Joestar {
             pushConstantRange.size = pushConsts->size;
             pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
             pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
-            if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)) != VK_SUCCESS) {
-                LOGERROR("failed to create pipeline layout!");
-            }
+            VK_CHECK(vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)))
         } else {
             if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)) != VK_SUCCESS) {
                 LOGERROR("failed to create pipeline layout!");

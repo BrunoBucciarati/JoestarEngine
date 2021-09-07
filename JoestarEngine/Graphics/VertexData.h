@@ -5,6 +5,7 @@
 #include "GraphicDefines.h"
 #include "../Base/ObjectDefines.h"
 #include <vector>
+#include "../Base/StringHash.h"
 
 namespace Joestar {
     class BaseBuffer {
@@ -59,6 +60,11 @@ namespace Joestar {
 
     class ComputeBuffer : public BaseBuffer {
     public:
-        ComputeBuffer();
+        ComputeBuffer(const char* name);
+        void SetName(std::string& n) { name = n; id = hashString(name.c_str()); }
+        void SetName(const char* n) { name = n; id = hashString(name.c_str()); }
+
+    private:
+        std::string name;
     };
 }

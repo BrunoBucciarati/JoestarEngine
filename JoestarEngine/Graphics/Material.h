@@ -42,6 +42,9 @@ namespace Joestar {
 	std::vector<Texture*>& GetTextures() {
 		return textures;
 	}
+	Texture* GetTexture(U32 slot) {
+		return textures[slot];
+	}
 	private:
 		ProgramCPU* program;
 		std::vector<Texture*> textures;

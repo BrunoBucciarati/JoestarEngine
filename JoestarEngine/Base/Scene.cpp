@@ -8,6 +8,7 @@
 #include "../Math/Vector3.h"
 #include "../Graphics/TextureCube.h"
 #include "../Component/Renderer.h"
+#include "../IO/MemoryManager.h"
 namespace Joestar {
     Scene::Scene(EngineContext* ctx) : Super(ctx) {
         //for test
@@ -40,6 +41,19 @@ namespace Joestar {
 
         lightBatch = NEW_OBJECT(LightBatch);
 
+        if (!skyboxMat) {
+            skyboxMat = NEW_OBJECT(Material);
+            Shader* shader = NEW_OBJECT(Shader);
+            shader->SetShader("skybox");
+            skyboxMat->SetShader(shader);
+
+            TextureCube* cube = NEW_OBJECT(TextureCube);
+            //cube->hasMipMap = false;
+            std::string skydir = "Textures/skybox/";
+            cube->TextureFromImage(skydir);
+            skyboxMat->SetTexture(cube);
+        }
+
         CreateLights();
 
         CreateCompute();
@@ -49,8 +63,13 @@ namespace Joestar {
         shComputeShader = NEW_OBJECT(Shader);
         shComputeShader->SetShader("computeSH", kComputeShader);
 
-        shComputeBuffer = new ComputeBuffer;
+        shComputeBuffer = JOJO_NEW(ComputeBuffer("SHCoef"), MEMORY_GFX_STRUCT);
         shComputeBuffer->SetSize(128);
+
+
+        shCube = NEW_OBJECT(TextureCube);
+        std::string skydir = "Textures/shcube/";
+        shCube->TextureFromImage(skydir);
     }
 
     void Scene::CreateLights() {
@@ -104,19 +123,26 @@ namespace Joestar {
             }
         }
 
-        //PreRenderCompute();
+        PreRenderCompute();
         RenderScene();
     }
 
     void Scene::PreRenderCompute() {
         //compute sh
         Graphics* graphics = GetSubsystem<Graphics>();
-        graphics->BeginCompute("TEST COMPUTE");
+        graphics->BeginCompute("SH COMPUTE");
         graphics->UseShader(shComputeShader);
+        Texture* tex = shCube;
+        computeSHConsts.sizeAndLevel[0] = tex->GetWidth();
+        computeSHConsts.sizeAndLevel[1] = tex->GetHeight();
+        computeSHConsts.sizeAndLevel[2] = 1;
+        graphics->UpdatePushConstant(&computeSHConsts, sizeof(ComputeSHConsts));
+        graphics->UpdateTexture(tex, 1);
         graphics->UpdateComputeBuffer(shComputeBuffer, 0);
-        graphics->DispatchCompute();
+        U32 group[3] = { tex->GetWidth() / 8, tex->GetHeight() / 8, 1 };
+        graphics->DispatchCompute(group);
         graphics->WriteBackComputeBuffer();
-        graphics->EndCompute("TEST COMPUTE");
+        graphics->EndCompute("SH COMPUTE");
     }
 
     void Scene::RenderScene() {
@@ -126,6 +152,7 @@ namespace Joestar {
         GetSubsystem<Graphics>()->SetDepthCompare(DEPTH_COMPARE_LESS);
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera.GetProjectionMatrix());
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera.GetViewMatrix());
+        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_CAMERAPOS, camera.Position);
         Renderer* render;
         for (std::vector<GameObject*>::const_iterator iter = gameObjects.begin(); iter != gameObjects.end(); iter++) {
             render = (*iter)->HasComponent<Renderer>();
@@ -161,18 +188,6 @@ namespace Joestar {
 
     void Scene::RenderSkybox() {
         GetSubsystem<Graphics>()->SetDepthCompare(DEPTH_COMPARE_LESSEQUAL);
-        if (!skyboxMat) {
-            skyboxMat = NEW_OBJECT(Material);
-            Shader* shader = NEW_OBJECT(Shader);
-            shader->SetShader("skybox");
-            skyboxMat->SetShader(shader);
-
-            TextureCube* cube = NEW_OBJECT(TextureCube);
-            //cube->hasMipMap = false;
-            std::string skydir = "Textures/skybox/";
-            cube->TextureFromImage(skydir);
-            skyboxMat->SetTexture(cube);
-        }
         GetSubsystem<Graphics>()->UpdateMaterial(skyboxMat);
         GetSubsystem<Graphics>()->DrawMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere(), skyboxMat);
     }

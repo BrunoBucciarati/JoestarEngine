@@ -21,9 +21,10 @@ enum MemoryAlignment {
 	delete (type, kDefaultMemoryAlignment,  nullptr, 0) data
 #else
 #define JOJO_NEW(data, type)\
-	new (type, kDefaultMemoryAlignment, __FILE__, __LINE__) data
-#define JOJO_DELETE(data, type) \
-	delete (type, kDefaultMemoryAlignment, __FILE__, __LINE__) data
+	new data
+	//new (type, kDefaultMemoryAlignment, __FILE__, __LINE__) data
+#define JOJO_DELETE(p, type) \
+	delete p
 #endif
 
 void* operator new(std::size_t sz, MemoryType type, int align, const char* file, int line);

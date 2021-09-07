@@ -24,13 +24,14 @@ namespace Joestar {
 		//Matrix4x4f model;
 		Matrix4x4f view;
 		Matrix4x4f proj;
+		Vector4f cameraPos; // for alignment
 		bool operator== (UniformBufferObject& ub) {
 			return view == ub.view && proj == ub.proj;//&& model == ub.model;
 		}
 	};
 
 	struct ComputeSHConsts {
-		U32 coefs[9];
+		U32 sizeAndLevel[3];
 	};
 
 	//class UniformBufferPool : public SubSystem {

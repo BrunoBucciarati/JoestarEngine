@@ -22,16 +22,21 @@ namespace Joestar {
 	};
 	const int VERTEX_ATTRIBUTE_SIZE[] = { 3, 3, 3, 2 };
 
-	enum BUILTIN_MATRIX {
+	enum BUILTIN_VALUE {
 		BUILTIN_MATRIX_MODEL = 0,
 		BUILTIN_MATRIX_VIEW,
-		BUILTIN_MATRIX_PROJECTION
+		BUILTIN_MATRIX_PROJECTION,
+		BUILTIN_MATRIX_COUNT,
+		BUILTIN_VEC3_CAMERAPOS,
+		BUILTIN_VEC3_COUNT
 	};
 
-	struct BuiltinMatrixCmdData {
-		BUILTIN_MATRIX matrixType;
-		void* data;
-	};
+	//enum BUILTIN_MATRIX {
+	//};
+
+	//enum BUILTIN_VEC3 {
+	//	BUILTIN_VEC3_CAMERAPOS = 0,
+	//};
 
 	enum TEXTURE_FORMAT {
 		TEXTURE_FORMAT_RGBA8 = 0,

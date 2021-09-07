@@ -1,48 +1,37 @@
-#version 330 core
-out vec4 FragColor;
-in vec2 TexCoords;
-in vec3 WorldPos;
-in vec3 Normal;
+#version 450
+layout(location = 0) out vec4 FragColor;
 
+layout(location = 0) in vec2 TexCoords;
+layout(location = 1) in vec3 WorldPos;
+layout(location = 2) in vec3 Normal;
+
+
+layout(binding = 0) uniform UniformBufferObject {
+    //mat4 model;
+    mat4 view;
+    mat4 proj;
+    vec3 camPos;
+} ubo;
+
+const int MAX_LIGHTS = 10;
+layout(binding = 1, std140) uniform LightBlocks {
+    uint lightCount;
+    vec4 lightPositions[MAX_LIGHTS];
+    vec4 lightColors[MAX_LIGHTS];
+} lightBlocks;
 // material parameters
-uniform sampler2D albedoMap;
-uniform sampler2D normalMap;
-uniform sampler2D metallicMap;
-uniform sampler2D roughnessMap;
-uniform samplerCube envMap;
-uniform samplerCube prefilter;
-uniform sampler2D brdfLUT;
-
-const int MAX_REFLECTION_LOD = 4;
+layout(binding = 2) uniform sampler2D albedoMap;
+layout(binding = 3) uniform sampler2D normalMap;
+layout(binding = 4) uniform sampler2D metallicMap;
+layout(binding = 5) uniform sampler2D roughnessMap;
 
 // lights
 uniform vec3 lightPositions[4];
 uniform vec3 lightColors[4];
 
-uniform vec3 camPos;
+uniform 
 
 const float PI = 3.14159265359;
-// ----------------------------------------------------------------------------
-// Easy trick to get tangent-normals to world-space to keep PBR code simplified.
-// Don't worry if you don't get what's going on; you generally want to do normal 
-// mapping the usual way for performance anways; I do plan make a note of this 
-// technique somewhere later in the normal mapping tutorial.
-vec3 getNormalFromMap()
-{
-    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
-
-    vec3 Q1  = dFdx(WorldPos);
-    vec3 Q2  = dFdy(WorldPos);
-    vec2 st1 = dFdx(TexCoords);
-    vec2 st2 = dFdy(TexCoords);
-
-    vec3 N   = normalize(Normal);
-    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
-    vec3 B  = -normalize(cross(N, T));
-    mat3 TBN = mat3(T, B, N);
-
-    return normalize(TBN * tangentNormal);
-}
 // ----------------------------------------------------------------------------
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -91,7 +80,7 @@ void main()
     float roughness = texture(roughnessMap, TexCoords).r;
     float ao        = 1.0;//texture(aoMap, TexCoords).r;
 
-    vec3 N = getNormalFromMap();
+    vec3 N = Normal;
     vec3 V = normalize(camPos - WorldPos);
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
@@ -137,23 +126,6 @@ void main()
         // add to outgoing radiance Lo
         Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }   
-    vec3 envIrradiance = texture(envMap, N).rgb;    
-    
-    float NdotV = max(dot(N, V), 0);
-    vec3 R = normalize(2*NdotV*Normal - V);
-    vec3 prefilteredColor = textureLod(prefilter, R,  roughness * MAX_REFLECTION_LOD).rgb;;
-    vec2 intergrateBRDF = texture(brdfLUT, vec2(NdotV, roughness)).rg;
-    vec3 specBRDF = intergrateBRDF.x * F0 + intergrateBRDF.y;
-    vec3 envSpecular = specBRDF * prefilteredColor;
-    // ambient lighting (note that the next IBL tutorial will replace 
-    // this ambient lighting with environment lighting).
-    //vec3 ambient = vec3(0.03) * albedo * ao;
-    
-    vec3 color = kD * envIrradiance * albedo + Lo + envSpecular;
-    //color = envSpecular;
-
-    // HDR tonemapping
-    color = color / (color + vec3(1.0));
     // gamma correct
     color = pow(color, vec3(1.0/2.2)); 
 

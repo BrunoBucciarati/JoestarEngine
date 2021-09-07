@@ -29,9 +29,11 @@ enum ComputeCommandType {
 	ComputeCMD_DispatchCompute = 0,
 	ComputeCMD_BeginCompute,
 	ComputeCMD_UpdateComputeBuffer,
+	ComputeCMD_UpdatePushConstant,
 	ComputeCMD_WriteBackComputeBuffer,
 	ComputeCMD_UpdateUniformBuffer,
 	ComputeCMD_UseShader,
+	ComputeCMD_UpdateTexture,
 	ComputeCMD_EndCompute
 };
 

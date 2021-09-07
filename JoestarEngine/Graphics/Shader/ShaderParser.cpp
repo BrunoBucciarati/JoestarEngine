@@ -222,7 +222,10 @@ namespace Joestar {
 		} else {
 			return false;
 		}
-		tokenStream.AcceptToken(TOKEN_RP);
+		tokenStream.AcceptTokenForward(TOKEN_RP);
+		if (shaderInfo.curStage == kComputeShader) {
+			int c = 0;
+		}
 		if (!TryParseUniform(tokenStream, shaderInfo, binding)) {
 			TryParseBuffer(tokenStream, shaderInfo, binding);
 		}
@@ -353,7 +356,7 @@ namespace Joestar {
 					//if (!TryParseAttribute(tokenStream, shaderInfo)) {
 						//uniform
 					//}
-					if (!TryParseBindingUniform(tokenStream, shaderInfo)) {
+					if (!TryParseBindingUniform(tokenStream, shaderInfo) && !TryParsePushConstant(tokenStream, shaderInfo)) {
 						tokenStream.AcceptTokenForward(TOKEN_RP);
 						tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
 					}
@@ -404,7 +407,7 @@ namespace Joestar {
 					//if (!TryParseAttribute(tokenStream, shaderInfo)) {
 						//uniform
 					//}
-					if (!TryParseBindingUniform(tokenStream, shaderInfo)) {
+					if (!TryParseBindingUniform(tokenStream, shaderInfo) && !TryParsePushConstant(tokenStream, shaderInfo)) {
 						tokenStream.AcceptTokenForward(TOKEN_RP);
 						tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
 					}

@@ -21,7 +21,8 @@ namespace Joestar {
 		void MainLoop();
 		void DrawMesh(Mesh* mesh, Material* mat);
 		void Clear();
-		void UpdateBuiltinMatrix(BUILTIN_MATRIX typ, Matrix4x4f& mat);
+		void UpdateBuiltinMatrix(BUILTIN_VALUE typ, Matrix4x4f& mat);
+		void UpdateBuiltinVec3(BUILTIN_VALUE typ, Vector3f& mat);
 		void UpdateVertexBuffer(VertexBuffer* vb);
 		void UpdateIndexBuffer(IndexBuffer* ib);
 		void UpdateMaterial(Material* mat);
@@ -35,11 +36,12 @@ namespace Joestar {
 		void SetDepthCompare(DepthCompareFunc fun);
 		void SetPolygonMode(PolygonMode fun);
 		void UpdateInstanceBuffer(InstanceBuffer* ib);
-		void DispatchCompute();
+		void DispatchCompute(U32 group[3]);
 		void BeginCompute(const char* name);
 		void EndCompute(const char* name);
 		void DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib);
 		void UpdateComputeBuffer(ComputeBuffer* cb, U16 binding = 0);
+		void UpdatePushConstant(void* data, U32 size);
 		void WriteBackComputeBuffer();
 
 	private:

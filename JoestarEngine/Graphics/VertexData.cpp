@@ -44,9 +44,8 @@ namespace Joestar {
 		SetSize(elementSize * instanceCount);
 	}
 
-	static U32 gCBID = 0;
-	ComputeBuffer::ComputeBuffer() {
-		id = ++gVBID;
+	ComputeBuffer::ComputeBuffer(const char* name) {
+		SetName(name);
 	}
 
 }

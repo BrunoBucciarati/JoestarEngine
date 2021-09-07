@@ -162,7 +162,7 @@ namespace Joestar {
 		cb.End();
 	}
 
-	void GPUProgramVulkan::CreateTextureImage(TextureVK* tex) {
+	void GPUProgramVulkan::CreateTextureImage(TextureVK* tex, UniformBufferVK* ub) {
 		if (tex->image) return;
 		VkDeviceSize imageSize = tex->GetSize();
 		mipLevels = tex->HasMipmap() ? static_cast<uint32_t>(std::floor(std::log2(Max(tex->GetWidth(), tex->GetHeight())))) + 1 : 1;
@@ -173,6 +173,10 @@ namespace Joestar {
 		tex->image->mipLevels = mipLevels;
 		tex->image->viewType = (tex->Type() == TEXTURE_CUBEMAP ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D);
 		tex->image->imageType = VK_IMAGE_TYPE_2D;
+		if (ub->IsImage()) {
+			tex->image->format = VK_FORMAT_R8G8B8A8_UNORM;
+			tex->image->usage = tex->image->usage | VK_IMAGE_USAGE_STORAGE_BIT;
+		}
 		tex->image->Create();
 
 		BufferVK stagingBuffer{
@@ -187,12 +191,16 @@ namespace Joestar {
 		//for mipmap
 		CommandBufferVK cb{ vkCtxPtr };
 		cb.Begin();
-		tex->image->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, cb);
-		tex->image->CopyBufferToImage(stagingBuffer, cb);
-		if (tex->HasMipmap()) {
-			tex->image->GenerateMipmaps(cb);
-		} else {
-			tex->image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
+		if (ub->IsSampler()) {
+			tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+			tex->image->CopyBufferToImage(stagingBuffer, cb);
+			if (tex->HasMipmap()) {
+				tex->image->GenerateMipmaps(cb);
+			} else {
+				tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, ub->GetTargetImageLayout());
+			}
+		} else if (ub->IsImage()) {
+			tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, ub->GetTargetImageLayout());
 		}
 		tex->image->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT, cb);
 		cb.End();
@@ -452,39 +460,6 @@ namespace Joestar {
 		}
 	}
 
-	//void GPUProgramVulkan::CreateDescriptorSetLayout(DrawCallVK* dc) {
-	//	std::vector<VkDescriptorSetLayoutBinding> bindings;
-	//	bindings.reserve(dc->shader->ubs.size());
-	//	for (int i = 0; i < dc->shader->ubs.size(); ++i) {
-	//		UniformBufferVK* ubvk = uniformVKs[dc->shader->ubs[i].id];
-	//		VkDescriptorSetLayoutBinding layoutBinding{};
-	//		if (ubvk->texID > 0) {
-	//			layoutBinding.binding = i;
-	//			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	//			//need to know shader stage in shader parser, temp write, --todo
-	//			layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	//		} else {
-	//			layoutBinding.binding = i;
-	//			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	//			//need to know shader stage in shader parser, temp write, --todo
-	//			layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	//		}
-	//		layoutBinding.descriptorCount = 1;
-	//		layoutBinding.pImmutableSamplers = nullptr;
-
-	//		bindings.push_back(layoutBinding);
-	//	}
-
-	//	VkDescriptorSetLayoutCreateInfo layoutInfo{};
-	//	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	//	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-	//	layoutInfo.pBindings = bindings.data();
-
-	//	if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(dc->descriptorSetLayout)) != VK_SUCCESS) {
-	//		LOGERROR("failed to create descriptor set layout!");
-	//	}
-	//}
-
 	void GPUProgramVulkan::GetPipeline(RenderPassVK* pass, int i) {
 		CreateDescriptorSetLayout<DrawCallVK>(pass->dcs[i]);
 		CreateGraphicsPipeline(pass, i);
@@ -516,7 +491,7 @@ namespace Joestar {
 		CommandBufferVK cb{ vkCtxPtr };
 		cb.Begin();
 		pass->fb->depthImage->CreateImageView(VK_IMAGE_ASPECT_DEPTH_BIT, cb);
-		pass->fb->depthImage->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, cb);
+		pass->fb->depthImage->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
 		cb.End();
 	}
 
@@ -666,7 +641,7 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(RenderCommand& cmd) {
-		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
+		BUILTIN_VALUE flag = (BUILTIN_VALUE)cmd.flag;
 		std::string name = "UniformBufferObject";
 		//built in name
 		uint32_t hashID = hashString(name.c_str());
@@ -688,6 +663,10 @@ namespace Joestar {
 				((UniformBufferObject*)uniformVKs[hashID]->data)->proj = *(Matrix4x4f*)cmd.data;
 				break; 
 			}
+			case BUILTIN_VEC3_CAMERAPOS: {
+				Vector3f& v3 = *(Vector3f*)cmd.data;
+				((UniformBufferObject*)uniformVKs[hashID]->data)->cameraPos = Vector4f(v3.x, v3.y, v3.z, 0.f);
+			}
 			//case BUILTIN_MATRIX_MODEL: {
 			//	((UniformBufferObject*)uniformVKs[hashID]->data)->model = *(Matrix4x4f*)cmd.data;
 			//	break;
@@ -701,7 +680,7 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc) {
-		BUILTIN_MATRIX flag = (BUILTIN_MATRIX)cmd.flag;
+		BUILTIN_VALUE flag = (BUILTIN_VALUE)cmd.flag;
 		switch (flag) {
 		case BUILTIN_MATRIX_MODEL: {
 			//built in name
@@ -713,6 +692,7 @@ namespace Joestar {
 			if (pc->size == 0) {
 				pc->data = JOJO_NEW(U8[cmd.size], MEMORY_GFX_STRUCT);
 				pc->size = cmd.size;
+				pc->def = dc->shader->GetPushConstsDef();
 			}
 			memcpy(pc->data, cmd.data, cmd.size);
 			break; 
@@ -828,21 +808,7 @@ namespace Joestar {
 				CHECK_PASS(RenderCMD_UpdateTexture)
 				Texture* tex = (Texture*)cmdBuffer[i].data;
 				U8 binding = cmdBuffer[i].flag;
-				//check if uniform buffer is ready
-				if (textureVKs.find(tex->id) == textureVKs.end() && pendingTextureVKs.find(tex->id) == pendingTextureVKs.end()) {
-					TextureVK* vkTex = JOJO_NEW(TextureVK(tex), MEMORY_GFX_STRUCT);
-					pendingTextureVKs[vkTex->ID()] = vkTex;
-				}
-				drawcall->shader->textures.push_back(tex->id);
-
-				if (uniformVKs.find(tex->id) == uniformVKs.end()) {
-					UniformBufferVK* texUB = JOJO_NEW(UniformBufferVK, MEMORY_GFX_STRUCT);
-					texUB->texID = tex->id;
-					texUB->id = tex->id;
-					uniformVKs[tex->id] = texUB;
-				}
-				//update binding tex
-				drawcall->shader->ubs[binding].id = tex->id;
+				CMDUpdateTexture(tex, drawcall->shader, binding);
 				drawcall->HashInsert(tex->id);
 				break;
 			}
@@ -897,18 +863,7 @@ namespace Joestar {
 			for (int i = 0; i < lastRenderPassList.size(); ++i) {
 				if (lastRenderPassList[i]->hash != renderPassList[i]->hash) {
 					needRecord = true;
-					//needPushConstant = true;
 					break;
-				} else {
-					////update push consts
-					//for (int j = 0; j < renderPassList[i]->dcs.size(); ++j) {
-					//	if (renderPassList[i]->dcs[j]->pc) {
-					//		if (*(lastRenderPassList[i]->dcs[j]->pc) != *(renderPassList[i]->dcs[j]->pc)) {
-					//			//needPushConstant = true;
-					//			*(lastRenderPassList[i]->dcs[j]->pc) = *(renderPassList[i]->dcs[j]->pc);
-					//		}
-					//	}
-					//}
 				}
 			}
 		}
@@ -958,6 +913,7 @@ namespace Joestar {
 				break;
 			}
 			case ComputeCMD_DispatchCompute: {
+				memcpy(computePipeline->group, cmdBuffer[i].data, cmdBuffer[i].size);
 				PrepareCompute(computePipeline);
 				DispatchCompute(computePipeline);
 				break;
@@ -993,6 +949,25 @@ namespace Joestar {
 				computePipeline->HashInsert(shader->id);
 				break;
 			}
+			case ComputeCMD_UpdatePushConstant: {
+				U8* data= (U8*)cmdBuffer[i].data;
+				U32 size = cmdBuffer[i].size;
+				if (computePipeline->shader->pushConst->size == 0) {
+					computePipeline->shader->pushConst->data = JOJO_NEW(U8(size), MEMORY_GFX_STRUCT);
+					computePipeline->shader->pushConst->size = size;
+					computePipeline->shader->pushConst->def = computePipeline->shader->GetPushConstsDef(); 
+				}
+				memcpy(computePipeline->shader->pushConst->data, data, size);
+				computePipeline->HashInsert(size);
+				break;
+			}
+			case ComputeCMD_UpdateTexture: {
+				Texture* tex = (Texture*)cmdBuffer[i].data;
+				U8 binding = cmdBuffer[i].flag;
+				CMDUpdateTexture(tex, computePipeline->shader, binding);
+				computePipeline->HashInsert(tex->id);
+				break;
+			}
 			default: break;
 			}
 		}
@@ -1003,9 +978,9 @@ namespace Joestar {
 		if (computePipelines.find(compute->hash) == computePipelines.end()) {
 			compute->shader->Prepare();
 			//resolve uniform
-			for (int i = 0; i < compute->computeBuffers.size(); ++i) {
-				compute->shader->ubs[i].id = compute->computeBuffers[i]->id;
-				compute->computeBuffers[i]->def = compute->shader->ubs[i];
+			for (auto& ub : compute->shader->ubs) {
+				UniformBufferVK* ubvk = uniformVKs[ub.id];
+				ubvk->def = ub;
 			}
 
 			CreateDescriptorSetLayout<ComputePipelineVK>(compute);
@@ -1023,6 +998,24 @@ namespace Joestar {
 		compute = computePipelines[compute->hash];
 		int nextIdx = curImageIdx == vkCtxPtr->swapChainImages.size() - 1 ? 0 : curImageIdx + 1;
 		compute->Record(nextIdx);
+	}
+
+	void GPUProgramVulkan::CMDUpdateTexture(Texture* tex, ShaderVK* shader, U16 binding) {
+		//check if uniform buffer is ready
+		if (textureVKs.find(tex->id) == textureVKs.end() && pendingTextureVKs.find(tex->id) == pendingTextureVKs.end()) {
+			TextureVK* vkTex = JOJO_NEW(TextureVK(tex), MEMORY_GFX_STRUCT);
+			pendingTextureVKs[vkTex->ID()] = vkTex;
+		}
+		shader->textures.push_back(tex->id);
+
+		if (uniformVKs.find(tex->id) == uniformVKs.end()) {
+			UniformBufferVK* texUB = JOJO_NEW(UniformBufferVK, MEMORY_GFX_STRUCT);
+			texUB->texID = tex->id;
+			texUB->id = tex->id;
+			uniformVKs[tex->id] = texUB;
+		}
+		//update binding tex
+		shader->ubs[binding].id = tex->id;
 	}
 
 	void GPUProgramVulkan::CleanupSwapChain() {

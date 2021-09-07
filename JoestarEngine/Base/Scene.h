@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Camera.h"
 #include "Light.h"
+#include "../Graphics/UniformData.h"
 #include "SubSystem.h"
 #include "../Graphics/Material.h"
 
@@ -29,5 +30,7 @@ namespace Joestar {
 		LightBatch* lightBatch;
 		ComputeBuffer* shComputeBuffer;
 		Shader* shComputeShader;
+		ComputeSHConsts computeSHConsts;
+		Texture* shCube;
 	};
 }

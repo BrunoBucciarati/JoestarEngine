@@ -3,6 +3,7 @@
 #include "../Misc/GlobalConfig.h"
 #include "../Thread/RenderThreadVulkan.h"
 #include "../Thread/RenderThreadGL.h"
+#include "../IO/MemoryManager.h"
 
 namespace Joestar {
 	Graphics::Graphics(EngineContext* context) : Super(context) {
@@ -41,12 +42,21 @@ namespace Joestar {
 		++cmdIdx;
 	}
 
-	void Graphics::UpdateBuiltinMatrix(BUILTIN_MATRIX typ, Matrix4x4f& mat) {
+	void Graphics::UpdateBuiltinMatrix(BUILTIN_VALUE typ, Matrix4x4f& mat) {
 		cmdBuffer[cmdIdx].typ = typ == BUILTIN_MATRIX_MODEL ? RenderCMD_UpdateUniformBuffer : RenderCMD_UpdateUniformBufferObject;
 		//cmdBuffer[cmdIdx].typ = RenderCMD_UpdateUniformBufferObject;
 		cmdBuffer[cmdIdx].flag = typ;
 		cmdBuffer[cmdIdx].size = sizeof(mat);
 		cmdBuffer[cmdIdx].data = mat.GetPtr();
+		++cmdIdx;
+	}
+
+	void Graphics::UpdateBuiltinVec3(BUILTIN_VALUE typ, Vector3f& v3) {
+		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateUniformBufferObject;
+		cmdBuffer[cmdIdx].flag = typ;
+		cmdBuffer[cmdIdx].size = sizeof(v3);
+		cmdBuffer[cmdIdx].data = JOJO_NEW(U8[sizeof(v3)]);
+		memcpy(cmdBuffer[cmdIdx].data, &v3, sizeof(v3));
 		++cmdIdx;
 	}
 
@@ -111,6 +121,14 @@ namespace Joestar {
 	}
 
 	void Graphics::UpdateTexture(Texture* t, U8 binding) {
+		if (isCompute) {
+			computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UpdateTexture;
+			computeCmdBuffer[computeCmdIdx].size = sizeof(Texture*);
+			computeCmdBuffer[computeCmdIdx].flag = binding;
+			computeCmdBuffer[computeCmdIdx].data = (void*)t;
+			++computeCmdIdx;
+			return;
+		}
 		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateTexture;
 		cmdBuffer[cmdIdx].size = sizeof(Texture*);
 		cmdBuffer[cmdIdx].flag = binding;
@@ -189,8 +207,10 @@ namespace Joestar {
 		isCompute = true;
 	}
 
-	void Graphics::DispatchCompute() {
+	void Graphics::DispatchCompute(U32 group[3]) {
 		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_DispatchCompute;
+		computeCmdBuffer[computeCmdIdx].data = group;
+		computeCmdBuffer[computeCmdIdx].size = sizeof(U32) * 3;
 		++computeCmdIdx;
 	}
 
@@ -214,5 +234,14 @@ namespace Joestar {
 		computeCmdBuffer[computeCmdIdx].flag = binding;
 		computeCmdBuffer[computeCmdIdx].data = cb;
 		++computeCmdIdx;
+	}
+
+
+	void Graphics::UpdatePushConstant(void* data, U32 size) {
+		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UpdatePushConstant;
+		computeCmdBuffer[computeCmdIdx].size = size;
+		computeCmdBuffer[computeCmdIdx].data = data;
+		++computeCmdIdx;
+
 	}
 }
