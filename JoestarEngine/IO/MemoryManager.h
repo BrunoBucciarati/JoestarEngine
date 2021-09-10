@@ -27,9 +27,10 @@ enum MemoryAlignment {
 	delete p
 #endif
 
-void* operator new(std::size_t sz, MemoryType type, int align, const char* file, int line);
-void operator delete(void* p, MemoryType type, int align, const char* file, int line);
-void* operator new(std::size_t sz);
+//void* operator new(std::size_t sz, MemoryType type, int align, const char* file, int line);
+//void operator delete(void* p, MemoryType type, int align, const char* file, int line);
+//void* operator new(std::size_t sz);
+
 namespace Joestar {
 	class MemoryManager : public SubSystem {
 		REGISTER_SUBSYSTEM(MemoryManager)

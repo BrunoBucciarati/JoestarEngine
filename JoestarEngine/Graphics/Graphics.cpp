@@ -7,7 +7,7 @@
 
 namespace Joestar {
 	Graphics::Graphics(EngineContext* context) : Super(context) {
-		cmdBuffer.resize(1000);
+		cmdBuffer = new GFXCommandBuffer(1000);
 		cmdIdx = 0;
 		defaultClearColor.Set(0.0f, 0.0f, 0.0f, 1.0f);
 	}
@@ -30,83 +30,74 @@ namespace Joestar {
 	}
 
 	void Graphics::MainLoop() {
-		renderThread->DrawFrame(cmdBuffer, cmdIdx);
-		//clear command buffer
+		cmdBuffer->Flush();
+		renderThread->DrawFrame(cmdBuffer);
+		cmdBuffer->Clear();
 		cmdIdx = 0;
 	}
 
 	void Graphics::Clear() {
-		cmdBuffer[cmdIdx].typ = RenderCMD_Clear;
-		cmdBuffer[cmdIdx].size = sizeof(defaultClearColor);
-		cmdBuffer[cmdIdx].data = &defaultClearColor;
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_Clear);
+		cmdBuffer->WriteBuffer<Vector4f>(defaultClearColor);
 	}
 
 	void Graphics::UpdateBuiltinMatrix(BUILTIN_VALUE typ, Matrix4x4f& mat) {
-		cmdBuffer[cmdIdx].typ = typ == BUILTIN_MATRIX_MODEL ? RenderCMD_UpdateUniformBuffer : RenderCMD_UpdateUniformBufferObject;
-		//cmdBuffer[cmdIdx].typ = RenderCMD_UpdateUniformBufferObject;
-		cmdBuffer[cmdIdx].flag = typ;
-		cmdBuffer[cmdIdx].size = sizeof(mat);
-		cmdBuffer[cmdIdx].data = mat.GetPtr();
-		++cmdIdx;
+		RenderCommandType t = typ == BUILTIN_MATRIX_MODEL ? RenderCMD_UpdateUniformBuffer : RenderCMD_UpdateUniformBufferObject;
+		cmdBuffer->WriteBuffer<RenderCommandType>(t);
+		cmdBuffer->WriteBuffer<BUILTIN_VALUE>(typ);
+		cmdBuffer->WriteBuffer<Matrix4x4f>(mat);
 	}
 
 	void Graphics::UpdateBuiltinVec3(BUILTIN_VALUE typ, Vector3f& v3) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateUniformBufferObject;
-		cmdBuffer[cmdIdx].flag = typ;
-		cmdBuffer[cmdIdx].size = sizeof(v3);
-		cmdBuffer[cmdIdx].data = JOJO_NEW(U8[sizeof(v3)]);
-		memcpy(cmdBuffer[cmdIdx].data, &v3, sizeof(v3));
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_UpdateUniformBufferObject);
+		cmdBuffer->WriteBuffer<BUILTIN_VALUE>(typ);
+		cmdBuffer->WriteBuffer<Vector3f>(v3);
+	}
+
+	void Graphics::UpdateLightBlock(LightBlocks& lb) {
+		cmdBuffer->WriteCommandType(RenderCMD_UpdateUniformBufferObject);
+		BUILTIN_VALUE bv = BUILTIN_STRUCT_LIGHTBLOCK;
+		cmdBuffer->WriteBuffer<BUILTIN_VALUE>(bv);
+		cmdBuffer->WriteBuffer<LightBlocks>(lb);
 	}
 
 	void Graphics::UpdateVertexBuffer(VertexBuffer* vb) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateVertexBuffer;
-		cmdBuffer[cmdIdx].size = sizeof(VertexBuffer*);// vb->GetSize();
-		cmdBuffer[cmdIdx].data = vb;
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_UpdateVertexBuffer);
+		cmdBuffer->WriteBuffer<VertexBuffer*>(vb);
 	}
 
 	void Graphics::UpdateIndexBuffer(IndexBuffer* ib) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateIndexBuffer;
-		cmdBuffer[cmdIdx].size = sizeof(IndexBuffer*);
-		cmdBuffer[cmdIdx].data = ib;
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_UpdateIndexBuffer);
+		cmdBuffer->WriteBuffer<IndexBuffer*>(ib);
 	}
 
 	void Graphics::UpdateInstanceBuffer(InstanceBuffer* ib) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateInstanceBuffer;
-		cmdBuffer[cmdIdx].size = sizeof(InstanceBuffer*);
-		cmdBuffer[cmdIdx].data = ib;
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_UpdateInstanceBuffer);
+		cmdBuffer->WriteBuffer<InstanceBuffer*>(ib);
 	}
 
 	void Graphics::DrawIndexed(Mesh* mesh, U32 count) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_DrawIndexed;
-		cmdBuffer[cmdIdx].size = count;
-		cmdBuffer[cmdIdx].flag = mesh->GetTopology();
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_DrawIndexed);
+		cmdBuffer->WriteBuffer<U32>(count);
+		MeshTopology topology = mesh->GetTopology();
+		cmdBuffer->WriteBuffer<MeshTopology>(topology);
 	}
 
 	void Graphics::DrawArray(Mesh* mesh, U32 count) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_Draw;
-		cmdBuffer[cmdIdx].size = count;
-		cmdBuffer[cmdIdx].flag = mesh->GetTopology();
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_Draw);
+		cmdBuffer->WriteBuffer<U32>(count);
+		MeshTopology topology = mesh->GetTopology();
+		cmdBuffer->WriteBuffer<MeshTopology>(topology);
 	}
 
 
-	void Graphics::UseShader(const Shader* shader) {
+	void Graphics::UseShader(Shader* shader) {
 		if (isCompute) {
-			computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UseShader;
-			computeCmdBuffer[computeCmdIdx].size = sizeof(Shader*);
-			computeCmdBuffer[computeCmdIdx].data = (void*)shader;
-			++computeCmdIdx;
+			computeCmdBuffer->WriteCommandType(ComputeCMD_UseShader);
+			computeCmdBuffer->WriteBuffer<Shader*>(shader);
 		} else {
-			cmdBuffer[cmdIdx].typ = RenderCMD_UseShader;
-			cmdBuffer[cmdIdx].size = sizeof(Shader*);
-			cmdBuffer[cmdIdx].data = (void*)shader;
-			++cmdIdx;
+			cmdBuffer->WriteCommandType(RenderCMD_UseShader);
+			cmdBuffer->WriteBuffer<Shader*>(shader);
 		}
 
 	}
@@ -116,31 +107,24 @@ namespace Joestar {
 		UseShader(mat->GetShader());
 		std::vector<Texture*>& textures = mat->GetTextures();
 		for (int i = 0; i < textures.size(); i++) {
-			UpdateTexture(textures[i], 1);
+			UpdateTexture(textures[i], mat->GetShader()->GetSamplerBinding(i));
 		}
 	}
 
 	void Graphics::UpdateTexture(Texture* t, U8 binding) {
 		if (isCompute) {
-			computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UpdateTexture;
-			computeCmdBuffer[computeCmdIdx].size = sizeof(Texture*);
-			computeCmdBuffer[computeCmdIdx].flag = binding;
-			computeCmdBuffer[computeCmdIdx].data = (void*)t;
-			++computeCmdIdx;
+			computeCmdBuffer->WriteCommandType(ComputeCMD_UpdateTexture);
+			computeCmdBuffer->WriteBuffer<Texture*>(t);
+			computeCmdBuffer->WriteBuffer<U8>(binding);
 			return;
 		}
-		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateTexture;
-		cmdBuffer[cmdIdx].size = sizeof(Texture*);
-		cmdBuffer[cmdIdx].flag = binding;
-		cmdBuffer[cmdIdx].data = (void*)t;
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_UpdateTexture);
+		cmdBuffer->WriteBuffer<Texture*>(t);
+		cmdBuffer->WriteBuffer<U8>(binding);
 	}
 
 	void Graphics::UpdateProgram(ProgramCPU* p) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_UpdateProgram;
-		cmdBuffer[cmdIdx].size = sizeof(ProgramCPU*);
-		cmdBuffer[cmdIdx].data = (void*)p;
-		++cmdIdx;
+
 	}
 
 	void Graphics::DrawMesh(Mesh* mesh, Material* mat) {
@@ -167,81 +151,72 @@ namespace Joestar {
 		}
 	}
 
-	void Graphics::BeginRenderPass(const char* name) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_BeginRenderPass;
-		cmdBuffer[cmdIdx].size = sizeof(const char*);
-		cmdBuffer[cmdIdx].data = (void*)name;
-		++cmdIdx;
+	void Graphics::BeginRenderPass(std::string name) {
+		cmdBuffer->WriteCommandType(RenderCMD_BeginRenderPass);
+		cmdBuffer->WriteBuffer<std::string>(name);
 	}
 
-	void Graphics::EndRenderPass(const char* name) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_EndRenderPass;
-		cmdBuffer[cmdIdx].size = sizeof(const char*);
-		cmdBuffer[cmdIdx].data = (void*)name;
-		++cmdIdx;
+	void Graphics::EndRenderPass(std::string name) {
+		cmdBuffer->WriteCommandType(RenderCMD_EndRenderPass);
+		cmdBuffer->WriteBuffer<std::string>(name);
 	}
 
 	void Graphics::SetDepthCompare(DepthCompareFunc func) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_SetDepthCompare;
-		cmdBuffer[cmdIdx].size = sizeof(DepthCompareFunc);
-		cmdBuffer[cmdIdx].flag = func;
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_SetDepthCompare);
+		cmdBuffer->WriteBuffer<DepthCompareFunc>(func);
 	}
 
 	void Graphics::SetPolygonMode(PolygonMode mode) {
-		cmdBuffer[cmdIdx].typ = RenderCMD_SetPolygonMode;
-		cmdBuffer[cmdIdx].size = sizeof(PolygonMode);
-		cmdBuffer[cmdIdx].flag = mode;
-		++cmdIdx;
+		cmdBuffer->WriteCommandType(RenderCMD_SetPolygonMode);
+		cmdBuffer->WriteBuffer<PolygonMode>(mode);
 	}
 
 
 	void Graphics::BeginCompute(const char* name) {
-		computeCmdIdx = 0;
-		computeCmdBuffer.clear();
-		computeCmdBuffer.resize(10);
-		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_BeginCompute;
-		computeCmdBuffer[computeCmdIdx].size = sizeof(const char*);
-		computeCmdBuffer[computeCmdIdx].data = (void*)name;
-		++computeCmdIdx;
+		if (!computeCmdBuffer) {
+			computeCmdBuffer = new GFXCommandBuffer(100);
+		} else {
+			computeCmdBuffer->Clear();
+		}
+		computeCmdBuffer->WriteCommandType(ComputeCMD_BeginCompute);
+		computeCmdBuffer->WriteBuffer<const char*>(name);
 		isCompute = true;
 	}
 
 	void Graphics::DispatchCompute(U32 group[3]) {
-		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_DispatchCompute;
-		computeCmdBuffer[computeCmdIdx].data = group;
-		computeCmdBuffer[computeCmdIdx].size = sizeof(U32) * 3;
-		++computeCmdIdx;
+		computeCmdBuffer->WriteCommandType(ComputeCMD_DispatchCompute);
+		U32 sz = sizeof(U32) * 3;
+		computeCmdBuffer->WriteBufferPtr(group, sz);
 	}
 
 	void Graphics::WriteBackComputeBuffer() {
-		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_WriteBackComputeBuffer;
-		++computeCmdIdx;
+		computeCmdBuffer->WriteCommandType(ComputeCMD_WriteBackComputeBuffer);
 	}
 
 	void Graphics::EndCompute(const char* name) {
-		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_EndCompute;
-		computeCmdBuffer[computeCmdIdx].size = sizeof(const char*);
-		computeCmdBuffer[computeCmdIdx].data = (void*)name;
+		computeCmdBuffer->WriteCommandType(ComputeCMD_EndCompute);
+		computeCmdBuffer->WriteBuffer<const char*>(name);
 		++computeCmdIdx;
-		renderThread->DispatchCompute(computeCmdBuffer, computeCmdIdx);
+		computeCmdBuffer->Flush();
+		renderThread->DispatchCompute(computeCmdBuffer);
 		isCompute = false;
 	}
 
-	void Graphics::UpdateComputeBuffer(ComputeBuffer* cb, U16 binding) {
-		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UpdateComputeBuffer;
-		computeCmdBuffer[computeCmdIdx].size = sizeof(ComputeBuffer*);
-		computeCmdBuffer[computeCmdIdx].flag = binding;
-		computeCmdBuffer[computeCmdIdx].data = cb;
-		++computeCmdIdx;
+	void Graphics::UpdateComputeBuffer(ComputeBuffer* cb, U8 binding) {
+		computeCmdBuffer->WriteCommandType(ComputeCMD_UpdateComputeBuffer);
+		computeCmdBuffer->WriteBuffer<ComputeBuffer*>(cb);
+		computeCmdBuffer->WriteBuffer<U8>(binding);
 	}
 
 
 	void Graphics::UpdatePushConstant(void* data, U32 size) {
-		computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UpdatePushConstant;
-		computeCmdBuffer[computeCmdIdx].size = size;
-		computeCmdBuffer[computeCmdIdx].data = data;
-		++computeCmdIdx;
+		computeCmdBuffer->WriteCommandType(ComputeCMD_UpdatePushConstant);
+		computeCmdBuffer->WriteBuffer<U32>(size);
+		computeCmdBuffer->WriteBufferPtr(data, size);
+		//computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UpdatePushConstant;
+		//computeCmdBuffer[computeCmdIdx].size = size;
+		//computeCmdBuffer[computeCmdIdx].data = data;
+		//++computeCmdIdx;
 
 	}
 }

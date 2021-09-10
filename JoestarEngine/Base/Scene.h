@@ -32,5 +32,6 @@ namespace Joestar {
 		Shader* shComputeShader;
 		ComputeSHConsts computeSHConsts;
 		Texture* shCube;
+		LightBlocks lightBlocks;
 	};
 }

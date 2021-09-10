@@ -6,7 +6,7 @@
 		static uint32_t GetClassIDStatic() {return ClassID(CLASS);}\
 		virtual uint32_t GetClassID() {return ClassID(CLASS);} \
 	protected:\
-		~CLASS();\
+		virtual ~CLASS();\
 	public:
 
 #define REGISTER_OBJECT(CLASS, PARENT)\
@@ -16,7 +16,7 @@
 		virtual uint32_t GetClassID() {return ClassID(CLASS);} \
 	typedef PARENT Super;\
 	protected:\
-		~CLASS();\
+		virtual ~CLASS();\
 	public:
 	
 #define REGISTER_SUBSYSTEM(CLASS) REGISTER_OBJECT(CLASS, SubSystem);
@@ -26,6 +26,12 @@
 
 #define NEW_OBJECT(CLASS)\
 	new CLASS(mContext)
+
+#define DELETE_OBJECT(obj)\
+	obj->Destroy();
+
+#define NEW_OBJECT_PLACEMENT(CLASS, P)\
+	new (P)CLASS(mContext)
 
 #define InitSubSystem(CLASS, CONTEXT) \
 	CLASS* ptr##CLASS = new CLASS(CONTEXT);\

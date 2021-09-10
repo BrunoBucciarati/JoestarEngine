@@ -25,9 +25,18 @@ namespace Joestar {
 		Matrix4x4f view;
 		Matrix4x4f proj;
 		Vector4f cameraPos; // for alignment
+		Vector4f sunDirection;
+		Vector4f sunColor;
 		bool operator== (UniformBufferObject& ub) {
 			return view == ub.view && proj == ub.proj;//&& model == ub.model;
 		}
+	};
+
+	const int MAX_LIGHTS = 20;
+	struct LightBlocks {
+		U32 lightCount;
+		Vector4f lightPos[MAX_LIGHTS];
+		Vector4f lightColors[MAX_LIGHTS];
 	};
 
 	struct ComputeSHConsts {

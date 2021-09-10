@@ -2,6 +2,9 @@
 #include "ShaderParser.h"
 
 namespace Joestar {
+	Shader::~Shader() {
+
+	}
 	void Shader::SetShader(std::string n, U32 f) {
 		name = n;
 		id = hashString(n.c_str());

@@ -157,6 +157,7 @@
     <ClCompile Include="Component\Transform.cpp" />
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
     <ClCompile Include="Graphics\Image.cpp" />
+    <ClCompile Include="Graphics\Material.cpp" />
     <ClCompile Include="Graphics\Mesh.cpp" />
     <ClCompile Include="Graphics\ProceduralMesh.cpp" />
     <ClCompile Include="Graphics\ProgramCPU.cpp" />

@@ -8,7 +8,7 @@ namespace Joestar {
 		inline bool IsReady() {
 			return mReady;
 		}
-		inline void* GetBuffer() {
+		inline char* GetBuffer() {
 			return mBuffer;
 		}
 		void Open(const char* filename);
@@ -18,7 +18,7 @@ namespace Joestar {
 		size_t Size() { return mSize; }
 		size_t Tell();
 	private:
-		void* mBuffer;
+		char* mBuffer;
 		bool mReady;
 		size_t mSize;
 		std::ifstream file;

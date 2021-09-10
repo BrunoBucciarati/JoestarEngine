@@ -7,4 +7,10 @@ namespace Joestar {
 		//give a default name
 		SetName("Game Object " + gGOIdx);
 	}
+
+	GameObject::~GameObject() {
+		for (auto& comp : components) {
+			comp->Destroy();
+		}
+	}
 }

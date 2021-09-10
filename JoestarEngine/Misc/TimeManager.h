@@ -12,6 +12,7 @@ namespace Joestar {
 		void BeginFrame();
 		void EndFrame();
 		float GetElapseTime();
+		U32 GetFrame() { return frame; }
 	private:
 		U32 frame;
 		float lastTime;

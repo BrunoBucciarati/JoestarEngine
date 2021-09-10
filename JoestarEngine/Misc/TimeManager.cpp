@@ -1,17 +1,18 @@
 #include "TimeManager.h"
-
+#include "../IO/Log.h"
 namespace Joestar {
 
 	TimeManager::TimeManager(EngineContext* ctx) : Super(ctx), frame(0), lastTime(0.f) {
 		QueryPerformanceFrequency(&HiResfrequency);
 		frequency = HiResfrequency.QuadPart;
 	}
+	TimeManager::~TimeManager() {}
 
 	void TimeManager::BeginFrame() {
 		QueryPerformanceCounter(&counter);
 		beginTick = counter.QuadPart;
 		++frame;
-		//U64 begin_ticks = readHiResTimer();
+		LOG("Frame: %d\n", frame);
 	}
 
 	void TimeManager::EndFrame() {

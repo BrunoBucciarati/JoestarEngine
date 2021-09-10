@@ -1,6 +1,7 @@
 #include "ProceduralMesh.h"
 
 namespace Joestar {
+    ProceduralMesh::~ProceduralMesh(){}
     Mesh* ProceduralMesh::GenUVSphere() {
         Mesh* mesh = NEW_OBJECT(Mesh);
         std::vector<VertexLoad> vertices;

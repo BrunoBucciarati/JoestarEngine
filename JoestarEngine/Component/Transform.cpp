@@ -15,4 +15,7 @@ namespace Joestar {
 		}
 		return mat;
 	}
+	Transform::~Transform() {
+
+	}
 }

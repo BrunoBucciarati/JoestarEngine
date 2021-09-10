@@ -17,6 +17,10 @@ namespace Joestar {
 			translate = v;
 			dirty = true;
 		}
+		void SetPosition(float x, float y, float z) {
+			translate.Set(x, y, z);
+			dirty = true;
+		}
 		void SetScale(Vector3f& v) { scale = v; dirty = true;}
 		void SetRotation(Quaternionf& q) { rotation = q; dirty = true;}
 		void SetLocalEulerAngles(Vector3f& euler) {

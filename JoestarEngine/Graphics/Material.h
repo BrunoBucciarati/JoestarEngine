@@ -16,26 +16,14 @@ namespace Joestar {
 		}
 	//GPUProgram* program;
 	//Material() :program(GPUProgram::CreateProgram()) {}
-	void SetDefault() {
-		if (!program->shader) {
-			program->shader = NEW_OBJECT(Shader);
-			program->shader->SetShader("test");
-		}
-		textures.push_back(NEW_OBJECT(Texture2D));
-		std::string path = "Models/viking_room/viking_room.png";
-		textures[0]->TextureFromImage(path);
-		//textures[0]->hasMipMap = false;
-	}
+	void SetDefault();
+	void SetPBR();
 
 	void SetShader(Shader* shader) {
 		program->shader = shader;
 	}
 
-	void SetTexture(Texture* tex, U8 slot = 0) {
-		if (slot >= textures.size())
-			textures.resize(slot + 1);
-		textures[slot] = tex;
-	}
+	void SetTexture(Texture* tex, U8 slot = 0);
 	Shader* GetShader() { return program->shader; }
 	std::string& GetShaderName() { return program->shader->GetName(); }
 	ProgramCPU* GetProgram() { return program; }

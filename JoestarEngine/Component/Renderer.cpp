@@ -5,6 +5,7 @@
 namespace Joestar {
 	void Renderer::Init() {
 	}
+	Renderer::~Renderer(){}
 
 	void Renderer::Render(Camera cam) {
 		if (mesh && mat) {

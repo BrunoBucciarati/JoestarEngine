@@ -8,6 +8,7 @@ namespace Joestar {
 			callback(&file);
 		}
 	}
+	FileSystem::~FileSystem() {}
 
 	File* FileSystem::ReadFile(const char* filename) {
 		File* file = new File(filename);
@@ -24,6 +25,7 @@ namespace Joestar {
 		path += "Shaders/";
 		path += file;
 		File* f = ReadFile(path.c_str());
+		f->Close();
 		return f;
 	}
 }

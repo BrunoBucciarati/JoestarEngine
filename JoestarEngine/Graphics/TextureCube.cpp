@@ -24,6 +24,7 @@ namespace Joestar {
 			fmt = TEXTURE_FORMAT_RGBA8;
 			if (!buffer) buffer = new U8[GetSize()];
 			memcpy(buffer + i * width * height * TEXTURE_FORMAT_SIZE[fmt], img->GetData(), width * height * TEXTURE_FORMAT_SIZE[fmt]);
+			DELETE_OBJECT(img);
 		}
 		id = hashString(path.c_str());
 	}

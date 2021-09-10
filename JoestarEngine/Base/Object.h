@@ -20,6 +20,8 @@ namespace Joestar {
 
 		std::string GetName() { return mName; }
 		void SetName(std::string n) { mName = n; }
+
+		virtual void Destroy() { delete this; }
 	protected:
 		EngineContext* mContext;
 		std::string mName;

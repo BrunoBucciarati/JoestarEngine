@@ -9,12 +9,16 @@ namespace Joestar {
 		//light should be small
 		mat.SetScale(0.2);
 	}
+	Light::~Light() {}
 	void DirectionalLight::Init() {
 	}
+	DirectionalLight::~DirectionalLight(){}
 	void PointLight::Init() {
 	}
+	PointLight::~PointLight() {}
 	void SpotLight::Init() {
 	}
+	SpotLight::~SpotLight() {}
 
 	LightBatch::LightBatch(EngineContext* ctx) : Super(ctx) {
 		mat = NEW_OBJECT(Material);
@@ -26,6 +30,10 @@ namespace Joestar {
 
 		modelMatrix.SetIdentity();
 		modelMatrix.SetScale(0.2);
+	}
+
+	LightBatch::~LightBatch() {
+
 	}
 
 	void LightBatch::SetLights(std::vector<Light*>& ls) {

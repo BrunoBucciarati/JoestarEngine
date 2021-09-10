@@ -193,6 +193,9 @@ namespace Joestar {
         bool HasStage(ShaderStage stage) {
             return shader->flag & stage;
         }
+        void Reset() {
+            textures.clear();
+        }
         VkShaderModule CreateShaderModule(File* file) {
             VkShaderModuleCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -780,7 +783,7 @@ namespace Joestar {
         bool clear = false;
         bool msaa = false;
         Vector4f clearColor;
-        const char* name;
+        std::string name;
         std::vector<DrawCallVK*> dcs;
         REGISTER_HASH
     };
@@ -979,11 +982,11 @@ namespace Joestar {
         void CreateDescriptorSetLayout(T* call);
         void UpdateUniformBuffer(uint32_t currentImage);
         void RecordCommandBuffer(std::vector<RenderPassVK*>&);
-        bool ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imageIdx);
-        bool ExecuteComputeCommand(std::vector<ComputeCommand>& cmdBuffer, uint16_t cmdIdx);
+        bool ExecuteRenderCommand(GFXCommandBuffer* cmdBuffer, U16 imageIdx);
+        bool ExecuteComputeCommand(GFXCommandBuffer* cmdBuffer);
         void CreateCommandBuffers();
-        void RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc);
-        void RenderCmdUpdateUniformBufferObject(RenderCommand& cmd);
+        void RenderCmdUpdateUniformBuffer(GFXCommandBuffer* cmdBuffer, DrawCallVK*);
+        void RenderCmdUpdateUniformBufferObject(GFXCommandBuffer* cmdBuffer);
         void RecordRenderPass(RenderPassVK* pass, int i);
         CommandBufferVK* GetCommandBuffer(bool dynamic = false);
         void PushConstants(std::vector<RenderPassVK*>& passes);

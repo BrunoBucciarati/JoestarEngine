@@ -15,8 +15,8 @@ namespace Joestar {
 	public:
 		RenderThreadVulkan();
 		void InitRenderContext();
-		void DrawFrame(std::vector<RenderCommand>& cmdBuffer, U16 cmdIdx);
-		void DispatchCompute(std::vector<ComputeCommand>& cmdBuffer, U16 cmdIdx);
+		void DrawFrame(GFXCommandBuffer* cmdBuffer);
+		void DispatchCompute(GFXCommandBuffer* cmdBuffer);
 		bool CheckValidationLayerSupport();
 		void CreateInstance();
 		void CreateSurface();

@@ -2,4 +2,5 @@
 
 namespace Joestar {
 	HID::HID(EngineContext* context) : Super(context) {}
+	HID::~HID() {}
 }

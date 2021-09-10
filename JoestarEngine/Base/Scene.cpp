@@ -9,6 +9,7 @@
 #include "../Graphics/TextureCube.h"
 #include "../Component/Renderer.h"
 #include "../IO/MemoryManager.h"
+#include "../Misc/TimeManager.h"
 namespace Joestar {
     Scene::Scene(EngineContext* ctx) : Super(ctx) {
         //for test
@@ -23,12 +24,14 @@ namespace Joestar {
         render->mat = NEW_OBJECT(Material);
         render->mat->SetDefault();
 
-        GameObject* sphere = NEW_OBJECT(GameObject);
-        gameObjects.push_back(sphere);
-        Renderer* sr = sphere->GetComponent<Renderer>();
-        sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
-        sr->mat = NEW_OBJECT(Material);
-        sr->mat->SetDefault();
+        //GameObject* sphere = NEW_OBJECT(GameObject);
+        //gameObjects.push_back(sphere);
+        //Renderer* sr = sphere->GetComponent<Renderer>();
+        //sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
+        //sr->mat = NEW_OBJECT(Material);
+        //sr->mat->SetPBR();
+        //sphere->SetPosition(0, 0, 1.5);
+        //selection = sphere;
 
         GameObject* plane = NEW_OBJECT(GameObject);
         gameObjects.push_back(plane);
@@ -37,7 +40,6 @@ namespace Joestar {
         pr->mat = NEW_OBJECT(Material);
         pr->mat->SetDefault();
 
-        selection = sphere;
 
         lightBatch = NEW_OBJECT(LightBatch);
 
@@ -58,6 +60,8 @@ namespace Joestar {
 
         CreateCompute();
     }
+
+    Scene::~Scene() {}
 
     void Scene::CreateCompute() {
         shComputeShader = NEW_OBJECT(Shader);
@@ -123,7 +127,9 @@ namespace Joestar {
             }
         }
 
-        PreRenderCompute();
+        if (GetSubsystem<TimeManager>()->GetFrame() > 10) {
+            PreRenderCompute();
+        }
         RenderScene();
     }
 
@@ -153,6 +159,9 @@ namespace Joestar {
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera.GetProjectionMatrix());
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera.GetViewMatrix());
         graphics->UpdateBuiltinVec3(BUILTIN_VEC3_CAMERAPOS, camera.Position);
+
+        RenderLights();
+
         Renderer* render;
         for (std::vector<GameObject*>::const_iterator iter = gameObjects.begin(); iter != gameObjects.end(); iter++) {
             render = (*iter)->HasComponent<Renderer>();
@@ -161,7 +170,6 @@ namespace Joestar {
             }
         }
 
-        RenderLights();
 
         RenderSkybox();
         graphics->EndRenderPass("Scene");
@@ -171,14 +179,20 @@ namespace Joestar {
         //Draw Main Light as Wireframe //maybe don't need
         //Draw Point Light as Sphere
         Graphics* graphics = GetSubsystem<Graphics>();
-        //for (int i = 0; i < lights.size(); ++i) {
-        //    graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lights[i]->GetModelMatrix());
-        //    if (lights[i]->GetType() == DIRECTIONAL_LIGHT) {
-        //        //graphics->SetPolygonMode(POLYGON_MODE_LINE);
-        //        //graphics->DrawMesh(GetSubsystem<ProceduralMesh>()->GetLine(), lightMat);
-        //        break;
-        //    }
-        //}
+        lightBlocks = {};
+        for (int i = 0; i < lights.size(); ++i) {
+            //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lights[i]->GetModelMatrix());
+            if (lights[i]->GetType() == DIRECTIONAL_LIGHT) {
+                graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNDIRECTION, lights[i]->GetDirection());
+                graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNCOLOR, lights[i]->GetColor());
+            } else {
+                lightBlocks.lightPos[lightBlocks.lightCount] = Vector4f(lights[i]->GetDirection());
+                lightBlocks.lightColors[lightBlocks.lightCount] = Vector4f(lights[i]->GetColor());
+                ++lightBlocks.lightCount;
+            }
+        }
+
+        graphics->UpdateLightBlock(lightBlocks);
 
         graphics->SetPolygonMode(POLYGON_MODE_FILL);
         graphics->UpdateMaterial(lightBatch->GetMaterial());

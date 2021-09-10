@@ -12,7 +12,7 @@ namespace Joestar {
 	}
 
 	Texture2D::~Texture2D() {
-		//delete img;
+		DELETE_OBJECT(img);
 	}
 
 	U8* Texture2D::GetData() {

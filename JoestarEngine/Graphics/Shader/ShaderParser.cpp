@@ -55,6 +55,10 @@
 	if (token == TOKEN_SAMPLER3D) val = SamplerType3D;
 
 namespace Joestar {
+	ShaderParser::~ShaderParser() {
+
+	}
+
 	struct TokenStream {
 		std::vector<std::string> tokens;
 		uint32_t curIdx;
@@ -290,7 +294,7 @@ namespace Joestar {
 	void GetTokenStream(char* buffer, uint32_t idx, uint32_t size, TokenStream& tokenStream) {
 		char c;
 		int tokenIdx = 0;
-		tokenStream.resize(10000);
+		tokenStream.resize(5000);
 		while (idx < size) {
 			c = buffer[idx];
 			switch (c) {

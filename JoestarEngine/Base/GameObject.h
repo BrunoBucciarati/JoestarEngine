@@ -42,6 +42,10 @@ namespace Joestar {
 			GetTransform()->SetPosition(v);
 		}
 
+		void SetPosition(float x, float y, float z) {
+			GetTransform()->SetPosition(x, y, z);
+		}
+
 		Quaternionf GetRotation() {
 			//comp 0 must be transform
 			return GetTransform()->GetRotation();

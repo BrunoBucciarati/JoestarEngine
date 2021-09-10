@@ -512,7 +512,7 @@ namespace Joestar {
 		ub->buffers.resize(vkCtxPtr->swapChainImages.size());
 
 		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
-			ub->buffers[i] = { vkCtxPtr, bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
+			ub->buffers[i] = { vkCtxPtr, bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT };
 			ub->buffers[i].Create();
 		}
 	}
@@ -640,8 +640,7 @@ namespace Joestar {
 		firstRecord = false;
 	}
 
-	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(RenderCommand& cmd) {
-		BUILTIN_VALUE flag = (BUILTIN_VALUE)cmd.flag;
+	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(GFXCommandBuffer* cmdBuffer) {
 		std::string name = "UniformBufferObject";
 		//built in name
 		uint32_t hashID = hashString(name.c_str());
@@ -654,18 +653,56 @@ namespace Joestar {
 			CreateUniformBuffers(uniformVKs[hashID]);
 		}
 
+		BUILTIN_VALUE flag;
+		cmdBuffer->ReadBuffer<BUILTIN_VALUE>(flag);
 		switch (flag) {
 			case BUILTIN_MATRIX_VIEW: {
-				((UniformBufferObject*)uniformVKs[hashID]->data)->view = *(Matrix4x4f*)cmd.data;
+				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
+				cmdBuffer->ReadBuffer<Matrix4x4f>(ubo->view);
 				break; 
 			}
-			case BUILTIN_MATRIX_PROJECTION: { 
-				((UniformBufferObject*)uniformVKs[hashID]->data)->proj = *(Matrix4x4f*)cmd.data;
+			case BUILTIN_MATRIX_PROJECTION: {
+				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
+				cmdBuffer->ReadBuffer<Matrix4x4f>(ubo->proj);
 				break; 
 			}
 			case BUILTIN_VEC3_CAMERAPOS: {
-				Vector3f& v3 = *(Vector3f*)cmd.data;
-				((UniformBufferObject*)uniformVKs[hashID]->data)->cameraPos = Vector4f(v3.x, v3.y, v3.z, 0.f);
+				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
+				Vector3f v3;
+				cmdBuffer->ReadBuffer<Vector3f>(v3);
+				ubo->cameraPos.Set(v3.x, v3.y, v3.z, 0.f);
+				break;
+			}
+			case BUILTIN_VEC3_SUNDIRECTION: {
+				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
+				Vector3f v3;
+				cmdBuffer->ReadBuffer<Vector3f>(v3);
+				ubo->sunDirection.Set(v3.x, v3.y, v3.z, 1.f);
+				break;
+			}
+			case BUILTIN_VEC3_SUNCOLOR: {
+				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
+				Vector3f v3;
+				cmdBuffer->ReadBuffer<Vector3f>(v3);
+				ubo->sunColor.Set(v3.x, v3.y, v3.z, 1.f);
+				break;
+			}
+			case BUILTIN_STRUCT_LIGHTBLOCK: {
+				LightBlocks lb;
+				cmdBuffer->ReadBuffer<LightBlocks>(lb);
+				std::string name = "LightBlocks";
+				//built in name
+				uint32_t hashID = hashString(name.c_str());
+				if (uniformVKs.find(hashID) == uniformVKs.end()) {
+					uniformVKs[hashID] = new UniformBufferVK;
+					uniformVKs[hashID]->size = sizeof(LightBlocks);
+					uniformVKs[hashID]->data = JOJO_NEW(LightBlocks, MEMORY_GFX_STRUCT);
+					uniformVKs[hashID]->id = hashID;
+
+					CreateUniformBuffers(uniformVKs[hashID]);
+				}
+				memcpy(uniformVKs[hashID]->data, &lb, sizeof(LightBlocks));
+				break;
 			}
 			//case BUILTIN_MATRIX_MODEL: {
 			//	((UniformBufferObject*)uniformVKs[hashID]->data)->model = *(Matrix4x4f*)cmd.data;
@@ -679,22 +716,25 @@ namespace Joestar {
 		}
 	}
 
-	void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(RenderCommand cmd, DrawCallVK* dc) {
-		BUILTIN_VALUE flag = (BUILTIN_VALUE)cmd.flag;
+	void GPUProgramVulkan::RenderCmdUpdateUniformBuffer(GFXCommandBuffer* cmdBuffer, DrawCallVK* dc) {
+		BUILTIN_VALUE flag;
+		cmdBuffer->ReadBuffer<BUILTIN_VALUE>(flag);
+		U32 size;
 		switch (flag) {
 		case BUILTIN_MATRIX_MODEL: {
 			//built in name
+			size = sizeof(PushConsts);
 			if (!dc->shader) {
 				LOGERROR("can't update uniform buffer without use shader!!!");
 				return;
 			}
 			PushConstsVK* pc = dc->shader->pushConst;
 			if (pc->size == 0) {
-				pc->data = JOJO_NEW(U8[cmd.size], MEMORY_GFX_STRUCT);
-				pc->size = cmd.size;
+				pc->data = JOJO_NEW(U8[size], MEMORY_GFX_STRUCT);
+				pc->size = size;
 				pc->def = dc->shader->GetPushConstsDef();
 			}
-			memcpy(pc->data, cmd.data, cmd.size);
+			cmdBuffer->ReadBufferPtr(pc->data, size);
 			break; 
 		}
 		default: break;
@@ -713,10 +753,10 @@ namespace Joestar {
 	}
 
 
+#define ENUM_STR(e) #e
 #define CHECK_PASS(CMD) if(nullptr == pass) {LOGERROR("PLEASE START PASS FIRST! CMD = %s\n", #CMD);}
 #define CHECK_PASS_OR_COMPUTE() if(nullptr == pass && nullptr == computePipeline) {LOGERROR("PLEASE START PASS OR COMPUTE FIRST!\n");}
-	bool GPUProgramVulkan::ExecuteRenderCommand(std::vector<RenderCommand>& cmdBuffer, uint16_t cmdIdx, U16 imgIdx) {
-		if (cmdIdx == 0) return false;
+	bool GPUProgramVulkan::ExecuteRenderCommand(GFXCommandBuffer* cmdBuffer, U16 imgIdx) {
 		renderPassList.clear();
 		curImageIdx = imgIdx;
 		bool isCompute = false;
@@ -724,15 +764,14 @@ namespace Joestar {
 		bool ret = !lastRenderPassList.empty();
 
 		RenderPassVK* pass = nullptr;
-		ComputePipelineVK* computePipeline = nullptr;
-		DrawCallVK* drawcall = new DrawCallVK;
-		for (int i = 0; i < cmdIdx; ++i) {
-			if (isCompute) computePipeline->HashInsert(cmdBuffer[i].typ);
-			else drawcall->HashInsert(cmdBuffer[i].typ);
-			switch (cmdBuffer[i].typ) {
+		DrawCallVK* drawcall = JOJO_NEW(DrawCallVK);
+		RenderCommandType typ;
+		while(cmdBuffer->ReadBuffer<RenderCommandType>(typ)) {
+			drawcall->HashInsert(typ);
+			switch (typ) {
 			case RenderCMD_BeginRenderPass: {
 				pass = new RenderPassVK;
-				pass->name = ((const char*)cmdBuffer[i].data);
+				cmdBuffer->ReadBuffer<std::string>(pass->name);
 				break;
 			}
 			case RenderCMD_EndRenderPass: {
@@ -746,21 +785,22 @@ namespace Joestar {
 			case RenderCMD_Clear: {
 				CHECK_PASS(RenderCMD_Clear)
 				pass->clear = true;
-				pass->clearColor = *((Vector4f*)cmdBuffer[i].data);
+				cmdBuffer->ReadBuffer<Vector4f>(pass->clearColor);
 				break; 
 			}
 			case RenderCMD_UpdateUniformBufferObject: {
-				RenderCmdUpdateUniformBufferObject(cmdBuffer[i]);
+				RenderCmdUpdateUniformBufferObject(cmdBuffer);
 				UpdateUniformBuffer(imgIdx);
 				break; 
 			}
 			case RenderCMD_UpdateUniformBuffer: {
-				RenderCmdUpdateUniformBuffer(cmdBuffer[i], drawcall);
+				RenderCmdUpdateUniformBuffer(cmdBuffer, drawcall);
 				break; 
 			}
 			case RenderCMD_UpdateVertexBuffer: {
 				CHECK_PASS(RenderCMD_UpdateVertexBuffer)
-				VertexBuffer* vb = (VertexBuffer*)cmdBuffer[i].data;
+				VertexBuffer* vb;
+				cmdBuffer->ReadBuffer<VertexBuffer*>(vb);
 				if (vbs.find(vb->id) == vbs.end()) {
 					vbs[vb->id] = new VertexBufferVK(vb, vkCtxPtr);
 					CreateVertexBuffer(vbs[vb->id]);
@@ -771,7 +811,8 @@ namespace Joestar {
 			}
 			case RenderCMD_UpdateIndexBuffer: {
 				CHECK_PASS(RenderCMD_UpdateIndexBuffer)
-				IndexBuffer* ib = (IndexBuffer*)cmdBuffer[i].data;
+				IndexBuffer* ib;
+				cmdBuffer->ReadBuffer<IndexBuffer*>(ib);
 				if (ibs.find(ib->id) == ibs.end()) {
 					ibs[ib->id] = new IndexBufferVK(ib, vkCtxPtr);
 					CreateIndexBuffer(ibs[ib->id]);
@@ -782,7 +823,8 @@ namespace Joestar {
 			}
 			case RenderCMD_UpdateInstanceBuffer: {
 				CHECK_PASS(RenderCMD_UpdateInstanceBuffer)
-				InstanceBuffer* ib = (InstanceBuffer*)cmdBuffer[i].data;
+				InstanceBuffer* ib;
+				cmdBuffer->ReadBuffer<InstanceBuffer*>(ib);
 				if (vbs.find(ib->id) == vbs.end()) {
 					vbs[ib->id] = new VertexBufferVK(ib, vkCtxPtr);
 					CreateVertexBuffer(vbs[ib->id]);
@@ -795,43 +837,49 @@ namespace Joestar {
 			}
 			case RenderCMD_UseShader: {
 				CHECK_PASS(RenderCMD_UseShader)
-				Shader* shader = (Shader*)cmdBuffer[i].data;
+				Shader* shader;
+				cmdBuffer->ReadBuffer<Shader*>(shader);
 				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
 					shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
 				}
 
 				drawcall->shader = shaderVKs[shader->id];
+				drawcall->shader->Reset();
 				drawcall->HashInsert(shader->id);
 				break;
 			}
 			case RenderCMD_UpdateTexture: {
 				CHECK_PASS(RenderCMD_UpdateTexture)
-				Texture* tex = (Texture*)cmdBuffer[i].data;
-				U8 binding = cmdBuffer[i].flag;
+				Texture* tex;
+				cmdBuffer->ReadBuffer<Texture*>(tex);
+				U8 binding;
+				cmdBuffer->ReadBuffer<U8>(binding);
 				CMDUpdateTexture(tex, drawcall->shader, binding);
 				drawcall->HashInsert(tex->id);
 				break;
 			}
 			case RenderCMD_SetDepthCompare: {
 				CHECK_PASS(RenderCMD_SetDepthCompare)
-				drawcall->depthOp = VKCompareOps[cmdBuffer[i].flag];
-				drawcall->HashInsert(cmdBuffer[i].flag);
+				DepthCompareFunc f;
+				cmdBuffer->ReadBuffer<DepthCompareFunc>(f);
+				drawcall->depthOp = VKCompareOps[f];
+				drawcall->HashInsert(f);
 				break;
 			}
 			case RenderCMD_SetPolygonMode: {
 				CHECK_PASS(RenderCMD_SetPolygonMode)
-				drawcall->polygonMode = VKPolygonModes[cmdBuffer[i].flag];
-				drawcall->HashInsert(cmdBuffer[i].flag);
+				PolygonMode f;
+				cmdBuffer->ReadBuffer<PolygonMode>(f);
+				drawcall->polygonMode = VKPolygonModes[f];
+				drawcall->HashInsert(f);
 				break;
 			}
 			case RenderCMD_DrawIndexed: {
 				CHECK_PASS(RenderCMD_DrawIndexed)
-				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
-				U32 instanceCount = cmdBuffer[i].size;
-				drawcall->instanceCount = instanceCount;
-				drawcall->HashInsert(instanceCount);
-				drawcall->topology = topology;
-				drawcall->HashInsert(topology);
+				cmdBuffer->ReadBuffer<U32>(drawcall->instanceCount);
+				cmdBuffer->ReadBuffer<MeshTopology>(drawcall->topology);
+				drawcall->HashInsert(drawcall->instanceCount);
+				drawcall->HashInsert(drawcall->topology);
 				pass->dcs.push_back(drawcall);
 
 				drawcall = new DrawCallVK;
@@ -839,12 +887,10 @@ namespace Joestar {
 			}
 			case RenderCMD_Draw: {
 				CHECK_PASS(RenderCMD_Draw)
-				MeshTopology topology = (MeshTopology)cmdBuffer[i].flag;
-				U32 instanceCount = cmdBuffer[i].size;
-				drawcall->instanceCount = instanceCount;
-				drawcall->HashInsert(instanceCount);
-				drawcall->topology = topology;
-				drawcall->HashInsert(topology);
+				cmdBuffer->ReadBuffer<U32>(drawcall->instanceCount);
+				cmdBuffer->ReadBuffer<MeshTopology>(drawcall->topology);
+				drawcall->HashInsert(drawcall->instanceCount);
+				drawcall->HashInsert(drawcall->topology);
 				pass->dcs.push_back(drawcall);
 
 				drawcall = new DrawCallVK;
@@ -898,12 +944,13 @@ namespace Joestar {
 		return ret;
 	}
 
-	bool GPUProgramVulkan::ExecuteComputeCommand(std::vector<ComputeCommand>& cmdBuffer, uint16_t cmdIdx) {
+	bool GPUProgramVulkan::ExecuteComputeCommand(GFXCommandBuffer* cmdBuffer) {
 		if (!computeCtx) computeCtx = JOJO_NEW(ComputeContextVK(vkCtxPtr), MEMORY_GFX_STRUCT);
 		ComputePipelineVK* computePipeline = nullptr;
-		for (int i = 0; i < cmdIdx; ++i) {
-			if (computePipeline != nullptr) computePipeline->HashInsert(cmdBuffer[i].typ);
-			switch (cmdBuffer[i].typ) {
+		ComputeCommandType typ;
+		while (cmdBuffer->ReadBuffer<ComputeCommandType>(typ)) {
+			if (computePipeline != nullptr) computePipeline->HashInsert(typ);
+			switch (typ) {
 			case ComputeCMD_BeginCompute: {
 				hasCompute = true;
 				computePipeline = new ComputePipelineVK{ computeCtx };
@@ -913,14 +960,18 @@ namespace Joestar {
 				break;
 			}
 			case ComputeCMD_DispatchCompute: {
-				memcpy(computePipeline->group, cmdBuffer[i].data, cmdBuffer[i].size);
+				U32 sz = 3 * sizeof(U32);
+				cmdBuffer->ReadBufferPtr(computePipeline->group, sz);
+				//memcpy(computePipeline->group, cmdBuffer[i].data, cmdBuffer[i].size);
 				PrepareCompute(computePipeline);
 				DispatchCompute(computePipeline);
 				break;
 			}
 			case ComputeCMD_UpdateComputeBuffer: {
-				ComputeBuffer* cb = (ComputeBuffer*)cmdBuffer[i].data;
-				U16 binding = cmdBuffer[i].flag;
+				ComputeBuffer* cb;
+				cmdBuffer->ReadBuffer<ComputeBuffer*>(cb);
+				U8 binding;
+				cmdBuffer->ReadBuffer<U8>(binding);
 				if (uniformVKs.find(cb->id) == uniformVKs.end()) {
 					uniformVKs[cb->id] = JOJO_NEW(ComputeBufferVK(cb), MEMORY_GFX_STRUCT);
 					uniformVKs[cb->id]->id = cb->id;
@@ -940,30 +991,34 @@ namespace Joestar {
 				break;
 			}
 			case ComputeCMD_UseShader: {
-				Shader* shader = (Shader*)cmdBuffer[i].data;
+				Shader* shader;
+				cmdBuffer->ReadBuffer<Shader*>(shader);
 				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
 					shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
 				}
 
 				computePipeline->shader = shaderVKs[shader->id];
+				computePipeline->shader->Reset();
 				computePipeline->HashInsert(shader->id);
 				break;
 			}
 			case ComputeCMD_UpdatePushConstant: {
-				U8* data= (U8*)cmdBuffer[i].data;
-				U32 size = cmdBuffer[i].size;
+				U32 size;
+				cmdBuffer->ReadBuffer<U32>(size);
 				if (computePipeline->shader->pushConst->size == 0) {
 					computePipeline->shader->pushConst->data = JOJO_NEW(U8(size), MEMORY_GFX_STRUCT);
 					computePipeline->shader->pushConst->size = size;
 					computePipeline->shader->pushConst->def = computePipeline->shader->GetPushConstsDef(); 
 				}
-				memcpy(computePipeline->shader->pushConst->data, data, size);
+				cmdBuffer->ReadBufferPtr(computePipeline->shader->pushConst->data, size);
 				computePipeline->HashInsert(size);
 				break;
 			}
 			case ComputeCMD_UpdateTexture: {
-				Texture* tex = (Texture*)cmdBuffer[i].data;
-				U8 binding = cmdBuffer[i].flag;
+				Texture* tex;
+				cmdBuffer->ReadBuffer<Texture*>(tex);
+				U8 binding;
+				cmdBuffer->ReadBuffer<U8>(binding);
 				CMDUpdateTexture(tex, computePipeline->shader, binding);
 				computePipeline->HashInsert(tex->id);
 				break;

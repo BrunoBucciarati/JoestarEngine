@@ -594,11 +594,11 @@ void RenderThreadVulkan::ProcessInputVulkan() {
 }
 
 
-void RenderThreadVulkan::DispatchCompute(std::vector<ComputeCommand>& computeCommandBuffer, U16 cmdIdx) {
-    currentProgram->ExecuteComputeCommand(computeCommandBuffer, cmdIdx);
+void RenderThreadVulkan::DispatchCompute(GFXCommandBuffer* cmdBuffer) {
+    currentProgram->ExecuteComputeCommand(cmdBuffer);
 }
 
-void RenderThreadVulkan::DrawFrame(std::vector<RenderCommand>& cmdBuffer, U16 cmdIdx) {
+void RenderThreadVulkan::DrawFrame(GFXCommandBuffer* cmdBuffer) {
     ProcessInputVulkan();
     glfwPollEvents();
     //if (glfwWindowShouldClose(window)) {
@@ -619,7 +619,7 @@ void RenderThreadVulkan::DrawFrame(std::vector<RenderCommand>& cmdBuffer, U16 cm
     }
 
     //no incoming draw call
-    currentProgram->ExecuteRenderCommand(cmdBuffer, cmdIdx, imageIndex);
+    currentProgram->ExecuteRenderCommand(cmdBuffer, imageIndex);
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
