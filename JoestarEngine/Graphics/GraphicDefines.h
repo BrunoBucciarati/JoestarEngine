@@ -3,6 +3,7 @@
 #define _JOESTAR_GRAPHICS_DEF_H_
 #include "../Math/Matrix4x4.h"
 #include <string>
+#include "../Base/ObjectDefines.h"
 
 namespace Joestar {
 	enum GFX_API {
@@ -70,5 +71,7 @@ namespace Joestar {
 	const int TEXTURE_FORMAT_SIZE[] = {
 		4
 	};
+
+	const U32 MAX_CMDBUFFERS_IN_FLIGHT = 3;
 }
 #endif

@@ -1,8 +1,13 @@
-﻿  Scene.cpp
+﻿  Graphics.cpp
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(6,37): warning C4305: “初始化”: 从“double”到“float”截断
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(7,28): warning C4305: “初始化”: 从“double”到“float”截断
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(8,46): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
 D:\GitHub\JoestarEngine\JoestarEngine\Math\FloatMath.h(9,42): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Math\Vector2.h(54,76): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
+D:\GitHub\JoestarEngine\ThirdParty\glad\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\RenderCommand.h(47,11): warning C4003: 类函数宏的调用“JOJO_NEW”参数不足
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\RenderCommand.h(106,11): warning C4003: 类函数宏的调用“JOJO_NEW”参数不足
 D:\GitHub\JoestarEngine\JoestarEngine\Math\Quaternion.h(284,23): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
 D:\GitHub\JoestarEngine\JoestarEngine\Math\Quaternion.h(291,13): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
 D:\GitHub\JoestarEngine\JoestarEngine\Math\Quaternion.h(299,11): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
@@ -11,11 +16,8 @@ D:\GitHub\JoestarEngine\JoestarEngine\Math\Quaternion.h(314,12): warning C4244: 
 D:\GitHub\JoestarEngine\JoestarEngine\Math\Quaternion.h(315,12): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
 D:\GitHub\JoestarEngine\JoestarEngine\Math\Quaternion.h(339,13): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
 D:\GitHub\JoestarEngine\JoestarEngine\Math\Quaternion.h(341,12): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Math\Vector2.h(54,76): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\RenderCommand.h(46,11): warning C4003: 类函数宏的调用“JOJO_NEW”参数不足
-D:\GitHub\JoestarEngine\JoestarEngine\Graphics\RenderCommand.h(99,11): warning C4003: 类函数宏的调用“JOJO_NEW”参数不足
-D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(115,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(119,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(123,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(127,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\GPUProgramVulkan.h(753,1): warning C4267: “=”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Graphics.cpp(12,16): warning C4003: 类函数宏的调用“JOJO_NEW”参数不足
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Graphics.cpp(17,16): warning C4003: 类函数宏的调用“JOJO_NEW”参数不足
+D:\GitHub\JoestarEngine\JoestarEngine\Graphics\Graphics.cpp(127,66): warning C4244: “参数”: 从“U16”转换到“U8”，可能丢失数据
   JoestarEngine.vcxproj -> D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe

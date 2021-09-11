@@ -13,7 +13,8 @@ namespace Joestar {
 	};
 	class RenderThreadVulkan : public RenderThread {
 	public:
-		RenderThreadVulkan();
+		RenderThreadVulkan(std::vector<GFXCommandBuffer*>& cmdBuffers, std::vector<GFXCommandBuffer*>& computeBuffers);
+		void ThreadFunc();
 		void InitRenderContext();
 		void DrawFrame(GFXCommandBuffer* cmdBuffer);
 		void DispatchCompute(GFXCommandBuffer* cmdBuffer);
@@ -58,9 +59,14 @@ namespace Joestar {
 		std::vector<VkFence> inFlightFences;
 		size_t currentFrame = 0;
 		bool framebufferResized = false;
+		bool bInit = false;
+		bool bExit = false;
+		U32 frameIndex;
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;
 		VkDebugUtilsMessengerEXT debugMessenger;
-		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+		VkSampleCountFlagBits msaaSamples;
+		std::vector<GFXCommandBuffer*> cmdBuffers;
+		std::vector<GFXCommandBuffer*> computeCmdBuffers;
 	};
 }

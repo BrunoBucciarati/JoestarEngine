@@ -1,4 +1,9 @@
 #include "Thread.h"
 namespace Joestar {
-	Thread::Thread() {};
+	static void EntryPoint(Thread* t) {
+		t->ThreadFunc();
+	}
+	Thread::Thread() {
+		mThread = new std::thread(&EntryPoint, this);
+	};
 }

@@ -12,16 +12,16 @@
 namespace Joestar {
     Scene::Scene(EngineContext* ctx) : Super(ctx) {
         //for test
-        GameObject* go = NEW_OBJECT(GameObject);
-        gameObjects.push_back(go);
-        Renderer* render = go->GetComponent<Renderer>();
-        render->mesh = NEW_OBJECT(Mesh);
+        //GameObject* go = NEW_OBJECT(GameObject);
+        //gameObjects.push_back(go);
+        //Renderer* render = go->GetComponent<Renderer>();
+        //render->mesh = NEW_OBJECT(Mesh);
 
-        FileSystem* fs = GetSubsystem<FileSystem>();
-        std::string path = fs->GetModelDir();
-        render->mesh->Load(path + "viking_room/viking_room.obj");
-        render->mat = NEW_OBJECT(Material);
-        render->mat->SetDefault();
+        //FileSystem* fs = GetSubsystem<FileSystem>();
+        //std::string path = fs->GetModelDir();
+        //render->mesh->Load(path + "viking_room/viking_room.obj");
+        //render->mat = NEW_OBJECT(Material);
+        //render->mat->SetDefault();
 
         graphics = GetSubsystem<Graphics>();
 
@@ -39,7 +39,7 @@ namespace Joestar {
         Renderer* pr = plane->GetComponent<Renderer>();
         pr->mesh = GetSubsystem<ProceduralMesh>()->GetPlane();
         pr->mat = NEW_OBJECT(Material);
-        pr->mat->SetDefault();
+        pr->mat->SetPlaneMat();
 
 
         lightBatch = NEW_OBJECT(LightBatch);

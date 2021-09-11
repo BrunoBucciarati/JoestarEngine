@@ -4,7 +4,8 @@ namespace Joestar {
 	class Thread {
 	public:
 		Thread();
-	private:
-		std::thread mThread;
+		virtual void ThreadFunc() {}
+	protected:
+		std::thread* mThread;
 	};
 }

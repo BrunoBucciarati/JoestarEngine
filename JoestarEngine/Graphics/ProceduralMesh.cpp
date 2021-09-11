@@ -79,7 +79,7 @@ namespace Joestar {
                 vertices[y * X_SEGMENTS + x].pos.Set(xPos, yPos, zPos);
                 vertices[y * X_SEGMENTS + x].normal.Set(0, 1, 0);
                 vertices[y * X_SEGMENTS + x].texCoord.Set(xSegment, ySegment);
-                vertices[y * X_SEGMENTS + x].color.Set(1.f, 1.f, 1.f);
+                vertices[y * X_SEGMENTS + x].color.Set(.7f, .7f, .7f);
             }
         }
 

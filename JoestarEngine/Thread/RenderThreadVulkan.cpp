@@ -86,7 +86,9 @@ namespace Joestar {
 #else
     const bool enableValidationLayers = true;
 #endif
-    RenderThreadVulkan::RenderThreadVulkan() {
+    RenderThreadVulkan::RenderThreadVulkan(std::vector<GFXCommandBuffer*>& cBuffers, std::vector<GFXCommandBuffer*>& computeBuffers):
+        cmdBuffers(cBuffers), computeCmdBuffers(computeBuffers)
+    {
         vkCtx.physicalDevice = VK_NULL_HANDLE;
     }
 
@@ -95,9 +97,6 @@ namespace Joestar {
         app->SetFrameBufferResized(true);//
     }
 
-    //void RenderThreadVulkan::MouseCallback(GLFWwindow* window, double xpos, double ypos) {
-
-    //}
     bool firstMouse = true;
     float lastX, lastY, xoffset, yoffset, scrollX, scrollY;
     void MouseCallback(GLFWwindow* window, double xpos, double ypos) {
@@ -115,6 +114,30 @@ namespace Joestar {
     void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
         scrollX = xoffset;
         scrollY = yoffset;
+    }
+
+    void RenderThreadVulkan::ThreadFunc() {
+        if (!bInit) {
+            InitRenderContext();
+            bInit = true;
+            frameIndex = 0;
+        }
+
+        while (!bExit) {
+            U32 idx = frameIndex % MAX_CMDBUFFERS_IN_FLIGHT;
+            //always dispatch compute first, then draw
+            while (!computeCmdBuffers[idx]->ready) {
+                //busy wait
+            }
+            DispatchCompute(computeCmdBuffers[idx]);
+            computeCmdBuffers[idx]->ready = false;
+            while (!cmdBuffers[idx]->ready) {
+                //busy wait
+            }
+            DrawFrame(cmdBuffers[idx]);
+            cmdBuffers[idx]->ready = false;
+            ++frameIndex;
+        }
     }
 
 	void RenderThreadVulkan::InitRenderContext() {

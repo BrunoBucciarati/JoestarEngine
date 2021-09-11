@@ -7,7 +7,15 @@
 
 namespace Joestar {
 	Graphics::Graphics(EngineContext* context) : Super(context) {
-		cmdBuffer = new GFXCommandBuffer(1000);
+		cmdBuffers.resize(MAX_CMDBUFFERS_IN_FLIGHT);
+		for (auto& cmdBuffer : cmdBuffers)
+			cmdBuffer = JOJO_NEW(GFXCommandBuffer(1024));
+		cmdBuffer = cmdBuffers[0];
+
+		computeCmdBuffers.resize(MAX_CMDBUFFERS_IN_FLIGHT);
+		for (auto& cmdBuffer : computeCmdBuffers)
+			cmdBuffer = JOJO_NEW(GFXCommandBuffer(256));
+		computeCmdBuffer = computeCmdBuffers[0];
 		defaultClearColor.Set(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 	Graphics::~Graphics() {
@@ -20,18 +28,29 @@ namespace Joestar {
 
 		}*/
 		if (gfxAPI == GFX_API_VULKAN) {
-			renderThread = new RenderThreadVulkan();
+			renderThread = new RenderThreadVulkan(cmdBuffers, computeCmdBuffers);
 		}
 		else if (gfxAPI == GFX_API_OPENGL) {
 			renderThread = new RenderThreadGL();
 		}
-		renderThread->InitRenderContext();
 	}
 
 	void Graphics::MainLoop() {
-		cmdBuffer->Flush();
-		renderThread->DrawFrame(cmdBuffer);
+		//Flush cmd buffer from last frame
+		if (!computeCmdBuffer->Empty() || !cmdBuffer->Empty()) {
+			computeCmdBuffer->Flush();
+			cmdBuffer->Flush();
+		}
+		//renderThread->DrawFrame(cmdBuffer);
+		//cmdBuffer->Clear();
+		U32 idx = ++frameIdx % MAX_CMDBUFFERS_IN_FLIGHT;
+		cmdBuffer = cmdBuffers[idx];
+		computeCmdBuffer = computeCmdBuffers[idx];
+		while (computeCmdBuffer->ready || cmdBuffer->ready) {
+			//busy wait, must be both in unready state
+		}
 		cmdBuffer->Clear();
+		computeCmdBuffer->Clear();
 	}
 
 	void Graphics::Clear() {
@@ -173,8 +192,6 @@ namespace Joestar {
 	void Graphics::BeginCompute(const char* name) {
 		if (!computeCmdBuffer) {
 			computeCmdBuffer = new GFXCommandBuffer(100);
-		} else {
-			computeCmdBuffer->Clear();
 		}
 		computeCmdBuffer->WriteCommandType(ComputeCMD_BeginCompute);
 		computeCmdBuffer->WriteBuffer<const char*>(name);
@@ -195,7 +212,7 @@ namespace Joestar {
 		computeCmdBuffer->WriteCommandType(ComputeCMD_EndCompute);
 		computeCmdBuffer->WriteBuffer<const char*>(name);
 		computeCmdBuffer->Flush();
-		renderThread->DispatchCompute(computeCmdBuffer);
+		//renderThread->DispatchCompute(computeCmdBuffer);
 		isCompute = false;
 	}
 

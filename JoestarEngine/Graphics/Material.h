@@ -18,6 +18,7 @@ namespace Joestar {
 	//Material() :program(GPUProgram::CreateProgram()) {}
 	void SetDefault();
 	void SetPBR();
+	void SetPlaneMat();
 
 	void SetShader(Shader* shader) {
 		program->shader = shader;

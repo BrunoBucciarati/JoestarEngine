@@ -18,17 +18,17 @@ namespace Joestar {
 		REGISTER_SUBSYSTEM(HID)
 	public:
 		explicit HID(EngineContext* context);
-		inline void SetKeyboardInputs(uint32_t flag) { inputFlag = flag; }
+		void SetKeyboardInputs(U32 flag) { inputFlag = flag; }
 		void SetMouseInputs(float xOffset, float yOffset, float scrollX, float scrollY) {
 			mouseOffset[0] = xOffset;
 			mouseOffset[1] = yOffset;
 			mouseScroll[0] = scrollX;
 			mouseScroll[1] = scrollY;
 		}
-		inline uint32_t  GetKeyboardInputs() { return inputFlag; }
-		inline float* GetMouseOffset() { return mouseOffset;}
-		inline float* GetMouseScroll() { return mouseScroll;}
-		inline bool CheckKeyboardInput(InputType t) {
+		U32  GetKeyboardInputs() { return inputFlag; }
+		float* GetMouseOffset() { return mouseOffset;}
+		float* GetMouseScroll() { return mouseScroll;}
+		bool CheckKeyboardInput(InputType t) {
 			return inputFlag & (1 << t);
 		}
 	private:

@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "../IO/MemoryManager.h"
+#include <atomic>
 namespace Joestar {
 	enum RenderCommandType {
 		RenderCMD_Clear = 0,
@@ -48,6 +49,10 @@ namespace Joestar {
 			cursor = 0;
 		}
 
+		bool Empty() {
+			return cursor > 0;
+		}
+
 		void WriteCommandType(RenderCommandType t) {
 			WriteBuffer<RenderCommandType>(t);
 		}
@@ -87,11 +92,13 @@ namespace Joestar {
 		void Flush() {
 			last = cursor;
 			cursor = 0;
+			ready = true;
 		}
 		void Clear() {
 			memset(data, 0, size);
 			cursor = 0;
 		}
+		std::atomic<bool> ready = false;
 
 	private:
 		void DoubleSizeBuffer() {

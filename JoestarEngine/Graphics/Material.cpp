@@ -35,4 +35,11 @@ namespace Joestar {
 		//textures[0]->hasMipMap = false;
 	}
 
+	void Material::SetPlaneMat() {
+		program->shader->SetShader("test");
+		textures.push_back(NEW_OBJECT(Texture2D));
+		std::string path = "Textures/marble.jpg";
+		textures[0]->TextureFromImage(path);
+	}
+
 }
