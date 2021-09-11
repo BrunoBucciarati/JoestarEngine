@@ -148,11 +148,11 @@ namespace Joestar {
     };
 
     struct ShaderVK {
+        std::vector<UniformDef> ubs;
         explicit ShaderVK(Shader* s, VulkanContext* c) : shader(s), ctx(c) {
             for (auto& uniform : shader->info.uniforms) {
                 if (uniform.dataType == ShaderDataTypePushConst) {
-                    pushConst = new PushConstsVK;
-                    pushConst->def = uniform;
+                    pushConstDef = &uniform;
                 } else if (uniform.IsSampler()) {
                     ubs.push_back(uniform);
                 } else if (uniform.dataType == ShaderDataTypeBuffer) {
@@ -178,9 +178,9 @@ namespace Joestar {
             return shader->GetSamplerBinding(count);
         }
         U32 ID() { return shader->id; }
-        PushConstsVK* GetPushConsts() { return pushConst; }
-        UniformDef& GetPushConstsDef() { return shader->GetPushConsts(); }
+        UniformDef* GetPushConstsDef() { return pushConstDef; }
         Shader* shader;
+        UniformDef* pushConstDef = nullptr;
         std::vector <VkShaderModule> shaderModules;
         std::vector<VkPipelineShaderStageCreateInfo> shaderStage;
         bool operator ==(ShaderVK& s2) {
@@ -192,9 +192,6 @@ namespace Joestar {
         }
         bool HasStage(ShaderStage stage) {
             return shader->flag & stage;
-        }
-        void Reset() {
-            textures.clear();
         }
         VkShaderModule CreateShaderModule(File* file) {
             VkShaderModuleCreateInfo createInfo{};
@@ -231,9 +228,6 @@ namespace Joestar {
             CHECK_ADD_SHADER_STAGE(kFragmentShader, "frag", VK_SHADER_STAGE_FRAGMENT_BIT)
             CHECK_ADD_SHADER_STAGE(kComputeShader, "comp", VK_SHADER_STAGE_COMPUTE_BIT)
         }
-        std::vector<UniformDef> ubs;
-        std::vector<U32> textures;
-        PushConstsVK* pushConst = nullptr;
         VulkanContext* ctx;
     };
 
@@ -658,7 +652,7 @@ namespace Joestar {
     struct UniformBufferVK {
         std::vector<BufferVK> buffers;
         U32 size;
-        void* data;
+        U8* data;
         U32 texID = 0;
         UniformDef def;
         U32 id = 0;
@@ -688,24 +682,24 @@ namespace Joestar {
         }
 
         bool IsUniform() {
-            return def.IsUniform();
+            return texID == 0;
         }
 
-        VkImageLayout GetTargetImageLayout() {
-            if (IsImage()) return VK_IMAGE_LAYOUT_GENERAL;
+        static VkImageLayout GetTargetImageLayout(UniformDef& def) {
+            if (def.IsImage()) return VK_IMAGE_LAYOUT_GENERAL;
             return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
 
-        VkDescriptorType GetDescriptorType() {
-            if (IsImage()) {
+        static VkDescriptorType GetDescriptorType(UniformDef& def) {
+            if (def.IsImage()) {
                 return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
             }
-            if (IsSampler()) return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            if (IsBuffer()) return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            if (def.IsSampler()) return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            if (def.IsBuffer()) return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         }
 
-        VkShaderStageFlags GetStageFlags() {
+        static VkShaderStageFlags GetStageFlags(UniformDef& def) {
             VkShaderStageFlags flags;
             if (def.stageFlag & kVertexShader) {
                 flags |= VK_SHADER_STAGE_VERTEX_BIT;
@@ -720,14 +714,9 @@ namespace Joestar {
         }
     };
 
-    //struct PipelineStateVK {
-    //    VkPipelineLayout pipelineLayout;
-    //    VkPipeline graphicsPipeline;
-    //    REGISTER_HASH
-    //};
-
     struct DrawCallVK {
-        std::vector<VertexBufferVK*> vbs{1};
+        std::vector<VertexBufferVK*> vbs{ 1 };
+        std::vector<U32> ubs;
         IndexBufferVK* ib = nullptr;
         ShaderVK* shader;
         MeshTopology topology;
@@ -743,6 +732,8 @@ namespace Joestar {
         VkDescriptorSetLayout descriptorSetLayout;
         VkSampler textureSampler;
         U32 instanceCount = 0;
+        std::vector<U32> textures;
+        PushConstsVK* pushConst = nullptr;
         REGISTER_HASH
 
         VkPipelineVertexInputStateCreateInfo& GetVertexInputInfo() {
@@ -833,6 +824,9 @@ namespace Joestar {
         VkSampler textureSampler;
         U32 group[3];
         std::vector<UniformBufferVK*> computeBuffers;
+        std::vector<U32> textures;
+        std::vector<U32> ubs;
+        PushConstsVK* pushConst = nullptr;
         bool writeBack = false;
         REGISTER_HASH
 
@@ -875,8 +869,8 @@ namespace Joestar {
 
             vkCmdBindPipeline(ctx->commandBuffer.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
             vkCmdBindDescriptorSets(ctx->commandBuffer.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSets[0], 0, 0);
-            if (shader->pushConst->size > 0) {
-                vkCmdPushConstants(ctx->commandBuffer.commandBuffer, pipelineLayout, shader->pushConst->GetStageFlags(), 0, shader->pushConst->size, shader->pushConst->data);
+            if (pushConst->size > 0) {
+                vkCmdPushConstants(ctx->commandBuffer.commandBuffer, pipelineLayout, pushConst->GetStageFlags(), 0, pushConst->size, pushConst->data);
             }
             vkCmdDispatch(ctx->commandBuffer.commandBuffer, group[0], group[1], group[2]);
 
@@ -954,7 +948,7 @@ namespace Joestar {
         void CreateVertexBuffer(VertexBufferVK* vb);
         void CreateIndexBuffer(IndexBufferVK* ib);
         void CopyBuffer(BufferVK& srcBuffer, BufferVK& dstBuffer, VkDeviceSize size);
-        void CreateTextureImage(TextureVK* tex, UniformBufferVK*);
+        void CreateTextureImage(TextureVK* tex, UniformDef&);
         void CreateTextureSampler(DrawCallVK*);
 
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -994,7 +988,8 @@ namespace Joestar {
         template<class T>
         void CreatePipelineLayout(T* call);
         void DispatchCompute(ComputePipelineVK* compute);
-        void CMDUpdateTexture(Texture* tex, ShaderVK* shader, U16 binding = 0);
+        template<class T>
+        void CMDUpdateTexture(Texture* tex, T* call, U8 binding = 0);
 
         VkCommandPool subCommandPool;
     private:
@@ -1031,8 +1026,8 @@ namespace Joestar {
         std::vector<VkDescriptorPoolSize> poolSizes;
         poolSizes.resize(call->shader->ubs.size());
         for (int i = 0; i < call->shader->ubs.size(); ++i) {
-            UniformBufferVK* ubvk = uniformVKs[call->shader->ubs[i].id];
-            poolSizes[i].type = ubvk->GetDescriptorType();
+            UniformDef& ubdef = call->shader->ubs[i];
+            poolSizes[i].type = UniformBufferVK::GetDescriptorType(ubdef);
             poolSizes[i].descriptorCount = static_cast<U32>(vkCtxPtr->swapChainImages.size());
         }
 
@@ -1071,18 +1066,19 @@ namespace Joestar {
             descriptorWrites.resize(call->shader->ubs.size());
             int samplerCount = 0;
             for (int j = 0; j < call->shader->ubs.size(); ++j) {
-                UniformBufferVK* ub = uniformVKs[call->shader->ubs[j].id];
-                if (ub->IsSampler() || ub->IsImage()) {
+                UniformBufferVK* ub = uniformVKs[call->ubs[j]];
+                UniformDef& def = call->shader->ubs[j];
+                if (def.IsSampler() || def.IsImage()) {
                     VkDescriptorImageInfo imageInfo{};
-                    imageInfo.imageLayout = ub->GetTargetImageLayout();
-                    std::map<uint32_t, TextureVK*>::iterator it = textureVKs.find(call->shader->textures[0]);
+                    imageInfo.imageLayout = UniformBufferVK::GetTargetImageLayout(def);
+                    std::map<U32, TextureVK*>::iterator it = textureVKs.find(call->textures[samplerCount]);
                     TextureVK* tex;
                     if (it == textureVKs.end()) {
-                        it = pendingTextureVKs.find(call->shader->textures[0]);
+                        it = pendingTextureVKs.find(call->textures[samplerCount]);
                         if (it == pendingTextureVKs.end()) {
                             LOGERROR("this texture didn't call Graphics::UpdateTexture!!!");
                         }
-                        CreateTextureImage(it->second, ub);
+                        CreateTextureImage(it->second, def);
                         textureVKs[it->first] = it->second;
                         tex = it->second;
                         pendingTextureVKs.erase(it);
@@ -1095,11 +1091,12 @@ namespace Joestar {
 
                     descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[j].dstSet = call->descriptorSets[i];
-                    descriptorWrites[j].dstBinding = ub->def.binding;
+                    descriptorWrites[j].dstBinding = def.binding;
                     descriptorWrites[j].dstArrayElement = 0;
-                    descriptorWrites[j].descriptorType = ub->GetDescriptorType();
+                    descriptorWrites[j].descriptorType = UniformBufferVK::GetDescriptorType(def);
                     descriptorWrites[j].descriptorCount = 1;
                     descriptorWrites[j].pImageInfo = &imageInfo;
+                    ++samplerCount;
                 } else {
                     VkDescriptorBufferInfo bufferInfo{};
                     bufferInfo.buffer = ub->buffers[i].buffer;
@@ -1108,9 +1105,9 @@ namespace Joestar {
 
                     descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[j].dstSet = call->descriptorSets[i];
-                    descriptorWrites[j].dstBinding = ub->def.binding;
+                    descriptorWrites[j].dstBinding = def.binding;
                     descriptorWrites[j].dstArrayElement = 0;
-                    descriptorWrites[j].descriptorType = ub->GetDescriptorType();
+                    descriptorWrites[j].descriptorType = UniformBufferVK::GetDescriptorType(def);
                     descriptorWrites[j].descriptorCount = 1;
                     descriptorWrites[j].pBufferInfo = &bufferInfo;
                 }
@@ -1124,11 +1121,12 @@ namespace Joestar {
         std::vector<VkDescriptorSetLayoutBinding> bindings;
         bindings.reserve(call->shader->ubs.size());
         for (int i = 0; i < call->shader->ubs.size(); ++i) {
-            UniformBufferVK* ubvk = uniformVKs[call->shader->ubs[i].id];
+            //UniformBufferVK* ubvk = uniformVKs[call->shader->ubs[i].id];
+            UniformDef& ubdef = call->shader->ubs[i];
             VkDescriptorSetLayoutBinding layoutBinding{};
             layoutBinding.binding = i;
-            layoutBinding.descriptorType = ubvk->GetDescriptorType();// VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            layoutBinding.stageFlags = ubvk->GetStageFlags();
+            layoutBinding.descriptorType = UniformBufferVK::GetDescriptorType(ubdef);// VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            layoutBinding.stageFlags = UniformBufferVK::GetStageFlags(ubdef);
             layoutBinding.descriptorCount = 1;
             layoutBinding.pImmutableSamplers = nullptr;
 
@@ -1153,7 +1151,7 @@ namespace Joestar {
         VkDescriptorSetLayout layouts[] = { call->descriptorSetLayout };
         pipelineLayoutInfo.pSetLayouts = layouts; // Optional
 
-        PushConstsVK* pushConsts = call->shader->pushConst;
+        PushConstsVK* pushConsts = call->pushConst;
         if (pushConsts) {
             VkPushConstantRange pushConstantRange{};
             pushConstantRange.stageFlags = pushConsts->GetStageFlags();
@@ -1167,5 +1165,24 @@ namespace Joestar {
                 LOGERROR("failed to create pipeline layout!");
             }
         }
+    }
+
+    template <class T>
+    void GPUProgramVulkan::CMDUpdateTexture(Texture* tex, T* call, U8 binding) {
+        //check if uniform buffer is ready
+        if (textureVKs.find(tex->id) == textureVKs.end() && pendingTextureVKs.find(tex->id) == pendingTextureVKs.end()) {
+            TextureVK* vkTex = JOJO_NEW(TextureVK(tex), MEMORY_GFX_STRUCT);
+            pendingTextureVKs[vkTex->ID()] = vkTex;
+        }
+        call->textures.push_back(tex->id);
+
+        if (uniformVKs.find(tex->id) == uniformVKs.end()) {
+            UniformBufferVK* texUB = JOJO_NEW(UniformBufferVK, MEMORY_GFX_STRUCT);
+            texUB->texID = tex->id;
+            texUB->id = tex->id;
+            uniformVKs[tex->id] = texUB;
+        }
+        //update binding tex
+        call->ubs[binding] = tex->id;
     }
 }

@@ -1,0 +1,78 @@
+#version 450
+
+layout(binding = 0) buffer SHCoef {
+   uvec3 values[];
+};
+layout(binding = 1, rgba8) uniform imageCube skyCube;
+
+layout(push_constant) uniform ComputeSHConsts {
+	uvec3 sizeAndLevel;
+} shConsts;
+
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 6) in;
+
+struct SH9 {
+    float coefs[9];
+};
+
+SH9 ProjectOntoSH9(vec3 dir, uint level)
+{
+    SH9 sh;
+    // Band 0
+    sh.coefs[0] = 0.282095f;
+
+    // Band 1
+    sh.coefs[1] = 0.488603f * dir.y;
+    sh.coefs[2] = 0.488603f * dir.z;
+    sh.coefs[3] = 0.488603f * dir.x;
+
+    // Band 2
+    if (level > 1) {
+        sh.coefs[4] = 1.092548f * dir.x * dir.y;
+        sh.coefs[5] = 1.092548f * dir.y * dir.z;
+        sh.coefs[6] = 0.315392f * (3.0f * dir.z * dir.z - 1.0f);
+        sh.coefs[7] = 1.092548f * dir.x * dir.z;
+        sh.coefs[8] = 0.546274f * (dir.x * dir.x - dir.y * dir.y);
+    }
+
+    return sh;
+}
+
+vec3 GetDirVec(uvec2 pixelPos, uint face) {
+    vec2 xy = vec2(pixelPos.xy) / shConsts.sizeAndLevel.xy;
+    xy = xy * 2 - 1;
+    if (face == 0) {
+        return vec3(1, xy);
+    }
+    if (face == 1) {
+        return vec3(-1, xy);
+    }
+    if (face == 2) {
+        return vec3(xy.x, 1, xy.y);
+    }
+    if (face == 3) {
+        return vec3(xy.x, -1, xy.y);
+    }
+    if (face == 4) {
+        return vec3(xy, 1);
+    }
+    if (face == 5) {
+        return vec3(xy, -1);
+    }
+}
+
+void main() 
+{
+	vec3 dir = normalize(GetDirVec(gl_GlobalInvocationID.xy, gl_LocalInvocationID.z));
+    vec3 rgb = imageLoad(skyCube, ivec3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_LocalInvocationID.z)).rgb;
+
+    SH9 sh = ProjectOntoSH9(dir, shConsts.sizeAndLevel.z);
+
+    uint coefCount = (shConsts.sizeAndLevel.z + 1) * (shConsts.sizeAndLevel.z + 1);
+    for (int i = 0; i < coefCount; ++i) {
+        uvec3 coefValue = uvec3(sh.coefs[i] * rgb * 10000);
+	    atomicAdd(values[i].x, coefValue.x);
+	    atomicAdd(values[i].y, coefValue.y);
+	    atomicAdd(values[i].z, coefValue.z);
+    }
+}

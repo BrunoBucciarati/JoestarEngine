@@ -128,7 +128,7 @@ namespace Joestar {
         }
 
         if (GetSubsystem<TimeManager>()->GetFrame() > 10) {
-            PreRenderCompute();
+            //PreRenderCompute();
         }
         RenderScene();
     }
