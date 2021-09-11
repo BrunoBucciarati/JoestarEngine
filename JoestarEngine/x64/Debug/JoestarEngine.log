@@ -14,8 +14,8 @@ D:\GitHub\JoestarEngine\JoestarEngine\Math\Quaternion.h(341,12): warning C4244: 
 D:\GitHub\JoestarEngine\JoestarEngine\Math\Vector2.h(54,76): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
 D:\GitHub\JoestarEngine\JoestarEngine\Graphics\RenderCommand.h(46,11): warning C4003: 类函数宏的调用“JOJO_NEW”参数不足
 D:\GitHub\JoestarEngine\JoestarEngine\Graphics\RenderCommand.h(99,11): warning C4003: 类函数宏的调用“JOJO_NEW”参数不足
-D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(113,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(117,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(121,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(125,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(115,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(119,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(123,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\GitHub\JoestarEngine\JoestarEngine\Base\Scene.cpp(127,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
   JoestarEngine.vcxproj -> D:\GitHub\JoestarEngine\x64\Debug\JoestarEngine.exe

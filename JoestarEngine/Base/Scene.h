@@ -6,6 +6,7 @@
 #include "../Graphics/UniformData.h"
 #include "SubSystem.h"
 #include "../Graphics/Material.h"
+#include "../Graphics/Graphics.h"
 
 namespace Joestar {
 	class Scene : public SubSystem {
@@ -33,5 +34,6 @@ namespace Joestar {
 		ComputeSHConsts computeSHConsts;
 		Texture* shCube;
 		LightBlocks lightBlocks;
+		Graphics* graphics;
 	};
 }

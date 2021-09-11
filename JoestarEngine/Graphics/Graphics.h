@@ -48,12 +48,8 @@ namespace Joestar {
 
 	private:
 		RenderThread* renderThread;
-		//std::vector<RenderCommand> cmdBuffer;
 		GFXCommandBuffer* cmdBuffer;
 		GFXCommandBuffer* computeCmdBuffer;
-		//std::vector<ComputeCommand> computeCmdBuffer;
-		U32 cmdIdx;
-		U32 computeCmdIdx;
 		Vector4f defaultClearColor;
 		bool isCompute = false;
 	};

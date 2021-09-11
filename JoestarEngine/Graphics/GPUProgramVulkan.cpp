@@ -5,6 +5,9 @@
 #include "../IO/MemoryManager.h"
 #include "Image.h"
 
+#define DEBUG_RENDER_PIPELINE 0
+#define DEBUG_COMPUTE_PIPELINE 0
+
 namespace Joestar {
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device) {
 		VkPhysicalDeviceMemoryProperties memProperties;
@@ -80,7 +83,7 @@ namespace Joestar {
 		//currentPSO.shader->Clear(vkCtxPtr->device);
 
 		for (auto& shader : shaderVKs) {
-			shader.second->Clean(vkCtxPtr->device);
+			shader.second->Clean();
 		}
 
 		for (auto& buffer : uniformVKs) {
@@ -501,7 +504,10 @@ namespace Joestar {
 		ub->buffers.resize(vkCtxPtr->swapChainImages.size());
 
 		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
-			ub->buffers[i] = { vkCtxPtr, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
+			ub->buffers[i].ctx = vkCtxPtr;
+			ub->buffers[i].size = bufferSize;
+			ub->buffers[i].usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+			ub->buffers[i].properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 			ub->buffers[i].Create();
 		}
 	}
@@ -509,10 +515,14 @@ namespace Joestar {
 	void GPUProgramVulkan::CreateComputeBuffers(ComputeBufferVK* ub) {
 		VkDeviceSize bufferSize = ub->size;
 
-		ub->buffers.resize(vkCtxPtr->swapChainImages.size());
+		U32 size = vkCtxPtr->swapChainImages.size();
+		ub->buffers.resize(size);
 
-		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
-			ub->buffers[i] = { vkCtxPtr, bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT };
+		for (size_t i = 0; i < size; ++i) {
+			ub->buffers[i].ctx = vkCtxPtr;
+			ub->buffers[i].size = bufferSize;
+			ub->buffers[i].usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			ub->buffers[i].properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 			ub->buffers[i].Create();
 		}
 	}
@@ -557,7 +567,7 @@ namespace Joestar {
 		void* data;
 
 		for (auto& ub : uniformVKs) {
-			if (ub.second->IsUniform())
+			if (ub.second->IsUniform() && ub.second->data)
 				ub.second->buffers[currentImage].CopyBuffer((U8*)ub.second->data);
 		}
 	}
@@ -758,10 +768,11 @@ namespace Joestar {
 		VK_CHECK(vkAllocateCommandBuffers(vkCtxPtr->device, &allocInfo, vkCtxPtr->commandBuffers.data()))
 	}
 
-
-#define ENUM_STR(e) #e
+#if DEBUG_RENDER_PIPELINE
+#define CHECK_PASS(CMD) if(nullptr == pass) {LOGERROR("PLEASE START PASS FIRST! CMD = %s\n", #CMD);} else {LOGWARN("CMD:%s\n", #CMD);}
+#else
 #define CHECK_PASS(CMD) if(nullptr == pass) {LOGERROR("PLEASE START PASS FIRST! CMD = %s\n", #CMD);}
-#define CHECK_PASS_OR_COMPUTE() if(nullptr == pass && nullptr == computePipeline) {LOGERROR("PLEASE START PASS OR COMPUTE FIRST!\n");}
+#endif
 	bool GPUProgramVulkan::ExecuteRenderCommand(GFXCommandBuffer* cmdBuffer, U16 imgIdx) {
 		renderPassList.clear();
 		curImageIdx = imgIdx;
@@ -785,6 +796,7 @@ namespace Joestar {
 				for (auto& dc : pass->dcs) {
 					pass->HashInsert(dc->hash);
 				}
+				cmdBuffer->ReadBuffer<std::string>(pass->name);
 				renderPassList.push_back(pass);
 				break;
 			}
@@ -928,23 +940,14 @@ namespace Joestar {
 			for (auto& pass : renderPassList) {
 				CreateRenderPass(pass);
 				for (int i = 0; i < pass->dcs.size(); ++i) {
-					//assign def for every ubvk
-					//for (auto& ub : pass->dcs[i]->shader->ubs) {
-					//	UniformBufferVK* ubvk = uniformVKs[ub.id];
-					//	ubvk->def = ub;
-					//}
 					GetPipeline(pass, i);
 				}
 			}
-			//if (needPushConstant)
-			//	PushConstants(renderPassList);
 			
 			RecordCommandBuffer(renderPassList);
 			lastRenderPassList.clear();
 			lastRenderPassList.swap(renderPassList);
 		} else {
-			//if (needPushConstant)
-			//	PushConstants(lastRenderPassList);
 			RecordCommandBuffer(lastRenderPassList);
 		}
 
@@ -952,7 +955,14 @@ namespace Joestar {
 
 		return ret;
 	}
-
+#if DEBUG_COMPUTE_PIPELINE
+#define	CHECK_COMPUTE(CMD) \
+	if (nullptr == computePipeline) {LOGERROR("YOU NEED TO START COMPUTE FIRST, CMD:%s\n", #CMD);} else {LOGWARN("compute CMD:%s\n", #CMD);}
+#else
+#define	CHECK_COMPUTE(CMD) \
+	if (nullptr == computePipeline) {LOGERROR("YOU NEED TO START COMPUTE FIRST, CMD:%s\n", #CMD);}
+#endif
+	
 	bool GPUProgramVulkan::ExecuteComputeCommand(GFXCommandBuffer* cmdBuffer) {
 		if (!computeCtx) computeCtx = JOJO_NEW(ComputeContextVK(vkCtxPtr), MEMORY_GFX_STRUCT);
 		ComputePipelineVK* computePipeline = nullptr;
@@ -963,12 +973,16 @@ namespace Joestar {
 			case ComputeCMD_BeginCompute: {
 				hasCompute = true;
 				computePipeline = new ComputePipelineVK{ computeCtx };
+				cmdBuffer->ReadBuffer<const char*>(computePipeline->name);
 				break;
 			}
 			case ComputeCMD_EndCompute: {
+				CHECK_COMPUTE(ComputeCMD_EndCompute)
+				cmdBuffer->ReadBuffer<const char*>(computePipeline->name);
 				break;
 			}
 			case ComputeCMD_DispatchCompute: {
+				CHECK_COMPUTE(ComputeCMD_DispatchCompute)
 				U32 sz = 3 * sizeof(U32);
 				cmdBuffer->ReadBufferPtr(computePipeline->group, sz);
 				//memcpy(computePipeline->group, cmdBuffer[i].data, cmdBuffer[i].size);
@@ -977,6 +991,7 @@ namespace Joestar {
 				break;
 			}
 			case ComputeCMD_UpdateComputeBuffer: {
+				CHECK_COMPUTE(ComputeCMD_UpdateComputeBuffer)
 				ComputeBuffer* cb;
 				cmdBuffer->ReadBuffer<ComputeBuffer*>(cb);
 				U8 binding;
@@ -996,10 +1011,12 @@ namespace Joestar {
 				break;
 			}
 			case ComputeCMD_WriteBackComputeBuffer: {
+				CHECK_COMPUTE(ComputeCMD_WriteBackComputeBuffer)
 				computePipeline->writeBack = true;
 				break;
 			}
 			case ComputeCMD_UseShader: {
+				CHECK_COMPUTE(ComputeCMD_UseShader)
 				Shader* shader;
 				cmdBuffer->ReadBuffer<Shader*>(shader);
 				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
@@ -1015,6 +1032,7 @@ namespace Joestar {
 				break;
 			}
 			case ComputeCMD_UpdatePushConstant: {
+				CHECK_COMPUTE(ComputeCMD_UpdatePushConstant)
 				U32 size;
 				cmdBuffer->ReadBuffer<U32>(size);
 				UniformDef* def = computePipeline->shader->GetPushConstsDef();
@@ -1022,7 +1040,7 @@ namespace Joestar {
 					computePipeline->pushConst = JOJO_NEW(PushConstsVK, MEMORY_GFX_STRUCT);
 				}
 				if (computePipeline->pushConst->size == 0) {
-					computePipeline->pushConst->data = JOJO_NEW(U8(size), MEMORY_GFX_STRUCT);
+					computePipeline->pushConst->data = JOJO_NEW(U8[size], MEMORY_GFX_STRUCT);
 					computePipeline->pushConst->size = size;
 					computePipeline->pushConst->def = *def;
 				}
@@ -1031,6 +1049,7 @@ namespace Joestar {
 				break;
 			}
 			case ComputeCMD_UpdateTexture: {
+				CHECK_COMPUTE(ComputeCMD_UpdateTexture)
 				Texture* tex;
 				cmdBuffer->ReadBuffer<Texture*>(tex);
 				U8 binding;
@@ -1048,12 +1067,6 @@ namespace Joestar {
 	void GPUProgramVulkan::PrepareCompute(ComputePipelineVK* compute) {
 		if (computePipelines.find(compute->hash) == computePipelines.end()) {
 			compute->shader->Prepare();
-			//resolve uniform
-			//for (auto& ub : compute->shader->ubs) {
-			//	UniformBufferVK* ubvk = uniformVKs[ub.id];
-			//	ubvk->def = ub;
-			//}
-
 			CreateDescriptorSetLayout<ComputePipelineVK>(compute);
 			CreateDescriptorPool<ComputePipelineVK>(compute);
 			CreateDescriptorSets<ComputePipelineVK>(compute);

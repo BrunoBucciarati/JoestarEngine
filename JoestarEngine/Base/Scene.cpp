@@ -1,6 +1,5 @@
 #include "Scene.h"
 #include "../IO/HID.h"
-#include "../Graphics/Graphics.h"
 #include <vector>
 #include "../IO/FileSystem.h"
 #include "../Math/Vector2.h"
@@ -23,6 +22,8 @@ namespace Joestar {
         render->mesh->Load(path + "viking_room/viking_room.obj");
         render->mat = NEW_OBJECT(Material);
         render->mat->SetDefault();
+
+        graphics = GetSubsystem<Graphics>();
 
         //GameObject* sphere = NEW_OBJECT(GameObject);
         //gameObjects.push_back(sphere);
@@ -65,6 +66,7 @@ namespace Joestar {
 
     void Scene::CreateCompute() {
         shComputeShader = NEW_OBJECT(Shader);
+        //shComputeShader->SetShader("computeTest", kComputeShader);
         shComputeShader->SetShader("computeSH", kComputeShader);
 
         shComputeBuffer = JOJO_NEW(ComputeBuffer("SHCoef"), MEMORY_GFX_STRUCT);
@@ -128,14 +130,13 @@ namespace Joestar {
         }
 
         if (GetSubsystem<TimeManager>()->GetFrame() > 10) {
-            //PreRenderCompute();
         }
+        PreRenderCompute();
         RenderScene();
     }
 
     void Scene::PreRenderCompute() {
         //compute sh
-        Graphics* graphics = GetSubsystem<Graphics>();
         graphics->BeginCompute("SH COMPUTE");
         graphics->UseShader(shComputeShader);
         Texture* tex = shCube;
@@ -152,7 +153,6 @@ namespace Joestar {
     }
 
     void Scene::RenderScene() {
-        Graphics* graphics = GetSubsystem<Graphics>();
         graphics->BeginRenderPass("Scene");
         graphics->Clear();
         GetSubsystem<Graphics>()->SetDepthCompare(DEPTH_COMPARE_LESS);
@@ -178,7 +178,6 @@ namespace Joestar {
     void Scene::RenderLights() {
         //Draw Main Light as Wireframe //maybe don't need
         //Draw Point Light as Sphere
-        Graphics* graphics = GetSubsystem<Graphics>();
         lightBlocks = {};
         for (int i = 0; i < lights.size(); ++i) {
             //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lights[i]->GetModelMatrix());
@@ -201,8 +200,8 @@ namespace Joestar {
     }
 
     void Scene::RenderSkybox() {
-        GetSubsystem<Graphics>()->SetDepthCompare(DEPTH_COMPARE_LESSEQUAL);
-        GetSubsystem<Graphics>()->UpdateMaterial(skyboxMat);
-        GetSubsystem<Graphics>()->DrawMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere(), skyboxMat);
+        graphics->SetDepthCompare(DEPTH_COMPARE_LESSEQUAL);
+        graphics->UpdateMaterial(skyboxMat);
+        graphics->DrawMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere(), skyboxMat);
     }
 }

@@ -79,7 +79,7 @@ namespace Joestar {
 
     struct PushConstsVK {
         U32 size = 0;
-        void* data;
+        U8* data;
         UniformDef def;
 
         VkShaderStageFlags GetStageFlags() {
@@ -149,7 +149,7 @@ namespace Joestar {
 
     struct ShaderVK {
         std::vector<UniformDef> ubs;
-        explicit ShaderVK(Shader* s, VulkanContext* c) : shader(s), ctx(c) {
+        ShaderVK(Shader* s, VulkanContext* c) : shader(s), ctx(c) {
             for (auto& uniform : shader->info.uniforms) {
                 if (uniform.dataType == ShaderDataTypePushConst) {
                     pushConstDef = &uniform;
@@ -166,6 +166,9 @@ namespace Joestar {
             std::sort(ubs.begin(), ubs.end(), [&](UniformDef& a, UniformDef& b) {
                 return a.binding < b.binding;
             });
+        }
+        ~ShaderVK() {
+            Clean();
         }
         std::string& GetName() { return shader->GetName(); }
         U16 GetUniformBindingByName(std::string& name) {
@@ -186,9 +189,9 @@ namespace Joestar {
         bool operator ==(ShaderVK& s2) {
             return GetName() == s2.GetName();
         }
-        void Clean(VkDevice& dev) {
+        void Clean() {
             for (auto& modu : shaderModules)
-                vkDestroyShaderModule(dev, modu, nullptr);
+                vkDestroyShaderModule(ctx->device, modu, nullptr);
         }
         bool HasStage(ShaderStage stage) {
             return shader->flag & stage;
@@ -220,6 +223,7 @@ namespace Joestar {
         }
 
         void Prepare() {
+            if (!shaderModules.empty()) return;
             Application* app = Application::GetApplication();
             FileSystem* fs = app->GetSubSystem<FileSystem>();
             std::string path = fs->GetShaderDirAbsolute();
@@ -651,10 +655,9 @@ namespace Joestar {
 
     struct UniformBufferVK {
         std::vector<BufferVK> buffers;
-        U32 size;
-        U8* data;
+        U32 size = 0;
+        U8* data = nullptr;
         U32 texID = 0;
-        UniformDef def;
         U32 id = 0;
 
         U32 ID() {
@@ -667,18 +670,6 @@ namespace Joestar {
                 vkFreeMemory(dev, buf.memory, nullptr);
             }
             buffers.clear();
-        }
-
-        bool IsSampler() {
-            return def.IsSampler();
-        }
-
-        bool IsImage() {
-            return def.IsImage();
-        }
-
-        bool IsBuffer() {
-            return def.IsBuffer();
         }
 
         bool IsUniform() {
@@ -828,6 +819,7 @@ namespace Joestar {
         std::vector<U32> ubs;
         PushConstsVK* pushConst = nullptr;
         bool writeBack = false;
+        const char* name;
         REGISTER_HASH
 
         void CreatePipeline(U32 flags = 0) {
@@ -869,7 +861,7 @@ namespace Joestar {
 
             vkCmdBindPipeline(ctx->commandBuffer.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
             vkCmdBindDescriptorSets(ctx->commandBuffer.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSets[0], 0, 0);
-            if (pushConst->size > 0) {
+            if (pushConst) {
                 vkCmdPushConstants(ctx->commandBuffer.commandBuffer, pipelineLayout, pushConst->GetStageFlags(), 0, pushConst->size, pushConst->data);
             }
             vkCmdDispatch(ctx->commandBuffer.commandBuffer, group[0], group[1], group[2]);
@@ -1099,7 +1091,9 @@ namespace Joestar {
                     ++samplerCount;
                 } else {
                     VkDescriptorBufferInfo bufferInfo{};
-                    bufferInfo.buffer = ub->buffers[i].buffer;
+                    U32 size = ub->buffers.size();
+                    U32 idx = size == 1 ? 0 : i; //compute buffer only has 1 size
+                    bufferInfo.buffer = ub->buffers[idx].buffer;
                     bufferInfo.offset = 0;
                     bufferInfo.range = ub->size;// sizeof(UniformBufferObject);
 

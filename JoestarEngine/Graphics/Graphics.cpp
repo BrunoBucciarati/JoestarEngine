@@ -8,7 +8,6 @@
 namespace Joestar {
 	Graphics::Graphics(EngineContext* context) : Super(context) {
 		cmdBuffer = new GFXCommandBuffer(1000);
-		cmdIdx = 0;
 		defaultClearColor.Set(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 	Graphics::~Graphics() {
@@ -33,7 +32,6 @@ namespace Joestar {
 		cmdBuffer->Flush();
 		renderThread->DrawFrame(cmdBuffer);
 		cmdBuffer->Clear();
-		cmdIdx = 0;
 	}
 
 	void Graphics::Clear() {
@@ -196,7 +194,6 @@ namespace Joestar {
 	void Graphics::EndCompute(const char* name) {
 		computeCmdBuffer->WriteCommandType(ComputeCMD_EndCompute);
 		computeCmdBuffer->WriteBuffer<const char*>(name);
-		++computeCmdIdx;
 		computeCmdBuffer->Flush();
 		renderThread->DispatchCompute(computeCmdBuffer);
 		isCompute = false;
@@ -213,10 +210,5 @@ namespace Joestar {
 		computeCmdBuffer->WriteCommandType(ComputeCMD_UpdatePushConstant);
 		computeCmdBuffer->WriteBuffer<U32>(size);
 		computeCmdBuffer->WriteBufferPtr(data, size);
-		//computeCmdBuffer[computeCmdIdx].typ = ComputeCMD_UpdatePushConstant;
-		//computeCmdBuffer[computeCmdIdx].size = size;
-		//computeCmdBuffer[computeCmdIdx].data = data;
-		//++computeCmdIdx;
-
 	}
 }
