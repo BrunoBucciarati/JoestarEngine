@@ -168,7 +168,7 @@ namespace Joestar {
 	void GPUProgramVulkan::CreateTextureImage(TextureVK* tex, UniformDef& ub) {
 		if (tex->image) return;
 		VkDeviceSize imageSize = tex->GetSize();
-		mipLevels = tex->HasMipmap() ? static_cast<uint32_t>(std::floor(std::log2(Max(tex->GetWidth(), tex->GetHeight())))) + 1 : 1;
+		U32 mipLevels = tex->HasMipmap() ? static_cast<uint32_t>(std::floor(std::log2(Max(tex->GetWidth(), tex->GetHeight())))) + 1 : 1;
 		tex->image = new ImageVK;
 		tex->image->ctx = vkCtxPtr;
 		tex->image->width = tex->GetWidth();
@@ -232,7 +232,7 @@ namespace Joestar {
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = static_cast<float>(mipLevels);
+		samplerInfo.maxLod = static_cast<float>(tex->image->mipLevels);
 		samplerInfo.mipLodBias = 0.0f;
 
 		if (vkCreateSampler(vkCtxPtr->device, &samplerInfo, nullptr, &tex->sampler) != VK_SUCCESS) {
@@ -869,7 +869,7 @@ namespace Joestar {
 				cmdBuffer->ReadBuffer<Texture*>(tex);
 				U8 binding;
 				cmdBuffer->ReadBuffer<U8>(binding);
-				CMDUpdateTexture(tex, drawcall, binding);
+				CmdUpdateTexture(tex, drawcall, binding);
 				drawcall->HashInsert(tex->id);
 				break;
 			}
@@ -1048,7 +1048,7 @@ namespace Joestar {
 				cmdBuffer->ReadBuffer<Texture*>(tex);
 				U8 binding;
 				cmdBuffer->ReadBuffer<U8>(binding);
-				CMDUpdateTexture(tex, computePipeline, binding);
+				CmdUpdateTexture(tex, computePipeline, binding);
 				computePipeline->HashInsert(tex->id);
 				break;
 			}

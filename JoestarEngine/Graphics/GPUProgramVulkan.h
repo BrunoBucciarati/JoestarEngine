@@ -603,9 +603,6 @@ namespace Joestar {
         void* GetData() { return texture->GetData(); }
         bool HasMipmap() { return texture->hasMipMap; }
         TEXTURE_TYPE Type() { return texture->typ; }
-        //VkImage textureImage;
-        //VkDeviceMemory textureImageMemory;
-        //VkImageView textureImageView;
         ImageVK* image;
         VkSampler sampler = VK_NULL_HANDLE;
         Texture* texture;
@@ -621,10 +618,9 @@ namespace Joestar {
         }
     };
 
-    class VertexBufferVK {
-    public:
-        explicit VertexBufferVK(VertexBuffer* b, VulkanContext* ctx) {
-            vb = b; buffer.ctx = ctx; instance = b->instanceCount > 1; binding = instance ? 1 : 0;
+    struct VertexBufferVK {
+        VertexBufferVK(VertexBuffer* b, VulkanContext* ctx):vb(b) {
+            buffer.ctx = ctx; instance = b->instanceCount > 1; binding = instance ? 1 : 0;
         }
         VertexBuffer* vb;
         U32 ID() {
@@ -962,7 +958,6 @@ namespace Joestar {
     class GPUProgramVulkan : public GPUProgram {
     public:
         GPUProgramVulkan();
-        //VkPipelineVertexInputStateCreateInfo* GetVertexInputInfo();
         void SetDevice(VulkanContext* ctx) { vkCtxPtr = ctx; }
         void CreateVertexBuffer(VertexBufferVK* vb);
         void CreateIndexBuffer(IndexBufferVK* ib);
@@ -985,14 +980,6 @@ namespace Joestar {
         void CreateFrameBuffers(RenderPassVK* pass);
         void CreateDescriptorPool(DrawCallVK* dc);
 
-        template <class T>
-        void CreateDescriptorPool(T* call);
-        template <class T>
-        void CreateDescriptorSets(T* call);
-        template <class T>
-        void UpdateDescriptorSets(T* call);
-        template <class T>
-        void CreateDescriptorSetLayout(T* call);
         void UpdateUniformBuffer(uint32_t currentImage);
         void RecordCommandBuffer(std::vector<RenderPassVK*>&);
         bool ExecuteRenderCommand(GFXCommandBuffer* cmdBuffer, U16 imageIdx);
@@ -1003,12 +990,21 @@ namespace Joestar {
         void RecordRenderPass(RenderPassVK* pass, int i);
         CommandBufferVK* GetCommandBuffer(bool dynamic = false);
         void PushConstants(std::vector<RenderPassVK*>& passes);
+        void DispatchCompute(ComputePipelineVK* compute);
         void PrepareCompute(ComputePipelineVK* compute);
+
+        template <class T>
+        void CreateDescriptorPool(T* call);
+        template <class T>
+        void CreateDescriptorSets(T* call);
+        template <class T>
+        void UpdateDescriptorSets(T* call);
+        template <class T>
+        void CreateDescriptorSetLayout(T* call);
         template<class T>
         void CreatePipelineLayout(T* call);
-        void DispatchCompute(ComputePipelineVK* compute);
         template<class T>
-        void CMDUpdateTexture(Texture* tex, T* call, U8 binding = 0);
+        void CmdUpdateTexture(Texture* tex, T* call, U8 binding = 0);
 
         VkCommandPool subCommandPool;
     private:
@@ -1017,10 +1013,6 @@ namespace Joestar {
         bool dynamicCommandBuffer;
         bool hasCompute = false;
 
-        VkBufferCreateInfo bufferInfo{};
-        VkMemoryRequirements memRequirements;
-        VkMemoryAllocateInfo allocInfo{};
-        U32 mipLevels;
         std::map<U32, TextureVK*> textureVKs;
         std::map<U32, ShaderVK*> shaderVKs;
         std::map<U32, UniformBufferVK*> uniformVKs;
@@ -1081,8 +1073,6 @@ namespace Joestar {
     void GPUProgramVulkan::UpdateDescriptorSets(T* call) {
         for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); ++i) {
             std::vector<VkWriteDescriptorSet> descriptorWrites{};
-            //std::vector<VkDescriptorImageInfo> imageInfos;
-            //std::vector<VkDescriptorBufferInfo> bufferInfos;
             descriptorWrites.resize(call->shader->ubs.size());
             int samplerCount = 0;
             for (int j = 0; j < call->shader->ubs.size(); ++j) {
@@ -1137,9 +1127,6 @@ namespace Joestar {
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.bindingCount = static_cast<U32>(bindings.size());
-        if (bindings.size() > 4) {
-            int j = 0;
-        }
         layoutInfo.pBindings = bindings.data();
 
         if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(call->descriptorSetLayout)) != VK_SUCCESS) {
@@ -1170,7 +1157,7 @@ namespace Joestar {
     }
 
     template <class T>
-    void GPUProgramVulkan::CMDUpdateTexture(Texture* tex, T* call, U8 binding) {
+    void GPUProgramVulkan::CmdUpdateTexture(Texture* tex, T* call, U8 binding) {
         //check if uniform buffer is ready
         if (textureVKs.find(tex->id) == textureVKs.end()) {
             TextureVK* vkTex = JOJO_NEW(TextureVK(tex), MEMORY_GFX_STRUCT);
