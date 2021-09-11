@@ -76,6 +76,7 @@ namespace Joestar {
         shCube = NEW_OBJECT(TextureCube);
         std::string skydir = "Textures/shcube/";
         shCube->TextureFromImage(skydir);
+        shCube->hasMipMap = false;
     }
 
     void Scene::CreateLights() {
@@ -129,8 +130,6 @@ namespace Joestar {
             }
         }
 
-        if (GetSubsystem<TimeManager>()->GetFrame() > 10) {
-        }
         PreRenderCompute();
         RenderScene();
     }

@@ -204,6 +204,7 @@ namespace Joestar {
 			}
 		} else if (ub.IsImage()) {
 			tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, UniformBufferVK::GetTargetImageLayout(ub));
+			tex->image->CopyBufferToImage(stagingBuffer, cb);
 		}
 		tex->image->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT, cb);
 		cb.End();

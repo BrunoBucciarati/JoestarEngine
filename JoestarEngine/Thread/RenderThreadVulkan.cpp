@@ -126,16 +126,13 @@ namespace Joestar {
         while (!bExit) {
             U32 idx = frameIndex % MAX_CMDBUFFERS_IN_FLIGHT;
             //always dispatch compute first, then draw
-            while (!computeCmdBuffers[idx]->ready) {
+            while (!computeCmdBuffers[idx]->ready || !cmdBuffers[idx]->ready) {
                 //busy wait
             }
             DispatchCompute(computeCmdBuffers[idx]);
-            computeCmdBuffers[idx]->ready = false;
-            while (!cmdBuffers[idx]->ready) {
-                //busy wait
-            }
             DrawFrame(cmdBuffers[idx]);
             cmdBuffers[idx]->ready = false;
+            computeCmdBuffers[idx]->ready = false;
             ++frameIndex;
         }
     }
@@ -699,27 +696,8 @@ void RenderThreadVulkan::RecreateSwapChain() {
 
     CreateSwapChain();
     CreateImageViews();
-    //CreateDescriptorPool();
     CreateCommandBuffers();
 }
-
-//void RenderThreadVulkan::UpdateUniformBuffer(uint32_t currentImage) {
-//    static auto startTime = std::chrono::high_resolution_clock::now();
-//    UniformBufferObject ubo{};
-//    ubo.model = Matrix4x4f::identity;
-//    ubo.view.LookAt(Vector3f(0.0f, 0.0f, -2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f));
-//    ubo.proj.SetPerspective(45.f, vkCtx.swapChainExtent.width / (float)vkCtx.swapChainExtent.height, 0.1f, 10.0f);
-//    //auto currentTime = std::chrono::high_resolution_clock::now();
-//    //float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-//    Vector4f test1 = ubo.view.MultiplyVector4(Vector4f(0.5, 0.5, 0, 1));
-//    //test1.z = -test1.z;
-//    Vector4f test = ubo.proj.MultiplyVector4(test1);
-//
-//    void* data;
-//    vkMapMemory(vkCtx.device, vkCtx.uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
-//    memcpy(data, &ubo, sizeof(ubo));
-//    vkUnmapMemory(vkCtx.device, vkCtx.uniformBuffersMemory[currentImage]);
-//}
 
 VkFormat RenderThreadVulkan::FindDepthFormat() {
     return FindSupportedFormat(

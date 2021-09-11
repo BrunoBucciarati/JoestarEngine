@@ -50,7 +50,7 @@ namespace Joestar {
 		}
 
 		bool Empty() {
-			return cursor > 0;
+			return cursor == 0 && last == 0;
 		}
 
 		void WriteCommandType(RenderCommandType t) {

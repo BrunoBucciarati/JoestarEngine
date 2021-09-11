@@ -37,6 +37,9 @@ namespace Joestar {
 
 	void Graphics::MainLoop() {
 		//Flush cmd buffer from last frame
+		while (computeCmdBuffer->ready || cmdBuffer->ready) {
+			//busy wait, must be both in unready state
+		}
 		if (!computeCmdBuffer->Empty() || !cmdBuffer->Empty()) {
 			computeCmdBuffer->Flush();
 			cmdBuffer->Flush();
@@ -211,7 +214,6 @@ namespace Joestar {
 	void Graphics::EndCompute(const char* name) {
 		computeCmdBuffer->WriteCommandType(ComputeCMD_EndCompute);
 		computeCmdBuffer->WriteBuffer<const char*>(name);
-		computeCmdBuffer->Flush();
 		//renderThread->DispatchCompute(computeCmdBuffer);
 		isCompute = false;
 	}

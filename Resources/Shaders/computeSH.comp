@@ -70,7 +70,7 @@ void main()
 
     uint coefCount = (shConsts.sizeAndLevel.z + 1) * (shConsts.sizeAndLevel.z + 1);
     for (int i = 0; i < coefCount; ++i) {
-        uvec3 coefValue = uvec3(sh.coefs[i] * rgb * 10000);
+        uvec3 coefValue = uvec3(rgb * (sh.coefs[i] * 10000));
 	    atomicAdd(values[i].x, coefValue.x);
 	    atomicAdd(values[i].y, coefValue.y);
 	    atomicAdd(values[i].z, coefValue.z);

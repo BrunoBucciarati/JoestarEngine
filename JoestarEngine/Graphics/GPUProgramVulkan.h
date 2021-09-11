@@ -441,8 +441,8 @@ namespace Joestar {
             VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
             VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
             // Source layouts (old)
-        // Source access mask controls actions that have to be finished on the old layout
-        // before it will be transitioned to the new layout
+            // Source access mask controls actions that have to be finished on the old layout
+            // before it will be transitioned to the new layout
             switch (oldLayout)
             {
             case VK_IMAGE_LAYOUT_UNDEFINED:
@@ -1074,8 +1074,7 @@ namespace Joestar {
                         textureVKs[it->first] = it->second;
                         tex = it->second;
                         pendingTextureVKs.erase(it);
-                    }
-                    else {
+                    } else {
                         tex = it->second;
                     }
                     imageInfo.imageView = tex->image->imageView;
@@ -1155,9 +1154,7 @@ namespace Joestar {
             pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
             VK_CHECK(vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)))
         } else {
-            if (vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)) != VK_SUCCESS) {
-                LOGERROR("failed to create pipeline layout!");
-            }
+            VK_CHECK(vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)))
         }
     }
 
