@@ -193,6 +193,7 @@ namespace Joestar {
 
 		//for mipmap
 		CommandBufferVK cb{ vkCtxPtr };
+		tex->image->imageLayout = UniformBufferVK::GetTargetImageLayout(ub);
 		cb.Begin();
 		if (ub.IsSampler()) {
 			tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -200,17 +201,22 @@ namespace Joestar {
 			if (tex->HasMipmap()) {
 				tex->image->GenerateMipmaps(cb);
 			} else {
-				tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, UniformBufferVK::GetTargetImageLayout(ub));
+				tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tex->image->imageLayout);
 			}
 		} else if (ub.IsImage()) {
-			tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, UniformBufferVK::GetTargetImageLayout(ub));
-			tex->image->CopyBufferToImage(stagingBuffer, cb);
+			tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, tex->image->imageLayout);
+			tex->image->CopyBufferToImage(stagingBuffer, cb, tex->image->imageLayout);
 		}
 		tex->image->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT, cb);
 		cb.End();
+
+		if (ub.IsSampler())
+			CreateTextureSampler(tex);
+
+		tex->CreateDescriptorInfo();
 	}
 
-	void GPUProgramVulkan::CreateTextureSampler(DrawCallVK* dc) {
+	void GPUProgramVulkan::CreateTextureSampler(TextureVK* tex) {
 		VkSamplerCreateInfo samplerInfo{};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -229,7 +235,7 @@ namespace Joestar {
 		samplerInfo.maxLod = static_cast<float>(mipLevels);
 		samplerInfo.mipLodBias = 0.0f;
 
-		if (vkCreateSampler(vkCtxPtr->device, &samplerInfo, nullptr, &dc->textureSampler) != VK_SUCCESS) {
+		if (vkCreateSampler(vkCtxPtr->device, &samplerInfo, nullptr, &tex->sampler) != VK_SUCCESS) {
 			LOGERROR("failed to create texture sampler!");
 		}
 	}
@@ -467,7 +473,6 @@ namespace Joestar {
 	void GPUProgramVulkan::GetPipeline(RenderPassVK* pass, int i) {
 		CreateDescriptorSetLayout<DrawCallVK>(pass->dcs[i]);
 		CreateGraphicsPipeline(pass, i);
-		CreateTextureSampler(pass->dcs[i]);
 		CreateDescriptorPool<DrawCallVK>(pass->dcs[i]);
 		CreateDescriptorSets<DrawCallVK>(pass->dcs[i]);
 	}
@@ -650,34 +655,34 @@ namespace Joestar {
 		}
 		firstRecord = false;
 	}
+#define CHECK_CREATE_UBO(NAME)\
+	U32 hashID = hashString(#NAME);\
+	if (uniformVKs.find(hashID) == uniformVKs.end()) {\
+		uniformVKs[hashID] = JOJO_NEW(UniformBufferVK, MEMORY_GFX_STRUCT);\
+		uniformVKs[hashID]->size = sizeof(NAME);\
+		uniformVKs[hashID]->data = (U8*)(new NAME);\
+		uniformVKs[hashID]->id = hashID;\
+		CreateUniformBuffers(uniformVKs[hashID]);\
+	}
 
 	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(GFXCommandBuffer* cmdBuffer) {
-		std::string name = "UniformBufferObject";
-		//built in name
-		uint32_t hashID = hashString(name.c_str());
-		if (uniformVKs.find(hashID) == uniformVKs.end()) {
-			uniformVKs[hashID] = new UniformBufferVK;
-			uniformVKs[hashID]->size = sizeof(UniformBufferObject);
-			uniformVKs[hashID]->data = (U8*)(new UniformBufferObject);
-			uniformVKs[hashID]->id = hashID;
-
-			CreateUniformBuffers(uniformVKs[hashID]);
-		}
-
 		BUILTIN_VALUE flag;
 		cmdBuffer->ReadBuffer<BUILTIN_VALUE>(flag);
 		switch (flag) {
 			case BUILTIN_MATRIX_VIEW: {
+				CHECK_CREATE_UBO(UniformBufferObject)
 				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				cmdBuffer->ReadBuffer<Matrix4x4f>(ubo->view);
 				break; 
 			}
 			case BUILTIN_MATRIX_PROJECTION: {
+				CHECK_CREATE_UBO(UniformBufferObject)
 				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				cmdBuffer->ReadBuffer<Matrix4x4f>(ubo->proj);
 				break; 
 			}
 			case BUILTIN_VEC3_CAMERAPOS: {
+				CHECK_CREATE_UBO(UniformBufferObject)
 				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				Vector3f v3;
 				cmdBuffer->ReadBuffer<Vector3f>(v3);
@@ -685,6 +690,7 @@ namespace Joestar {
 				break;
 			}
 			case BUILTIN_VEC3_SUNDIRECTION: {
+				CHECK_CREATE_UBO(UniformBufferObject)
 				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				Vector3f v3;
 				cmdBuffer->ReadBuffer<Vector3f>(v3);
@@ -692,6 +698,7 @@ namespace Joestar {
 				break;
 			}
 			case BUILTIN_VEC3_SUNCOLOR: {
+				CHECK_CREATE_UBO(UniformBufferObject)
 				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				Vector3f v3;
 				cmdBuffer->ReadBuffer<Vector3f>(v3);
@@ -699,26 +706,12 @@ namespace Joestar {
 				break;
 			}
 			case BUILTIN_STRUCT_LIGHTBLOCK: {
-				std::string name = "LightBlocks";
-				//built in name
-				uint32_t hashID = hashString(name.c_str());
-				if (uniformVKs.find(hashID) == uniformVKs.end()) {
-					uniformVKs[hashID] = new UniformBufferVK;
-					uniformVKs[hashID]->size = sizeof(LightBlocks);
-					uniformVKs[hashID]->data = JOJO_NEW(U8[sizeof(LightBlocks)], MEMORY_GFX_STRUCT);
-					uniformVKs[hashID]->id = hashID;
-
-					CreateUniformBuffers(uniformVKs[hashID]);
-				}
+				CHECK_CREATE_UBO(LightBlocks)
 				U8* data = uniformVKs[hashID]->data;
 				cmdBuffer->ReadBufferPtr(data, sizeof(LightBlocks));
 				break;
 			}
 			default: break;
-		}
-		if (name.empty()) {
-			LOGERROR("update ubo but type not recognize!");
-			return;
 		}
 	}
 

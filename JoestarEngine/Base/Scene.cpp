@@ -25,14 +25,14 @@ namespace Joestar {
 
         graphics = GetSubsystem<Graphics>();
 
-        //GameObject* sphere = NEW_OBJECT(GameObject);
+        GameObject* sphere = NEW_OBJECT(GameObject);
         //gameObjects.push_back(sphere);
-        //Renderer* sr = sphere->GetComponent<Renderer>();
-        //sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
-        //sr->mat = NEW_OBJECT(Material);
-        //sr->mat->SetPBR();
-        //sphere->SetPosition(0, 0, 1.5);
-        //selection = sphere;
+        Renderer* sr = sphere->GetComponent<Renderer>();
+        sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
+        sr->mat = NEW_OBJECT(Material);
+        sr->mat->SetPBR();
+        sphere->SetPosition(0, 0, 1.5);
+        selection = sphere;
 
         GameObject* plane = NEW_OBJECT(GameObject);
         gameObjects.push_back(plane);

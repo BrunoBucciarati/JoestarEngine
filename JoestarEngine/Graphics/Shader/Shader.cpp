@@ -45,6 +45,21 @@ namespace Joestar {
 		}
 	}
 
+	UniformDef& Shader::GetUniformDefByHash(U32 hash) {
+		for (int i = 0; i < info.uniforms.size(); i++) {
+			if (hashString(info.uniforms[i].name.c_str()) == hash) {
+				return info.uniforms[i];
+			}
+		}
+	}
+	UniformDef& Shader::GetUniformDef(U8 b) {
+		for (int i = 0; i < info.uniforms.size(); i++) {
+			if (info.uniforms[i].binding == b) {
+				return info.uniforms[i];
+			}
+		}
+	}
+
 	U16 Shader::GetSamplerBinding(int count) {
 		for (int i = 0; i < info.uniforms.size(); i++) {
 			if (info.uniforms[i].dataType > ShaderDataTypeSampler) {

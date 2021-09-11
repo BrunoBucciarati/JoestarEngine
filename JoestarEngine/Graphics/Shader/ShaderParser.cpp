@@ -183,31 +183,30 @@ namespace Joestar {
 				def.readFlag = readFlag;
 				def.writeFlag = writeFlag;
 				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
-			} else if (binding == 99) {
-				//means push constant
-				tokenStream.AcceptString(tok);
-				shaderInfo.uniforms.push_back(UniformDef{});
-				UniformDef& def = shaderInfo.uniforms.back();
-				def.name = tok;
-				def.binding = binding;
-				def.stageFlag |= shaderInfo.curStage;
-				def.dataType = ShaderDataTypePushConst;
-				def.readFlag = readFlag;
-				def.writeFlag = writeFlag;
-				tokenStream.AcceptToken(TOKEN_LB);
-				tokenStream.AcceptTokenForward(TOKEN_RB);
-				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);
 			} else {
 				//must be a UBO
 				tokenStream.AcceptString(tok);
-				shaderInfo.uniforms.push_back(UniformDef{});
-				UniformDef& def = shaderInfo.uniforms.back();
-				def.name = tok;
-				def.binding = binding;
-				def.stageFlag |= shaderInfo.curStage;
-				def.dataType = ShaderDataTypeUBO;
-				def.readFlag = readFlag;
-				def.writeFlag = writeFlag;
+				int existIdx = -1;
+				for (int i = 0; i < shaderInfo.uniforms.size(); ++i) {
+					if (shaderInfo.uniforms[i].name == tok) {
+						existIdx = i;
+						break;
+					}
+				}
+				if (existIdx > -1) {
+					UniformDef& def = shaderInfo.uniforms[existIdx];
+					def.stageFlag |= shaderInfo.curStage;
+				} else {
+					shaderInfo.uniforms.push_back(UniformDef{});
+					UniformDef& def = shaderInfo.uniforms.back();
+					def.name = tok;
+					def.binding = binding;
+					def.stageFlag |= shaderInfo.curStage;
+					//special handle
+					def.dataType = binding == 99 ? ShaderDataTypePushConst : ShaderDataTypeUBO;
+					def.readFlag = readFlag;
+					def.writeFlag = writeFlag;
+				}
 				tokenStream.AcceptToken(TOKEN_LB);
 				tokenStream.AcceptTokenForward(TOKEN_RB);
 				tokenStream.AcceptTokenForward(TOKEN_SEMICOLON);

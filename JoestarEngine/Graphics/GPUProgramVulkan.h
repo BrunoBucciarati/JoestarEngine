@@ -171,13 +171,19 @@ namespace Joestar {
             Clean();
         }
         std::string& GetName() { return shader->GetName(); }
-        U16 GetUniformBindingByName(std::string& name) {
+        U8 GetUniformBindingByName(std::string& name) {
             return shader->GetUniformBindingByName(name);
         }
-        U16 GetUniformBindingByHash(U32 hash) {
+        U8 GetUniformBindingByHash(U32 hash) {
             return shader->GetUniformBindingByHash(hash);
         }
-        U16 GetSamplerBinding(int count) {
+        UniformDef& GetUniformDefByHash(U32 hash) {
+            return shader->GetUniformDefByHash(hash);
+        }
+        UniformDef& GetUniformDef(U8 binding) {
+            return shader->GetUniformDef(binding);
+        }
+        U8 GetSamplerBinding(int count) {
             return shader->GetSamplerBinding(count);
         }
         U32 ID() { return shader->id; }
@@ -253,6 +259,8 @@ namespace Joestar {
         VkDeviceMemory imageMemory;
         VkImageView imageView;
         U32 memoryTypeIdx;
+
+        VkImageLayout imageLayout;
 
         void Clean() {
             vkDestroyImageView(ctx->device, imageView, nullptr);
@@ -380,7 +388,7 @@ namespace Joestar {
                 1, &barrier);
         }
 
-        void CopyBufferToImage(BufferVK& buffer, CommandBufferVK& cb) {
+        void CopyBufferToImage(BufferVK& buffer, CommandBufferVK& cb, VkImageLayout imageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
             U32 face = GetLayerCount();
             VkBufferImageCopy region{};
             U32 offset = 0;
@@ -396,13 +404,9 @@ namespace Joestar {
             region.imageSubresource.layerCount = face;
 
             region.imageOffset = { 0, 0, 0 };
-            region.imageExtent = {
-                width,
-                height,
-                1
-            };
+            region.imageExtent = { width, height, 1 };
 
-            vkCmdCopyBufferToImage(cb.commandBuffer,buffer.buffer,image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1, &region);
+            vkCmdCopyBufferToImage(cb.commandBuffer,buffer.buffer,image, imageLayout,1, &region);
         }
 
         bool HasStencilComponent(VkFormat format) {
@@ -590,9 +594,8 @@ namespace Joestar {
         ImageVK* colorImage;
     };
 
-    class TextureVK {
-    public:
-        explicit TextureVK(Texture*);
+    struct TextureVK {
+        TextureVK(Texture*);
         U32 ID() { return texture->id; }
         U32 GetSize() { return texture->GetSize(); }
         U32 GetWidth() { return texture->GetWidth(); }
@@ -604,8 +607,18 @@ namespace Joestar {
         //VkDeviceMemory textureImageMemory;
         //VkImageView textureImageView;
         ImageVK* image;
-    private:
+        VkSampler sampler = VK_NULL_HANDLE;
         Texture* texture;
+        VkDescriptorImageInfo imageInfo{};
+        void CreateDescriptorInfo() {
+            imageInfo.imageLayout = image->imageLayout;
+            imageInfo.imageView = image->imageView;
+            imageInfo.sampler = sampler;
+        }
+
+        VkDescriptorImageInfo& GetDescriptorImageInfo() {
+            return imageInfo;
+        }
     };
 
     class VertexBufferVK {
@@ -639,9 +652,8 @@ namespace Joestar {
 
     };
 
-    class IndexBufferVK {
-    public:
-        explicit IndexBufferVK(IndexBuffer* b, VulkanContext* ctx) { ib = b; buffer.ctx = ctx;}
+    struct IndexBufferVK {
+        IndexBufferVK(IndexBuffer* b, VulkanContext* ctx) { ib = b; buffer.ctx = ctx;}
         U32 GetIndexCount() { return ib->GetIndexCount(); }
         IndexBuffer* ib;
         U32 ID() { return ib->id; }
@@ -659,6 +671,8 @@ namespace Joestar {
         U8* data = nullptr;
         U32 texID = 0;
         U32 id = 0;
+        std::vector<VkDescriptorBufferInfo> bufferInfos{};
+        std::vector<VkDescriptorImageInfo> imageInfos{};
 
         U32 ID() {
             return id;
@@ -670,6 +684,19 @@ namespace Joestar {
                 vkFreeMemory(dev, buf.memory, nullptr);
             }
             buffers.clear();
+        }
+
+        VkDescriptorBufferInfo& GetDescriptorBufferInfo(U32 idx) {
+            if (bufferInfos.empty()) {
+                U32 sz = buffers.size();
+                bufferInfos.resize(sz);
+                for (int i = 0; i < sz; ++i) {
+                    bufferInfos[i].buffer = buffers[i].buffer;
+                    bufferInfos[i].offset = 0;
+                    bufferInfos[i].range = size;
+                }
+            }
+            return bufferInfos[idx];
         }
 
         bool IsUniform() {
@@ -721,7 +748,7 @@ namespace Joestar {
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
         std::vector<VkDescriptorSet> descriptorSets;
         VkDescriptorSetLayout descriptorSetLayout;
-        VkSampler textureSampler;
+        //VkSampler textureSampler;
         U32 instanceCount = 0;
         std::vector<U32> textures;
         PushConstsVK* pushConst = nullptr;
@@ -941,7 +968,7 @@ namespace Joestar {
         void CreateIndexBuffer(IndexBufferVK* ib);
         void CopyBuffer(BufferVK& srcBuffer, BufferVK& dstBuffer, VkDeviceSize size);
         void CreateTextureImage(TextureVK* tex, UniformDef&);
-        void CreateTextureSampler(DrawCallVK*);
+        void CreateTextureSampler(TextureVK*);
 
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         void Clean();
@@ -995,7 +1022,6 @@ namespace Joestar {
         VkMemoryAllocateInfo allocInfo{};
         U32 mipLevels;
         std::map<U32, TextureVK*> textureVKs;
-        std::map<U32, TextureVK*> pendingTextureVKs;
         std::map<U32, ShaderVK*> shaderVKs;
         std::map<U32, UniformBufferVK*> uniformVKs;
         std::map<U32, VertexBufferVK*> vbs;
@@ -1055,30 +1081,16 @@ namespace Joestar {
     void GPUProgramVulkan::UpdateDescriptorSets(T* call) {
         for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); ++i) {
             std::vector<VkWriteDescriptorSet> descriptorWrites{};
+            //std::vector<VkDescriptorImageInfo> imageInfos;
+            //std::vector<VkDescriptorBufferInfo> bufferInfos;
             descriptorWrites.resize(call->shader->ubs.size());
             int samplerCount = 0;
             for (int j = 0; j < call->shader->ubs.size(); ++j) {
                 UniformBufferVK* ub = uniformVKs[call->ubs[j]];
                 UniformDef& def = call->shader->ubs[j];
                 if (def.IsSampler() || def.IsImage()) {
-                    VkDescriptorImageInfo imageInfo{};
-                    imageInfo.imageLayout = UniformBufferVK::GetTargetImageLayout(def);
                     std::map<U32, TextureVK*>::iterator it = textureVKs.find(call->textures[samplerCount]);
-                    TextureVK* tex;
-                    if (it == textureVKs.end()) {
-                        it = pendingTextureVKs.find(call->textures[samplerCount]);
-                        if (it == pendingTextureVKs.end()) {
-                            LOGERROR("this texture didn't call Graphics::UpdateTexture!!!");
-                        }
-                        CreateTextureImage(it->second, def);
-                        textureVKs[it->first] = it->second;
-                        tex = it->second;
-                        pendingTextureVKs.erase(it);
-                    } else {
-                        tex = it->second;
-                    }
-                    imageInfo.imageView = tex->image->imageView;
-                    imageInfo.sampler = call->textureSampler;
+                    TextureVK* tex = it->second;
 
                     descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[j].dstSet = call->descriptorSets[i];
@@ -1086,15 +1098,11 @@ namespace Joestar {
                     descriptorWrites[j].dstArrayElement = 0;
                     descriptorWrites[j].descriptorType = UniformBufferVK::GetDescriptorType(def);
                     descriptorWrites[j].descriptorCount = 1;
-                    descriptorWrites[j].pImageInfo = &imageInfo;
+                    descriptorWrites[j].pImageInfo = &tex->GetDescriptorImageInfo();
                     ++samplerCount;
                 } else {
-                    VkDescriptorBufferInfo bufferInfo{};
                     U32 size = ub->buffers.size();
                     U32 idx = size == 1 ? 0 : i; //compute buffer only has 1 size
-                    bufferInfo.buffer = ub->buffers[idx].buffer;
-                    bufferInfo.offset = 0;
-                    bufferInfo.range = ub->size;// sizeof(UniformBufferObject);
 
                     descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[j].dstSet = call->descriptorSets[i];
@@ -1102,7 +1110,7 @@ namespace Joestar {
                     descriptorWrites[j].dstArrayElement = 0;
                     descriptorWrites[j].descriptorType = UniformBufferVK::GetDescriptorType(def);
                     descriptorWrites[j].descriptorCount = 1;
-                    descriptorWrites[j].pBufferInfo = &bufferInfo;
+                    descriptorWrites[j].pBufferInfo = &ub->GetDescriptorBufferInfo(idx);
                 }
             }
             vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<U32>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
@@ -1117,7 +1125,7 @@ namespace Joestar {
             //UniformBufferVK* ubvk = uniformVKs[call->shader->ubs[i].id];
             UniformDef& ubdef = call->shader->ubs[i];
             VkDescriptorSetLayoutBinding layoutBinding{};
-            layoutBinding.binding = i;
+            layoutBinding.binding = ubdef.binding;
             layoutBinding.descriptorType = UniformBufferVK::GetDescriptorType(ubdef);// VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             layoutBinding.stageFlags = UniformBufferVK::GetStageFlags(ubdef);
             layoutBinding.descriptorCount = 1;
@@ -1129,6 +1137,9 @@ namespace Joestar {
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.bindingCount = static_cast<U32>(bindings.size());
+        if (bindings.size() > 4) {
+            int j = 0;
+        }
         layoutInfo.pBindings = bindings.data();
 
         if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(call->descriptorSetLayout)) != VK_SUCCESS) {
@@ -1161,9 +1172,10 @@ namespace Joestar {
     template <class T>
     void GPUProgramVulkan::CMDUpdateTexture(Texture* tex, T* call, U8 binding) {
         //check if uniform buffer is ready
-        if (textureVKs.find(tex->id) == textureVKs.end() && pendingTextureVKs.find(tex->id) == pendingTextureVKs.end()) {
+        if (textureVKs.find(tex->id) == textureVKs.end()) {
             TextureVK* vkTex = JOJO_NEW(TextureVK(tex), MEMORY_GFX_STRUCT);
-            pendingTextureVKs[vkTex->ID()] = vkTex;
+            CreateTextureImage(vkTex, call->shader->GetUniformDef(binding));
+            textureVKs[vkTex->ID()] = vkTex;
         }
         call->textures.push_back(tex->id);
 
