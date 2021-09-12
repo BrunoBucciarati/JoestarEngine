@@ -470,7 +470,7 @@ namespace Joestar {
 	ShaderParser::ShaderParser(EngineContext* ctx) : Super(ctx) {
 		fs = GetSubsystem<FileSystem>();
 		shaderDir = fs->GetShaderDirAbsolute();
-		outputDir = shaderDir + "spv/";
+		outputDir = shaderDir + "spirv/";
 	}
 
 	void ShaderParser::ParseShader(std::string& name, ShaderInfo& info, U32 stage) {
