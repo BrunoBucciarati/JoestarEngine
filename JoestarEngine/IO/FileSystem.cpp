@@ -20,6 +20,15 @@ namespace Joestar {
 		return file;
 	}
 
+	bool FileSystem::WriteFile(const char* filePath, std::string& data) {
+		File* file = new File(filePath, true);
+		file->Seek(0);
+		file->Write(data.c_str(), data.length());
+		file->Close();
+		return true;
+	}
+
+
 	File* FileSystem::GetShaderCodeFile(const char* file) {
 		std::string path = GetResourceDir();
 		path += "Shaders/";

@@ -30,6 +30,7 @@ namespace Joestar {
 
 		void ReadFileAsync(const char* filePath, ReadFileCallback callback);
 		File* ReadFile(const char* filePath);
+		bool WriteFile(const char* filePath, std::string& data);
 		File* OpenFile(const char* filePath);
 
 		File* GetShaderCodeFile(const char* file);

@@ -36,6 +36,8 @@
 #define TOKEN_COMMA ","
 #define TOKEN_READONLY "readonly"
 #define TOKEN_WRITEONLY "writeonly"
+#define TOKEN_INCLUDE "#include"
+#define TOKEN_QM "\""
 
 #define SET_DATATYPE_BY_TOKEN(val, token) \
 	if (token == TOKEN_FLOAT) val = ShaderDataTypeFloat; \
@@ -304,6 +306,7 @@ namespace Joestar {
 			case '(':
 			case '=':
 			case ';':
+			case '\"':
 			case ')': if (!tokenStream[tokenIdx].empty()) ++tokenIdx; tokenStream[tokenIdx] = c; ++tokenIdx; break;
 			default: tokenStream[tokenIdx] += c; break;
 			}
@@ -312,14 +315,17 @@ namespace Joestar {
 		tokenStream.size = idx;
 	}
 
-	void ParseVertexShader(char* buffer, uint32_t idx, uint32_t size, ShaderInfo& shaderInfo) {
+	void ShaderParser::ParseVertexShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, std::string& newFile) {
 		TokenStream tokenStream;
 		GetTokenStream(buffer, idx, size, tokenStream);
 		shaderInfo.curStage = kVertexShader;
+		newFile = "";
+		std::string oldStr = buffer;
 		if (tokenStream.AcceptToken(TOKEN_GL_VERSION)) {
 			tokenStream.AcceptInt16(shaderInfo.version);
-
+			
 			bool flag = true;
+			ParseInclude(tokenStream, oldStr, newFile);
 			//Accept all layout info
 			while (flag) {
 				flag = false;
@@ -341,15 +347,49 @@ namespace Joestar {
 		}
 	}
 
-	void ParseFragmentShader(char* buffer, uint32_t idx, uint32_t size, ShaderInfo& shaderInfo) {
-		TokenStream tokenStream;
-		GetTokenStream(buffer, idx, size, tokenStream);
+	bool ShaderParser::ParseInclude(TokenStream& tokenStream, std::string& oldStr, std::string& newFile) {
+		bool flag = true;
+		U32 includeStart = 0, includeEnd = 0;
+		//Accept all include info
+		while (flag) {
+			flag = false;
+			if (tokenStream.AcceptToken(TOKEN_INCLUDE)) {
+				flag = true;
+				tokenStream.AcceptToken(TOKEN_QM);
+				std::string inc;
+				tokenStream.AcceptString(inc);
+				tokenStream.AcceptToken(TOKEN_QM);
 
+				std::string incPath = shaderDir + inc;
+				File* file = fs->ReadFile(incPath.c_str());
+				if (includeStart == 0) {
+					includeStart = oldStr.find(TOKEN_INCLUDE);
+					newFile += oldStr.substr(0, includeStart);
+				}
+				newFile += file->GetBuffer();
+				includeEnd = oldStr.find(inc + TOKEN_QM) + inc.length() + 1;
+			}
+		}
+		if (includeEnd > 0) {
+			newFile += oldStr.substr(includeEnd, oldStr.length() - includeEnd);
+		} else {
+			newFile = oldStr;
+		}
+
+		return flag;
+	}
+
+	void ShaderParser::ParseFragmentShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, std::string& newFile) {
+		TokenStream tokenStream;
+		std::string oldStr = buffer;
+		GetTokenStream(buffer, idx, size, tokenStream);
+		newFile = "";
 		shaderInfo.curStage = kFragmentShader;
 		if (tokenStream.AcceptToken(TOKEN_GL_VERSION)) {
 			tokenStream.AcceptInt16(shaderInfo.version);
 
 			bool flag = true;
+			ParseInclude(tokenStream, oldStr, newFile);
 			//Accept all layout info
 			while (flag) {
 				flag = false;
@@ -392,15 +432,17 @@ namespace Joestar {
 
 		return TryParseBuffer(tokenStream, shaderInfo, binding);
 	}
-	void ParseComputeShader(char* buffer, uint32_t idx, uint32_t size, ShaderInfo& shaderInfo) {
+	void ShaderParser::ParseComputeShader(char* buffer, uint32_t idx, uint32_t size, ShaderInfo& shaderInfo, std::string& newFile) {
 		TokenStream tokenStream;
 		GetTokenStream(buffer, idx, size, tokenStream);
 
+		std::string oldStr = buffer;
 		shaderInfo.curStage = kComputeShader;
 		if (tokenStream.AcceptToken(TOKEN_GL_VERSION)) {
 			tokenStream.AcceptInt16(shaderInfo.version);
 
 			bool flag = true;
+			ParseInclude(tokenStream, oldStr, newFile);
 			//Accept all layout info
 			while (flag) {
 				flag = false;
@@ -425,26 +467,38 @@ namespace Joestar {
 		}
 	}
 
-	void ShaderParser::ParseShader(std::string& name, ShaderInfo& info, U32 stage) {
-		FileSystem* fs = GetSubsystem<FileSystem>();
-		const char* dir = fs->GetShaderDir();
+	ShaderParser::ShaderParser(EngineContext* ctx) : Super(ctx) {
+		fs = GetSubsystem<FileSystem>();
+		shaderDir = fs->GetShaderDirAbsolute();
+		outputDir = shaderDir + "spv/";
+	}
 
+	void ShaderParser::ParseShader(std::string& name, ShaderInfo& info, U32 stage) {
 		if (stage & kVertexShader) {
-			std::string vertPath = dir + name + ".vert";
+			std::string newFile;
+			std::string vertPath = shaderDir + name + ".vert";
 			File* vertFile = fs->ReadFile(vertPath.c_str());
-			ParseVertexShader((char*)vertFile->GetBuffer(), 0, vertFile->Size(), info);
+			ParseVertexShader((char*)vertFile->GetBuffer(), 0, vertFile->Size(), info, newFile);
+			std::string newPath = outputDir + name + ".vert";
+			fs->WriteFile(newPath.c_str(), newFile);
 		}
 
 		if (stage & kFragmentShader) {
-			std::string fragPath = dir + name + ".frag";
+			std::string newFile;
+			std::string fragPath = shaderDir + name + ".frag";
 			File* fragFile = fs->ReadFile(fragPath.c_str());
-			ParseFragmentShader((char*)fragFile->GetBuffer(), 0, fragFile->Size(), info);
+			ParseFragmentShader((char*)fragFile->GetBuffer(), 0, fragFile->Size(), info, newFile);
+			std::string newPath = outputDir + name + ".frag";
+			fs->WriteFile(newPath.c_str(), newFile);
 		}
 
 		if (stage & kComputeShader) {
-			std::string compPath = dir + name + ".comp";
+			std::string newFile;
+			std::string compPath = shaderDir + name + ".comp";
 			File* compFile = fs->ReadFile(compPath.c_str());
-			ParseComputeShader((char*)compFile->GetBuffer(), 0, compFile->Size(), info);
+			ParseComputeShader((char*)compFile->GetBuffer(), 0, compFile->Size(), info, newFile);
+			std::string newPath = outputDir + name + ".comp";
+			fs->WriteFile(newPath.c_str(), newFile);
 		}
 	}
 }

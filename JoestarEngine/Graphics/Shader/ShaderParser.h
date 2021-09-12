@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "ShaderDefs.h"
+#include "../../IO/FileSystem.h"
 
 namespace Joestar {
 	enum ShaderDataType {
@@ -80,11 +81,20 @@ namespace Joestar {
 		std::string entryFunction = "main";
 		ShaderStage curStage;
 	};
+	struct TokenStream;
 	class ShaderParser : public SubSystem {
 		REGISTER_SUBSYSTEM(ShaderParser)
 	public:
-		explicit ShaderParser(EngineContext* ctx) : Super(ctx) {}
+		explicit ShaderParser(EngineContext* ctx);
+		bool ParseInclude(TokenStream& tokenStream, std::string& oldStr, std::string& newFile);
 		void ParseShader(std::string& name, ShaderInfo& si, U32 flag);
+		void ParseVertexShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, std::string& newFile);
+		void ParseFragmentShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, std::string& newFile);
+		void ParseComputeShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, std::string& newFile);
+		std::string& GetShaderOutputDir() { return outputDir; }
 	private:
+		std::string shaderDir;
+		std::string outputDir;
+		FileSystem* fs;
 	};
 }

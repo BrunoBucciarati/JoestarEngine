@@ -9,6 +9,8 @@
 #include "../Component/Renderer.h"
 #include "../IO/MemoryManager.h"
 #include "../Misc/TimeManager.h"
+const U32 SH_LEVEL = 1;
+
 namespace Joestar {
     Scene::Scene(EngineContext* ctx) : Super(ctx) {
         //for test
@@ -31,7 +33,7 @@ namespace Joestar {
         sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
         sr->mat = NEW_OBJECT(Material);
         sr->mat->SetPBR();
-        sphere->SetPosition(0, 2, 0);
+        sphere->SetPosition(0, 1.2, 0);
         selection = sphere;
 
         GameObject* plane = NEW_OBJECT(GameObject);
@@ -71,7 +73,6 @@ namespace Joestar {
 
         shComputeBuffer = JOJO_NEW(ComputeBuffer("SHCoef"), MEMORY_GFX_STRUCT);
         shComputeBuffer->SetSize(128);
-
 
         shCube = NEW_OBJECT(TextureCube);
         std::string skydir = "Textures/shcube/";
@@ -141,7 +142,7 @@ namespace Joestar {
         Texture* tex = shCube;
         computeSHConsts.sizeAndLevel[0] = tex->GetWidth();
         computeSHConsts.sizeAndLevel[1] = tex->GetHeight();
-        computeSHConsts.sizeAndLevel[2] = 1;
+        computeSHConsts.sizeAndLevel[2] = SH_LEVEL;
         graphics->UpdatePushConstant(&computeSHConsts, sizeof(ComputeSHConsts));
         graphics->UpdateTexture(tex, 1);
         graphics->UpdateComputeBuffer(shComputeBuffer, 0);
@@ -187,6 +188,20 @@ namespace Joestar {
                 lightBlocks.lightColors[lightBlocks.lightCount] = Vector4f(lights[i]->GetColor());
                 ++lightBlocks.lightCount;
             }
+        }
+
+        //read compute data
+        U32* data = reinterpret_cast<U32*>(shComputeBuffer->GetBuffer());
+        for (int i = 0; i < (SH_LEVEL + 1) * (SH_LEVEL + 1); ++i) {
+            U32 r = *data;
+            ++data;
+            U32 g = *data;
+            ++data;
+            U32 b = *data;
+            ++data;
+            //LOG("sh data, r: %d, g: %d, b: %d\n", r, g, b);
+            //in shader, lack of atomic float support, we scale with 10000 and store in int
+            lightBlocks.shCoef[i].Set(float(r) / 10000.f, float(g) / 10000.f, float(b) / 10000.f);
         }
 
         graphics->UpdateLightBlock(lightBlocks);

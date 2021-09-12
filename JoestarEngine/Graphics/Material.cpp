@@ -15,8 +15,8 @@ namespace Joestar {
 		textures.reserve(4);
 		const char* texNames[] = {
 			"basecolor.png",
-			"metallic.png",
 			"normal.png",
+			"metallic.png",
 			"roughness.png"
 		};
 		std::string path = "Textures/pbr/rustediron/";

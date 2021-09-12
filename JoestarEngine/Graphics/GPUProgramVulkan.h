@@ -231,8 +231,9 @@ namespace Joestar {
         void Prepare() {
             if (!shaderModules.empty()) return;
             Application* app = Application::GetApplication();
+            ShaderParser* sp = app->GetSubSystem<ShaderParser>();
             FileSystem* fs = app->GetSubSystem<FileSystem>();
-            std::string path = fs->GetShaderDirAbsolute();
+            std::string& path = sp->GetShaderOutputDir();
 
             CHECK_ADD_SHADER_STAGE(kVertexShader, "vert", VK_SHADER_STAGE_VERTEX_BIT)
             CHECK_ADD_SHADER_STAGE(kFragmentShader, "frag", VK_SHADER_STAGE_FRAGMENT_BIT)
