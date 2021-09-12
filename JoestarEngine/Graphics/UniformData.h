@@ -26,10 +26,12 @@ namespace Joestar {
 		Matrix4x4f proj;
 		Vector4f cameraPos; // for alignment
 		Vector4f sunDirection;
+	};
+
+	struct UniformBufferObjectPS {
+		Vector4f cameraPos; // for alignment
+		Vector4f sunDirection;
 		Vector4f sunColor;
-		bool operator== (UniformBufferObject& ub) {
-			return view == ub.view && proj == ub.proj;//&& model == ub.model;
-		}
 	};
 
 	const int MAX_LIGHTS = 20;

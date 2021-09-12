@@ -26,12 +26,12 @@ namespace Joestar {
         graphics = GetSubsystem<Graphics>();
 
         GameObject* sphere = NEW_OBJECT(GameObject);
-        //gameObjects.push_back(sphere);
+        gameObjects.push_back(sphere);
         Renderer* sr = sphere->GetComponent<Renderer>();
         sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
         sr->mat = NEW_OBJECT(Material);
         sr->mat->SetPBR();
-        sphere->SetPosition(0, 0, 1.5);
+        sphere->SetPosition(0, 2, 0);
         selection = sphere;
 
         GameObject* plane = NEW_OBJECT(GameObject);
@@ -176,14 +176,13 @@ namespace Joestar {
 
     void Scene::RenderLights() {
         //Draw Main Light as Wireframe //maybe don't need
+        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNDIRECTION, mainLight->GetDirection());
+        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNCOLOR, mainLight->GetColor());
         //Draw Point Light as Sphere
         lightBlocks = {};
         for (int i = 0; i < lights.size(); ++i) {
             //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lights[i]->GetModelMatrix());
-            if (lights[i]->GetType() == DIRECTIONAL_LIGHT) {
-                graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNDIRECTION, lights[i]->GetDirection());
-                graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNCOLOR, lights[i]->GetColor());
-            } else {
+            if (lights[i]->GetType() == POINT_LIGHT) {
                 lightBlocks.lightPos[lightBlocks.lightCount] = Vector4f(lights[i]->GetDirection());
                 lightBlocks.lightColors[lightBlocks.lightCount] = Vector4f(lights[i]->GetColor());
                 ++lightBlocks.lightCount;

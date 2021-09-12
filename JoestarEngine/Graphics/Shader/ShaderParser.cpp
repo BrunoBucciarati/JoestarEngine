@@ -293,7 +293,7 @@ namespace Joestar {
 	void GetTokenStream(char* buffer, uint32_t idx, uint32_t size, TokenStream& tokenStream) {
 		char c;
 		int tokenIdx = 0;
-		tokenStream.resize(5000);
+		tokenStream.resize(10000);
 		while (idx < size) {
 			c = buffer[idx];
 			switch (c) {

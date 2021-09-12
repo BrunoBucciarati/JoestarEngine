@@ -656,7 +656,7 @@ namespace Joestar {
 		firstRecord = false;
 	}
 #define CHECK_CREATE_UBO(NAME)\
-	U32 hashID = hashString(#NAME);\
+	hashID = hashString(#NAME);\
 	if (uniformVKs.find(hashID) == uniformVKs.end()) {\
 		uniformVKs[hashID] = JOJO_NEW(UniformBufferVK, MEMORY_GFX_STRUCT);\
 		uniformVKs[hashID]->size = sizeof(NAME);\
@@ -667,6 +667,7 @@ namespace Joestar {
 
 	void GPUProgramVulkan::RenderCmdUpdateUniformBufferObject(GFXCommandBuffer* cmdBuffer) {
 		BUILTIN_VALUE flag;
+		U32 hashID;
 		cmdBuffer->ReadBuffer<BUILTIN_VALUE>(flag);
 		switch (flag) {
 			case BUILTIN_MATRIX_VIEW: {
@@ -682,26 +683,32 @@ namespace Joestar {
 				break; 
 			}
 			case BUILTIN_VEC3_CAMERAPOS: {
-				CHECK_CREATE_UBO(UniformBufferObject)
-				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				Vector3f v3;
 				cmdBuffer->ReadBuffer<Vector3f>(v3);
+				CHECK_CREATE_UBO(UniformBufferObject)
+				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				ubo->cameraPos.Set(v3.x, v3.y, v3.z, 0.f);
+				CHECK_CREATE_UBO(UniformBufferObjectPS)
+				UniformBufferObjectPS* ubo1 = (UniformBufferObjectPS*)uniformVKs[hashID]->data;
+				ubo1->cameraPos.Set(v3.x, v3.y, v3.z, 1.f);
 				break;
 			}
 			case BUILTIN_VEC3_SUNDIRECTION: {
-				CHECK_CREATE_UBO(UniformBufferObject)
-				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				Vector3f v3;
 				cmdBuffer->ReadBuffer<Vector3f>(v3);
+				CHECK_CREATE_UBO(UniformBufferObject)
+				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				ubo->sunDirection.Set(v3.x, v3.y, v3.z, 1.f);
+				CHECK_CREATE_UBO(UniformBufferObjectPS)
+				UniformBufferObjectPS* ubo1 = (UniformBufferObjectPS*)uniformVKs[hashID]->data;
+				ubo1->sunDirection.Set(v3.x, v3.y, v3.z, 1.f);
 				break;
 			}
 			case BUILTIN_VEC3_SUNCOLOR: {
-				CHECK_CREATE_UBO(UniformBufferObject)
-				UniformBufferObject* ubo = (UniformBufferObject*)uniformVKs[hashID]->data;
 				Vector3f v3;
 				cmdBuffer->ReadBuffer<Vector3f>(v3);
+				CHECK_CREATE_UBO(UniformBufferObjectPS)
+				UniformBufferObjectPS* ubo = (UniformBufferObjectPS*)uniformVKs[hashID]->data;
 				ubo->sunColor.Set(v3.x, v3.y, v3.z, 1.f);
 				break;
 			}
