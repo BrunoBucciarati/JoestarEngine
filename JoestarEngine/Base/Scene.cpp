@@ -183,7 +183,7 @@ namespace Joestar {
         for (int i = 0; i < lights.size(); ++i) {
             //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lights[i]->GetModelMatrix());
             if (lights[i]->GetType() == POINT_LIGHT) {
-                lightBlocks.lightPos[lightBlocks.lightCount] = Vector4f(lights[i]->GetDirection());
+                lightBlocks.lightPos[lightBlocks.lightCount] = Vector4f(lights[i]->GetPosition());
                 lightBlocks.lightColors[lightBlocks.lightCount] = Vector4f(lights[i]->GetColor());
                 ++lightBlocks.lightCount;
             }

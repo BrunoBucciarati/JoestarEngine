@@ -36,9 +36,10 @@ namespace Joestar {
 
 	const int MAX_LIGHTS = 20;
 	struct LightBlocks {
-		U32 lightCount;
 		Vector4f lightPos[MAX_LIGHTS];
 		Vector4f lightColors[MAX_LIGHTS];
+		U32 lightCount;
+		float padding[3];
 	};
 
 	struct ComputeSHConsts {
