@@ -1,35 +1,5 @@
 #version 450
-struct SH9 {
-    float coefs[9];
-};
-
-// Constants
-const float CosineA0 = 1.0f;
-const float CosineA1 = 2.0f / 3.0f;
-const float CosineA2 = 0.25f;
-
-SH9 ProjectOntoSH9(vec3 dir, uint level)
-{
-    SH9 sh;
-    // Band 0
-    sh.coefs[0] = 0.282095f;
-
-    // Band 1
-    sh.coefs[1] = 0.488603f * dir.y;
-    sh.coefs[2] = 0.488603f * dir.z;
-    sh.coefs[3] = 0.488603f * dir.x;
-
-    // Band 2
-    if (level > 1) {
-        sh.coefs[4] = 1.092548f * dir.x * dir.y;
-        sh.coefs[5] = 1.092548f * dir.y * dir.z;
-        sh.coefs[6] = 0.315392f * (3.0f * dir.z * dir.z - 1.0f);
-        sh.coefs[7] = 1.092548f * dir.x * dir.z;
-        sh.coefs[8] = 0.546274f * (dir.x * dir.x - dir.y * dir.y);
-    }
-
-    return sh;
-}
+#include "sh.inc"
 layout(location = 0) out vec4 FragColor;
 
 layout(location = 0) in vec2 TexCoords;
@@ -140,11 +110,11 @@ vec3 GetSHDiffuse(vec3 dir, uint level) {
         dirSH.coefs[8] *= CosineA2;
     }
 
-    vec3 result;
-    for(uint i = 0; i < (level + 1) * (level + 1); ++i) {
-        result += lightBlocks.shCoefs[i];
-        // result += dirSH.coefs[i] * lightBlocks.shCoefs[i];
-    }   
+    vec3 result = vec3(0.0);
+    uint coefsCount = (level + 1) * (level + 1);
+    for(uint i = 0; i < coefsCount; ++i)  {
+        result += dirSH.coefs[i] * lightBlocks.shCoefs[i];
+    }
 
     return result;
 }
@@ -171,19 +141,19 @@ void main()
     //main Light
     Lo += GetColor(ubo.sunColor.xyz, N, V, L, H, roughness, F0, metallic, albedo);
 
-    // for(int i = 0; i < lightBlocks.lightCount; ++i) 
-    // {
-    //     // calculate per-light radiance
-    //     L = normalize(lightBlocks.lightPositions[i].xyz - WorldPos);
-    //     H = normalize(V + L);
-    //     float dis = length(lightBlocks.lightPositions[i].xyz - WorldPos);
-    //     float attenuation = 1.0 / (dis * dis);
-    //     vec3 radiance = lightBlocks.lightColors[i].rgb * attenuation;
-    //     Lo += GetColor(radiance, N, V, L, H, roughness, F0, metallic, albedo);
-    // }
-    vec3 color = vec3(0);//Lo;
+    for(int i = 0; i < lightBlocks.lightCount; ++i) 
+    {
+        // calculate per-light radiance
+        L = normalize(lightBlocks.lightPositions[i].xyz - WorldPos);
+        H = normalize(V + L);
+        float dis = length(lightBlocks.lightPositions[i].xyz - WorldPos);
+        float attenuation = 1.0 / (dis * dis);
+        vec3 radiance = lightBlocks.lightColors[i].rgb * attenuation;
+        Lo += GetColor(radiance, N, V, L, H, roughness, F0, metallic, albedo);
+    }
+    vec3 color = Lo;
 
-    color = GetSHDiffuse(N);
+    color += GetSHDiffuse(N, 1) * albedo / PI;
     // gamma correct
     color = pow(color, vec3(1.0/2.2)); 
 

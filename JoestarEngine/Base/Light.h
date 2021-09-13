@@ -27,16 +27,21 @@ namespace Joestar {
 		float GetIntensity() { return intensity; }
 		void UpdateMatrix();
 		Matrix4x4f& GetModelMatrix() { return mat; }
-		void SetIntensity(float i) { intensity = i; }
+		void SetIntensity(float i) { intensity = i; intensityMixColor = i * lightColor; }
 		Vector3f& GetColor() { return lightColor; }
-		void SetColor(Vector3f& c) { lightColor = c; }
-		void SetColor(float x, float y, float z) { lightColor.Set(x, y, z); }
+		Vector3f& GetIntensityMixColor() { return intensityMixColor; }
+		void SetColor(Vector3f& c) { lightColor = c; intensityMixColor = intensity * lightColor;}
+		void SetColor(float x, float y, float z) {
+			lightColor.Set(x, y, z);
+			intensityMixColor = intensity * lightColor;
+		}
 		LightType& GetType() { return lightType; }
 	protected:
 		float intensity = 1.0f;
 		LightType lightType;
 		Vector3f direction = Vector3f::zero;
 		Vector3f lightColor = Vector3f::one;
+		Vector3f intensityMixColor = Vector3f::one;
 		Vector3f position = Vector3f::zero;
 		Matrix4x4f mat;
 	};

@@ -2,6 +2,11 @@ struct SH9 {
     float coefs[9];
 };
 
+// Constants
+const float CosineA0 = 1.0f;
+const float CosineA1 = 2.0f / 3.0f;
+const float CosineA2 = 0.25f;
+
 SH9 ProjectOntoSH9(vec3 dir, uint level)
 {
     SH9 sh;
@@ -24,4 +29,3 @@ SH9 ProjectOntoSH9(vec3 dir, uint level)
 
     return sh;
 }
-//

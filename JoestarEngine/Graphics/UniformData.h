@@ -40,7 +40,7 @@ namespace Joestar {
 		Vector4f lightColors[MAX_LIGHTS];
 		U32 lightCount;
 		float padding[3];
-		Vector3f shCoef[9];
+		Vector4f shCoef[9];
 	};
 
 	struct ComputeSHConsts {

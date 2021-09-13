@@ -4,6 +4,7 @@
 namespace Joestar {
 	File::File(const char* filename, bool write, bool async) {
 		mSize = 0;
+		path = filename;
 		Open(filename, write);
 
 		if (!file.is_open()) {
@@ -15,9 +16,10 @@ namespace Joestar {
 			mReady = true;
 		size_t s = Tell();
 		Seek(0);
-		Read(s);
-		if (!write)
+		if (!write) {
+			Read(s);
 			Close();
+		}
 	}
 	File::~File() {
 		delete mBuffer;

@@ -30,10 +30,7 @@ namespace Joestar {
 
 
 	File* FileSystem::GetShaderCodeFile(const char* file) {
-		std::string path = GetResourceDir();
-		path += "Shaders/";
-		path += file;
-		File* f = ReadFile(path.c_str());
+		File* f = ReadFile(file);
 		f->Close();
 		return f;
 	}

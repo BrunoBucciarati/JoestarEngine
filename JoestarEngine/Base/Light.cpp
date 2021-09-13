@@ -29,7 +29,6 @@ namespace Joestar {
 		mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
 
 		modelMatrix.SetIdentity();
-		modelMatrix.SetScale(0.2);
 	}
 
 	LightBatch::~LightBatch() {

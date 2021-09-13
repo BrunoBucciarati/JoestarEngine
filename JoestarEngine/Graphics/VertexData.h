@@ -17,6 +17,7 @@ namespace Joestar {
         void SetSize(U32 s) {
             size = s;
             buffer = new U8[size];
+            memset(buffer, 0, size);
         }
         void CopyBuffer(U8* data, U32 sz) {
             if (!buffer) SetSize(sz);

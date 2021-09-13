@@ -949,6 +949,14 @@ namespace Joestar {
 			lastRenderPassList.clear();
 			lastRenderPassList.swap(renderPassList);
 		} else {
+			for (int i = 0; i < lastRenderPassList.size(); ++i) {
+				for (int j = 0; j < lastRenderPassList[i]->dcs.size(); ++j) {
+					//memory leak, TODO
+					if (renderPassList[i]->dcs[j]->pushConst) {
+						lastRenderPassList[i]->dcs[j]->pushConst = renderPassList[i]->dcs[j]->pushConst;
+					}
+				}
+			}
 			RecordCommandBuffer(lastRenderPassList);
 		}
 

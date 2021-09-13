@@ -3,6 +3,11 @@ struct SH9 {
     float coefs[9];
 };
 
+// Constants
+const float CosineA0 = 1.0f;
+const float CosineA1 = 2.0f / 3.0f;
+const float CosineA2 = 0.25f;
+
 SH9 ProjectOntoSH9(vec3 dir, uint level)
 {
     SH9 sh;
@@ -25,7 +30,6 @@ SH9 ProjectOntoSH9(vec3 dir, uint level)
 
     return sh;
 }
-//
 
 layout(binding = 0) buffer SHCoef {
    uvec3 values[];
@@ -36,7 +40,7 @@ layout(push_constant) uniform ComputeSHConsts {
 	uvec3 sizeAndLevel;
 } shConsts;
 
-layout (local_size_x = 8, local_size_y = 8, local_size_z = 6) in;
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 vec3 GetDirVec(uvec2 pixelPos, uint face) {
     vec2 xy = vec2(pixelPos.xy) / shConsts.sizeAndLevel.xy;
@@ -63,16 +67,33 @@ vec3 GetDirVec(uvec2 pixelPos, uint face) {
 
 void main() 
 {
-	vec3 dir = normalize(GetDirVec(gl_GlobalInvocationID.xy, gl_LocalInvocationID.z));
-    vec3 rgb = imageLoad(skyCube, ivec3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_LocalInvocationID.z)).rgb;
-
-    SH9 sh = ProjectOntoSH9(dir, shConsts.sizeAndLevel.z);
-
+    vec3 val[9];
     uint coefCount = (shConsts.sizeAndLevel.z + 1) * (shConsts.sizeAndLevel.z + 1);
     for (int i = 0; i < coefCount; ++i) {
-        uvec3 coefValue = uvec3(rgb * (sh.coefs[i] * 10000));
-	    atomicAdd(values[i].x, coefValue.x);
-	    atomicAdd(values[i].y, coefValue.y);
-	    atomicAdd(values[i].z, coefValue.z);
+        val[i] = vec3(0.0);
+    }
+    for (int i = 0; i < shConsts.sizeAndLevel.x; ++i) {
+        for (int j = 0; j < shConsts.sizeAndLevel.y; ++j) {
+	        vec3 dir = normalize(GetDirVec(uvec2(i, j), gl_LocalInvocationID.z));
+            vec3 rgb = imageLoad(skyCube, ivec3(i, j, gl_LocalInvocationID.z)).rgb;
+
+    SH9 sh = ProjectOntoSH9(dir, shConsts.sizeAndLevel.z);
+        for (int d = 0; d < coefCount; ++d) {
+            vec3 coefValue = rgb * sh.coefs[d];
+            val[d] += coefValue;
+        }
+
+        }
+    }
+    for (int i = 0; i < coefCount; ++i) {
+        val[i] *=  4 * 3.1415926 / 6;
+    }
+
+    for (int i = 0; i < coefCount; ++i) {
+	    atomicAdd(values[i].x, uint(val[i].x));
+	    atomicAdd(values[i].y, uint(val[i].y));
+	    atomicAdd(values[i].z, uint(val[i].z));
+	    // atomicAdd(values[i].y, coefValue.y);
+	    // atomicAdd(values[i].z, coefValue.z);
     }
 }

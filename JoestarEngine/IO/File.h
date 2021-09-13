@@ -23,5 +23,6 @@ namespace Joestar {
 		bool mReady;
 		size_t mSize;
 		std::fstream file;
+		std::string path;
 	};
 }

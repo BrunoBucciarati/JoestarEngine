@@ -11,7 +11,7 @@ namespace Joestar {
 	}
 
 	void Material::SetPBR() {
-		program->shader->SetShader("pbr");
+		program->shader->SetShader("pbrsh");
 		textures.reserve(4);
 		const char* texNames[] = {
 			"basecolor.png",

@@ -219,7 +219,7 @@ namespace Joestar {
             std::string spvPath = std::string(GetName()) + SUFFIX + ".spv";\
             std::string compileSpvCmd = path + "glslc.exe " + (path + GetName() + "." + SUFFIX) + " -o " + (path + spvPath);\
             system(compileSpvCmd.c_str());\
-            File* shaderCode = fs->GetShaderCodeFile(spvPath.c_str());\
+            File* shaderCode = fs->GetShaderCodeFile((path + spvPath).c_str());\
             shaderModules.push_back(CreateShaderModule(shaderCode));\
             shaderStage.push_back(VkPipelineShaderStageCreateInfo{});\
             shaderStage.back().sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;\
@@ -948,7 +948,7 @@ namespace Joestar {
                 mappedRange.size = VK_WHOLE_SIZE;
                 vkInvalidateMappedMemoryRanges(ctx->ctx->device, 1, &mappedRange);
 
-                memcpy(cb->computeBuffer->GetBuffer(), mapped, buffer.size);
+                cb->computeBuffer->CopyBuffer((U8*)mapped, buffer.size);
                 vkUnmapMemory(ctx->ctx->device, hostBuffer.memory);
             } else {
                 ctx->commandBuffer.End();
