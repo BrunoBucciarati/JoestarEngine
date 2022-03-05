@@ -12,7 +12,7 @@ namespace Joestar {
 		QueryPerformanceCounter(&counter);
 		beginTick = counter.QuadPart;
 		++frame;
-		LOG("Frame: %d\n", frame);
+		//LOG("Frame: %d\n", frame);
 	}
 
 	void TimeManager::EndFrame() {

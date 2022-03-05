@@ -22,14 +22,10 @@ namespace Joestar {
 			m_Data[i] = data[i];
 	}
 
-	Matrix4x4f& Matrix4x4f::LookAt(const Vector3f& pos, const Vector3f& target, const Vector3f& up) {
-		Vector3f dir = Normalize(target - pos);
-		Vector3f right = Normalize(Cross(dir, up));
-		Vector3f up1 = Normalize(Cross(right, dir));
-
-		Get(0, 0) = right.x;		Get(0, 1) = up1.x;		Get(0, 2) = dir.x;		Get(0, 3) = -Dot(pos, right);;
-		Get(1, 0) = -right.y;		Get(1, 1) = -up1.y;		Get(1, 2) = -dir.y;		Get(1, 3) = Dot(pos, up1);
-		Get(2, 0) = -right.z;		Get(2, 1) = -up1.z;		Get(2, 2) = -dir.z;		Get(2, 3) = Dot(pos, dir);
+	Matrix4x4f& Matrix4x4f::LookAt(const Vector3f& pos, const Vector3f& dir, const Vector3f& right, const Vector3f& up) {
+		Get(0, 0) = right.x;		Get(0, 1) = up.x;		Get(0, 2) = dir.x;		Get(0, 3) = -Dot(pos, right);
+		Get(1, 0) = -right.y;		Get(1, 1) = -up.y;		Get(1, 2) = -dir.y;		Get(1, 3) = Dot(pos, up);
+		Get(2, 0) = -right.z;		Get(2, 1) = -up.z;		Get(2, 2) = -dir.z;		Get(2, 3) = Dot(pos, dir);
 		Get(3, 0) = 0.0;			Get(3, 1) = 0.0;		Get(3, 2) = 0.0;		Get(3, 3) = 1.0;
 
 		return *this;
@@ -64,4 +60,28 @@ namespace Joestar {
 		Get(3, 0) = 0.0;		Get(3, 1) = 0.0;		Get(3, 2) = 0.0;		Get(3, 3) = 1.0;
 		return *this;
 	}
+
+	Matrix4x4f& Matrix4x4f::SetOrtho(
+		float left,
+		float right,
+		float bottom,
+		float top,
+		float zNear,
+		float zFar)
+	{
+		SetIdentity();
+
+		float deltax = right - left;
+		float deltay = top - bottom;
+		float deltaz = zFar - zNear;
+
+		Get(0, 0) = 2.0F / deltax;
+		Get(0, 3) = -(right + left) / deltax;
+		Get(1, 1) = 2.0F / deltay;
+		Get(1, 3) = -(top + bottom) / deltay;
+		Get(2, 2) = -2.0F / deltaz;
+		Get(2, 3) = -(zFar + zNear) / deltaz;
+		return *this;
+	}
+
 }

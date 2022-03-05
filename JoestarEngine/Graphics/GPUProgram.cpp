@@ -19,7 +19,7 @@ namespace Joestar {
 
     GPUProgram* GPUProgram::CreateProgram() {
         Application* app = Application::GetApplication();
-        GFX_API gfxAPI = (GFX_API)(app->GetSubSystem<GlobalConfig>()->GetConfig<int>("GFX_API"));
+        GFX_API gfxAPI = (GFX_API)(app->GetSubSystem<GlobalConfig>()->GetConfig<int>(CONFIG_GFX_API));
 
         if (gfxAPI == GFX_API_VULKAN) {
             return new GPUProgramVulkan;

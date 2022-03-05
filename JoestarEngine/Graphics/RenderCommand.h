@@ -9,6 +9,7 @@ namespace Joestar {
 		RenderCMD_DrawIndexed,
 		RenderCMD_UpdateUniformBuffer,
 		RenderCMD_UpdateUniformBufferObject,
+		RenderCMD_FlushUniformBufferObject,
 		RenderCMD_UpdateVertexBuffer,
 		RenderCMD_UpdateIndexBuffer,
 		RenderCMD_UpdateInstanceBuffer,
@@ -22,6 +23,7 @@ namespace Joestar {
 		RenderCMD_SetDepthCompare,
 		RenderCMD_SetDepthWrite,
 		RenderCMD_SetPolygonMode,
+		RenderCMD_SetFrameBuffer,
 
 
 

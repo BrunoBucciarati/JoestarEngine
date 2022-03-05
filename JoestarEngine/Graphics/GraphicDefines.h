@@ -73,5 +73,6 @@ namespace Joestar {
 	};
 
 	const U32 MAX_CMDBUFFERS_IN_FLIGHT = 3;
+
 }
 #endif

@@ -569,11 +569,11 @@ namespace Joestar {
 		}
 	}
 
-	void GPUProgramVulkan::UpdateUniformBuffer(uint32_t currentImage) {
+	void GPUProgramVulkan::UpdateUniformBuffer(U32 currentImage, U32 hash) {
 		void* data;
 
 		for (auto& ub : uniformVKs) {
-			if (ub.second->IsUniform() && ub.second->data)
+			if (ub.second->IsUniform() && (ub.second->id == hash || 0 == hash) && ub.second->data)
 				ub.second->buffers[currentImage].CopyBuffer((U8*)ub.second->data);
 		}
 	}
@@ -809,8 +809,14 @@ namespace Joestar {
 			}
 			case RenderCMD_UpdateUniformBufferObject: {
 				RenderCmdUpdateUniformBufferObject(cmdBuffer);
-				UpdateUniformBuffer(imgIdx);
 				break; 
+			}
+			case RenderCMD_FlushUniformBufferObject: {
+				CHECK_PASS(RenderCMD_FlushUniformBufferObject)
+				U32 hash;
+				cmdBuffer->ReadBuffer<U32>(hash);
+				UpdateUniformBuffer(imgIdx, hash);
+				break;
 			}
 			case RenderCMD_UpdateUniformBuffer: {
 				RenderCmdUpdateUniformBuffer(cmdBuffer, drawcall);

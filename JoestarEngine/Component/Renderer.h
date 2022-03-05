@@ -6,12 +6,16 @@
 #include "../Math/Matrix4x4.h"
 #include "../Component/Component.h"
 namespace Joestar {
+	class Graphics;
 	class Renderer : public Component {
 		REGISTER_COMPONENT(Renderer);
 	public:
 		void Init();
 		Mesh* mesh;
 		Material* mat;
-		void Render(Camera cam);
+		void Render(Camera* cam);
+		void RenderToShadowMap();
+	private:
+		Graphics* graphics;
 	};
 }

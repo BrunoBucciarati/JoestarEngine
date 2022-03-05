@@ -3,6 +3,7 @@
 #include "../Misc/GlobalConfig.h"
 #include "../Thread/RenderThreadVulkan.h"
 #include "../Thread/RenderThreadGL.h"
+#include "../Thread/RenderThreadD3D11.h"
 #include "../IO/MemoryManager.h"
 
 namespace Joestar {
@@ -23,7 +24,7 @@ namespace Joestar {
 
 	void Graphics::Init() {
 		GlobalConfig* cfg = GetSubsystem<GlobalConfig>();
-		GFX_API gfxAPI = (GFX_API)cfg->GetConfig<int>("GFX_API");
+		GFX_API gfxAPI = (GFX_API)cfg->GetConfig<int>(CONFIG_GFX_API);
 		/*switch (gfxAPI) {
 
 		}*/
@@ -32,6 +33,9 @@ namespace Joestar {
 		}
 		else if (gfxAPI == GFX_API_OPENGL) {
 			renderThread = new RenderThreadGL();
+		}
+		else if (gfxAPI == GFX_API_D3D11) {
+			renderThread = new RenderThreadD3D11();
 		}
 	}
 
@@ -66,6 +70,23 @@ namespace Joestar {
 		cmdBuffer->WriteBuffer<RenderCommandType>(t);
 		cmdBuffer->WriteBuffer<BUILTIN_VALUE>(typ);
 		cmdBuffer->WriteBuffer<Matrix4x4f>(mat);
+	}
+	void Graphics::FlushUniformBuffer(const char* s) {
+		FlushUniformBuffer(hashString(s));
+	}
+
+	void Graphics::FlushUniformBuffer(U32 hash) {
+		if (isCompute) {
+			//computeCmdBuffer->WriteCommandType
+			return;
+		}
+		cmdBuffer->WriteCommandType(RenderCMD_FlushUniformBufferObject);
+		cmdBuffer->WriteBuffer<U32>(hash);
+	}
+
+	void Graphics::SetFrameBuffer(FrameBufferDef* def) {
+		cmdBuffer->WriteCommandType(RenderCMD_SetFrameBuffer);
+		cmdBuffer->WriteBuffer<FrameBufferDef*>(def);
 	}
 
 	void Graphics::UpdateBuiltinVec3(BUILTIN_VALUE typ, Vector3f& v3) {

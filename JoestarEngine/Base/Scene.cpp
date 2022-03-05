@@ -24,6 +24,7 @@ namespace Joestar {
         //render->mesh->Load(path + "viking_room/viking_room.obj");
         //render->mat = NEW_OBJECT(Material);
         //render->mat->SetDefault();
+        camera = NEW_OBJECT(Camera);
 
         graphics = GetSubsystem<Graphics>();
 
@@ -113,7 +114,7 @@ namespace Joestar {
 
     void Scene::Update(float dt) {
         HID* hid = GetSubsystem<HID>();
-        camera.ProcessHID(hid, 0.01f);
+        camera->ProcessHID(hid, 0.01f);
 
         //Test Selection Movement
         if (selection) {
@@ -156,14 +157,49 @@ namespace Joestar {
         graphics->EndCompute("SH COMPUTE");
     }
 
+    void Scene::RenderShadowMap() {
+        if (!shadowShader) {
+            shadowShader = NEW_OBJECT(Shader);
+            shadowShader->SetShader("shadowMap");
+            shadowCam = NEW_OBJECT(Camera);
+            shadowCam->SetOrthographic(10);
+
+            shadowMapFB = new FrameBufferDef();
+            shadowMapFB->width = 1024;
+            shadowMapFB->height= 1024;
+            shadowMapFB->colorEnabled = false;
+        }
+        graphics->BeginRenderPass("Shadow Map");
+        graphics->Clear();
+        graphics->SetFrameBuffer(shadowMapFB);
+        graphics->SetDepthCompare(DEPTH_COMPARE_LESS);
+        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, shadowCam->GetProjectionMatrix());
+        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, shadowCam->GetViewMatrix());
+        graphics->FlushUniformBuffer(STR_STRUCT(UniformBufferObject));
+        graphics->UseShader(shadowShader);
+        Renderer* render;
+        for (std::vector<GameObject*>::const_iterator iter = gameObjects.begin(); iter != gameObjects.end(); iter++) {
+            render = (*iter)->HasComponent<Renderer>();
+            if (render) {
+                render->RenderToShadowMap();
+            }
+        }
+        graphics->EndRenderPass("Shadow Map");
+        DELETE_OBJECT(shadowCam);
+    }
+
     void Scene::RenderScene() {
+        RenderShadowMap();
+
         graphics->BeginRenderPass("Scene");
         graphics->Clear();
-        GetSubsystem<Graphics>()->SetDepthCompare(DEPTH_COMPARE_LESS);
-        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera.GetProjectionMatrix());
-        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera.GetViewMatrix());
-        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_CAMERAPOS, camera.Position);
-
+        graphics->SetDepthCompare(DEPTH_COMPARE_LESS);
+        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera->GetProjectionMatrix());
+        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera->GetViewMatrix());
+        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_CAMERAPOS, camera->Position);
+        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNDIRECTION, mainLight->GetDirection());
+        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNCOLOR, mainLight->GetIntensityMixColor());
+        graphics->FlushUniformBuffer();
         RenderLights();
 
         Renderer* render;
@@ -181,8 +217,6 @@ namespace Joestar {
 
     void Scene::RenderLights() {
         //Draw Main Light as Wireframe //maybe don't need
-        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNDIRECTION, mainLight->GetDirection());
-        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNCOLOR, mainLight->GetIntensityMixColor());
         //Draw Point Light as Sphere
         lightBlocks = {};
         for (int i = 0; i < lights.size(); ++i) {

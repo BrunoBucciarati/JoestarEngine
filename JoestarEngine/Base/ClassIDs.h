@@ -34,7 +34,7 @@ enum ClassIDType {
 	DefineClassID(SpotLight, 25)
 	DefineClassID(LightBatch, 26)
 	DefineClassID(Image, 27)
-	DefineClassID(UniformBufferPool, 28)
+	DefineClassID(Camera, 28)
 
 	kClassIDCount
 };

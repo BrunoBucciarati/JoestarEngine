@@ -5,6 +5,8 @@
 #include "../Math/Matrix4x4.h"
 #include "../IO/HID.h"
 #include "../IO/Log.h"
+#include "../Base/Object.h"
+#include "../Misc/GlobalConfig.h"
 
 namespace Joestar {
     // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
@@ -24,8 +26,8 @@ namespace Joestar {
 
 
     // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-    class Camera
-    {
+    class Camera : public Object {
+        REGISTER_OBJECT(Camera, Object)
     public:
         // camera Attributes
         Vector3f Position;
@@ -42,15 +44,23 @@ namespace Joestar {
         float MovementSpeed;
         float MouseSensitivity;
         float Zoom;
+        float aspect;
+        float nearClip;
+        float farClip;
         // constructor with vectors
-        Camera(Vector3f position = Vector3f(0.0, 2.0, 6.0f), Vector3f up = Vector3f(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(Vector3f(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+        Camera(EngineContext* ctx, Vector3f position = Vector3f(0.0, 2.0, 6.0f), Vector3f up = Vector3f(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Super(ctx), Front(Vector3f(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
         {
             Position = position;
             WorldUp = up;
             Yaw = yaw;
             Pitch = pitch;
+            nearClip = 0.1f;
+            farClip = 100.0f;
             UpdateCameraVectors();
-            projection.SetPerspective(Zoom, 800.0f / 600.0f, 0.1f, 100.0f);
+            int width = GetSubsystem<GlobalConfig>()->GetConfig<int>(CONFIG_WINDOW_WIDTH);
+            int height = GetSubsystem<GlobalConfig>()->GetConfig<int>(CONFIG_WINDOW_HEIGHT);
+            aspect = float(width) / height;
+            projection.SetPerspective(Zoom, aspect, nearClip, farClip);
         }
 
         // returns the view matrix calculated using Euler Angles and the LookAt Matrix
@@ -60,6 +70,10 @@ namespace Joestar {
 
         inline Matrix4x4f& GetProjectionMatrix() {
             return projection;
+        }
+
+        void SetOrthographic(float orthographicSize) {
+            projection.SetOrtho(-orthographicSize * aspect, orthographicSize * aspect, -orthographicSize, orthographicSize, nearClip, farClip);
         }
 
         void ProcessHID(HID* hid, float dt);

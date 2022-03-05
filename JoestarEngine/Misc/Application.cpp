@@ -20,11 +20,11 @@ namespace Joestar {
 		InitSubSystem(TimeManager, gContext)
 		InitSubSystem(FileSystem, gContext)
 		InitSubSystem(GlobalConfig, gContext)
-		int GFX_API = GFX_API_VULKAN;
-		GetSubSystem<GlobalConfig>()->UpdateConfig("GFX_API", GFX_API);
+		int GFX_API = GFX_API_D3D11;
+		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_GFX_API, GFX_API);
 		int width = 800, height = 600;
-		GetSubSystem<GlobalConfig>()->UpdateConfig("WINDOW_WIDTH", width);
-		GetSubSystem<GlobalConfig>()->UpdateConfig("WINDOW_HEIGHT", height);
+		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_WIDTH, width);
+		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_HEIGHT, height);
 		//GetGlobalConfig()->UpdateConfig("GFX_API", str);
 
 		InitSubSystem(Graphics, gContext)
@@ -39,9 +39,9 @@ namespace Joestar {
 	void Application::Run()
 	{
 		Start();
-		while (true) {
-			Update();
-		}
+		//while (true) {
+		//	Update();
+		//}
 	}
 
 	void Application::Update() {

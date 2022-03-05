@@ -12,6 +12,7 @@
 #include "Shader/Shader.h"
 #include "ProgramCPU.h"
 #include "UniformData.h"
+#include "FrameBufferDef.h"
 namespace Joestar {
 	class Graphics : public SubSystem {
 		REGISTER_SUBSYSTEM(Graphics)
@@ -24,6 +25,8 @@ namespace Joestar {
 		void Clear();
 		void UpdateBuiltinMatrix(BUILTIN_VALUE typ, Matrix4x4f& mat);
 		void UpdateBuiltinVec3(BUILTIN_VALUE typ, Vector3f& mat);
+		void FlushUniformBuffer(U32 hash = 0);
+		void FlushUniformBuffer(const char*);
 		void UpdateLightBlock(LightBlocks& lb);
 		void UpdateVertexBuffer(VertexBuffer* vb);
 		void UpdateIndexBuffer(IndexBuffer* ib);
@@ -38,6 +41,8 @@ namespace Joestar {
 		void SetDepthCompare(DepthCompareFunc fun);
 		void SetPolygonMode(PolygonMode fun);
 		void UpdateInstanceBuffer(InstanceBuffer* ib);
+		void SetFrameBuffer(FrameBufferDef* def);
+
 		void DispatchCompute(U32 group[3]);
 		void BeginCompute(const char* name);
 		void EndCompute(const char* name);

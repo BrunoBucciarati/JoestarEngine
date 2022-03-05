@@ -48,10 +48,11 @@ namespace Joestar {
 		Vector3f InverseMultiplyPoint3Affine(const Vector3f& inV) const;
 		Vector3f InverseMultiplyVector3Affine(const Vector3f& inV) const;
 
-		Matrix4x4f& LookAt(const Vector3f& pos, const Vector3f& target, const Vector3f& up);
+		Matrix4x4f& LookAt(const Vector3f& pos, const Vector3f& dir, const Vector3f& right, const Vector3f& up);
 
 		Matrix4x4f& SetIdentity();
 		Matrix4x4f& SetPerspective(float fovy, float aspect, float zNear, float zFar);
+		Matrix4x4f& SetOrtho(float left, float right, float bottom, float top, float zNear, float zFar);
 
 		Vector3f GetAxisX() const;
 		Vector3f GetAxisY() const;

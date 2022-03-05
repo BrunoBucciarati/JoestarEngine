@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "../Graphics/UniformData.h"
+#include "../Graphics/FrameBufferDef.h"
 #include "SubSystem.h"
 #include "../Graphics/Material.h"
 #include "../Graphics/Graphics.h"
@@ -20,17 +21,21 @@ namespace Joestar {
 		void Update(float);
 		void CreateLights();
 		void CreateCompute();
+		void RenderShadowMap();
 	private:
 		std::vector<GameObject*> gameObjects;
 		std::vector<Light*> lights;
 		Light* mainLight;
-		Camera camera;
+		Camera* camera;
 		GameObject* selection;
 		Material* skyboxMat;
 		Material* lightMat;
 		LightBatch* lightBatch;
 		ComputeBuffer* shComputeBuffer;
 		Shader* shComputeShader;
+		Shader* shadowShader;
+		Camera* shadowCam;
+		FrameBufferDef* shadowMapFB;
 		ComputeSHConsts computeSHConsts;
 		Texture* shCube;
 		LightBlocks lightBlocks;

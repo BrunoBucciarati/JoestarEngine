@@ -1,6 +1,9 @@
 #include "Camera.h"
 
 namespace Joestar {
+    Camera::~Camera() {
+
+    }
 	void Camera::ProcessHID(HID* hid, float deltaTime) {
         float velocity = MovementSpeed * deltaTime;
         bool dirty = false;
@@ -55,9 +58,12 @@ namespace Joestar {
         front.y = sin(Deg2Rad(Pitch));
         front.z = sin(Deg2Rad(Yaw)) * cos(Deg2Rad(Pitch));
         Front = Normalize(front);
+        LOG("front: %.2f, %.2f, %.2f\n", Front.x, Front.y, Front.z);
         // also re-calculate the Right and Up vector
         Right = Normalize(Cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+        LOG("Right: %.2f, %.2f, %.2f\n", Right.x, Right.y, Right.z);
         Up = Normalize(Cross(Right, Front));
-        view.LookAt(Position, Position + Front, Up);
+        LOG("Up: %.2f, %.2f, %.2f\n", Up.x, Up.y, Up.z);
+        view.LookAt(Position, Front, Right, Up);
     }
 }

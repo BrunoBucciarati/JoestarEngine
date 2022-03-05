@@ -981,7 +981,7 @@ namespace Joestar {
         void CreateFrameBuffers(RenderPassVK* pass);
         void CreateDescriptorPool(DrawCallVK* dc);
 
-        void UpdateUniformBuffer(uint32_t currentImage);
+        void UpdateUniformBuffer(U32 currentImage, U32 hash);
         void RecordCommandBuffer(std::vector<RenderPassVK*>&);
         bool ExecuteRenderCommand(GFXCommandBuffer* cmdBuffer, U16 imageIdx);
         bool ExecuteComputeCommand(GFXCommandBuffer* cmdBuffer);

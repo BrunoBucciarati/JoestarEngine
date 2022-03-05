@@ -144,8 +144,8 @@ namespace Joestar {
         //GlobalConfig* cfg = Application::GetApplication()->GetEngineContext()->GetSubSystem<GlobalConfig>();
         Application* app = Application::GetApplication();
         GlobalConfig* cfg = app->GetEngineContext()->GetSubSystem<GlobalConfig>();
-        uint32_t width = cfg->GetConfig<uint32_t>("WINDOW_WIDTH");
-        uint32_t height = cfg->GetConfig<uint32_t>("WINDOW_HEIGHT");
+        uint32_t width = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_WIDTH);
+        uint32_t height = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_HEIGHT);
         window = glfwCreateWindow(width, height, "Joestar Engine", nullptr, nullptr);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
