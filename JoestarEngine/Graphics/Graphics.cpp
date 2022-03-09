@@ -2,7 +2,7 @@
 #include "../Base/Scene.h"
 #include "../Misc/GlobalConfig.h"
 #include "../Thread/RenderThreadVulkan.h"
-#include "../Thread/RenderThreadGL.h"
+//#include "../Thread/RenderThreadGL.h"
 #include "../Thread/RenderThreadD3D11.h"
 #include "../IO/MemoryManager.h"
 
@@ -32,10 +32,10 @@ namespace Joestar {
 			renderThread = new RenderThreadVulkan(cmdBuffers, computeCmdBuffers);
 		}
 		else if (gfxAPI == GFX_API_OPENGL) {
-			renderThread = new RenderThreadGL();
+			//renderThread = new RenderThreadGL(cmdBuffers, computeCmdBuffers);
 		}
 		else if (gfxAPI == GFX_API_D3D11) {
-			renderThread = new RenderThreadD3D11();
+			renderThread = new RenderThreadD3D11(cmdBuffers, computeCmdBuffers);
 		}
 	}
 

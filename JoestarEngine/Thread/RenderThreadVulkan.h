@@ -59,14 +59,9 @@ namespace Joestar {
 		std::vector<VkFence> inFlightFences;
 		size_t currentFrame = 0;
 		bool framebufferResized = false;
-		bool bInit = false;
-		bool bExit = false;
-		U32 frameIndex;
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;
 		VkDebugUtilsMessengerEXT debugMessenger;
 		VkSampleCountFlagBits msaaSamples;
-		std::vector<GFXCommandBuffer*> cmdBuffers;
-		std::vector<GFXCommandBuffer*> computeCmdBuffers;
 	};
 }

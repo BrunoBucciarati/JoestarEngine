@@ -185,7 +185,7 @@ namespace Joestar {
             }
         }
         graphics->EndRenderPass("Shadow Map");
-        DELETE_OBJECT(shadowCam);
+        //DELETE_OBJECT(shadowCam);
     }
 
     void Scene::RenderScene() {

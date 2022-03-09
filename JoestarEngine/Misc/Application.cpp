@@ -39,9 +39,9 @@ namespace Joestar {
 	void Application::Run()
 	{
 		Start();
-		//while (true) {
-		//	Update();
-		//}
+		while (true) {
+			Update();
+		}
 	}
 
 	void Application::Update() {

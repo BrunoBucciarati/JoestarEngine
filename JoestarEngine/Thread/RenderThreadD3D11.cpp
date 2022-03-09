@@ -1,6 +1,8 @@
 #include "RenderThreadD3D11.h"
 #include "../Misc/Application.h"
 #include "../Misc/GlobalConfig.h"
+#include "../IO/FileSystem.h"
+#include <d3dcompiler.h>
 
 #define ReleaseCOM(x) { if(x){ x->Release(); x = 0; } }
 
@@ -23,7 +25,7 @@ namespace Joestar {
             MessageBox(hwnd, TEXT("mouse clicked"), TEXT("message"),0);
             HDC hdc;
             hdc=GetDC(hwnd);
-            TextOut(hdc,0,50,TEXT("µã»÷"),strlen("µã»÷"));
+            TextOut(hdc,0,50,TEXT("ç‚¹å‡»"),strlen("ç‚¹å‡»"));
             //ReleaseDC(hwnd,hdc);
             break;
         case WM_PAINT:
@@ -34,7 +36,7 @@ namespace Joestar {
             EndPaint(hwnd,&ps);
             break;
         case WM_CLOSE:
-            if(IDYES==MessageBox(hwnd, TEXT("ÊÇ·ñÕæµÄ½áÊø£¿"), TEXT("message"),MB_YESNO))
+            if(IDYES==MessageBox(hwnd, TEXT("æ˜¯å¦çœŸçš„ç»“æŸ?"), TEXT("message"),MB_YESNO))
             {
                DestroyWindow(hwnd);
             }
@@ -47,13 +49,14 @@ namespace Joestar {
     }
     return 0;
 }
-	RenderThreadD3D11::RenderThreadD3D11()
+	RenderThreadD3D11::RenderThreadD3D11(std::vector<GFXCommandBuffer*>& cmdBuffers, std::vector<GFXCommandBuffer*>& computeBuffers) :
+        RenderThread(cmdBuffers, computeBuffers)
 	{
-		InitRenderContext();
+        InitWindow();
 	}
 
-	bool RenderThreadD3D11::InitRenderContext()
-	{
+    bool RenderThreadD3D11::InitWindow()
+    {
         Application* app = Application::GetApplication();
         GlobalConfig* cfg = app->GetEngineContext()->GetSubSystem<GlobalConfig>();
         uint32_t width = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_WIDTH);
@@ -75,11 +78,16 @@ namespace Joestar {
         wndcls.style = CS_HREDRAW | CS_VREDRAW;
         RegisterClass(&wndcls);
 
-        mhMainWnd = CreateWindow(TEXT("Joestar"), TEXT("Joestar Engine"), WS_OVERLAPPEDWINDOW, 0, 0, 
+        mhMainWnd = CreateWindow(TEXT("Joestar"), TEXT("Joestar Engine"), WS_OVERLAPPEDWINDOW, 0, 0,
             width, height, NULL, NULL, mhAppInst, NULL);
 
         ShowWindow(mhMainWnd, 1);
+        return true;
+    }
 
+	bool RenderThreadD3D11::InitRenderContext()
+	{
+        Application* app = Application::GetApplication();
         UINT createDeviceFlags = 0;
 
 #if  defined(DEBUG)||defined(_DEBUG)
@@ -87,14 +95,12 @@ namespace Joestar {
 #endif
 
         D3D_FEATURE_LEVEL featureLevel;
-        ID3D11Device* md3dDevice;
-        ID3D11DeviceContext* md3dImmediateContext;
         HRESULT hr = D3D11CreateDevice(
-            0,                     //  Ä¬ÈÏÏÔÊ¾ÊÊÅäÆ÷
+            0,                     //  é»˜è®¤æ˜¾ç¤ºé€‚é…å™¨
             D3D_DRIVER_TYPE_HARDWARE,
-            0,                     //  ²»Ê¹ÓÃÈí¼şÉè±¸
+            0,                     //  ä¸ä½¿ç”¨è½¯ä»¶è®¾å¤‡
             createDeviceFlags,
-            0, 0,               //  Ä¬ÈÏµÄÌØÕ÷µÈ¼¶Êı×é
+            0, 0,               //  é»˜è®¤çš„ç‰¹å¾ç­‰çº§æ•°ç»„
             D3D11_SDK_VERSION,
             &md3dDevice,
             &featureLevel,
@@ -116,18 +122,18 @@ namespace Joestar {
         bool mEnable4xMsaa = m4xMsaaQuality > 0;
 
         DXGI_SWAP_CHAIN_DESC sd;
-        sd.BufferDesc.Width = 800;    // Ê¹ÓÃ´°¿Ú¿Í»§Çø¿í¶È
+        sd.BufferDesc.Width = 800;    // ä½¿ç”¨çª—å£å®¢æˆ·åŒºå®½åº¦
         sd.BufferDesc.Height = 600;
         sd.BufferDesc.RefreshRate.Numerator = 60;
         sd.BufferDesc.RefreshRate.Denominator = 1;
         sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
         sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-        // ÊÇ·ñÊ¹ÓÃ4X MSAA?
+        // æ˜¯å¦ä½¿ç”¨4X MSAA?
         if (mEnable4xMsaa)
         {
             sd.SampleDesc.Count = 4;
-            // m4xMsaaQualityÊÇÍ¨¹ıCheckMultisampleQualityLevels()·½·¨»ñµÃµÄ
+            // m4xMsaaQualityæ˜¯é€šè¿‡CheckMultisampleQualityLevels()æ–¹æ³•è·å¾—çš„
             sd.SampleDesc.Quality = m4xMsaaQuality - 1;
         }
         // NoMSAA
@@ -149,19 +155,17 @@ namespace Joestar {
         IDXGIAdapter* dxgiAdapter = 0;
         hr = dxgiDevice->GetParent(__uuidof(IDXGIAdapter),
             (void**)&dxgiAdapter);
-        // »ñµÃIDXGIFactory ½Ó¿Ú
+        // è·å¾—IDXGIFactory æ¥å£
         IDXGIFactory* dxgiFactory = 0;
         hr = dxgiAdapter->GetParent(__uuidof(IDXGIFactory),
             (void**)&dxgiFactory);
-        // ÏÖÔÚ£¬´´½¨½»»»Á´
-        IDXGISwapChain* mSwapChain;
+        // ç°åœ¨ï¼Œåˆ›å»ºäº¤æ¢é“¾
         hr = dxgiFactory->CreateSwapChain(md3dDevice, &sd, &mSwapChain);
-        // ÊÍ·ÅCOM½Ó¿Ú
+        // é‡Šæ”¾COMæ¥å£
         ReleaseCOM(dxgiDevice);
         ReleaseCOM(dxgiAdapter);
         ReleaseCOM(dxgiFactory);
 
-        ID3D11RenderTargetView* mRenderTargetView;
         ID3D11Texture2D* backBuffer;
         mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
             reinterpret_cast<void**>(&backBuffer));
@@ -174,13 +178,13 @@ namespace Joestar {
         depthStencilDesc.MipLevels = 1;
         depthStencilDesc.ArraySize = 1;
         depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        // Ê¹ÓÃ4X MSAA?¡ª¡ª±ØĞëÓë½»»»Á´µÄMSAAµÄÖµÆ¥Åä
+        // ä½¿ç”¨4X MSAA?â€”â€”å¿…é¡»ä¸äº¤æ¢é“¾çš„MSAAçš„å€¼åŒ¹é…
         if (mEnable4xMsaa)
         {
             depthStencilDesc.SampleDesc.Count = 4;
             depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
         }
-        //  ²»Ê¹ÓÃMSAA
+        //  ä¸ä½¿ç”¨MSAA
         else
         {
             depthStencilDesc.SampleDesc.Count = 1;
@@ -191,7 +195,6 @@ namespace Joestar {
         depthStencilDesc.CPUAccessFlags = 0;
         depthStencilDesc.MiscFlags = 0;
         ID3D11Texture2D* mDepthStencilBuffer;
-        ID3D11DepthStencilView* mDepthStencilView;
 
         hr = md3dDevice->CreateTexture2D(
             &depthStencilDesc, 0, &mDepthStencilBuffer);
@@ -210,5 +213,179 @@ namespace Joestar {
         vp.MinDepth = 0.0f;
         vp.MaxDepth = 1.0f;
         md3dImmediateContext->RSSetViewports(1, &vp);
+
+        D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+        {
+            {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+                D3D11_INPUT_PER_VERTEX_DATA, 0},
+            {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12,
+                D3D11_INPUT_PER_VERTEX_DATA, 0}
+        };
+
+        float vertices[] =
+        {
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, +1.0f, +1.0f,
+            +1.0f, +1.0f, +1.0f,
+            +1.0f, -1.0f, +1.0f,
+        };
+
+        D3D11_BUFFER_DESC vbd;
+        vbd.Usage = D3D11_USAGE_IMMUTABLE;
+        vbd.ByteWidth = sizeof(float) * 3 * 8;
+        vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        vbd.CPUAccessFlags = 0;
+        vbd.MiscFlags = 0;
+        vbd.StructureByteStride = 0;
+        D3D11_SUBRESOURCE_DATA vinitData;
+        vinitData.pSysMem = vertices;
+        hr = md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB);
+
+        UINT indices[24] = {
+            0, 1, 2,   //  Triangle  0
+            0, 2, 3,   //  Triangle  1
+            0, 3, 4,   //  Triangle  2
+            0, 4, 5,   //  Triangle  3
+            0, 5, 6,   //  Triangle  4
+            0, 6, 7,   //  Triangle  5
+            0, 7, 8,   //  Triangle  6
+            0, 8, 1    //  Triangle  7
+        };
+        D3D11_BUFFER_DESC ibd;
+        ibd.Usage = D3D11_USAGE_IMMUTABLE;
+        ibd.ByteWidth = sizeof(UINT) * 24;
+        ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+        ibd.CPUAccessFlags = 0;
+        ibd.MiscFlags = 0;
+        ibd.StructureByteStride = 0;
+        D3D11_SUBRESOURCE_DATA iinitData;
+        iinitData.pSysMem = indices;
+        hr = md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB);
+
+        D3D11_RASTERIZER_DESC rsDesc;
+        ZeroMemory(&rsDesc, sizeof(D3D11_RASTERIZER_DESC));
+        rsDesc.FillMode = D3D11_FILL_SOLID;
+        rsDesc.CullMode = D3D11_CULL_NONE;
+        rsDesc.FrontCounterClockwise = false;
+        rsDesc.DepthClipEnable = true;
+
+        hr = md3dDevice->CreateRasterizerState(&rsDesc, &mRS);
+
+        DWORD shaderFlags = 0;
+#if defined( DEBUG ) || defined( _DEBUG )
+        shaderFlags |= D3D10_SHADER_DEBUG;
+        shaderFlags |= D3D10_SHADER_SKIP_OPTIMIZATION;
+#endif
+
+        FileSystem* fs = app->GetSubSystem<FileSystem>();
+        std::string path = fs->GetResourceDir();
+        path += "Shaders/hlsl/test.fx";
+        File* file = fs->ReadFile(path.c_str());
+
+        ID3D10Blob* compiledVSShader = 0;
+        ID3D10Blob* compilationVSMsgs = 0;
+        UINT flags = 0;
+#if defined( DEBUG ) || defined( _DEBUG )
+        flags |= D3DCOMPILE_DEBUG;
+#endif
+        hr = D3DCompile(file->GetBuffer(), file->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS",
+            "vs_5_0", flags, 0, &compiledVSShader, &compilationVSMsgs);
+
+
+        // compilationMsgsä¸­åŒ…å«é”™è¯¯æˆ–è­¦å‘Šä¿¡æ¯
+        if (compilationVSMsgs != 0)
+        {
+            MessageBoxA(0, (char*)compilationVSMsgs->GetBufferPointer(), 0, 0);
+            ReleaseCOM(compilationVSMsgs);
+        }
+        md3dDevice->CreateVertexShader(compiledVSShader->GetBufferPointer(), compiledVSShader->GetBufferSize(), NULL, &vs);
+
+        ID3D10Blob* compiledPSShader = 0;
+        ID3D10Blob* compilationPSMsgs = 0;
+        hr = D3DCompile(file->GetBuffer(), file->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS",
+            "ps_5_0", flags, 0, &compiledPSShader, &compilationPSMsgs);
+
+        // compilationMsgsä¸­åŒ…å«é”™è¯¯æˆ–è­¦å‘Šä¿¡æ¯
+        if (compilationPSMsgs != 0)
+        {
+            MessageBoxA(0, (char*)compilationPSMsgs->GetBufferPointer(), 0, 0);
+            ReleaseCOM(compilationPSMsgs);
+        }
+
+        md3dDevice->CreatePixelShader(compiledPSShader->GetBufferPointer(), compiledPSShader->GetBufferSize(), NULL, &ps);
+
+        hr = md3dDevice->CreateInputLayout(vertexDesc, 2, compiledVSShader->GetBufferPointer(), compiledVSShader->GetBufferSize(), &mInputLayout);
+        // å°±ç®—æ²¡æœ‰compilationMsgsï¼Œä¹Ÿéœ€è¦ç¡®ä¿æ²¡æœ‰å…¶ä»–é”™è¯¯
+        if (FAILED(hr))
+        {
+        }
+
+        //ç¬¬å…­,è®¾ç½®(å¸¸é‡)ç¼“å­˜å½¢å®¹ç»“æ„ä½“,å¹¶åˆ›å»ºå¸¸é‡ç¼“å­˜
+        D3D11_BUFFER_DESC matrixBufferDesc;
+        ZeroMemory(&matrixBufferDesc, sizeof(matrixBufferDesc));
+        matrixBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+        matrixBufferDesc.ByteWidth = sizeof(Matrix4x4f);   //ç»“æ„ä½“å¤§å°,å¿…é¡»ä¸º16å­—èŠ‚å€æ•°
+        matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        matrixBufferDesc.CPUAccessFlags = 0;
+
+        hr = md3dDevice->CreateBuffer(&matrixBufferDesc, NULL, &mCB);
 	}
+
+    void RenderThreadD3D11::ThreadFunc()
+    {
+        if (!bInit) {
+            InitRenderContext();
+            bInit = true;
+            frameIndex = 0;
+        }
+
+        while (!bExit) {
+            U32 idx = frameIndex % MAX_CMDBUFFERS_IN_FLIGHT;
+            //always dispatch compute first, then draw
+            while (!computeCmdBuffers[idx]->ready || !cmdBuffers[idx]->ready) {
+                //busy wait
+            }
+            DrawScene();
+            cmdBuffers[idx]->ready = false;
+            computeCmdBuffers[idx]->ready = false;
+            ++frameIndex;
+        }
+    }
+
+
+    void RenderThreadD3D11::DrawScene() {
+        const float backColor[]{ 0.0f, 0.0f, 1.0f, 0.0 };
+        md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, backColor);
+        md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+        md3dImmediateContext->IASetInputLayout(mInputLayout);
+        md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        UINT stride = sizeof(float) * 3;
+        UINT offset = 0;
+        md3dImmediateContext->IASetVertexBuffers(0, 1, &mVB, &stride, &offset);
+        md3dImmediateContext->IASetIndexBuffer(mIB, DXGI_FORMAT_R32_UINT, 0);
+        md3dImmediateContext->RSSetState(mRS);
+
+        md3dImmediateContext->VSSetShader(vs, NULL, 0);
+        md3dImmediateContext->PSSetShader(ps, NULL, 0);
+
+        //CBMatrix* cbPtr;
+        unsigned int bufferNum;
+
+        //å°†çŸ©é˜µè½¬ç½®,åœ¨ä¼ å…¥å¸¸é‡ç¼“å­˜å‰è¿›è¡Œè½¬ç½®,å› ä¸ºGPUå¯¹çŸ©é˜µæ•°æ®ä¼šè‡ªåŠ¨è¿›è¡Œä¸€æ¬¡è½¬ç½®
+        Matrix4x4f mat = Matrix4x4f::identity;
+        md3dImmediateContext->UpdateSubresource(mCB, 0, NULL, &mat, 0, 0);
+        bufferNum = 0;
+
+        md3dImmediateContext->VSSetConstantBuffers(bufferNum, 1, &mCB);
+
+        md3dImmediateContext->DrawIndexed(36, 0, 0);
+
+        mSwapChain->Present(0, 0);
+    }
 }

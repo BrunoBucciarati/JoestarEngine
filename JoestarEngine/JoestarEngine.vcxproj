@@ -125,7 +125,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -178,6 +178,7 @@
     <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector3.cpp" />
     <ClCompile Include="Misc\TimeManager.cpp" />
+    <ClCompile Include="Thread\RenderThreadD3D11.cpp" />
     <ClCompile Include="Thread\RenderThreadVulkan.cpp" />
     <ClCompile Include="Thread\Thread.cpp" />
     <ClCompile Include="Graphics\glad.c" />
@@ -229,6 +230,7 @@
     <ClInclude Include="Math\Vector4.h" />
     <ClInclude Include="Misc\TimeManager.h" />
     <ClInclude Include="Thread\RenderThread.h" />
+    <ClInclude Include="Thread\RenderThreadD3D11.h" />
     <ClInclude Include="Thread\RenderThreadGL.h" />
     <ClInclude Include="Thread\RenderThreadVulkan.h" />
     <ClInclude Include="Thread\Thread.h" />
