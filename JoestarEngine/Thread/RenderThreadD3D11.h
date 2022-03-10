@@ -49,5 +49,8 @@ namespace Joestar {
 		ID3D11InputLayout* mInputLayout;
 		ID3D11VertexShader* vs;
 		ID3D11PixelShader* ps;
+		ID3D11Texture2D* mDiffTex;
+		ID3D11ShaderResourceView* mDiffSRV;
+		ID3D11SamplerState* mSampleState;
 	};
 }

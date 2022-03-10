@@ -49,6 +49,32 @@ namespace Joestar {
     }
     return 0;
 }
+
+
+
+    float vertices[] =
+    {
+        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+        -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+        -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+        -1.0f, +1.0f, +1.0f, 0.0f, 1.0f,
+        +1.0f, +1.0f, +1.0f, 1.0f, 1.0f,
+        +1.0f, -1.0f, +1.0f, 1.0f, 0.0f,
+    };
+
+
+    UINT indices[24] = {
+        0, 1, 2,   //  Triangle  0
+        0, 2, 3,   //  Triangle  1
+        0, 3, 4,   //  Triangle  2
+        0, 4, 5,   //  Triangle  3
+        0, 5, 6,   //  Triangle  4
+        0, 6, 7,   //  Triangle  5
+        0, 7, 8,   //  Triangle  6
+        0, 8, 1    //  Triangle  7
+    };
 	RenderThreadD3D11::RenderThreadD3D11(std::vector<GFXCommandBuffer*>& cmdBuffers, std::vector<GFXCommandBuffer*>& computeBuffers) :
         RenderThread(cmdBuffers, computeBuffers)
 	{
@@ -218,43 +244,21 @@ namespace Joestar {
         {
             {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
                 D3D11_INPUT_PER_VERTEX_DATA, 0},
-            {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12,
+            {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12,
                 D3D11_INPUT_PER_VERTEX_DATA, 0}
         };
-
-        float vertices[] =
-        {
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, 1.0f,
-            -1.0f, +1.0f, +1.0f,
-            +1.0f, +1.0f, +1.0f,
-            +1.0f, -1.0f, +1.0f,
-        };
-
         D3D11_BUFFER_DESC vbd;
         vbd.Usage = D3D11_USAGE_IMMUTABLE;
-        vbd.ByteWidth = sizeof(float) * 3 * 8;
+        vbd.ByteWidth = sizeof(float) * 5 * 8;
         vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         vbd.CPUAccessFlags = 0;
         vbd.MiscFlags = 0;
         vbd.StructureByteStride = 0;
         D3D11_SUBRESOURCE_DATA vinitData;
+        ZeroMemory(&vinitData, sizeof(D3D11_SUBRESOURCE_DATA));
         vinitData.pSysMem = vertices;
         hr = md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB);
 
-        UINT indices[24] = {
-            0, 1, 2,   //  Triangle  0
-            0, 2, 3,   //  Triangle  1
-            0, 3, 4,   //  Triangle  2
-            0, 4, 5,   //  Triangle  3
-            0, 5, 6,   //  Triangle  4
-            0, 6, 7,   //  Triangle  5
-            0, 7, 8,   //  Triangle  6
-            0, 8, 1    //  Triangle  7
-        };
         D3D11_BUFFER_DESC ibd;
         ibd.Usage = D3D11_USAGE_IMMUTABLE;
         ibd.ByteWidth = sizeof(UINT) * 24;
@@ -263,6 +267,7 @@ namespace Joestar {
         ibd.MiscFlags = 0;
         ibd.StructureByteStride = 0;
         D3D11_SUBRESOURCE_DATA iinitData;
+        ZeroMemory(&iinitData, sizeof(D3D11_SUBRESOURCE_DATA));
         iinitData.pSysMem = indices;
         hr = md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB);
 
@@ -333,6 +338,50 @@ namespace Joestar {
         matrixBufferDesc.CPUAccessFlags = 0;
 
         hr = md3dDevice->CreateBuffer(&matrixBufferDesc, NULL, &mCB);
+
+        std::string texpath = "Textures/marble.jpg";
+        Texture2D* tex2D = new Texture2D(app->GetEngineContext());
+        tex2D->TextureFromImage(texpath);
+
+        D3D11_TEXTURE2D_DESC tdesc;
+        ZeroMemory(&tdesc, sizeof(tdesc));
+        tdesc.Width = tex2D->GetWidth();
+        tdesc.Height = tex2D->GetHeight();
+        tdesc.MipLevels = 1;
+        tdesc.ArraySize = 1;
+        tdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        tdesc.SampleDesc.Count = 1;		// 不使用多重采样
+        tdesc.SampleDesc.Quality = 0;
+        tdesc.Usage = D3D11_USAGE_DEFAULT;
+        tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        tdesc.CPUAccessFlags = 0;
+        tdesc.MiscFlags = 0;	// 指定需要生成mipmap
+        D3D11_SUBRESOURCE_DATA tinitdata;
+        ZeroMemory(&tinitdata, sizeof(tinitdata));
+        tinitdata.pSysMem = tex2D->GetData();
+        tinitdata.SysMemPitch = tex2D->GetWidth() * 4;
+        md3dDevice->CreateTexture2D(&tdesc, &tinitdata, &mDiffTex);
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC vdesc;
+        ZeroMemory(&vdesc, sizeof(vdesc));
+        vdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        vdesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        vdesc.Texture2D.MostDetailedMip = 0;
+        vdesc.Texture2D.MipLevels = 1;
+        hr = md3dDevice->CreateShaderResourceView(mDiffTex, &vdesc, &mDiffSRV);
+
+        D3D11_SAMPLER_DESC sampDesc;
+        ZeroMemory(&sampDesc, sizeof(sampDesc));
+        sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;//过滤器
+        sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;//寻址模式
+        sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+        sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+        sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        sampDesc.MinLOD = 0;
+        sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+        // 创建采样器状态
+        //md3dDevice->CreateSamplerState(&sampDesc, m_pSamplerState.GetAddressOf());
+        md3dDevice->CreateSamplerState(&sampDesc, &mSampleState);
 	}
 
     void RenderThreadD3D11::ThreadFunc()
@@ -365,7 +414,7 @@ namespace Joestar {
         md3dImmediateContext->IASetInputLayout(mInputLayout);
         md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        UINT stride = sizeof(float) * 3;
+        UINT stride = sizeof(float) * 5;
         UINT offset = 0;
         md3dImmediateContext->IASetVertexBuffers(0, 1, &mVB, &stride, &offset);
         md3dImmediateContext->IASetIndexBuffer(mIB, DXGI_FORMAT_R32_UINT, 0);
@@ -383,8 +432,10 @@ namespace Joestar {
         bufferNum = 0;
 
         md3dImmediateContext->VSSetConstantBuffers(bufferNum, 1, &mCB);
+        md3dImmediateContext->PSSetShaderResources(bufferNum, 1, &mDiffSRV);
+        md3dImmediateContext->PSSetSamplers(bufferNum, 1, &mSampleState);
 
-        md3dImmediateContext->DrawIndexed(36, 0, 0);
+        md3dImmediateContext->DrawIndexed(24, 0, 0);
 
         mSwapChain->Present(0, 0);
     }
