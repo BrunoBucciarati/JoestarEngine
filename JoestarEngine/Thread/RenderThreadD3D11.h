@@ -7,10 +7,12 @@ namespace Joestar {
 		RenderThreadD3D11(std::vector<GFXCommandBuffer*>& cmdBuffers, std::vector<GFXCommandBuffer*>& computeBuffers);
 		bool InitRenderContext();
 		bool InitWindow();
+		void PrepareCompute();
 
 	private:
 		void ThreadFunc();
 		void DrawScene();
+		void DispatchCompute();
 		HINSTANCE mhAppInst;     // 应用程序实例句柄
 		HWND      mhMainWnd;     // 主窗口句柄
 		bool      mAppPaused;    // 程序是否处在暂停状态
@@ -52,5 +54,15 @@ namespace Joestar {
 		ID3D11Texture2D* mDiffTex;
 		ID3D11ShaderResourceView* mDiffSRV;
 		ID3D11SamplerState* mSampleState;
+		ID3D11BlendState* mBlendState;
+		ID3D11DepthStencilState* mDepthStencilState;
+
+		//compute
+		ID3D11Buffer* mInputBuffer;
+		ID3D11Buffer* mOutputBuffer;
+		ID3D11Buffer* mOutputDebugBuffer;
+		ID3D11ShaderResourceView* mInputASRV;
+		ID3D11UnorderedAccessView* mOutputUAV;
+		ID3D11ComputeShader* cs;
 	};
 }

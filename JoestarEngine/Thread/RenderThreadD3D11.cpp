@@ -382,12 +382,152 @@ namespace Joestar {
         // 创建采样器状态
         //md3dDevice->CreateSamplerState(&sampDesc, m_pSamplerState.GetAddressOf());
         md3dDevice->CreateSamplerState(&sampDesc, &mSampleState);
+
+        D3D11_BLEND_DESC blendDesc = { 0 };
+        blendDesc.AlphaToCoverageEnable = false;
+        blendDesc.IndependentBlendEnable = false;
+
+        blendDesc.RenderTarget[0].BlendEnable = true;
+        blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+        blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+        blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+        hr = md3dDevice->CreateBlendState(&blendDesc, &mBlendState);
+
+        D3D11_DEPTH_STENCIL_DESC dsDesc{0};
+        dsDesc.DepthEnable = true;
+        dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+        dsDesc.StencilEnable = true;
+        dsDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+        dsDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+        dsDesc.BackFace = { D3D11_STENCIL_OP_KEEP, D3D11_STENCIL_OP_KEEP , D3D11_STENCIL_OP_KEEP, D3D11_COMPARISON_ALWAYS };
+        dsDesc.FrontFace = { D3D11_STENCIL_OP_KEEP, D3D11_STENCIL_OP_KEEP , D3D11_STENCIL_OP_KEEP, D3D11_COMPARISON_ALWAYS };
+        hr = md3dDevice->CreateDepthStencilState(&dsDesc, &mDepthStencilState);
+
 	}
+
+    void RenderThreadD3D11::PrepareCompute()
+    {
+        D3D11_TEXTURE2D_DESC blurredTexDesc;
+        blurredTexDesc.Width = 512;
+        blurredTexDesc.Height = 512;
+        blurredTexDesc.MipLevels = 1;
+        blurredTexDesc.ArraySize = 1;
+        blurredTexDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        blurredTexDesc.SampleDesc.Count = 1;
+        blurredTexDesc.SampleDesc.Quality = 0;
+        blurredTexDesc.Usage = D3D11_USAGE_DEFAULT;
+        blurredTexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+        blurredTexDesc.CPUAccessFlags = 0;
+        blurredTexDesc.MiscFlags = 0;
+        ID3D11Texture2D* blurredTex = 0;
+        HRESULT hr = md3dDevice->CreateTexture2D(&blurredTexDesc, 0, &blurredTex);
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC bsrvDesc;
+        bsrvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        bsrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        bsrvDesc.Texture2D.MostDetailedMip = 0;
+        bsrvDesc.Texture2D.MipLevels = 1;
+        ID3D11ShaderResourceView* mBlurredOutputTexSRV;
+        hr = md3dDevice->CreateShaderResourceView(blurredTex, &bsrvDesc, &mBlurredOutputTexSRV);
+
+        D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+        uavDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+        uavDesc.Texture2D.MipSlice = 0;
+        ID3D11UnorderedAccessView* mBlurredOutputTexUAV;
+        hr = md3dDevice->CreateUnorderedAccessView(blurredTex, &uavDesc, &mBlurredOutputTexUAV);
+        // Views save a reference to the texture so we can release our reference.
+        ReleaseCOM(blurredTex);
+
+        int numElements = 1024;
+        std::vector<float> dataA;
+        dataA.resize(1024 * 3);
+        for (auto& f : dataA)
+            f = 0;
+
+        D3D11_BUFFER_DESC inputDesc;
+        inputDesc.Usage = D3D11_USAGE_DEFAULT;
+        inputDesc.ByteWidth = sizeof(float) * 3 * numElements;
+        inputDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        inputDesc.CPUAccessFlags = 0;
+        inputDesc.StructureByteStride = sizeof(float) * 3;
+        inputDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+        D3D11_SUBRESOURCE_DATA vinitDataA;
+        vinitDataA.pSysMem = &dataA[0];
+        hr = md3dDevice->CreateBuffer(&inputDesc, &vinitDataA, &mInputBuffer);
+
+        D3D11_BUFFER_DESC outputDesc;
+        outputDesc.Usage = D3D11_USAGE_DEFAULT;
+        outputDesc.ByteWidth = sizeof(float) * 3 * numElements;
+        outputDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+        outputDesc.CPUAccessFlags = 0;
+        outputDesc.StructureByteStride = sizeof(float) * 3;
+        outputDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+        hr = md3dDevice->CreateBuffer(&outputDesc, 0, &mOutputBuffer);
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+        srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
+        srvDesc.BufferEx.FirstElement = 0;
+        srvDesc.BufferEx.Flags = 0;
+        srvDesc.BufferEx.NumElements = numElements;
+        md3dDevice->CreateShaderResourceView(mInputBuffer, &srvDesc, &mInputASRV);
+        //ID3D11ShaderResourceView* mInputBSRV;
+        //md3dDevice->CreateShaderResourceView(, &srvDesc, &mInputBSRV);
+        D3D11_UNORDERED_ACCESS_VIEW_DESC buavDesc;
+        buavDesc.Format = DXGI_FORMAT_UNKNOWN;
+        buavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+        buavDesc.Buffer.FirstElement = 0;
+        buavDesc.Buffer.Flags = 0;
+        buavDesc.Buffer.NumElements = numElements;
+        md3dDevice->CreateUnorderedAccessView(mOutputBuffer, &buavDesc, &mOutputUAV);
+
+        D3D11_BUFFER_DESC outputDDesc;
+        outputDDesc.Usage = D3D11_USAGE_STAGING;
+        outputDDesc.BindFlags = 0;
+        outputDDesc.ByteWidth = sizeof(float) * 3 * numElements;
+        outputDDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+        outputDDesc.StructureByteStride = sizeof(float) * 3;
+        outputDDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+        hr = md3dDevice->CreateBuffer(&outputDDesc, 0, &mOutputDebugBuffer);
+
+
+        UINT flags = 0;
+#if defined( DEBUG ) || defined( _DEBUG )
+        flags |= D3DCOMPILE_DEBUG;
+#endif
+        Application* app = Application::GetApplication();
+        FileSystem* fs = app->GetSubSystem<FileSystem>();
+        std::string path = fs->GetResourceDir();
+        path += "Shaders/hlsl/cstest.fx";
+        File* file = fs->ReadFile(path.c_str());
+        ID3D10Blob* compiledCSShader = 0;
+        ID3D10Blob* compilationCSMsgs = 0;
+        hr = D3DCompile(file->GetBuffer(), file->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "CS",
+            "cs_5_0", flags, 0, &compiledCSShader, &compilationCSMsgs);
+
+        // compilationMsgs中包含错误或警告信息
+        if (compilationCSMsgs != 0)
+        {
+            MessageBoxA(0, (char*)compilationCSMsgs->GetBufferPointer(), 0, 0);
+            ReleaseCOM(compilationCSMsgs);
+        }
+
+        md3dDevice->CreateComputeShader(compiledCSShader->GetBufferPointer(), compiledCSShader->GetBufferSize(), NULL, &cs);
+    }
 
     void RenderThreadD3D11::ThreadFunc()
     {
         if (!bInit) {
             InitRenderContext();
+            PrepareCompute();
             bInit = true;
             frameIndex = 0;
         }
@@ -398,11 +538,36 @@ namespace Joestar {
             while (!computeCmdBuffers[idx]->ready || !cmdBuffers[idx]->ready) {
                 //busy wait
             }
+            DispatchCompute();
             DrawScene();
             cmdBuffers[idx]->ready = false;
             computeCmdBuffers[idx]->ready = false;
             ++frameIndex;
         }
+    }
+
+    void RenderThreadD3D11::DispatchCompute()
+    {
+        md3dImmediateContext->CSSetShader(cs, NULL, 0);
+        md3dImmediateContext->CSSetShaderResources(0, 1, &mInputASRV);
+        md3dImmediateContext->CSSetUnorderedAccessViews(0, 1, &mOutputUAV, NULL);
+        md3dImmediateContext->Dispatch(1024/32, 1, 1);
+        // ...
+        //
+        // Compute shader finished!
+        // Copy the output buffer to system memory.
+        md3dImmediateContext->CopyResource(mOutputDebugBuffer, mOutputBuffer);
+        // Map the data for reading.
+        D3D11_MAPPED_SUBRESOURCE mappedData;
+        md3dImmediateContext->Map(mOutputDebugBuffer, 0, D3D11_MAP_READ, 0, &mappedData);
+        float* dataView = reinterpret_cast<float*>(mappedData.pData);
+        std::vector<float> results;
+        results.resize(1024 * 3);
+        for (int i = 0; i < 1024; ++i)
+        {
+            results[i] = dataView[i];
+        }
+        md3dImmediateContext->Unmap(mOutputDebugBuffer, 0);
     }
 
 
@@ -434,6 +599,11 @@ namespace Joestar {
         md3dImmediateContext->VSSetConstantBuffers(bufferNum, 1, &mCB);
         md3dImmediateContext->PSSetShaderResources(bufferNum, 1, &mDiffSRV);
         md3dImmediateContext->PSSetSamplers(bufferNum, 1, &mSampleState);
+
+        float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        md3dImmediateContext->OMSetBlendState(mBlendState, blendFactor, 0xffffffff);
+
+        md3dImmediateContext->OMSetDepthStencilState(mDepthStencilState, 0);
 
         md3dImmediateContext->DrawIndexed(24, 0, 0);
 
