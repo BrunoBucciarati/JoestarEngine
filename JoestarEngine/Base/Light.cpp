@@ -2,8 +2,8 @@
 #include "../Graphics/ProceduralMesh.h"
 namespace Joestar {
 	void Light::UpdateMatrix() {
-		if (direction != Vector3f::zero)
-			mat.SetFromToRotation(Vector3f(0, 0, 1), direction);
+		if (direction != Vector3f::Zero)
+			mat.SetFromToRotation(Vector3f::Front, direction);
 		mat.SetPosition(position);
 
 		//light should be small

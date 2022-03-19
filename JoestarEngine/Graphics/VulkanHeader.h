@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include "../IO/Log.h"
+#include "../Base/Platform.h"
 #include "../Base/ObjectDefines.h"
 #define VK_CHECK(f) \
 	if (VK_SUCCESS != f) {LOGERROR("[VK_ERROR:%d]%s\n", f, #f)};

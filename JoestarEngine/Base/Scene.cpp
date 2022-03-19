@@ -196,7 +196,7 @@ namespace Joestar {
         graphics->SetDepthCompare(DEPTH_COMPARE_LESS);
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera->GetProjectionMatrix());
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera->GetViewMatrix());
-        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_CAMERAPOS, camera->Position);
+        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_CAMERAPOS, camera->GetPosition());
         graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNDIRECTION, mainLight->GetDirection());
         graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNCOLOR, mainLight->GetIntensityMixColor());
         graphics->FlushUniformBuffer();

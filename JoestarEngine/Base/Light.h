@@ -39,10 +39,10 @@ namespace Joestar {
 	protected:
 		float intensity = 1.0f;
 		LightType lightType;
-		Vector3f direction = Vector3f::zero;
-		Vector3f lightColor = Vector3f::one;
-		Vector3f intensityMixColor = Vector3f::one;
-		Vector3f position = Vector3f::zero;
+		Vector3f direction = Vector3f::Zero;
+		Vector3f lightColor = Vector3f::One;
+		Vector3f intensityMixColor = Vector3f::One;
+		Vector3f position = Vector3f::Zero;
 		Matrix4x4f mat;
 	};
 

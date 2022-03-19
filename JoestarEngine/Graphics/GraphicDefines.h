@@ -3,7 +3,7 @@
 #define _JOESTAR_GRAPHICS_DEF_H_
 #include "../Math/Matrix4x4.h"
 #include <string>
-#include "../Base/ObjectDefines.h"
+#include "../Base/Platform.h"
 
 namespace Joestar {
 	enum GFX_API {

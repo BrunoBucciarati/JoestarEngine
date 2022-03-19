@@ -7,7 +7,9 @@
 
 enum MemoryType {
 	MEMORY_TEMP = 0,
-	MEMORY_GFX_STRUCT = 1
+	MEMORY_GFX_STRUCT = 1,
+	MEMORY_STRING = 2,
+	MEMORY_CONTAINER = 3
 };
 
 enum MemoryAlignment {
@@ -22,9 +24,13 @@ enum MemoryAlignment {
 #else
 #define JOJO_NEW(data, type)\
 	new data
+#define JOJO_NEW_ARRAY(data, sz, type)\
+	new data[sz]
 	//new (type, kDefaultMemoryAlignment, __FILE__, __LINE__) data
 #define JOJO_DELETE(p, type) \
 	delete p
+#define JOJO_DELETE_ARRAY(p, type) \
+	delete[] p
 #endif
 
 //void* operator new(std::size_t sz, MemoryType type, int align, const char* file, int line);

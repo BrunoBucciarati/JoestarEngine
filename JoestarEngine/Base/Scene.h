@@ -8,6 +8,7 @@
 #include "SubSystem.h"
 #include "../Graphics/Material.h"
 #include "../Graphics/Graphics.h"
+#include "../Container/Vector.h"
 
 namespace Joestar {
 	class Scene : public SubSystem {
@@ -40,5 +41,6 @@ namespace Joestar {
 		Texture* shCube;
 		LightBlocks lightBlocks;
 		Graphics* graphics;
+		Vector<GameObject*> tests;
 	};
 }

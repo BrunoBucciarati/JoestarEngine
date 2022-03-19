@@ -3,8 +3,8 @@
 namespace Joestar {
 	void Transform::Init() {
 		rotation = Quaternionf::identity();
-		translate = Vector3f::zero;
-		scale = Vector3f::one;
+		translate = Vector3f::Zero;
+		scale = Vector3f::One;
 		mat = Matrix4x4f::identity;
 	}
 

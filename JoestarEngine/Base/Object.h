@@ -1,11 +1,11 @@
 #pragma once
+#include "RefCount.h"
 #include "ObjectDefines.h"
 #include "ClassIDs.h"
-#include <stdint.h>
 #include <string>
 namespace Joestar {
 	class EngineContext;
-	class Object {
+	class Object : public RefCount {
 		friend class EngineContext;
 		REGISTER_OBJECT_ROOT(Object)
 
