@@ -73,7 +73,8 @@ namespace Joestar {
         tests.Push(sphere);
         tests.Push(sphere);
         tests.Push(sphere);
-        
+
+        HashSet<Pair<GameObject*, GameObject*>>::Iterator it;
     }
 
     Scene::~Scene() {}

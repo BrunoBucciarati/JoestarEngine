@@ -19,7 +19,7 @@ namespace Joestar
 			mSize = sz;
 		}
 		void Reserve(U32 cap) {
-			if (!mCapacity) {
+			if (!mCapacity && cap) {
 				mCapacity = cap;
 				mBuffer = reinterpret_cast<T*>(JOJO_NEW_ARRAY(U8, mCapacity * sizeof(T), MEMORY_CONTAINER));
 				return;
@@ -51,6 +51,19 @@ namespace Joestar
 			JOJO_PLACEMENT_NEW(T(value), mBuffer + mSize, MEMORY_CONTAINER);
 			++mSize;
 		}
+		void Clear() {
+			mSize = 0;
+		}
+		T* Buffer() {
+			return mBuffer;
+		}
+		T& Back() {
+			return mBuffer[mSize - 1];
+		}
+		T& Begin() {
+			return mBuffer[0];
+		}
+
 	private:
 		U32 mSize{ 0 };
 		U32 mCapacity{ 0 };

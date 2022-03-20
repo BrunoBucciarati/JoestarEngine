@@ -1,31 +1,67 @@
 #pragma once
+#include "Pair.h"
 #include "HashSet.h"
 namespace Joestar {
-	template <class T, class U>
-	class KeyValuePair {
-	public:
-		KeyValuePair(T f, U s) : key(f), value(s) {}
-		KeyValuePair() = default;
-		U32 Hash() const {
-			return MakeHash(key);
-		}
-		T key;
-		U value;
-	};
-
 	template<class T, class U>
 	class HashMap {
 	public:
-		bool Insert(T key, U value) {
-			KeyValuePair<T, U> pair(key, value);
+		typedef Pair<T, U> DataType;
+		typedef typename HashSet<DataType>::Iterator SetIterator;
+		HashMap() {
+			setTail = set.End();
+			tail = { setTail };
+		};
+		~HashMap() = default;
+
+		struct Iterator {
+			Iterator& operator ++() {
+				++setIter;
+				return *this;
+			}
+			Iterator& operator --() {
+				--setIter;
+				return *this;
+			}
+			bool operator==(const Iterator& rhs) {
+				return setIter == rhs.setIter;
+			}
+			bool operator!=(const Iterator& rhs) {
+				return setIter != rhs.setIter;
+			}
+			DataType* operator->() {
+				return setIter.Get();
+			}
+			SetIterator setIter;
+		};
+		Iterator End() {
+			return tail;
+		}
+		Iterator Find(const T& key) {
+			SetIterator it = set.FindByHash(MakeHash(key));
+			if (it != set.End()) {
+				return Iterator{ it };
+			}
+			return End();
+		}
+		U& operator[](const T& key) {
+			Iterator it = Find(key);
+			if (it != End()) {
+				return it->value;
+			}
+			it = Insert(key, NULL);
+			return it->value;
+		}
+
+		Iterator Insert(T key, U value) {
+			Pair<T, U> pair(key, value);
 			return Insert(pair);
 		}
-		bool Insert(KeyValuePair<T, U>& pair) {
-			set.Insert(pair);
-			return true;
+		Iterator Insert(DataType& pair) {
+			return { set.Insert(pair) };
 		}
 	private:
-		typedef KeyValuePair<T, U> dataType;
-		HashSet<dataType> set;
+		HashSet<DataType> set;
+		SetIterator setTail;
+		Iterator tail;
 	};
 }

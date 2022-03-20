@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 #include "GameObject.h"
 #include "Camera.h"
 #include "Light.h"
@@ -44,6 +43,7 @@ namespace Joestar {
 		Graphics* graphics;
 		Vector<GameObject*> tests;
 		HashSet<int> testSet;
+		HashSet<GameObject*> testGOSet;
 		HashMap<int, GameObject*> testMap;
 	};
 }

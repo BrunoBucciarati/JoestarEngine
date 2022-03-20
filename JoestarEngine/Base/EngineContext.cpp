@@ -1,10 +1,10 @@
 #include "EngineContext.h"
 #include "ClassIDs.h"
 namespace Joestar {
-	Object* EngineContext::GetSubSystem(uint32_t classID) {
-		std::map<uint32_t, Object*>::iterator it = subSystems.find(classID);
-		if (it != subSystems.end())
-			return it->second;
+	Object* EngineContext::GetSubSystem(U32 classID) {
+		HashMap<U32, Object*>::Iterator it = subSystems.Find(classID);
+		if (it != subSystems.End())
+			return it->value;
 		return nullptr;
 	}
 }

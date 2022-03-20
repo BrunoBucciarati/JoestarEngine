@@ -1,5 +1,6 @@
 #pragma once
 #include "../Base/Platform.h"
+#include "../Base/StringHash.h"
 #include <cstring>
 namespace Joestar {
 	U32 CStringLength(const char* str) {
@@ -50,6 +51,10 @@ namespace Joestar {
 			CopyChars(ret.mBuffer + mLength, rhs.mBuffer, rhs.mLength);
 
 			return ret;
+		}
+
+		U32 Hash() const {
+			return hashString(CString());
 		}
 	private:
 		U32 mLength{0};

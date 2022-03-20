@@ -10,3 +10,4 @@ typedef int16_t I16;
 typedef int8_t I8;
 typedef float F32;
 typedef double F64;
+#define INDEX_NONE -1

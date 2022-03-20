@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <!-- Joestar::Vector<> -->
+  <Type Name = "Joestar::Vector&lt;*&gt;">
+    <DisplayString>{{ size={mSize} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">mSize</Item>
+      <Item Name="[capacity]" ExcludeView="simple">mCapacity</Item>
+      <ArrayItems>
+        <Size>mSize</Size>
+        <ValuePointer>mBuffer</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- Joestar::HashSet<> -->
+  <Type Name="Joestar::HashSet&lt;*&gt;">
+    <DisplayString>{{ size={Size()} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">Size()</Item>
+      <Item Name="[bucket_count]" ExcludeView="simple">buckets.Size()</Item>
+    </Expand>
+  </Type>
+
+  <!-- Joestar::String -->
+  <Type Name="Joestar::String">
+    <DisplayString Condition="mBuffer">{mBuffer,nas8}</DisplayString>
+    <DisplayString>invalid string</DisplayString>
+    <Expand>
+      <Item Name="[length]" ExcludeView="simple">mLength</Item>
+      <Item Name="[capacity]" ExcludeView="simple">mCapacity</Item>
+      <Item Name="[buffer]">mBuffer</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>

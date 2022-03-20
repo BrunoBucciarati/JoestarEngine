@@ -7,6 +7,20 @@ namespace Joestar {
 		SparseArray() = default;
 		~SparseArray() = default;
 		U32 Add(U32 index, const T & element);
+		T& operator[](int idx){
+			return data[idx];
+		}
+		U32 FindIndex(U32 idx) {
+			for (int i = 0; i < indices.Size(); ++i) {
+				if (indices[i] == idx) {
+					return i;
+				}
+			}
+			return INDEX_NONE;
+		}
+		U32 Size() {
+			return numElements;
+;		}
 
 	private:
 		Vector<T> data;
