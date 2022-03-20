@@ -63,6 +63,17 @@ namespace Joestar {
         CreateLights();
 
         CreateCompute();
+
+        tests.Push(plane);
+        tests.Push(sphere);
+        tests.Push(sphere);
+        testSet.Insert(1);
+        testMap.Insert(1, plane);
+        tests.Push(plane);
+        tests.Push(sphere);
+        tests.Push(sphere);
+        tests.Push(sphere);
+        
     }
 
     Scene::~Scene() {}

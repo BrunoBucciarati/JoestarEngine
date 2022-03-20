@@ -11,23 +11,30 @@ namespace Joestar
 			JOJO_DELETE_ARRAY(mBuffer);
 		}
 		void Resize(U32 sz) {
-			Reserve(cap);
+			U32 oldSz = mSize;
+			Reserve(sz);
+			for (int i = oldSz; i < sz; ++i) {
+				JOJO_PLACEMENT_NEW(T, mBuffer + i, MEMORY_CONTAINER);
+			}
 			mSize = sz;
 		}
 		void Reserve(U32 cap) {
 			if (!mCapacity) {
 				mCapacity = cap;
-				mBuffer = JOJO_NEW_ARRAY(T, mCapacity, MEMORY_CONTAINER);
+				mBuffer = reinterpret_cast<T*>(JOJO_NEW_ARRAY(U8, mCapacity * sizeof(T), MEMORY_CONTAINER));
 				return;
 			}
 			if (mCapacity && mCapacity < cap) {
+				U32 oldCapacity = mCapacity;
 				while (mCapacity < cap) {
 					mCapacity = mCapacity << 1;
 				}
-				if (mBuffer) {
-					JOJO_DELETE_ARRAY(mBuffer, MEMORY_CONTAINER);
+				T* oldBuffer = mBuffer;
+				mBuffer = reinterpret_cast<T*>(JOJO_NEW_ARRAY(U8, mCapacity * sizeof(T), MEMORY_CONTAINER));
+				if (oldBuffer) {
+					memcpy(mBuffer, oldBuffer, oldCapacity * sizeof(T));
+					JOJO_DELETE_ARRAY(oldBuffer, MEMORY_CONTAINER);
 				}
-				mBuffer = JOJO_NEW_ARRAY(T, mCapacity, MEMORY_CONTAINER);
 			}
 		}
 		U32 Size() {
@@ -36,9 +43,17 @@ namespace Joestar
 		T& operator[](int index) {
 			return mBuffer[index];
 		}
+		void Push(const T& value)
+		{
+			if (mSize >= mCapacity) {
+				Reserve(mSize + 1);
+			}
+			JOJO_PLACEMENT_NEW(T(value), mBuffer + mSize, MEMORY_CONTAINER);
+			++mSize;
+		}
 	private:
 		U32 mSize{ 0 };
 		U32 mCapacity{ 0 };
-		T* mBuffer;
+		T* mBuffer{nullptr};
 	};
 }

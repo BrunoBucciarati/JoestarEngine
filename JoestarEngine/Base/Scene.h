@@ -9,6 +9,7 @@
 #include "../Graphics/Material.h"
 #include "../Graphics/Graphics.h"
 #include "../Container/Vector.h"
+#include "../Container/HashMap.h"
 
 namespace Joestar {
 	class Scene : public SubSystem {
@@ -42,5 +43,7 @@ namespace Joestar {
 		LightBlocks lightBlocks;
 		Graphics* graphics;
 		Vector<GameObject*> tests;
+		HashSet<int> testSet;
+		HashMap<int, GameObject*> testMap;
 	};
 }

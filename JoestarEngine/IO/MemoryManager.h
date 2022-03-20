@@ -24,6 +24,8 @@ enum MemoryAlignment {
 #else
 #define JOJO_NEW(data, type)\
 	new data
+#define JOJO_PLACEMENT_NEW(data, place, type)\
+	new (place) data
 #define JOJO_NEW_ARRAY(data, sz, type)\
 	new data[sz]
 	//new (type, kDefaultMemoryAlignment, __FILE__, __LINE__) data

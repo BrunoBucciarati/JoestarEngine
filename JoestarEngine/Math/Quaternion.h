@@ -284,7 +284,7 @@ namespace Joestar {
 		*targetAngle = 2.0f * acos(q.w);
 		if (CompareApproximately(*targetAngle, 0.0F))
 		{
-			*axis = Vector3f::xAxis;
+			*axis = Vector3f::Left;
 			return;
 		}
 

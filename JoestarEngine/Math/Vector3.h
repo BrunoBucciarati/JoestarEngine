@@ -39,11 +39,12 @@ namespace Joestar {
 		static const float		epsilon;
 		static const float		infinity;
 		static const Vector3f	infinityVec;
-		static const Vector3f	zero;
-		static const Vector3f	one;
-		static const Vector3f	xAxis;
-		static const Vector3f	yAxis;
-		static const Vector3f	zAxis;
+		static const Vector3f	Zero;
+		static const Vector3f	One;
+		static const Vector3f	Up;
+		static const Vector3f	Right;
+		static const Vector3f	Left;
+		static const Vector3f	Front;
 	};
 
 	inline Vector3f Scale(const Vector3f& lhs, const Vector3f& rhs) { return Vector3f(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z); }
@@ -64,7 +65,7 @@ namespace Joestar {
 	// Normalizes a vector, asserts if the vector can be normalized
 	inline Vector3f Normalize(const Vector3f& inV) { return inV / Magnitude(inV); }
 	// Normalizes a vector, returns default vector if it can't be normalized
-	inline Vector3f NormalizeSafe(const Vector3f& inV, const Vector3f& defaultV = Vector3f::zero);
+	inline Vector3f NormalizeSafe(const Vector3f& inV, const Vector3f& defaultV = Vector3f::Zero);
 
 	inline Vector3f ReflectVector(const Vector3f& inDirection, const Vector3f& inNormal) { return -2.0F * Dot(inNormal, inDirection) * inNormal + inDirection; }
 
