@@ -13,7 +13,7 @@ namespace Joestar {
 	};
 	class RenderThreadVulkan : public RenderThread {
 	public:
-		RenderThreadVulkan(std::vector<GFXCommandBuffer*>& cmdBuffers, std::vector<GFXCommandBuffer*>& computeBuffers);
+		RenderThreadVulkan(Vector<GFXCommandBuffer*>& cmdBuffers, Vector<GFXCommandBuffer*>& computeBuffers);
 		void ThreadFunc();
 		void InitRenderContext();
 		void DrawFrame(GFXCommandBuffer* cmdBuffer);

@@ -75,7 +75,7 @@ namespace Joestar {
         0, 7, 8,   //  Triangle  6
         0, 8, 1    //  Triangle  7
     };
-	RenderThreadD3D11::RenderThreadD3D11(std::vector<GFXCommandBuffer*>& cmdBuffers, std::vector<GFXCommandBuffer*>& computeBuffers) :
+	RenderThreadD3D11::RenderThreadD3D11(Vector<GFXCommandBuffer*>& cmdBuffers, Vector<GFXCommandBuffer*>& computeBuffers) :
         RenderThread(cmdBuffers, computeBuffers)
 	{
         InitWindow();
@@ -339,7 +339,7 @@ namespace Joestar {
 
         hr = md3dDevice->CreateBuffer(&matrixBufferDesc, NULL, &mCB);
 
-        std::string texpath = "Textures/marble.jpg";
+        String texpath = "Textures/marble.jpg";
         Texture2D* tex2D = new Texture2D(app->GetEngineContext());
         tex2D->TextureFromImage(texpath);
 

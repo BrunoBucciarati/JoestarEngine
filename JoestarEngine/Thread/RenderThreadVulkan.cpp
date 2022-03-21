@@ -86,7 +86,7 @@ namespace Joestar {
 #else
     const bool enableValidationLayers = true;
 #endif
-    RenderThreadVulkan::RenderThreadVulkan(std::vector<GFXCommandBuffer*>& cBuffers, std::vector<GFXCommandBuffer*>& computeBuffers):
+    RenderThreadVulkan::RenderThreadVulkan(Vector<GFXCommandBuffer*>& cBuffers, Vector<GFXCommandBuffer*>& computeBuffers):
         RenderThread(cBuffers, computeBuffers)
     {
         vkCtx.physicalDevice = VK_NULL_HANDLE;

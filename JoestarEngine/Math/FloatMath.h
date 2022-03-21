@@ -34,4 +34,16 @@ namespace Joestar {
 	inline float Deg2Rad(float deg) {
 		return deg * PI / 180;
 	}
+	inline float Floor(float f) {
+		return floor(f);
+	}
+	inline float Log2(float f) {
+		return log2(f);
+	}
+	inline float Sin(float angle) {
+		return sin(angle);
+	}
+	inline float Cos(float angle) {
+		return cos(angle);
+	}
 }
