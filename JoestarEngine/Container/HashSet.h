@@ -101,6 +101,15 @@ namespace Joestar {
 			buckets.Resize(MIN_BUCKETS);
 			tail = {MIN_BUCKETS, 0, &buckets };
 		}
+
+		/// 初始化列表
+		HashSet(const std::initializer_list<SetElementType>& list) : HashSet()
+		{
+			for (auto it = list.begin(); it != list.end(); it++)
+			{
+				Insert(*it);
+			}
+		}
 		~HashSet() = default;
 
 		Iterator Insert(const SetElementType& element) {

@@ -6,7 +6,7 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <vulkan/vulkan.h>
-#include <vector>
+#include "../Container/Vector.h"
 #include "../IO/Log.h"
 #include "../Base/Platform.h"
 #include "../Base/ObjectDefines.h"
@@ -33,9 +33,9 @@ struct VulkanContext {
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
 	QueueFamilyIndices queueFamilyIndices;
-	std::vector<VkImage> swapChainImages;
-	std::vector<VkImageView> swapChainImageViews;
+	Joestar::Vector<VkImage> swapChainImages;
+	Joestar::Vector<VkImageView> swapChainImageViews;
 	//VkDescriptorPool descriptorPool;
-	std::vector<VkFramebuffer> swapChainFramebuffers;
-	std::vector<VkCommandBuffer> commandBuffers;
+	Joestar::Vector<VkFramebuffer> swapChainFramebuffers;
+	Joestar::Vector<VkCommandBuffer> commandBuffers;
 };

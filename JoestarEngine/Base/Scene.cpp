@@ -13,17 +13,6 @@ const U32 SH_LEVEL = 1;
 
 namespace Joestar {
     Scene::Scene(EngineContext* ctx) : Super(ctx) {
-        //for test
-        //GameObject* go = NEW_OBJECT(GameObject);
-        //gameObjects.push_back(go);
-        //Renderer* render = go->GetComponent<Renderer>();
-        //render->mesh = NEW_OBJECT(Mesh);
-
-        //FileSystem* fs = GetSubsystem<FileSystem>();
-        //std::string path = fs->GetModelDir();
-        //render->mesh->Load(path + "viking_room/viking_room.obj");
-        //render->mat = NEW_OBJECT(Material);
-        //render->mat->SetDefault();
         camera = NEW_OBJECT(Camera);
 
         graphics = GetSubsystem<Graphics>();

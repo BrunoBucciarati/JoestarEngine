@@ -1,5 +1,6 @@
 #pragma once
 #include "../Base/Platform.h"
+#include "../Base/Functions.h"
 #include "../IO/MemoryManager.h"
 namespace Joestar
 {
@@ -212,6 +213,28 @@ namespace Joestar
         using Iterator = VectorIterator<T>;
         using ConstIterator = VectorConstIterator<T>;
 		Vector() = default;
+        
+        Vector(U32 sz)
+        {
+            Resize(sz);
+        }
+        /// 初始化列表
+        Vector(const std::initializer_list<T>&list)
+        {
+            for (auto it = list.begin(); it != list.end(); it++)
+            {
+                Push(*it);
+            }
+        }
+        /// 初始化列表
+        Vector(U32 sz, const T& value)
+        {
+            Resize(sz);
+            for (int i = 0; i < sz; ++i)
+            {
+                mBuffer[i] = value;
+            }
+        }
 		~Vector() {
             DestructItems(0, mSize);
 			JOJO_DELETE_ARRAY((U8*)mBuffer);
@@ -244,12 +267,15 @@ namespace Joestar
                 mBuffer = newBuffer;
 			}
 		}
-		U32 Size() {
+		const U32 Size() const {
 			return mSize;
 		}
-		T& operator[](int index) {
+		T& operator[](U32 index) {
 			return mBuffer[index];
 		}
+        const T& operator[](U32 index) const {
+            return mBuffer[index];
+        }
 		void Push(const T& value)
 		{
 			if (mSize >= mCapacity) {
@@ -261,7 +287,7 @@ namespace Joestar
 		void Clear() {
 			mSize = 0;
 		}
-		T* Buffer() {
+		T* Buffer() const {
 			return mBuffer;
 		}
 		T& Back() {
@@ -291,11 +317,22 @@ namespace Joestar
                 JOJO_PLACEMENT_NEW(T, mBuffer + st + i, MEMORY_CONTAINER);
             }
         }
+        bool Empty()
+        {
+            return mSize == 0;
+        }
+
+        void Swap(Vector& rhs)
+        {
+            Joestar::Swap(mCapacity, rhs.mCapacity);
+            Joestar::Swap(mSize, rhs.mSize);
+            Joestar::Swap(mBuffer, rhs.mBuffer);
+        }
 
 	private:
+        T* mBuffer{ nullptr };
 		U32 mSize{ 0 };
 		U32 mCapacity{ 0 };
-		T* mBuffer{nullptr};
 	};
 
     template<class T>

@@ -14,10 +14,10 @@
 #include <cstdint>
 #include "../IO/HID.h"
 namespace Joestar {
-    const std::vector<const char*> validationLayers = {
+    const Vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
-    const std::vector<const char*> deviceExtensions = {
+    const Vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         //VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
         //VK_EXT_SHADER_ATOMIC_FLOAT_EXTENSION_NAME
@@ -53,16 +53,16 @@ namespace Joestar {
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, vkCtx.surface, &formatCount, nullptr);
 
         if (formatCount != 0) {
-            details.formats.resize(formatCount);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, vkCtx.surface, &formatCount, details.formats.data());
+            details.formats.Resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, vkCtx.surface, &formatCount, details.formats.Buffer());
         }
 
         uint32_t presentModeCount;
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, vkCtx.surface, &presentModeCount, nullptr);
 
         if (presentModeCount != 0) {
-            details.presentModes.resize(presentModeCount);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, vkCtx.surface, &presentModeCount, details.presentModes.data());
+            details.presentModes.Resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, vkCtx.surface, &presentModeCount, details.presentModes.Buffer());
         }
         return details;
     }
@@ -70,10 +70,10 @@ namespace Joestar {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
-        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+        Vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.Buffer());
 
-        std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+        std::set<std::string> requiredExtensions(deviceExtensions.Begin(), deviceExtensions.End());
 
         for (const auto& extension : availableExtensions) {
             requiredExtensions.erase(extension.extensionName);
@@ -171,8 +171,8 @@ namespace Joestar {
 	}
 	bool RenderThreadVulkan::CheckValidationLayerSupport() {
         uint32_t layerCount = 0;
-        std::vector<VkLayerProperties> availableLayers(layerCount);
-        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+        Vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.Buffer());
 
         for (const char* layerName : validationLayers) {
             bool layerFound = false;
@@ -234,8 +234,8 @@ namespace Joestar {
         createInfo.enabledExtensionCount = glfwExtensionCount;
         createInfo.ppEnabledExtensionNames = glfwExtensions;
         if (enableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.Size());
+            createInfo.ppEnabledLayerNames = validationLayers.Buffer();
         }
         else {
             createInfo.enabledLayerCount = 0;
@@ -248,8 +248,8 @@ namespace Joestar {
 
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
         if (enableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.Size());
+            createInfo.ppEnabledLayerNames = validationLayers.Buffer();
 
             PopulateDebugMessengerCreateInfo(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
@@ -272,17 +272,17 @@ namespace Joestar {
     }
 
     void RenderThreadVulkan::CleanupSwapChain() {
-        for (size_t i = 0; i < vkCtx.swapChainFramebuffers.size(); i++) {
+        for (size_t i = 0; i < vkCtx.swapChainFramebuffers.Size(); i++) {
             vkDestroyFramebuffer(vkCtx.device, vkCtx.swapChainFramebuffers[i], nullptr);
         }
 
-        vkFreeCommandBuffers(vkCtx.device, vkCtx.commandPool, static_cast<uint32_t>(vkCtx.commandBuffers.size()), vkCtx.commandBuffers.data());
+        vkFreeCommandBuffers(vkCtx.device, vkCtx.commandPool, static_cast<uint32_t>(vkCtx.commandBuffers.Size()), vkCtx.commandBuffers.Buffer());
 
         //vkDestroyPipeline(vkCtx.device, graphicsPipeline, nullptr);
         //vkDestroyPipelineLayout(vkCtx.device, pipelineLayout, nullptr);
         //vkDestroyRenderPass(vkCtx.device, renderPass, nullptr);
 
-        for (size_t i = 0; i < vkCtx.swapChainImageViews.size(); i++) {
+        for (size_t i = 0; i < vkCtx.swapChainImageViews.Size(); i++) {
             vkDestroyImageView(vkCtx.device, vkCtx.swapChainImageViews[i], nullptr);
         }
         //for (size_t i = 0; i < vkCtx.swapChainImages.size(); i++) {
@@ -327,7 +327,7 @@ bool RenderThreadVulkan::IsDeviceSuitable(VkPhysicalDevice device) {
     bool swapChainAdequate = false;
     if (extensionsSupported) {
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device);
-        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        swapChainAdequate = !swapChainSupport.formats.Empty() && !swapChainSupport.presentModes.Empty();
     }
     return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader && extensionsSupported && swapChainAdequate;
 }
@@ -338,8 +338,8 @@ QueueFamilyIndices RenderThreadVulkan::FindQueueFamilies() {
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(vkCtx.physicalDevice, &queueFamilyCount, nullptr);
 
-    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(vkCtx.physicalDevice, &queueFamilyCount, queueFamilies.data());
+    Vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(vkCtx.physicalDevice, &queueFamilyCount, queueFamilies.Buffer());
     int i = 0;
     for (const auto& queueFamily : queueFamilies) {
         VkBool32 presentSupport = false;
@@ -365,8 +365,8 @@ void RenderThreadVulkan::PickPhysicalDevice() {
     if (deviceCount == 0) {
         LOGERROR("failed to find GPUs with Vulkan support!");
     }
-    std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(vkCtx.instance, &deviceCount, devices.data());
+    Vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(vkCtx.instance, &deviceCount, devices.Buffer());
     for (const auto& device : devices) {
         if (IsDeviceSuitable(device)) {
             vkCtx.physicalDevice = device;
@@ -383,7 +383,7 @@ void RenderThreadVulkan::PickPhysicalDevice() {
 void RenderThreadVulkan::CreateLogicalDevice() {
 
     float queuePriority = 1.0f;
-    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+    Vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = { vkCtx.queueFamilyIndices.graphicsFamily, vkCtx.queueFamilyIndices.presentFamily };
     for (uint32_t queueFamily : uniqueQueueFamilies) {
         VkDeviceQueueCreateInfo queueCreateInfo{};
@@ -391,7 +391,7 @@ void RenderThreadVulkan::CreateLogicalDevice() {
         queueCreateInfo.queueFamilyIndex = queueFamily;
         queueCreateInfo.queueCount = 1;
         queueCreateInfo.pQueuePriorities = &queuePriority;
-        queueCreateInfos.push_back(queueCreateInfo);
+        queueCreateInfos.Push(queueCreateInfo);
     }
 
 
@@ -401,12 +401,12 @@ void RenderThreadVulkan::CreateLogicalDevice() {
     deviceFeatures.fragmentStoresAndAtomics = VK_TRUE;
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.queueCreateInfoCount = static_cast<U32>(queueCreateInfos.size());
-    createInfo.pQueueCreateInfos = queueCreateInfos.data();
+    createInfo.queueCreateInfoCount = static_cast<U32>(queueCreateInfos.Size());
+    createInfo.pQueueCreateInfos = queueCreateInfos.Buffer();
 
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = static_cast<U32>(deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+    createInfo.enabledExtensionCount = static_cast<U32>(deviceExtensions.Size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.Buffer();
 
     VkPhysicalDeviceShaderAtomicFloatFeaturesEXT floatFeatures{};
     floatFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT;
@@ -417,8 +417,8 @@ void RenderThreadVulkan::CreateLogicalDevice() {
     createInfo.pNext = &floatFeatures;
 
     if (enableValidationLayers) {
-        createInfo.enabledLayerCount = static_cast<U32>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+        createInfo.enabledLayerCount = static_cast<U32>(validationLayers.Size());
+        createInfo.ppEnabledLayerNames = validationLayers.Buffer();
     }
     else {
         createInfo.enabledLayerCount = 0;
@@ -432,7 +432,7 @@ void RenderThreadVulkan::CreateLogicalDevice() {
     vkGetDeviceQueue(vkCtx.device, vkCtx.queueFamilyIndices.computeFamily, 0, &vkCtx.computeQueue);
 }
 
-VkSurfaceFormatKHR RenderThreadVulkan::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+VkSurfaceFormatKHR RenderThreadVulkan::ChooseSwapSurfaceFormat(const Vector<VkSurfaceFormatKHR>& availableFormats) {
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return availableFormat;
@@ -441,7 +441,7 @@ VkSurfaceFormatKHR RenderThreadVulkan::ChooseSwapSurfaceFormat(const std::vector
     return availableFormats[0];
 }
 
-VkPresentModeKHR RenderThreadVulkan::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+VkPresentModeKHR RenderThreadVulkan::ChooseSwapPresentMode(const Vector<VkPresentModeKHR>& availablePresentModes) {
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 VkExtent2D RenderThreadVulkan::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
@@ -510,15 +510,15 @@ void RenderThreadVulkan::CreateSwapChain() {
     }
     vkGetSwapchainImagesKHR(vkCtx.device, vkCtx.swapChain, &imageCount, nullptr);
     
-    vkCtx.swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(vkCtx.device, vkCtx.swapChain, &imageCount, vkCtx.swapChainImages.data());
+    vkCtx.swapChainImages.Resize(imageCount);
+    vkGetSwapchainImagesKHR(vkCtx.device, vkCtx.swapChain, &imageCount, vkCtx.swapChainImages.Buffer());
     vkCtx.swapChainImageFormat = surfaceFormat.format;
     vkCtx.swapChainExtent = extent;
 }
 
 void RenderThreadVulkan::CreateImageViews() {
-    vkCtx.swapChainImageViews.resize(vkCtx.swapChainImages.size());
-    for (size_t i = 0; i < vkCtx.swapChainImages.size(); i++) {
+    vkCtx.swapChainImageViews.Resize(vkCtx.swapChainImages.Size());
+    for (size_t i = 0; i < vkCtx.swapChainImages.Size(); i++) {
         VkImageViewCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         createInfo.image = vkCtx.swapChainImages[i];
@@ -557,14 +557,14 @@ void RenderThreadVulkan::CreateCommandPool() {
 }
  
 void RenderThreadVulkan::CreateCommandBuffers() {
-    vkCtx.commandBuffers.resize(vkCtx.swapChainImageViews.size());
+    vkCtx.commandBuffers.Resize(vkCtx.swapChainImageViews.Size());
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = vkCtx.commandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandBufferCount = (uint32_t)vkCtx.commandBuffers.size();
+    allocInfo.commandBufferCount = (uint32_t)vkCtx.commandBuffers.Size();
 
-    if (vkAllocateCommandBuffers(vkCtx.device, &allocInfo, vkCtx.commandBuffers.data()) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(vkCtx.device, &allocInfo, vkCtx.commandBuffers.Buffer()) != VK_SUCCESS) {
         LOGERROR("failed to allocate command buffers!");
     }
 }
@@ -572,10 +572,10 @@ void RenderThreadVulkan::CreateCommandBuffers() {
 void RenderThreadVulkan::CreateSyncObjects() {
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    imageAvailableSemaphores.Resize(MAX_FRAMES_IN_FLIGHT);
+    renderFinishedSemaphores.Resize(MAX_FRAMES_IN_FLIGHT);
 
-    inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    inFlightFences.Resize(MAX_FRAMES_IN_FLIGHT);
     VkFenceCreateInfo fenceInfo = {};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -711,7 +711,7 @@ bool RenderThreadVulkan::HasStencilComponent(VkFormat format) {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-VkFormat RenderThreadVulkan::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+VkFormat RenderThreadVulkan::FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
     for (VkFormat format : candidates) {
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(vkCtx.physicalDevice, format, &props);

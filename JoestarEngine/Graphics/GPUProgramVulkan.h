@@ -148,24 +148,24 @@ namespace Joestar {
     };
 
     struct ShaderVK {
-        std::vector<UniformDef> ubs;
+        Vector<UniformDef> ubs;
         ShaderVK(Shader* s, VulkanContext* c) : shader(s), ctx(c) {
             for (auto& uniform : shader->info.uniforms) {
                 if (uniform.dataType == ShaderDataTypePushConst) {
                     pushConstDef = &uniform;
                 } else if (uniform.IsSampler()) {
-                    ubs.push_back(uniform);
+                    ubs.Push(uniform);
                 } else if (uniform.dataType == ShaderDataTypeBuffer) {
                     uniform.id = hashString(uniform.name.CString());
-                    ubs.push_back(uniform);
+                    ubs.Push(uniform);
                 } else {
                     uniform.id = hashString(uniform.name.CString());
-                    ubs.push_back(uniform);
+                    ubs.Push(uniform);
                 }
             }
-            std::sort(ubs.begin(), ubs.end(), [&](UniformDef& a, UniformDef& b) {
-                return a.binding < b.binding;
-            });
+            //std::sort(ubs.Begin(), ubs.End(), [&](UniformDef& a, UniformDef& b) {
+            //    return a.binding < b.binding;
+            //});
         }
         ~ShaderVK() {
             Clean();
@@ -192,8 +192,8 @@ namespace Joestar {
         UniformDef* GetPushConstsDef() { return pushConstDef; }
         Shader* shader;
         UniformDef* pushConstDef = nullptr;
-        std::vector <VkShaderModule> shaderModules;
-        std::vector<VkPipelineShaderStageCreateInfo> shaderStage;
+        Vector <VkShaderModule> shaderModules;
+        Vector<VkPipelineShaderStageCreateInfo> shaderStage;
         bool operator ==(ShaderVK& s2) {
             return GetName() == s2.GetName();
         }
@@ -222,16 +222,16 @@ namespace Joestar {
             String compileSpvCmd = path + "glslc.exe " + (path + GetName() + "." + SUFFIX) + " -o " + (path + spvPath);\
             system(compileSpvCmd.CString());\
             File* shaderCode = fs->GetShaderCodeFile((path + spvPath).CString());\
-            shaderModules.push_back(CreateShaderModule(shaderCode));\
-            shaderStage.push_back(VkPipelineShaderStageCreateInfo{});\
-            shaderStage.back().sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;\
-            shaderStage.back().stage = BIT;\
-            shaderStage.back().module = shaderModules.back();\
-            shaderStage.back().pName = "main";\
+            shaderModules.Push(CreateShaderModule(shaderCode));\
+            shaderStage.Push(VkPipelineShaderStageCreateInfo{});\
+            shaderStage.Back().sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;\
+            shaderStage.Back().stage = BIT;\
+            shaderStage.Back().module = shaderModules.Back();\
+            shaderStage.Back().pName = "main";\
         }
 
         void Prepare() {
-            if (!shaderModules.empty()) return;
+            if (!shaderModules.Empty()) return;
             Application* app = Application::GetApplication();
             ShaderParser* sp = app->GetSubSystem<ShaderParser>();
             FileSystem* fs = app->GetSubSystem<FileSystem>();
@@ -646,7 +646,7 @@ namespace Joestar {
         U32 binding = 0;
 
     private:
-        std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+        Vector<VkVertexInputAttributeDescription> attributeDescriptions;
         VkVertexInputBindingDescription bindingDescription;
 
     };
@@ -665,13 +665,13 @@ namespace Joestar {
     };
 
     struct UniformBufferVK {
-        std::vector<BufferVK> buffers;
+        Vector<BufferVK> buffers;
         U32 size = 0;
         U8* data = nullptr;
         U32 texID = 0;
         U32 id = 0;
-        std::vector<VkDescriptorBufferInfo> bufferInfos{};
-        std::vector<VkDescriptorImageInfo> imageInfos{};
+        Vector<VkDescriptorBufferInfo> bufferInfos{};
+        Vector<VkDescriptorImageInfo> imageInfos{};
 
         U32 ID() {
             return id;
@@ -682,13 +682,13 @@ namespace Joestar {
                 vkDestroyBuffer(dev, buf.buffer, nullptr);
                 vkFreeMemory(dev, buf.memory, nullptr);
             }
-            buffers.clear();
+            buffers.Clear();
         }
 
         VkDescriptorBufferInfo& GetDescriptorBufferInfo(U32 idx) {
-            if (bufferInfos.empty()) {
-                U32 sz = buffers.size();
-                bufferInfos.resize(sz);
+            if (bufferInfos.Empty()) {
+                U32 sz = buffers.Size();
+                bufferInfos.Resize(sz);
                 for (int i = 0; i < sz; ++i) {
                     bufferInfos[i].buffer = buffers[i].buffer;
                     bufferInfos[i].offset = 0;
@@ -732,8 +732,8 @@ namespace Joestar {
     };
 
     struct DrawCallVK {
-        std::vector<VertexBufferVK*> vbs{ 1 };
-        std::vector<U32> ubs;
+        Vector<VertexBufferVK*> vbs{ 1 };
+        Vector<U32> ubs;
         IndexBufferVK* ib = nullptr;
         ShaderVK* shader;
         MeshTopology topology;
@@ -742,25 +742,25 @@ namespace Joestar {
         VkCompareOp depthOp = VK_COMPARE_OP_LESS;
         VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-        std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-        std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+        Vector<VkVertexInputBindingDescription> bindingDescriptions;
+        Vector<VkVertexInputAttributeDescription> attributeDescriptions;
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-        std::vector<VkDescriptorSet> descriptorSets;
+        Vector<VkDescriptorSet> descriptorSets;
         VkDescriptorSetLayout descriptorSetLayout;
         //VkSampler textureSampler;
         U32 instanceCount = 0;
-        std::vector<U32> textures;
+        Vector<U32> textures;
         PushConstsVK* pushConst = nullptr;
         REGISTER_HASH
 
         VkPipelineVertexInputStateCreateInfo& GetVertexInputInfo() {
-            bindingDescriptions.resize(vbs.size());
+            bindingDescriptions.Resize(vbs.Size());
 
             U32 vaSize = 0, idx = 0;
-            for (int i = 0; i < vbs.size(); ++i) {
+            for (int i = 0; i < vbs.Size(); ++i) {
                 U32 offset = 0;
                 bindingDescriptions[i] = vbs[i]->GetBindingDescription();
-                attributeDescriptions.resize(vbs[i]->vb->attrs.size() + attributeDescriptions.size());
+                attributeDescriptions.Resize(vbs[i]->vb->attrs.size() + attributeDescriptions.Size());
                 for (auto& attr : vbs[i]->vb->attrs) {
                     attributeDescriptions[idx].binding = i;
                     attributeDescriptions[idx].location = idx;
@@ -776,10 +776,10 @@ namespace Joestar {
             }
             	
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-            vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
-            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<U32>(attributeDescriptions.size());
-            vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
-            vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+            vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.Size();
+            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<U32>(attributeDescriptions.Size());
+            vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.Buffer();
+            vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.Buffer();
             return vertexInputInfo;
         }
     };
@@ -792,7 +792,7 @@ namespace Joestar {
         bool msaa = false;
         Vector4f clearColor;
         String name;
-        std::vector<DrawCallVK*> dcs;
+        Vector<DrawCallVK*> dcs;
         REGISTER_HASH
     };
 
@@ -833,16 +833,16 @@ namespace Joestar {
     struct ComputePipelineVK {
         ComputeContextVK* ctx;
         VkDescriptorSetLayout descriptorSetLayout;
-        std::vector<VkDescriptorSet> descriptorSets;
+        Vector<VkDescriptorSet> descriptorSets;
         VkDescriptorPool descriptorPool;
         VkPipelineLayout pipelineLayout;
         VkPipeline pipeline;
         ShaderVK* shader;
         VkSampler textureSampler;
         U32 group[3];
-        std::vector<UniformBufferVK*> computeBuffers;
-        std::vector<U32> textures;
-        std::vector<U32> ubs;
+        Vector<UniformBufferVK*> computeBuffers;
+        Vector<U32> textures;
+        Vector<U32> ubs;
         PushConstsVK* pushConst = nullptr;
         bool writeBack = false;
         const char* name;
@@ -854,7 +854,7 @@ namespace Joestar {
             computePipelineCreateInfo.layout = pipelineLayout;
             computePipelineCreateInfo.flags = flags;
 
-            VkPipelineShaderStageCreateInfo* shaderStage = shader->shaderStage.data();
+            VkPipelineShaderStageCreateInfo* shaderStage = shader->shaderStage.Buffer();
             computePipelineCreateInfo.stage = *shaderStage;
             VK_CHECK(vkCreateComputePipelines(ctx->ctx->device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &pipeline))
         }
@@ -973,7 +973,7 @@ namespace Joestar {
         void CreateRenderPass(RenderPassVK* pass);
         void CreateGraphicsPipeline(RenderPassVK* pass, int i);
         void GetPipeline(RenderPassVK* pass, int i);
-        VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        VkFormat FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
         VkFormat FindDepthFormat();
         void CleanupSwapChain();
         void CreateDepthResources(RenderPassVK* pass);
@@ -984,7 +984,7 @@ namespace Joestar {
         void CreateDescriptorPool(DrawCallVK* dc);
 
         void UpdateUniformBuffer(U32 currentImage, U32 hash);
-        void RecordCommandBuffer(std::vector<RenderPassVK*>&);
+        void RecordCommandBuffer(Vector<RenderPassVK*>&);
         bool ExecuteRenderCommand(GFXCommandBuffer* cmdBuffer, U16 imageIdx);
         bool ExecuteComputeCommand(GFXCommandBuffer* cmdBuffer);
         void CreateCommandBuffers();
@@ -992,7 +992,7 @@ namespace Joestar {
         void RenderCmdUpdateUniformBufferObject(GFXCommandBuffer* cmdBuffer);
         void RecordRenderPass(RenderPassVK* pass, int i);
         CommandBufferVK* GetCommandBuffer(bool dynamic = false);
-        void PushConstants(std::vector<RenderPassVK*>& passes);
+        void PushConstants(Vector<RenderPassVK*>& passes);
         void DispatchCompute(ComputePipelineVK* compute);
         void PrepareCompute(ComputePipelineVK* compute);
 
@@ -1024,9 +1024,9 @@ namespace Joestar {
         std::map<U32, FrameBufferVK*> fbs;
         std::map<U32, ComputeBufferVK*> cbs;
         std::map<U32, ComputePipelineVK*> computePipelines;
-        std::vector<RenderPassVK*> renderPassList;
-        std::vector<RenderPassVK*> lastRenderPassList;
-        std::vector<CommandBufferVK*> subCommandBuffers;
+        Vector<RenderPassVK*> renderPassList;
+        Vector<RenderPassVK*> lastRenderPassList;
+        Vector<CommandBufferVK*> subCommandBuffers;
 
         U16 curImageIdx = 0;
         bool firstRecord;
@@ -1036,19 +1036,19 @@ namespace Joestar {
     void GPUProgramVulkan::CreateDescriptorPool(T* call) {
         //already exist
         if (call->descriptorPool != VK_NULL_HANDLE) return;
-        std::vector<VkDescriptorPoolSize> poolSizes;
-        poolSizes.resize(call->shader->ubs.size());
-        for (int i = 0; i < call->shader->ubs.size(); ++i) {
+        Vector<VkDescriptorPoolSize> poolSizes;
+        poolSizes.Resize(call->shader->ubs.Size());
+        for (int i = 0; i < call->shader->ubs.Size(); ++i) {
             UniformDef& ubdef = call->shader->ubs[i];
             poolSizes[i].type = UniformBufferVK::GetDescriptorType(ubdef);
-            poolSizes[i].descriptorCount = static_cast<U32>(vkCtxPtr->swapChainImages.size());
+            poolSizes[i].descriptorCount = static_cast<U32>(vkCtxPtr->swapChainImages.Size());
         }
 
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolInfo.poolSizeCount = static_cast<U32>(poolSizes.size());
-        poolInfo.pPoolSizes = poolSizes.data();
-        poolInfo.maxSets = static_cast<U32>(vkCtxPtr->swapChainImages.size());
+        poolInfo.poolSizeCount = static_cast<U32>(poolSizes.Size());
+        poolInfo.pPoolSizes = poolSizes.Buffer();
+        poolInfo.maxSets = static_cast<U32>(vkCtxPtr->swapChainImages.Size());
 
         if (vkCreateDescriptorPool(vkCtxPtr->device, &poolInfo, nullptr, &call->descriptorPool) != VK_SUCCESS) {
             LOGERROR("failed to create descriptor pool!");
@@ -1057,15 +1057,15 @@ namespace Joestar {
 
     template <class T>
     void GPUProgramVulkan::CreateDescriptorSets(T* call) {
-        std::vector<VkDescriptorSetLayout> layouts(vkCtxPtr->swapChainImages.size(), call->descriptorSetLayout);
+        Vector<VkDescriptorSetLayout> layouts(vkCtxPtr->swapChainImages.Size(), call->descriptorSetLayout);
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.descriptorPool = call->descriptorPool;
-        allocInfo.descriptorSetCount = static_cast<U32>(vkCtxPtr->swapChainImages.size());
-        allocInfo.pSetLayouts = layouts.data();
+        allocInfo.descriptorSetCount = static_cast<U32>(vkCtxPtr->swapChainImages.Size());
+        allocInfo.pSetLayouts = layouts.Buffer();
 
-        call->descriptorSets.resize(vkCtxPtr->swapChainImages.size());
-        if (vkAllocateDescriptorSets(vkCtxPtr->device, &allocInfo, call->descriptorSets.data()) != VK_SUCCESS) {
+        call->descriptorSets.Resize(vkCtxPtr->swapChainImages.Size());
+        if (vkAllocateDescriptorSets(vkCtxPtr->device, &allocInfo, call->descriptorSets.Buffer()) != VK_SUCCESS) {
             LOGERROR("failed to allocate descriptor sets!");
         }
 
@@ -1074,11 +1074,11 @@ namespace Joestar {
 
     template <class T>
     void GPUProgramVulkan::UpdateDescriptorSets(T* call) {
-        for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); ++i) {
-            std::vector<VkWriteDescriptorSet> descriptorWrites{};
-            descriptorWrites.resize(call->shader->ubs.size());
+        for (size_t i = 0; i < vkCtxPtr->swapChainImages.Size(); ++i) {
+            Vector<VkWriteDescriptorSet> descriptorWrites{};
+            descriptorWrites.Resize(call->shader->ubs.Size());
             int samplerCount = 0;
-            for (int j = 0; j < call->shader->ubs.size(); ++j) {
+            for (int j = 0; j < call->shader->ubs.Size(); ++j) {
                 UniformBufferVK* ub = uniformVKs[call->ubs[j]];
                 UniformDef& def = call->shader->ubs[j];
                 if (def.IsSampler() || def.IsImage()) {
@@ -1094,7 +1094,7 @@ namespace Joestar {
                     descriptorWrites[j].pImageInfo = &tex->GetDescriptorImageInfo();
                     ++samplerCount;
                 } else {
-                    U32 size = ub->buffers.size();
+                    U32 size = ub->buffers.Size();
                     U32 idx = size == 1 ? 0 : i; //compute buffer only has 1 size
 
                     descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1106,15 +1106,15 @@ namespace Joestar {
                     descriptorWrites[j].pBufferInfo = &ub->GetDescriptorBufferInfo(idx);
                 }
             }
-            vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<U32>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+            vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<U32>(descriptorWrites.Size()), descriptorWrites.Buffer(), 0, nullptr);
         }
     }
 
     template <class T>
     void GPUProgramVulkan::CreateDescriptorSetLayout(T* call) {
-        std::vector<VkDescriptorSetLayoutBinding> bindings;
-        bindings.reserve(call->shader->ubs.size());
-        for (int i = 0; i < call->shader->ubs.size(); ++i) {
+        Vector<VkDescriptorSetLayoutBinding> bindings;
+        bindings.Reserve(call->shader->ubs.Size());
+        for (int i = 0; i < call->shader->ubs.Size(); ++i) {
             //UniformBufferVK* ubvk = uniformVKs[call->shader->ubs[i].id];
             UniformDef& ubdef = call->shader->ubs[i];
             VkDescriptorSetLayoutBinding layoutBinding{};
@@ -1124,13 +1124,13 @@ namespace Joestar {
             layoutBinding.descriptorCount = 1;
             layoutBinding.pImmutableSamplers = nullptr;
 
-            bindings.push_back(layoutBinding);
+            bindings.Push(layoutBinding);
         }
 
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = static_cast<U32>(bindings.size());
-        layoutInfo.pBindings = bindings.data();
+        layoutInfo.bindingCount = static_cast<U32>(bindings.Size());
+        layoutInfo.pBindings = bindings.Buffer();
 
         if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(call->descriptorSetLayout)) != VK_SUCCESS) {
             LOGERROR("failed to create descriptor set layout!");
@@ -1167,7 +1167,7 @@ namespace Joestar {
             CreateTextureImage(vkTex, call->shader->GetUniformDef(binding));
             textureVKs[vkTex->ID()] = vkTex;
         }
-        call->textures.push_back(tex->id);
+        call->textures.Push(tex->id);
 
         if (uniformVKs.find(tex->id) == uniformVKs.end()) {
             UniformBufferVK* texUB = JOJO_NEW(UniformBufferVK, MEMORY_GFX_STRUCT);

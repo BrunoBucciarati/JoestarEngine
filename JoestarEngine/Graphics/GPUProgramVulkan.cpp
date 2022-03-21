@@ -52,7 +52,7 @@ namespace Joestar {
 		return bindingDescription;
 	}
 
-	VkFormat GPUProgramVulkan::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+	VkFormat GPUProgramVulkan::FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 		for (VkFormat format : candidates) {
 			VkFormatProperties props;
 			vkGetPhysicalDeviceFormatProperties(vkCtxPtr->physicalDevice, format, &props);
@@ -168,7 +168,7 @@ namespace Joestar {
 	void GPUProgramVulkan::CreateTextureImage(TextureVK* tex, UniformDef& ub) {
 		if (tex->image) return;
 		VkDeviceSize imageSize = tex->GetSize();
-		U32 mipLevels = tex->HasMipmap() ? static_cast<uint32_t>(std::floor(std::log2(Max(tex->GetWidth(), tex->GetHeight())))) + 1 : 1;
+		U32 mipLevels = tex->HasMipmap() ? static_cast<uint32_t>(Floor(Log2(Max(tex->GetWidth(), tex->GetHeight())))) + 1 : 1;
 		tex->image = new ImageVK;
 		tex->image->ctx = vkCtxPtr;
 		tex->image->width = tex->GetWidth();
@@ -445,7 +445,7 @@ namespace Joestar {
 
 		//Create Vertex Buffer
 		VkPipelineVertexInputStateCreateInfo& vertexInputInfo = dc->GetVertexInputInfo();
-		VkPipelineShaderStageCreateInfo* shaderCreateInfo = dc->shader->shaderStage.data();
+		VkPipelineShaderStageCreateInfo* shaderCreateInfo = dc->shader->shaderStage.Buffer();
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = 2;
@@ -507,9 +507,9 @@ namespace Joestar {
 	void GPUProgramVulkan::CreateUniformBuffers(UniformBufferVK* ub) {
 		VkDeviceSize bufferSize = ub->size;
 		
-		ub->buffers.resize(vkCtxPtr->swapChainImages.size());
+		ub->buffers.Resize(vkCtxPtr->swapChainImages.Size());
 
-		for (size_t i = 0; i < vkCtxPtr->swapChainImages.size(); i++) {
+		for (size_t i = 0; i < vkCtxPtr->swapChainImages.Size(); i++) {
 			ub->buffers[i].ctx = vkCtxPtr;
 			ub->buffers[i].size = bufferSize;
 			ub->buffers[i].usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
@@ -521,8 +521,8 @@ namespace Joestar {
 	void GPUProgramVulkan::CreateComputeBuffers(ComputeBufferVK* ub) {
 		VkDeviceSize bufferSize = ub->size;
 
-		U32 size = vkCtxPtr->swapChainImages.size();
-		ub->buffers.resize(size);
+		U32 size = vkCtxPtr->swapChainImages.Size();
+		ub->buffers.Resize(size);
 
 		for (size_t i = 0; i < size; ++i) {
 			ub->buffers[i].ctx = vkCtxPtr;
@@ -534,13 +534,13 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::CreateFrameBuffers(RenderPassVK* pass) {
-		if (!vkCtxPtr->swapChainFramebuffers.empty()) return;
+		if (!vkCtxPtr->swapChainFramebuffers.Empty()) return;
 		pass->fb = new FrameBufferVK{vkCtxPtr};
 		CreateColorResources(pass);
 		CreateDepthResources(pass);
-		vkCtxPtr->swapChainFramebuffers.resize(vkCtxPtr->swapChainImageViews.size());
-		for (size_t i = 0; i < vkCtxPtr->swapChainImageViews.size(); i++) {
-			std::vector<VkImageView> attachments;
+		vkCtxPtr->swapChainFramebuffers.Resize(vkCtxPtr->swapChainImageViews.Size());
+		for (size_t i = 0; i < vkCtxPtr->swapChainImageViews.Size(); i++) {
+			Vector<VkImageView> attachments;
 			if (pass->msaa) {
 				attachments = {
 					pass->fb->colorImage->imageView,
@@ -557,8 +557,8 @@ namespace Joestar {
 			VkFramebufferCreateInfo framebufferInfo{};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferInfo.renderPass = pass->renderPass;
-			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-			framebufferInfo.pAttachments = attachments.data();
+			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.Size());
+			framebufferInfo.pAttachments = attachments.Buffer();
 			framebufferInfo.width = vkCtxPtr->swapChainExtent.width;
 			framebufferInfo.height = vkCtxPtr->swapChainExtent.height;
 			framebufferInfo.layers = 1;
@@ -597,19 +597,18 @@ namespace Joestar {
 
 		vkCmdBeginRenderPass(vkCtxPtr->commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		std::string pushConsts;
-		for (int j = 0; j < pass->dcs.size(); ++j) {
+		for (int j = 0; j < pass->dcs.Size(); ++j) {
 			DrawCallVK* dc = pass->dcs[j];
 			//only get pipeline at first command buffer and reuse
 			vkCmdBindPipeline(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->graphicsPipeline);
 
-			std::vector<VkBuffer> vertexBuffers;
-			vertexBuffers.resize(dc->vbs.size());
-			for (int idx = 0; idx < dc->vbs.size(); ++idx) {
+			Vector<VkBuffer> vertexBuffers;
+			vertexBuffers.Resize(dc->vbs.Size());
+			for (int idx = 0; idx < dc->vbs.Size(); ++idx) {
 				vertexBuffers[idx] = dc->vbs[idx]->buffer.buffer;
 			}
 			VkDeviceSize offsets[] = { 0, 0 };
-			vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, vertexBuffers.size(), vertexBuffers.data(), offsets);
+			vkCmdBindVertexBuffers(vkCtxPtr->commandBuffers[i], 0, vertexBuffers.Size(), vertexBuffers.Buffer(), offsets);
 
 			vkCmdBindDescriptorSets(vkCtxPtr->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, dc->pipelineLayout, 0, 1, &dc->descriptorSets[i], 0, nullptr);
 
@@ -620,7 +619,7 @@ namespace Joestar {
 
 			if (dc->ib) {
 				vkCmdBindIndexBuffer(vkCtxPtr->commandBuffers[i], dc->ib->buffer.buffer, 0, VK_INDEX_TYPE_UINT16);
-				if (dc->vbs.size() > 1)
+				if (dc->vbs.Size() > 1)
 					vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), dc->vbs[1]->GetInstanceCount(), 0, 0, 0);
 				else
 					vkCmdDrawIndexed(vkCtxPtr->commandBuffers[i], dc->ib->GetIndexCount(), 1, 0, 0, 0);
@@ -632,11 +631,11 @@ namespace Joestar {
 		vkCmdEndRenderPass(vkCtxPtr->commandBuffers[i]);
 	}
 
-	void GPUProgramVulkan::RecordCommandBuffer(std::vector<RenderPassVK*>& passes) {
+	void GPUProgramVulkan::RecordCommandBuffer(Vector<RenderPassVK*>& passes) {
 		//record into next frame's command buffer
 		//if (vkCtxPtr->commandBuffers.empty()) CreateCommandBuffers();
-		int nextIdx = curImageIdx == vkCtxPtr->swapChainImages.size() - 1 ? 0 : curImageIdx + 1;
-		for (size_t i = (firstRecord ? 0 : nextIdx); i < (firstRecord ? vkCtxPtr->swapChainImages.size() : nextIdx + 1); i++) {
+		int nextIdx = curImageIdx == vkCtxPtr->swapChainImages.Size() - 1 ? 0 : curImageIdx + 1;
+		for (size_t i = (firstRecord ? 0 : nextIdx); i < (firstRecord ? vkCtxPtr->swapChainImages.Size() : nextIdx + 1); i++) {
 			VkCommandBufferBeginInfo beginInfo{};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = 0; // Optional
@@ -646,7 +645,7 @@ namespace Joestar {
 			if (vkBeginCommandBuffer(buf, &beginInfo) != VK_SUCCESS) {
 				LOGERROR("failed to begin recording command buffer!");
 			}
-			for (int j = 0; j < passes.size(); ++j) {
+			for (int j = 0; j < passes.Size(); ++j) {
 				RecordRenderPass(passes[j], i);
 			}
 			if (vkEndCommandBuffer(buf) != VK_SUCCESS) {
@@ -759,14 +758,14 @@ namespace Joestar {
 	}
 
 	void GPUProgramVulkan::CreateCommandBuffers() {
-		vkCtxPtr->commandBuffers.resize(vkCtxPtr->swapChainImageViews.size());
+		vkCtxPtr->commandBuffers.Resize(vkCtxPtr->swapChainImageViews.Size());
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = vkCtxPtr->commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = (uint32_t)vkCtxPtr->commandBuffers.size();
+		allocInfo.commandBufferCount = (uint32_t)vkCtxPtr->commandBuffers.Size();
 
-		VK_CHECK(vkAllocateCommandBuffers(vkCtxPtr->device, &allocInfo, vkCtxPtr->commandBuffers.data()))
+		VK_CHECK(vkAllocateCommandBuffers(vkCtxPtr->device, &allocInfo, vkCtxPtr->commandBuffers.Buffer()))
 	}
 
 #if DEBUG_RENDER_PIPELINE
@@ -775,11 +774,11 @@ namespace Joestar {
 #define CHECK_PASS(CMD) if(nullptr == pass) {LOGERROR("PLEASE START PASS FIRST! CMD = %s\n", #CMD);}
 #endif
 	bool GPUProgramVulkan::ExecuteRenderCommand(GFXCommandBuffer* cmdBuffer, U16 imgIdx) {
-		renderPassList.clear();
+		renderPassList.Clear();
 		curImageIdx = imgIdx;
 		bool isCompute = false;
 
-		bool ret = !lastRenderPassList.empty();
+		bool ret = !lastRenderPassList.Empty();
 
 		RenderPassVK* pass = nullptr;
 		DrawCallVK* drawcall = JOJO_NEW(DrawCallVK);
@@ -798,7 +797,7 @@ namespace Joestar {
 					pass->HashInsert(dc->hash);
 				}
 				cmdBuffer->ReadBuffer<String>(pass->name);
-				renderPassList.push_back(pass);
+				renderPassList.Push(pass);
 				break;
 			}
 			case RenderCMD_Clear: {
@@ -854,8 +853,8 @@ namespace Joestar {
 					vbs[ib->id] = new VertexBufferVK(ib, vkCtxPtr);
 					CreateVertexBuffer(vbs[ib->id]);
 				}
-				if (drawcall->vbs.size() < 2)
-					drawcall->vbs.resize(2);
+				if (drawcall->vbs.Size() < 2)
+					drawcall->vbs.Resize(2);
 				drawcall->vbs[1] = vbs[ib->id];
 				drawcall->HashInsert(ib->id);
 				break;
@@ -870,8 +869,8 @@ namespace Joestar {
 
 				drawcall->shader = shaderVKs[shader->id];
 				drawcall->HashInsert(shader->id);
-				drawcall->ubs.resize(drawcall->shader->ubs.size());
-				for (int i = 0; i < drawcall->ubs.size(); ++i) {
+				drawcall->ubs.Resize(drawcall->shader->ubs.Size());
+				for (int i = 0; i < drawcall->ubs.Size(); ++i) {
 					drawcall->ubs[i] = drawcall->shader->ubs[i].id;
 				}
 				break;
@@ -908,7 +907,7 @@ namespace Joestar {
 				cmdBuffer->ReadBuffer<MeshTopology>(drawcall->topology);
 				drawcall->HashInsert(drawcall->instanceCount);
 				drawcall->HashInsert(drawcall->topology);
-				pass->dcs.push_back(drawcall);
+				pass->dcs.Push(drawcall);
 
 				drawcall = new DrawCallVK;
 				break;
@@ -919,7 +918,7 @@ namespace Joestar {
 				cmdBuffer->ReadBuffer<MeshTopology>(drawcall->topology);
 				drawcall->HashInsert(drawcall->instanceCount);
 				drawcall->HashInsert(drawcall->topology);
-				pass->dcs.push_back(drawcall);
+				pass->dcs.Push(drawcall);
 
 				drawcall = new DrawCallVK;
 				break;
@@ -930,11 +929,11 @@ namespace Joestar {
 
 
 		bool needRecord = false, needPushConstant = false;
-		if (lastRenderPassList.size() != renderPassList.size()) {
+		if (lastRenderPassList.Size() != renderPassList.Size()) {
 			needRecord = true;
 			//needPushConstant = true;
 		} else {
-			for (int i = 0; i < lastRenderPassList.size(); ++i) {
+			for (int i = 0; i < lastRenderPassList.Size(); ++i) {
 				if (lastRenderPassList[i]->hash != renderPassList[i]->hash) {
 					needRecord = true;
 					break;
@@ -946,17 +945,17 @@ namespace Joestar {
 			//CreateRenderPass
 			for (auto& pass : renderPassList) {
 				CreateRenderPass(pass);
-				for (int i = 0; i < pass->dcs.size(); ++i) {
+				for (int i = 0; i < pass->dcs.Size(); ++i) {
 					GetPipeline(pass, i);
 				}
 			}
 			
 			RecordCommandBuffer(renderPassList);
-			lastRenderPassList.clear();
-			lastRenderPassList.swap(renderPassList);
+			lastRenderPassList.Clear();
+			lastRenderPassList.Swap(renderPassList);
 		} else {
-			for (int i = 0; i < lastRenderPassList.size(); ++i) {
-				for (int j = 0; j < lastRenderPassList[i]->dcs.size(); ++j) {
+			for (int i = 0; i < lastRenderPassList.Size(); ++i) {
+				for (int j = 0; j < lastRenderPassList[i]->dcs.Size(); ++j) {
 					//memory leak, TODO
 					if (renderPassList[i]->dcs[j]->pushConst) {
 						lastRenderPassList[i]->dcs[j]->pushConst = renderPassList[i]->dcs[j]->pushConst;
@@ -1017,8 +1016,8 @@ namespace Joestar {
 					uniformVKs[cb->id]->size = cb->GetSize();
 					CreateComputeBuffers(static_cast<ComputeBufferVK*>(uniformVKs[cb->id]));
 				}
-				if (computePipeline->computeBuffers.size() < binding + 1) {
-					computePipeline->computeBuffers.resize(binding + 1);
+				if (computePipeline->computeBuffers.Size() < binding + 1) {
+					computePipeline->computeBuffers.Resize(binding + 1);
 				}
 				
 				computePipeline->computeBuffers[binding] = uniformVKs[cb->id];
@@ -1040,8 +1039,8 @@ namespace Joestar {
 
 				computePipeline->shader = shaderVKs[shader->id];
 				computePipeline->HashInsert(shader->id);
-				computePipeline->ubs.resize(computePipeline->shader->ubs.size());
-				for (int i = 0; i < computePipeline->ubs.size(); ++i) {
+				computePipeline->ubs.Resize(computePipeline->shader->ubs.Size());
+				for (int i = 0; i < computePipeline->ubs.Size(); ++i) {
 					computePipeline->ubs[i] = computePipeline->shader->ubs[i].id;
 				}
 				break;
@@ -1095,7 +1094,7 @@ namespace Joestar {
 
 	void GPUProgramVulkan::DispatchCompute(ComputePipelineVK* compute) {
 		compute = computePipelines[compute->hash];
-		int nextIdx = curImageIdx == vkCtxPtr->swapChainImages.size() - 1 ? 0 : curImageIdx + 1;
+		int nextIdx = curImageIdx == vkCtxPtr->swapChainImages.Size() - 1 ? 0 : curImageIdx + 1;
 		compute->Record(nextIdx);
 	}
 

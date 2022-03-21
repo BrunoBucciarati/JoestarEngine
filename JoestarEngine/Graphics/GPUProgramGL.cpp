@@ -52,32 +52,3 @@
 //    glUseProgram(ID);
 //}
 //
-//void GPUProgramGL::SetBool(const std::string& name, bool value) const
-//{
-//    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
-//}
-//void GPUProgramGL::SetInt(const std::string& name, int value) const
-//{
-//    glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
-//}
-//void GPUProgramGL::SetFloat(const std::string& name, float value) const
-//{
-//    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
-//}
-//void GPUProgramGL::SetVec3(const std::string& name, glm::vec3 value) const
-//{
-//    glUniform3f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z);
-//}
-//void GPUProgramGL::SetVec3(const std::string& name, float x, float y, float z) const
-//{
-//    glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
-//}
-//void GPUProgramGL::SetVec4(const std::string& name, glm::vec4 value) const
-//{
-//    glUniform4f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z, value.w);
-//}
-//
-//void GPUProgramGL::SetMat4(const std::string& name, const glm::mat4& mat) const
-//{
-//    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-//}
