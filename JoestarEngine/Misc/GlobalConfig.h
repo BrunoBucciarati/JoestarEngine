@@ -1,9 +1,8 @@
 #pragma once
-#include <map>
 #include "../Base/ObjectDefines.h"
-#include <stdint.h>
-//#include "../Base/EngineContext.h"
 #include "../Base/SubSystem.h"
+#include "../Container/Variant.h"
+#include "../Container/HashMap.h"
 namespace Joestar {
 	enum GlobalConfigDef {
 		CONFIG_GFX_API = 0,
@@ -21,26 +20,25 @@ namespace Joestar {
 		template<typename T>
 		T GetConfig(GlobalConfigDef);
 	private:
-		std::map<GlobalConfigDef, void*> configMap;
+		HashMap<U32, Variant> configMap;
 	};
 
 
 	template<typename T>
-	bool GlobalConfig::UpdateConfig(GlobalConfigDef key, T& value) {
-		if (configMap.find(key) != configMap.end())
-		{
-			configMap[key] = (void*)&value;
-		}
-		else
-			configMap.insert(std::pair<GlobalConfigDef, void*>(key, &value));
+	bool GlobalConfig::UpdateConfig(GlobalConfigDef key, T& value)
+	{
+		configMap[(U32)key] = Variant(value);
 		return true;
 	}
 
 	template<typename T>
-	T GlobalConfig::GetConfig(GlobalConfigDef key) {
-		if (configMap.find(key) != configMap.end())
+	T GlobalConfig::GetConfig(GlobalConfigDef key)
+	{
+		U32 k = key;
+		auto it = configMap.Find(k);
+		if (configMap.Contains(k))
 		{
-			return *(reinterpret_cast<T*>(configMap[key]));
+			return T(configMap[k]);
 		}
 		return NULL;
 	}

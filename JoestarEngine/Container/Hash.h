@@ -7,7 +7,7 @@ namespace Joestar {
 	template<> inline U32 MakeHash(const int& data) {
 		return data;
 	}
-	template<> inline U32 MakeHash(const unsigned int& data) {
+	template<> inline U32 MakeHash(const U32& data) {
 		return data;
 	}
 	template<> inline U32 MakeHash(const float& data) {

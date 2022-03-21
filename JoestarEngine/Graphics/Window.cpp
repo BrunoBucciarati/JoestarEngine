@@ -57,8 +57,8 @@ namespace Joestar {
 	void Window::InitWindow()
 	{
         GlobalConfig* cfg = GetSubsystem<GlobalConfig>();
-        uint32_t width = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_WIDTH);
-        uint32_t height = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_HEIGHT);
+        U32 width = cfg->GetConfig<U32>(CONFIG_WINDOW_WIDTH);
+        U32 height = cfg->GetConfig<U32>(CONFIG_WINDOW_HEIGHT);
         mWidth = width;
         mHeight = height;
 

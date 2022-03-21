@@ -16,7 +16,7 @@ namespace Joestar {
 		const char* CString() const {
 			return mBuffer;
 		}
-		U32 Length() {
+		U32 Length() const {
 			return mLength;
 		}
 		bool Empty() {

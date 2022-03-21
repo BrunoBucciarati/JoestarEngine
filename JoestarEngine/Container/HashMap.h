@@ -43,7 +43,19 @@ namespace Joestar {
 			}
 			return End();
 		}
+		bool Contains(const T& key)
+		{
+			return Find(key) != End();
+		}
 		U& operator[](const T& key) {
+			Iterator it = Find(key);
+			if (it != End()) {
+				return it->value;
+			}
+			it = Insert(key, NULL);
+			return it->value;
+		}
+		const U& operator[](const T& key) const {
 			Iterator it = Find(key);
 			if (it != End()) {
 				return it->value;
