@@ -4,7 +4,8 @@
 #include "../IO/Log.h"
 #include "../Math/Vector3.h"
 #include "../Math/Vector2.h"
-#include <map>
+#include "../Container/Vector.h"
+#include "../Container/Str.h"
 #include <algorithm>
 
 namespace Joestar {
@@ -16,13 +17,13 @@ namespace Joestar {
         delete vb;
         delete ib;
     }
-	void Mesh::Load(std::string path) {
+	void Mesh::Load(String path) {
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str())) {
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.CString())) {
             LOGERROR((warn + err).c_str());
         }
         std::vector<uint16_t> indices;
@@ -62,7 +63,7 @@ namespace Joestar {
         if (vb->GetFlag() == flag) {
             return vb;
         }
-        if (customVBs.find(flag) != customVBs.end()) {
+        if (customVBs.Find(flag) != customVBs.End()) {
             return customVBs[flag];
         }
         customVBs[flag] = new VertexBuffer();

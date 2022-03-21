@@ -156,10 +156,10 @@ namespace Joestar {
                 } else if (uniform.IsSampler()) {
                     ubs.push_back(uniform);
                 } else if (uniform.dataType == ShaderDataTypeBuffer) {
-                    uniform.id = hashString(uniform.name.c_str());
+                    uniform.id = hashString(uniform.name.CString());
                     ubs.push_back(uniform);
                 } else {
-                    uniform.id = hashString(uniform.name.c_str());
+                    uniform.id = hashString(uniform.name.CString());
                     ubs.push_back(uniform);
                 }
             }
@@ -170,8 +170,10 @@ namespace Joestar {
         ~ShaderVK() {
             Clean();
         }
-        std::string& GetName() { return shader->GetName(); }
-        U8 GetUniformBindingByName(std::string& name) {
+        String& GetName() {
+            return shader->GetName();
+        }
+        U8 GetUniformBindingByName(String& name) {
             return shader->GetUniformBindingByName(name);
         }
         U8 GetUniformBindingByHash(U32 hash) {
@@ -216,10 +218,10 @@ namespace Joestar {
 
 #define CHECK_ADD_SHADER_STAGE(STAGE, SUFFIX, BIT)\
         if (HasStage(STAGE)) {\
-            std::string spvPath = std::string(GetName()) + SUFFIX + ".spv";\
-            std::string compileSpvCmd = path + "glslc.exe " + (path + GetName() + "." + SUFFIX) + " -o " + (path + spvPath);\
-            system(compileSpvCmd.c_str());\
-            File* shaderCode = fs->GetShaderCodeFile((path + spvPath).c_str());\
+            String spvPath = String(GetName()) + SUFFIX + ".spv";\
+            String compileSpvCmd = path + "glslc.exe " + (path + GetName() + "." + SUFFIX) + " -o " + (path + spvPath);\
+            system(compileSpvCmd.CString());\
+            File* shaderCode = fs->GetShaderCodeFile((path + spvPath).CString());\
             shaderModules.push_back(CreateShaderModule(shaderCode));\
             shaderStage.push_back(VkPipelineShaderStageCreateInfo{});\
             shaderStage.back().sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;\
@@ -233,7 +235,7 @@ namespace Joestar {
             Application* app = Application::GetApplication();
             ShaderParser* sp = app->GetSubSystem<ShaderParser>();
             FileSystem* fs = app->GetSubSystem<FileSystem>();
-            std::string& path = sp->GetShaderOutputDir();
+            String& path = sp->GetShaderOutputDir();
 
             CHECK_ADD_SHADER_STAGE(kVertexShader, "vert", VK_SHADER_STAGE_VERTEX_BIT)
             CHECK_ADD_SHADER_STAGE(kFragmentShader, "frag", VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -789,7 +791,7 @@ namespace Joestar {
         bool clear = false;
         bool msaa = false;
         Vector4f clearColor;
-        std::string name;
+        String name;
         std::vector<DrawCallVK*> dcs;
         REGISTER_HASH
     };

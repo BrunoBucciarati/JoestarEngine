@@ -76,14 +76,14 @@ namespace Joestar {
 	class LightBatch : public Object {
 		REGISTER_OBJECT(LightBatch, Object)
 		explicit LightBatch(EngineContext* ctx);
-		void SetLights(std::vector<Light*>& ls);
+		void SetLights(Vector<Light*>& ls);
 		InstanceBuffer* GetInstanceBuffer() { return instanceBuffer; }
 		Material* GetMaterial() { return mat; }
 		Mesh* GetMesh() { return mesh; }
 		Matrix4x4f& GetModelMatrix() { return modelMatrix; }
 	private:
 		InstanceBuffer* instanceBuffer;
-		std::vector<Light*> lights;
+		Vector<Light*> lights;
 		Material* mat;
 		Mesh* mesh;
 		Matrix4x4f modelMatrix;

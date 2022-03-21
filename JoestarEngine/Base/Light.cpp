@@ -1,5 +1,6 @@
 #include "Light.h"
 #include "../Graphics/ProceduralMesh.h"
+#include "../Container/Vector.h"
 namespace Joestar {
 	void Light::UpdateMatrix() {
 		if (direction != Vector3f::Zero)
@@ -35,16 +36,16 @@ namespace Joestar {
 
 	}
 
-	void LightBatch::SetLights(std::vector<Light*>& ls) {
+	void LightBatch::SetLights(Vector<Light*>& ls) {
 		lights = ls;
 		instanceBuffer = new InstanceBuffer;
-		instanceBuffer->SetCount(ls.size());
+		instanceBuffer->SetCount(ls.Size());
 		U32 flag = mat->GetShader()->GetInstanceAttributeFlag();
 		instanceBuffer->PrepareInstanceData(flag);
 
 		U8* buffer = instanceBuffer->GetBuffer();
 		//main light is dir light
-		for (int i = 0; i < ls.size(); ++i) {
+		for (int i = 0; i < ls.Size(); ++i) {
 			instanceBuffer->SetElementData((U8*)&ls[i]->GetPosition(), i);
 		}
 	}

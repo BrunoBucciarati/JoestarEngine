@@ -3,13 +3,13 @@
 #include "../Base/StringHash.h"
 #include <cstring>
 namespace Joestar {
-	U32 CStringLength(const char* str) {
-		return str ? strlen(str) : 0;
-	}
+	U32 CStringLength(const char* str);
 	class String {
 	public:
-		String() : mLength(0), mBuffer(nullptr) {}
+		String();
 		String(const char* t);
+		String(char c);
+		String(const String& rhs);
 		~String();
 		void Resize(U32 sz);
 		static void CopyChars(char* start, const char* str, U32 length);
@@ -23,10 +23,26 @@ namespace Joestar {
 			return 0 == mLength;
 		}
 
+		String& operator =(const String& rhs)
+		{
+			Resize(rhs.mLength);
+			CopyChars(mBuffer, rhs.mBuffer, mLength);
+			return *this;
+		}
+
 		String& operator =(const char* rhs)
 		{
 			unsigned rhsLength = CStringLength(rhs);
+			Resize(rhsLength);
 			CopyChars(mBuffer, rhs, rhsLength);
+
+			return *this;
+		}
+
+		String& operator =(char c)
+		{
+			Resize(1);
+			CopyChars(mBuffer, &c, 1);
 
 			return *this;
 		}
@@ -35,8 +51,7 @@ namespace Joestar {
 		String& operator +=(const String& rhs)
 		{
 			unsigned oldLength = mLength;
-			mLength = oldLength + mLength;
-			Resize(mLength);
+			Resize(mLength + rhs.mLength);
 			CopyChars(mBuffer + oldLength, rhs.mBuffer, rhs.mLength);
 
 			return *this;
@@ -53,12 +68,41 @@ namespace Joestar {
 			return ret;
 		}
 
+		bool operator ==(const String& rhs) const
+		{
+			return strcmp(CString(), rhs.CString()) == 0;
+		}
+
+		bool operator !=(const String& rhs) const
+		{
+			return strcmp(CString(), rhs.CString()) != 0;
+		}
+
+		char& operator[](int index) {
+			return mBuffer[index];
+		}
+
 		U32 Hash() const {
 			return hashString(CString());
 		}
+
+		U32 Find(const char* str) const {
+			String s(str);
+			return Find(s);
+		}
+
+		U32 Find(String&& str) const {
+			return Find(str);
+		}
+
+		U32 Find(String& str) const;
+
+		String SubString(U32 start, U32 length);
+
+		friend String operator+(const char* lhs, const String& rhs);
 	private:
 		U32 mLength{0};
 		U32 mCapacity{0};
-		char* mBuffer;
+		char* mBuffer{ nullptr };
 	};
 }

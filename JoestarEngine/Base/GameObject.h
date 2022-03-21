@@ -1,7 +1,7 @@
 #pragma once
 //#include "Renderer.h"
 #define NEW_COMPONENT(CLASS) new CLASS(mContext, this);
-#include <vector>
+#include "../Container/Vector.h"
 #include "../Component/Component.h"
 #include "Object.h"
 #include "../Component/Transform.h"
@@ -20,7 +20,7 @@ namespace Joestar {
 				}
 			}
 			T* t = NEW_COMPONENT(T);
-			components.push_back(t);
+			components.Push(t);
 			return t;
 		}
 		template<class T>
@@ -76,6 +76,6 @@ namespace Joestar {
 			return GetTransform()->GetAfflineTransform();
 		}
 	private:
-		std::vector<Component*> components;
+		Vector<Component*> components;
 	};
 }

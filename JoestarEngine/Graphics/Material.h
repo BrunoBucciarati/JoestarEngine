@@ -2,7 +2,7 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 #include "Shader/Shader.h"
-#include <vector>
+#include "../Container/Vector.h"
 #include "../Base/Object.h"
 #include "ProgramCPU.h"
 #include "Texture2D.h"
@@ -26,9 +26,9 @@ namespace Joestar {
 
 	void SetTexture(Texture* tex, U8 slot = 0);
 	Shader* GetShader() { return program->shader; }
-	std::string& GetShaderName() { return program->shader->GetName(); }
+	String& GetShaderName() { return program->shader->GetName(); }
 	ProgramCPU* GetProgram() { return program; }
-	std::vector<Texture*>& GetTextures() {
+	Vector<Texture*>& GetTextures() {
 		return textures;
 	}
 	Texture* GetTexture(U32 slot) {
@@ -36,7 +36,7 @@ namespace Joestar {
 	}
 	private:
 		ProgramCPU* program;
-		std::vector<Texture*> textures;
+		Vector<Texture*> textures;
 	};
 }
 #endif

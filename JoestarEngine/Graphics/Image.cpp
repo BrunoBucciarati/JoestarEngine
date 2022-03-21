@@ -5,8 +5,8 @@
 
 namespace Joestar {
 	void Image::Load(const char* path) {
-		std::string resDir = GetSubsystem<FileSystem>()->GetResourceDir();
-		data = (char*)stbi_load((resDir + path).c_str(), &width, &height, &channels, STBI_rgb_alpha);
+		String resDir = GetSubsystem<FileSystem>()->GetResourceDir();
+		data = (char*)stbi_load((resDir + path).CString(), &width, &height, &channels, STBI_rgb_alpha);
 	}
 	Image::~Image() {
 		if (data)

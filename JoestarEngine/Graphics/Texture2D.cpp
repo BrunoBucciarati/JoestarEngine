@@ -2,12 +2,12 @@
 #include "../Base/StringHash.h"
 
 namespace Joestar {
-	void Texture2D::TextureFromImage(std::string& path) {
+	void Texture2D::TextureFromImage(String& path) {
 		img = NEW_OBJECT(Image);
-		img->Load(path.c_str());// "Models/viking_room/viking_room.png");
+		img->Load(path.CString());// "Models/viking_room/viking_room.png");
 		width = img->GetWidth();
 		height = img->GetHeight();
-		id = hashString(path.c_str());
+		id = hashString(path.CString());
 		fmt = TEXTURE_FORMAT_RGBA8;
 	}
 

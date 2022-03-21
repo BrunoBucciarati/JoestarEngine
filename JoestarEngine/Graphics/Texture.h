@@ -10,7 +10,7 @@ namespace Joestar {
 		explicit Texture(EngineContext* ctx) : Super(ctx), hasMipMap(true) {
 			
 		}
-		virtual void TextureFromImage(std::string& path) {}
+		virtual void TextureFromImage(String& path) {}
 		U32 id;
 		TEXTURE_FORMAT fmt;
 		TEXTURE_TYPE typ;

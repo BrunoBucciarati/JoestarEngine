@@ -20,8 +20,8 @@ namespace Joestar {
 			return "../Resources/Shaders/";
 		}
 
-		std::string GetShaderDirAbsolute() {
-			std::string path = GetShaderDir();
+		String GetShaderDirAbsolute() {
+			String path = GetShaderDir();
 			char workDir[260];
 			if (_getcwd(workDir, 260))
 				path = workDir + ("/" + path);
@@ -30,7 +30,7 @@ namespace Joestar {
 
 		void ReadFileAsync(const char* filePath, ReadFileCallback callback);
 		File* ReadFile(const char* filePath);
-		bool WriteFile(const char* filePath, std::string& data);
+		bool WriteFile(const char* filePath, String& data);
 		File* OpenFile(const char* filePath);
 
 		File* GetShaderCodeFile(const char* file);

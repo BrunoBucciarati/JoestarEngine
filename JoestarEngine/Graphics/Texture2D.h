@@ -8,7 +8,7 @@ namespace Joestar {
 		explicit Texture2D(EngineContext* ctx) : Texture(ctx) {
 			typ = TEXTURE_2D;
 		}
-		void TextureFromImage(std::string& path);
+		void TextureFromImage(String& path);
 		U8* GetData();
 	private:
 		Image* img;

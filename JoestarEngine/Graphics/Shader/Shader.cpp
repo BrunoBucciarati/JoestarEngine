@@ -5,9 +5,9 @@ namespace Joestar {
 	Shader::~Shader() {
 
 	}
-	void Shader::SetShader(std::string n, U32 f) {
+	void Shader::SetShader(String n, U32 f) {
 		name = n;
-		id = hashString(n.c_str());
+		id = hashString(n.CString());
 		GetSubsystem<ShaderParser>()->ParseShader(n, info, f);
 		flag = f;
 	}
@@ -29,17 +29,18 @@ namespace Joestar {
 		return flag;
 	}
 
-	U16 Shader::GetUniformBindingByName(std::string& name) {
-		for (int i = 0; i < info.uniforms.size(); i++) {
-			if (info.uniforms[i].name == name) {
-				return info.uniforms[i].binding;
-			}
-		}
+	U16 Shader::GetUniformBindingByName(String& name) {
+		//for (int i = 0; i < info.uniforms.size(); i++) {
+		//	if (info.uniforms[i].name == name) {
+		//		return info.uniforms[i].binding;
+		//	}
+		//}
+		return 0;
 	}
 
 	U16 Shader::GetUniformBindingByHash(U32 hash) {
 		for (int i = 0; i < info.uniforms.size(); i++) {
-			if (hashString(info.uniforms[i].name.c_str()) == hash) {
+			if (hashString(info.uniforms[i].name.CString()) == hash) {
 				return info.uniforms[i].binding;
 			}
 		}
@@ -47,7 +48,7 @@ namespace Joestar {
 
 	UniformDef& Shader::GetUniformDefByHash(U32 hash) {
 		for (int i = 0; i < info.uniforms.size(); i++) {
-			if (hashString(info.uniforms[i].name.c_str()) == hash) {
+			if (hashString(info.uniforms[i].name.CString()) == hash) {
 				return info.uniforms[i];
 			}
 		}

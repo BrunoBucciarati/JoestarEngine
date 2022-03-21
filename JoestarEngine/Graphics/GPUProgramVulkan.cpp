@@ -789,7 +789,7 @@ namespace Joestar {
 			switch (typ) {
 			case RenderCMD_BeginRenderPass: {
 				pass = new RenderPassVK;
-				cmdBuffer->ReadBuffer<std::string>(pass->name);
+				cmdBuffer->ReadBuffer<String>(pass->name);
 				break;
 			}
 			case RenderCMD_EndRenderPass: {
@@ -797,7 +797,7 @@ namespace Joestar {
 				for (auto& dc : pass->dcs) {
 					pass->HashInsert(dc->hash);
 				}
-				cmdBuffer->ReadBuffer<std::string>(pass->name);
+				cmdBuffer->ReadBuffer<String>(pass->name);
 				renderPassList.push_back(pass);
 				break;
 			}

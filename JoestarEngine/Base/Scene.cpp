@@ -29,7 +29,7 @@ namespace Joestar {
         graphics = GetSubsystem<Graphics>();
 
         GameObject* sphere = NEW_OBJECT(GameObject);
-        gameObjects.push_back(sphere);
+        gameObjects.Push(sphere);
         Renderer* sr = sphere->GetComponent<Renderer>();
         sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
         sr->mat = NEW_OBJECT(Material);
@@ -38,7 +38,7 @@ namespace Joestar {
         selection = sphere;
 
         GameObject* plane = NEW_OBJECT(GameObject);
-        gameObjects.push_back(plane);
+        gameObjects.Push(plane);
         Renderer* pr = plane->GetComponent<Renderer>();
         pr->mesh = GetSubsystem<ProceduralMesh>()->GetPlane();
         pr->mat = NEW_OBJECT(Material);
@@ -55,7 +55,7 @@ namespace Joestar {
 
             TextureCube* cube = NEW_OBJECT(TextureCube);
             //cube->hasMipMap = false;
-            std::string skydir = "Textures/skybox/";
+            String skydir = "Textures/skybox/";
             cube->TextureFromImage(skydir);
             skyboxMat->SetTexture(cube);
         }
@@ -88,7 +88,7 @@ namespace Joestar {
         shComputeBuffer->SetSize(128);
 
         shCube = NEW_OBJECT(TextureCube);
-        std::string skydir = "Textures/shcube/";
+        String skydir = "Textures/shcube/";
         shCube->TextureFromImage(skydir);
         shCube->hasMipMap = false;
 
@@ -102,18 +102,17 @@ namespace Joestar {
         mainLight->SetPosition(0.0, 3.0, 0.0);
         mainLight->SetIntensity(20.f);
 
-        std::vector<Vector3f> lightPos = {
-            {5.0, 4.0, 4.0},
-            {-5.0, 4.0, 5.0},
-            {-5.0, 4.0, -4.0},
-            {5.0, 4.0, -4.0}
-        };
+        Vector<Vector3f> lightPos;
+        lightPos.Push({ 5.0, 4.0, 4.0 });
+        lightPos.Push({ -5.0, 4.0, 5.0 });
+        lightPos.Push({ -5.0, 4.0, -4.0 });
+        lightPos.Push({ 5.0, 4.0, -4.0 });
 
-        for (int i = 0; i < lightPos.size(); ++i) {
+        for (int i = 0; i < lightPos.Size(); ++i) {
             PointLight* pointLight = NEW_OBJECT(PointLight);
             pointLight->SetPosition(lightPos[i]);
             pointLight->SetIntensity(50.f);
-            lights.push_back(pointLight);
+            lights.Push(pointLight);
         }
 
         lightMat = NEW_OBJECT(Material);
@@ -190,7 +189,7 @@ namespace Joestar {
         graphics->FlushUniformBuffer(STR_STRUCT(UniformBufferObject));
         graphics->UseShader(shadowShader);
         Renderer* render;
-        for (std::vector<GameObject*>::const_iterator iter = gameObjects.begin(); iter != gameObjects.end(); iter++) {
+        for (Vector<GameObject*>::ConstIterator iter = gameObjects.Begin(); iter != gameObjects.End(); ++iter) {
             render = (*iter)->HasComponent<Renderer>();
             if (render) {
                 render->RenderToShadowMap();
@@ -215,7 +214,7 @@ namespace Joestar {
         RenderLights();
 
         Renderer* render;
-        for (std::vector<GameObject*>::const_iterator iter = gameObjects.begin(); iter != gameObjects.end(); iter++) {
+        for (Vector<GameObject*>::ConstIterator iter = gameObjects.Begin(); iter != gameObjects.End(); iter++) {
             render = (*iter)->HasComponent<Renderer>();
             if (render) {
                 render->Render(camera);
@@ -231,7 +230,7 @@ namespace Joestar {
         //Draw Main Light as Wireframe //maybe don't need
         //Draw Point Light as Sphere
         lightBlocks = {};
-        for (int i = 0; i < lights.size(); ++i) {
+        for (int i = 0; i < lights.Size(); ++i) {
             //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lights[i]->GetModelMatrix());
             if (lights[i]->GetType() == POINT_LIGHT) {
                 lightBlocks.lightPos[lightBlocks.lightCount] = Vector4f(lights[i]->GetPosition());

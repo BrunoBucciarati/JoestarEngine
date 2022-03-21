@@ -2,7 +2,7 @@
 #include "RefCount.h"
 #include "ObjectDefines.h"
 #include "ClassIDs.h"
-#include <string>
+#include "../Container/Str.h"
 namespace Joestar {
 	class EngineContext;
 	class Object : public RefCount {
@@ -18,13 +18,13 @@ namespace Joestar {
 			return static_cast<T*>(GetSubsystem(T::GetClassIDStatic()));
 		}
 
-		std::string GetName() { return mName; }
-		void SetName(std::string n) { mName = n; }
+		String GetName() { return mName; }
+		void SetName(String n) { mName = n; }
 
 		virtual void Destroy() { delete this; }
 	protected:
 		EngineContext* mContext;
-		std::string mName;
+		String mName;
 	};
 
 }

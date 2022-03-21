@@ -2,9 +2,8 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include <string>
-#include <vector>
-#include <map>
+#include "../Container/Str.h"
+#include "../Container/HashMap.h"
 #include "VertexData.h"
 #include "../Base/Object.h"
 
@@ -29,10 +28,6 @@ namespace Joestar {
 class Mesh : public Object {
     REGISTER_OBJECT(Mesh, Object)
 public:
-    // mesh Data
-    //std::vector<Vertex>       vertices;
-    //std::vector<unsigned int> indices;
-    //std::vector<Texture>      textures;
     VertexBuffer* vb;
     IndexBuffer* ib;
     InstanceBuffer* instanceBuffer;
@@ -52,11 +47,11 @@ public:
         mTopology = t;
     }
 
-    void Load(std::string path);
+    void Load(String path);
 
 private:
     // render data 
-    std::map<uint32_t, VertexBuffer*> customVBs;
+    HashMap<uint32_t, VertexBuffer*> customVBs;
     MeshTopology mTopology;
 };
 }

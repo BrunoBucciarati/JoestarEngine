@@ -1,23 +1,23 @@
 #include "TextureCube.h"
 #include "../Base/StringHash.h"
+#include "../Container/Vector.h"
 
 namespace Joestar {
-	void TextureCube::TextureFromImage(std::string& path) {
-		std::vector<std::string> faces {
-			"right.jpg",
-			"left.jpg",
-			"top.jpg",
-			"bottom.jpg",
-			"front.jpg",
-			"back.jpg"
-		};
-		imgs.reserve(6);
+	void TextureCube::TextureFromImage(String& path) {
+		Vector<String> faces;
+		faces.Push("right.jpg");
+		faces.Push("left.jpg");
+		faces.Push("top.jpg");
+		faces.Push("bottom.jpg");
+		faces.Push("front.jpg");
+		faces.Push("back.jpg");
+		imgs.Reserve(6);
 		Image* img;
-		for (unsigned int i = 0; i < faces.size(); i++)
+		for (unsigned int i = 0; i < faces.Size(); i++)
 		{
 			img = NEW_OBJECT(Image);
-			img->Load((path + faces[i]).c_str());
-			imgs.push_back(img);
+			img->Load((path + faces[i]).CString());
+			imgs.Push(img);
 			//目前认为六个面必须一样的尺寸
 			width = img->GetWidth();
 			height = img->GetHeight();
@@ -26,7 +26,7 @@ namespace Joestar {
 			memcpy(buffer + i * width * height * TEXTURE_FORMAT_SIZE[fmt], img->GetData(), width * height * TEXTURE_FORMAT_SIZE[fmt]);
 			DELETE_OBJECT(img);
 		}
-		id = hashString(path.c_str());
+		id = hashString(path.CString());
 	}
 
 	TextureCube::~TextureCube() {

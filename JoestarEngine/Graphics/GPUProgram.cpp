@@ -10,10 +10,10 @@ namespace Joestar {
     File* GPUProgram::ShaderCodeFile(const char* file) {
         Application* app = Application::GetApplication();
         FileSystem* fs = app->GetSubSystem<FileSystem>();
-        std::string path = fs->GetResourceDir();
+        String path = fs->GetResourceDir();
         path += "Shaders/";
         path += file;
-        File* f = fs->ReadFile(path.c_str());
+        File* f = fs->ReadFile(path.CString());
         return f;
     }
 

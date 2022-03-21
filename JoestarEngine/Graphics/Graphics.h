@@ -36,8 +36,8 @@ namespace Joestar {
 		void DrawIndexed(Mesh* mesh, U32 instanceCount = 0);
 		void DrawArray(Mesh* mesh, U32 instanceCount = 0);
 		void UpdateProgram(ProgramCPU* p);
-		void BeginRenderPass(std::string name);
-		void EndRenderPass(std::string name);
+		void BeginRenderPass(String name);
+		void EndRenderPass(String name);
 		void SetDepthCompare(DepthCompareFunc fun);
 		void SetPolygonMode(PolygonMode fun);
 		void UpdateInstanceBuffer(InstanceBuffer* ib);
@@ -53,8 +53,8 @@ namespace Joestar {
 
 	private:
 		RenderThread* renderThread;
-		std::vector<GFXCommandBuffer*> cmdBuffers;
-		std::vector<GFXCommandBuffer*> computeCmdBuffers;
+		Vector<GFXCommandBuffer*> cmdBuffers;
+		Vector<GFXCommandBuffer*> computeCmdBuffers;
 		GFXCommandBuffer* cmdBuffer;//current one
 		GFXCommandBuffer* computeCmdBuffer;//current one
 		Vector4f defaultClearColor;

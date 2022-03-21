@@ -13,15 +13,6 @@
     </Expand>
   </Type>
 
-  <!-- Joestar::HashSet<> -->
-  <Type Name="Joestar::HashSet&lt;*&gt;">
-    <DisplayString>{{ size={Size()} }}</DisplayString>
-    <Expand>
-      <Item Name="[size]" ExcludeView="simple">Size()</Item>
-      <Item Name="[bucket_count]" ExcludeView="simple">buckets.Size()</Item>
-    </Expand>
-  </Type>
-
   <!-- Joestar::String -->
   <Type Name="Joestar::String">
     <DisplayString Condition="mBuffer">{mBuffer,nas8}</DisplayString>

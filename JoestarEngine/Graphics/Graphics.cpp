@@ -8,12 +8,12 @@
 
 namespace Joestar {
 	Graphics::Graphics(EngineContext* context) : Super(context) {
-		cmdBuffers.resize(MAX_CMDBUFFERS_IN_FLIGHT);
+		cmdBuffers.Resize(MAX_CMDBUFFERS_IN_FLIGHT);
 		for (auto& cmdBuffer : cmdBuffers)
 			cmdBuffer = JOJO_NEW(GFXCommandBuffer(1024));
 		cmdBuffer = cmdBuffers[0];
 
-		computeCmdBuffers.resize(MAX_CMDBUFFERS_IN_FLIGHT);
+		computeCmdBuffers.Resize(MAX_CMDBUFFERS_IN_FLIGHT);
 		for (auto& cmdBuffer : computeCmdBuffers)
 			cmdBuffer = JOJO_NEW(GFXCommandBuffer(256));
 		computeCmdBuffer = computeCmdBuffers[0];
@@ -146,8 +146,8 @@ namespace Joestar {
 	//update material
 	void Graphics::UpdateMaterial(Material* mat) {
 		UseShader(mat->GetShader());
-		std::vector<Texture*>& textures = mat->GetTextures();
-		for (int i = 0; i < textures.size(); i++) {
+		Vector<Texture*>& textures = mat->GetTextures();
+		for (int i = 0; i < textures.Size(); i++) {
 			UpdateTexture(textures[i], mat->GetShader()->GetSamplerBinding(i));
 		}
 	}
@@ -192,14 +192,14 @@ namespace Joestar {
 		}
 	}
 
-	void Graphics::BeginRenderPass(std::string name) {
+	void Graphics::BeginRenderPass(String name) {
 		cmdBuffer->WriteCommandType(RenderCMD_BeginRenderPass);
-		cmdBuffer->WriteBuffer<std::string>(name);
+		cmdBuffer->WriteBuffer<String>(name);
 	}
 
-	void Graphics::EndRenderPass(std::string name) {
+	void Graphics::EndRenderPass(String name) {
 		cmdBuffer->WriteCommandType(RenderCMD_EndRenderPass);
-		cmdBuffer->WriteBuffer<std::string>(name);
+		cmdBuffer->WriteBuffer<String>(name);
 	}
 
 	void Graphics::SetDepthCompare(DepthCompareFunc func) {

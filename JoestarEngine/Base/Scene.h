@@ -24,8 +24,8 @@ namespace Joestar {
 		void CreateCompute();
 		void RenderShadowMap();
 	private:
-		std::vector<GameObject*> gameObjects;
-		std::vector<Light*> lights;
+		Vector<GameObject*> gameObjects;
+		Vector<Light*> lights;
 		Light* mainLight;
 		Camera* camera;
 		GameObject* selection;

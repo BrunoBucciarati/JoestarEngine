@@ -20,10 +20,10 @@ namespace Joestar {
 		return file;
 	}
 
-	bool FileSystem::WriteFile(const char* filePath, std::string& data) {
+	bool FileSystem::WriteFile(const char* filePath, String& data) {
 		File* file = new File(filePath, true);
 		file->Seek(0);
-		file->Write(data.c_str(), data.length());
+		file->Write(data.CString(), data.Length());
 		file->Close();
 		return true;
 	}

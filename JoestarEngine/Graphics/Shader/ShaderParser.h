@@ -32,7 +32,7 @@ namespace Joestar {
 		bool instancing = false;
 	};
 	struct UniformDef {
-		std::string name;
+		String name;
 		ShaderDataType dataType;
 		U16 binding;
 		U32 stageFlag = 0;
@@ -61,24 +61,24 @@ namespace Joestar {
 		}
 	};
 	struct BufferDef {
-		std::string name;
+		String name;
 		ShaderDataType dataType;
 		U16 binding;
 		U32 stageFlag = 0;
 	};
 /*	struct SamplerDef {
-		std::string name;
+		String name;
 		SamplerType dataType;
 	}*/;
 	//struct UBODef {
-	//	std::string name;
+	//	String name;
 	//};
 	struct ShaderInfo {
 		U16 version;
 		std::vector<VertexDef> attrs;
 		std::vector<UniformDef> uniforms;
 		//std::vector<BufferDef> buffers;
-		std::string entryFunction = "main";
+		String entryFunction = "main";
 		ShaderStage curStage;
 	};
 	struct TokenStream;
@@ -86,15 +86,15 @@ namespace Joestar {
 		REGISTER_SUBSYSTEM(ShaderParser)
 	public:
 		explicit ShaderParser(EngineContext* ctx);
-		bool ParseInclude(TokenStream& tokenStream, std::string& oldStr, std::string& newFile);
-		void ParseShader(std::string& name, ShaderInfo& si, U32 flag);
-		void ParseVertexShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, std::string& newFile);
-		void ParseFragmentShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, std::string& newFile);
-		void ParseComputeShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, std::string& newFile);
-		std::string& GetShaderOutputDir() { return outputDir; }
+		bool ParseInclude(TokenStream& tokenStream, String& oldStr, String& newFile);
+		void ParseShader(String& name, ShaderInfo& si, U32 flag);
+		void ParseVertexShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, String& newFile);
+		void ParseFragmentShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, String& newFile);
+		void ParseComputeShader(char* buffer, U32 idx, U32 size, ShaderInfo& shaderInfo, String& newFile);
+		String& GetShaderOutputDir() { return outputDir; }
 	private:
-		std::string shaderDir;
-		std::string outputDir;
+		String shaderDir;
+		String outputDir;
 		FileSystem* fs;
 	};
 }
