@@ -13,8 +13,6 @@ namespace Joestar {
 		void ThreadFunc();
 		void DrawScene();
 		void DispatchCompute();
-		HINSTANCE mhAppInst;     // 应用程序实例句柄
-		HWND      mhMainWnd;     // 主窗口句柄
 		bool      mAppPaused;    // 程序是否处在暂停状态
 		bool      mMinimized;    // 程序是否最小化
 		bool      mMaximized;    // 程序是否最大化

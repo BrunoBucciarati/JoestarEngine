@@ -16,7 +16,7 @@ namespace Joestar {
         static Application* GetApplication();
         template<class T>
         inline T* GetSubSystem() {
-            return gContext->GetSubSystem<T>();
+            return gContext->GetSubsystem<T>();
         }
 
     private:

@@ -143,7 +143,7 @@ namespace Joestar {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         //GlobalConfig* cfg = Application::GetApplication()->GetEngineContext()->GetSubSystem<GlobalConfig>();
         Application* app = Application::GetApplication();
-        GlobalConfig* cfg = app->GetEngineContext()->GetSubSystem<GlobalConfig>();
+        GlobalConfig* cfg = app->GetEngineContext()->GetSubsystem<GlobalConfig>();
         uint32_t width = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_WIDTH);
         uint32_t height = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_HEIGHT);
         window = glfwCreateWindow(width, height, "Joestar Engine", nullptr, nullptr);

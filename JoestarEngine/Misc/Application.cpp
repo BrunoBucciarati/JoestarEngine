@@ -9,6 +9,7 @@
 #include "../Base/Scene.h"
 #include "../Graphics/Shader/ShaderParser.h"
 #include "../Graphics/ProceduralMesh.h"
+#include "../Graphics/Window.h"
 #include "../IO/MemoryManager.h"
 #include "../IO/FileSystem.h"
 #include "TimeManager.h"
@@ -26,6 +27,7 @@ namespace Joestar {
 		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_WIDTH, width);
 		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_HEIGHT, height);
 		//GetGlobalConfig()->UpdateConfig("GFX_API", str);
+		InitSubSystem(Window, gContext)
 
 		InitSubSystem(Graphics, gContext)
 		GetSubSystem<Graphics>()->Init();
@@ -39,6 +41,7 @@ namespace Joestar {
 	void Application::Run()
 	{
 		Start();
+		GetSubSystem<Window>()->Show();
 		while (true) {
 			Update();
 		}

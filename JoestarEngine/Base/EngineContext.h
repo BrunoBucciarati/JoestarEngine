@@ -6,14 +6,14 @@ namespace Joestar {
 		friend class Object;
 	public:
 		HashMap<uint32_t, Object*> subSystems;
-		Object* GetSubSystem(uint32_t classID);
+		Object* GetSubsystem(uint32_t classID);
 		template<class T>
-		T* GetSubSystem();
+		T* GetSubsystem();
 	};
 
 	template<class T>
-	T* EngineContext::GetSubSystem() {
-		Object* obj = GetSubSystem(T::GetClassIDStatic());
+	T* EngineContext::GetSubsystem() {
+		Object* obj = GetSubsystem(T::GetClassIDStatic());
 		return static_cast<T*>(obj);
 	}
 }

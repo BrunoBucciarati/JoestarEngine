@@ -2,56 +2,12 @@
 #include "../Misc/Application.h"
 #include "../Misc/GlobalConfig.h"
 #include "../IO/FileSystem.h"
+#include "../Graphics/Window.h"
 #include <d3dcompiler.h>
 
 #define ReleaseCOM(x) { if(x){ x->Release(); x = 0; } }
 
 namespace Joestar {
-    LRESULT CALLBACK WinSunProc(
-        HWND hwnd,      // handle to window
-        UINT uMsg,      // message identifier
-        WPARAM wParam,  // first message parameter
-        LPARAM lParam   // second message parameter
-    )
-    {
-        switch(uMsg)
-        {
-        case WM_CHAR:
-            char szChar[20];
-            //sprintf(szChar,"char code is %d",wParam);
-            MessageBox(hwnd, TEXT("char"),TEXT("char"),0);
-            break;
-        case WM_LBUTTONDOWN:
-            MessageBox(hwnd, TEXT("mouse clicked"), TEXT("message"),0);
-            HDC hdc;
-            hdc=GetDC(hwnd);
-            TextOut(hdc,0,50,TEXT("点击"),strlen("点击"));
-            //ReleaseDC(hwnd,hdc);
-            break;
-        case WM_PAINT:
-            HDC hDC;
-            PAINTSTRUCT ps;
-            hDC=BeginPaint(hwnd,&ps);
-            //TextOut(hDC,0,0,"",strlen("http://www.sunxin.org"));
-            EndPaint(hwnd,&ps);
-            break;
-        case WM_CLOSE:
-            if(IDYES==MessageBox(hwnd, TEXT("是否真的结束?"), TEXT("message"),MB_YESNO))
-            {
-               DestroyWindow(hwnd);
-            }
-            break;
-        case WM_DESTROY:
-            PostQuitMessage(0);
-            break;
-        default:
-            return DefWindowProc(hwnd,uMsg,wParam,lParam);
-    }
-    return 0;
-}
-
-
-
     float vertices[] =
     {
         -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
@@ -83,37 +39,39 @@ namespace Joestar {
 
     bool RenderThreadD3D11::InitWindow()
     {
-        Application* app = Application::GetApplication();
-        GlobalConfig* cfg = app->GetEngineContext()->GetSubSystem<GlobalConfig>();
-        uint32_t width = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_WIDTH);
-        uint32_t height = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_HEIGHT);
-        mClientWidth = width;
-        mClientHeight = height;
+        //Application* app = Application::GetApplication();
+        //GlobalConfig* cfg = app->GetEngineContext()->GetSubsystem<GlobalConfig>();
+        //uint32_t width = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_WIDTH);
+        //uint32_t height = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_HEIGHT);
+        //mClientWidth = width;
+        //mClientHeight = height;
 
-        WNDCLASS wndcls;
-        wndcls.cbClsExtra = 0;
-        wndcls.cbWndExtra = 0;
-        wndcls.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-        wndcls.hCursor = LoadCursor(NULL, IDC_CROSS);
-        wndcls.hIcon = LoadIcon(NULL, IDI_ERROR);
-        mhAppInst = GetModuleHandle(NULL);
-        wndcls.hInstance = mhAppInst;
-        wndcls.lpfnWndProc = WinSunProc;
-        wndcls.lpszClassName = TEXT("Joestar");
-        wndcls.lpszMenuName = NULL;
-        wndcls.style = CS_HREDRAW | CS_VREDRAW;
-        RegisterClass(&wndcls);
+        //WNDCLASS wndcls;
+        //wndcls.cbClsExtra = 0;
+        //wndcls.cbWndExtra = 0;
+        //wndcls.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+        //wndcls.hCursor = LoadCursor(NULL, IDC_CROSS);
+        //wndcls.hIcon = LoadIcon(NULL, IDI_ERROR);
+        //mhAppInst = GetModuleHandle(NULL);
+        //wndcls.hInstance = mhAppInst;
+        //wndcls.lpfnWndProc = WinSunProc;
+        //wndcls.lpszClassName = TEXT("Joestar");
+        //wndcls.lpszMenuName = NULL;
+        //wndcls.style = CS_HREDRAW | CS_VREDRAW;
+        //RegisterClass(&wndcls);
 
-        mhMainWnd = CreateWindow(TEXT("Joestar"), TEXT("Joestar Engine"), WS_OVERLAPPEDWINDOW, 0, 0,
-            width, height, NULL, NULL, mhAppInst, NULL);
+        //mhMainWnd = CreateWindow(TEXT("Joestar"), TEXT("Joestar Engine"), WS_OVERLAPPEDWINDOW, 0, 0,
+        //    width, height, NULL, NULL, mhAppInst, NULL);
 
-        ShowWindow(mhMainWnd, 1);
+        //ShowWindow(mhMainWnd, 1);
+        //return true;
         return true;
     }
 
 	bool RenderThreadD3D11::InitRenderContext()
 	{
         Application* app = Application::GetApplication();
+        Window* window = app->GetEngineContext()->GetSubsystem<Window>();
         UINT createDeviceFlags = 0;
 
 #if  defined(DEBUG)||defined(_DEBUG)
@@ -170,7 +128,7 @@ namespace Joestar {
         }
         sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         sd.BufferCount = 1;
-        sd.OutputWindow = mhMainWnd;
+        sd.OutputWindow = window->GetMainWindow();
         sd.Windowed = true;
         sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
         sd.Flags = 0;
@@ -446,8 +404,8 @@ namespace Joestar {
         ReleaseCOM(blurredTex);
 
         int numElements = 1024;
-        std::vector<float> dataA;
-        dataA.resize(1024 * 3);
+        Vector<float> dataA;
+        dataA.Resize(1024 * 3);
         for (auto& f : dataA)
             f = 0;
 

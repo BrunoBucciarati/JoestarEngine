@@ -11,6 +11,6 @@ namespace Joestar {
 	}
 
 	Object* Object::GetSubsystem(uint32_t classID) const {
-		return mContext->GetSubSystem(classID);
+		return mContext->GetSubsystem(classID);
 	}
 }

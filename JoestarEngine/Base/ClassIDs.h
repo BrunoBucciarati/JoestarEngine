@@ -35,6 +35,7 @@ enum ClassIDType {
 	DefineClassID(LightBatch, 26)
 	DefineClassID(Image, 27)
 	DefineClassID(Camera, 28)
+	DefineClassID(Window, 29)
 
 	kClassIDCount
 };
