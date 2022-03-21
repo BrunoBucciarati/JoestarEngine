@@ -6,7 +6,6 @@ namespace Joestar {
 	public:
 		RenderThreadD3D11(Vector<GFXCommandBuffer*>& cmdBuffers, Vector<GFXCommandBuffer*>& computeBuffers);
 		bool InitRenderContext();
-		bool InitWindow();
 		void PrepareCompute();
 
 	private:

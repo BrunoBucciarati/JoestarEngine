@@ -34,39 +34,8 @@ namespace Joestar {
 	RenderThreadD3D11::RenderThreadD3D11(Vector<GFXCommandBuffer*>& cmdBuffers, Vector<GFXCommandBuffer*>& computeBuffers) :
         RenderThread(cmdBuffers, computeBuffers)
 	{
-        InitWindow();
 	}
 
-    bool RenderThreadD3D11::InitWindow()
-    {
-        //Application* app = Application::GetApplication();
-        //GlobalConfig* cfg = app->GetEngineContext()->GetSubsystem<GlobalConfig>();
-        //uint32_t width = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_WIDTH);
-        //uint32_t height = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_HEIGHT);
-        //mClientWidth = width;
-        //mClientHeight = height;
-
-        //WNDCLASS wndcls;
-        //wndcls.cbClsExtra = 0;
-        //wndcls.cbWndExtra = 0;
-        //wndcls.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-        //wndcls.hCursor = LoadCursor(NULL, IDC_CROSS);
-        //wndcls.hIcon = LoadIcon(NULL, IDI_ERROR);
-        //mhAppInst = GetModuleHandle(NULL);
-        //wndcls.hInstance = mhAppInst;
-        //wndcls.lpfnWndProc = WinSunProc;
-        //wndcls.lpszClassName = TEXT("Joestar");
-        //wndcls.lpszMenuName = NULL;
-        //wndcls.style = CS_HREDRAW | CS_VREDRAW;
-        //RegisterClass(&wndcls);
-
-        //mhMainWnd = CreateWindow(TEXT("Joestar"), TEXT("Joestar Engine"), WS_OVERLAPPEDWINDOW, 0, 0,
-        //    width, height, NULL, NULL, mhAppInst, NULL);
-
-        //ShowWindow(mhMainWnd, 1);
-        //return true;
-        return true;
-    }
 
 	bool RenderThreadD3D11::InitRenderContext()
 	{
