@@ -4,6 +4,7 @@
 
 #include "Vector3.h"
 #include "Vector4.h"
+#include "FloatMath.h"
 
 namespace Joestar {
 	class Matrix3x3f;

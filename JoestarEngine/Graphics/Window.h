@@ -6,13 +6,23 @@ namespace Joestar {
 	public:
 		REGISTER_SUBSYSTEM(Window);
 		explicit Window(EngineContext* ctx);
-		const HINSTANCE& GetAppInstance() const {
+		const HINSTANCE& GetAppInstance() const
+		{
 			return mhAppInst;
 		}
-		const HWND& GetMainWindow() const {
+		const HWND& GetMainWindow() const
+		{
 			return mhMainWnd;
 		}
 		void Show();
+		const U32 GetWidth() const
+		{
+			return mWidth;
+		}
+		const U32 GetHeight() const
+		{
+			return mHeight;
+		}
 	private:
 		void InitWindow();
 		U32 mWidth{ 0 };

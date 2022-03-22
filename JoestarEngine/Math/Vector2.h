@@ -3,6 +3,7 @@
 #define VECTOR2_H
 
 #include <algorithm>
+#include "MathDefs.h"
 #include "FloatMath.h"
 
 namespace Joestar {
@@ -79,7 +80,7 @@ namespace Joestar {
 
 	inline bool IsNormalized(const Vector2f& vec, float epsilon = Vector2f::epsilon)
 	{
-		return CompareApproximately(SqrMagnitude(vec), 1.0F, epsilon);
+		return Equals(SqrMagnitude(vec), 1.0F, epsilon);
 	}
 
 	/// Returns the abs of every component of the vector

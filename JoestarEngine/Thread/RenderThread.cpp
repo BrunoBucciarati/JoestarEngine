@@ -29,6 +29,8 @@ namespace Joestar {
         mProtocol->SetWindow(window);
         mProtocol->CreateDevice();
         mProtocol->CreateSwapChain();
+        mProtocol->CreateCommandBuffers();
+        mProtocol->CreateSyncObjects();
         //glfwSetWindowUserPointer(window);
         //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         //Application* app = Application::GetApplication();

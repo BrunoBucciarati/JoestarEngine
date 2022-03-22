@@ -1,15 +1,11 @@
 #include "RenderAPIVK.h"
 #include "../../Container/Vector.h"
 #include "../../Container/HashSet.h"
+#include "../../Math/MathDefs.h"
 #include "../Window.h"
 #include <vulkan/vulkan_win32.h>
 
-//#define VK_USE_PLATFORM_WIN32_KHR
-//#define GLFW_INCLUDE_VULKAN
-//#include <GLFW/glfw3.h>
-//#define GLFW_EXPOSE_NATIVE_WIN32
-//#include <GLFW/glfw3native.h>
-
+#define MAX_FRAMES_IN_FLIGHT 3
 namespace Joestar {
     VkResult globalResult;
 #define VK_CHECK(fn) \
@@ -141,6 +137,7 @@ namespace Joestar {
         CreateLogicalDevice();
     }
 
+
     QueueFamilyIndices RenderAPIVK::FindQueueFamilies() {
         QueueFamilyIndices indices;
         // Logic to find queue family indices to populate struct with
@@ -149,7 +146,7 @@ namespace Joestar {
 
         Vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &queueFamilyCount, queueFamilies.Buffer());
-        int i = 0;
+        U32 i = 0;
         for (const auto& queueFamily : queueFamilies) {
             VkBool32 presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(mPhysicalDevice, i, mSurface, &presentSupport);
@@ -162,7 +159,7 @@ namespace Joestar {
             if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) {
                 indices.computeFamily = i;
             }
-            i++;
+            ++i;
         }
         mQueueFamilyIndices = indices;
         return indices;
@@ -176,16 +173,6 @@ namespace Joestar {
 
         VK_CHECK(CreateDebugUtilsMessengerEXT(mInstance, &createInfo, nullptr, &mDebugMessenger));
     }
-
-    //typedef VkFlags VkWin32SurfaceCreateFlagsKHR;
-    //typedef struct VkWin32SurfaceCreateInfoKHR
-    //{
-    //    VkStructureType                 sType;
-    //    const void* pNext;
-    //    VkWin32SurfaceCreateFlagsKHR    flags;
-    //    HINSTANCE                       hinstance;
-    //    HWND                            hwnd;
-    //} VkWin32SurfaceCreateInfoKHR;
 
     void RenderAPIVK::CreateSurface() {
         VkWin32SurfaceCreateInfoKHR createInfo{};
@@ -212,11 +199,6 @@ namespace Joestar {
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
-
-        //uint32_t glfwExtensionCount = 0;
-        //const char** glfwExtensions;
-
-        //glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
         Vector<const char*> surfaceExtension{
             VK_KHR_SURFACE_EXTENSION_NAME,
@@ -344,8 +326,153 @@ namespace Joestar {
 
 	}
 
+    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const Vector<VkSurfaceFormatKHR>& availableFormats) {
+        for (const auto& availableFormat : availableFormats) {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+                return availableFormat;
+            }
+        }
+        return availableFormats[0];
+    }
+
+    VkPresentModeKHR ChooseSwapPresentMode(const Vector<VkPresentModeKHR>& availablePresentModes) {
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, Window* window) {
+        if (capabilities.currentExtent.width != UINT32_MAX) {
+            return capabilities.currentExtent;
+        }
+        else {
+
+            VkExtent2D actualExtent = {
+                window->GetWidth(),
+                window->GetHeight()
+            };
+
+            actualExtent.width = Min(Max(actualExtent.width, capabilities.minImageExtent.width), capabilities.maxImageExtent.width);
+            actualExtent.height = Min(Max(actualExtent.height, capabilities.minImageExtent.height), capabilities.maxImageExtent.height);
+
+            return actualExtent;
+        }
+    }
+
 	void RenderAPIVK::CreateSwapChain()
 	{
+        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(mPhysicalDevice);
 
+        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
+        VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+        VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities, window);
+
+        U32 imageCount = swapChainSupport.capabilities.minImageCount + 1;
+        if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
+            imageCount = swapChainSupport.capabilities.maxImageCount;
+        }
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = mSurface;
+        createInfo.minImageCount = imageCount;
+        createInfo.imageFormat = surfaceFormat.format;
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.imageExtent = extent;
+        createInfo.imageArrayLayers = 1;
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        uint32_t queueFamilyIndices[] = { mQueueFamilyIndices.graphicsFamily, mQueueFamilyIndices.presentFamily };
+
+        if (mQueueFamilyIndices.graphicsFamily != mQueueFamilyIndices.presentFamily) {
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        }
+        else {
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            createInfo.queueFamilyIndexCount = 0; // Optional
+            createInfo.pQueueFamilyIndices = nullptr; // Optional
+        }
+
+        createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.presentMode = presentMode;
+        createInfo.clipped = VK_TRUE;
+
+        createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+        if (vkCreateSwapchainKHR(mDevice, &createInfo, nullptr, &mSwapChain) != VK_SUCCESS) {
+            LOGERROR("Failed to create swap chain!");
+        }
+        vkGetSwapchainImagesKHR(mDevice, mSwapChain, &imageCount, nullptr);
+
+        mSwapChainImages.Resize(imageCount);
+        vkGetSwapchainImagesKHR(mDevice, mSwapChain, &imageCount, mSwapChainImages.Buffer());
+        mSwapChainImageFormat = surfaceFormat.format;
+        mSwapChainExtent = extent;
+
+        mSwapChainImageViews.Resize(mSwapChainImages.Size());
+        for (U32 i = 0; i < mSwapChainImages.Size(); ++i)
+        {
+            VkImageViewCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = mSwapChainImages[i];
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = mSwapChainImageFormat;
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+            VK_CHECK(vkCreateImageView(mDevice, &createInfo, nullptr, &mSwapChainImageViews[i]));
+        }
 	}
+
+    void RenderAPIVK::CreateCommandPool()
+    {
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex = mQueueFamilyIndices.graphicsFamily;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
+
+        VK_CHECK(vkCreateCommandPool(mDevice, &poolInfo, nullptr, &mCommandPool));
+
+    }
+
+    void RenderAPIVK::CreateCommandBuffers()
+    {
+        CreateCommandPool();
+
+        mCommandBuffers.Resize(mSwapChainImageViews.Size());
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.commandPool = mCommandPool;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = mCommandBuffers.Size();
+
+        VK_CHECK(vkAllocateCommandBuffers(mDevice, &allocInfo, mCommandBuffers.Buffer()));
+    }
+
+    void RenderAPIVK::CreateSyncObjects()
+    {
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        mImageAvailableSemaphores.Resize(MAX_FRAMES_IN_FLIGHT);
+        mRenderFinishedSemaphores.Resize(MAX_FRAMES_IN_FLIGHT);
+
+        mInFlightFences.Resize(MAX_FRAMES_IN_FLIGHT);
+        VkFenceCreateInfo fenceInfo = {};
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        for (U32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+            if (vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS ||
+                vkCreateFence(mDevice, &fenceInfo, nullptr, &mInFlightFences[i]) != VK_SUCCESS) {
+
+                LOGERROR("failed to create synchronization objects for a frame!");
+            }
+        }
+    }
 }

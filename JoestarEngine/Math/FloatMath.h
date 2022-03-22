@@ -8,8 +8,6 @@ namespace Joestar {
 	inline float InvSqrt(float p) { return 1.0F / sqrt(p); }
 	inline float Sqrt(float p) { return sqrt(p); }
 	inline float Abs(float x) { return x > 0 ? x : -x; }
-	inline float Min(float x, float y) { return x < y ? x : y; }
-	inline float Max(float x, float y) { return x > y ? x : y; }
 	inline float Dot3(float* x, float* y) {
 		return  x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
 	}

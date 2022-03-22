@@ -3,6 +3,7 @@
 #define VECTOR3_H
 
 #include <algorithm>
+#include "MathDefs.h"
 #include "FloatMath.h"
 
 namespace Joestar {

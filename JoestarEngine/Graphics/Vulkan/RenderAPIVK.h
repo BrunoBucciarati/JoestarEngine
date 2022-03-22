@@ -21,13 +21,17 @@ namespace Joestar {
 	public:
 		void CreateDevice();
 		void CreateSwapChain();
+		void CreateCommandBuffers();
+		void CreateSyncObjects();
 	private:
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+		void CreateCommandPool();
 		void CreateInstance();
 		void SetupDebugMessenger();
 		void CreateSurface();
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
+		void CreateSyncObjects();
 		QueueFamilyIndices FindQueueFamilies();
 		VkSampleCountFlagBits GetMaxUsableSampleCount();
 		bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -41,5 +45,19 @@ namespace Joestar {
 		VkQueue mComputeQueue;
 		VkSurfaceKHR mSurface;
 		VkDebugUtilsMessengerEXT mDebugMessenger;
+		VkSwapchainKHR mSwapChain;
+		VkFormat mSwapChainImageFormat;
+		VkExtent2D mSwapChainExtent;
+		Vector<VkImage> mSwapChainImages;
+		Vector<VkImageView> mSwapChainImageViews;
+
+		VkCommandPool mCommandPool;
+		Vector<VkCommandBuffer> mCommandBuffers;
+
+		Vector<VkFramebuffer> mSwapChainFramebuffers;
+
+		Vector<VkSemaphore> mImageAvailableSemaphores;
+		Vector<VkSemaphore> mRenderFinishedSemaphores;
+		Vector<VkFence> mInFlightFences;
 	};
 }
