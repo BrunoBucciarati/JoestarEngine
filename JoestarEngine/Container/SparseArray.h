@@ -7,10 +7,12 @@ namespace Joestar {
 		SparseArray() = default;
 		~SparseArray() = default;
 		U32 Add(U32 index, const T & element);
-		T& operator[](int idx){
+		T& operator[](int idx)
+		{
 			return data[idx];
 		}
-		U32 FindIndex(U32 idx) {
+		U32 FindIndex(U32 idx)
+		{
 			for (int i = 0; i < indices.Size(); ++i) {
 				if (indices[i] == idx) {
 					return i;
@@ -18,9 +20,21 @@ namespace Joestar {
 			}
 			return INDEX_NONE;
 		}
-		U32 Size() {
+		U32 Size()
+		{
 			return numElements;
 ;		}
+		bool Empty()
+		{
+			return 0 == numElements;
+		}
+
+		void Resize(U32 sz)
+		{
+			data.Resize(sz);
+			indices.Resize(sz);
+			numElements = sz;
+		}
 
 	private:
 		Vector<T> data;
@@ -30,7 +44,8 @@ namespace Joestar {
 	};
 
 	template <class T, bool Ordered>
-	U32 SparseArray<T, Ordered>::Add(U32 index, const T& element) {
+	U32 SparseArray<T, Ordered>::Add(U32 index, const T& element)
+	{
 		if (!Ordered) {
 			data.Push(element);
 			indices.Push(index);

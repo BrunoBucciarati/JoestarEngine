@@ -21,7 +21,7 @@ namespace Joestar {
 		InitSubSystem(TimeManager, gContext)
 		InitSubSystem(FileSystem, gContext)
 		InitSubSystem(GlobalConfig, gContext)
-		U32 GFX_API = GFX_API_D3D11;
+		U32 GFX_API = GFX_API_VULKAN;
 		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_GFX_API, GFX_API);
 		U32 width = 800, height = 600;
 		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_WIDTH, width);

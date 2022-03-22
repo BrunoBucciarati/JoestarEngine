@@ -1,9 +1,11 @@
 #pragma once
 #include <thread>
+#include "../Core/Object.h"
 namespace Joestar {
-	class Thread {
+	class Thread : public Object {
+		REGISTER_OBJECT(Thread, Object);
 	public:
-		Thread();
+		explicit Thread(EngineContext* ctx);
 		virtual void ThreadFunc() {}
 	protected:
 		std::thread* mThread;

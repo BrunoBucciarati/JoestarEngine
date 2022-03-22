@@ -31,8 +31,8 @@ namespace Joestar {
         0, 7, 8,   //  Triangle  6
         0, 8, 1    //  Triangle  7
     };
-	RenderThreadD3D11::RenderThreadD3D11(Vector<GFXCommandBuffer*>& cmdBuffers, Vector<GFXCommandBuffer*>& computeBuffers) :
-        RenderThread(cmdBuffers, computeBuffers)
+	RenderThreadD3D11::RenderThreadD3D11(EngineContext* ctx, Vector<GFXCommandBuffer*>& cmdBuffers, Vector<GFXCommandBuffer*>& computeBuffers) :
+        RenderThread(ctx, cmdBuffers, computeBuffers)
 	{
 	}
 

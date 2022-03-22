@@ -218,6 +218,10 @@ namespace Joestar
         {
             Resize(sz);
         }
+        Vector(const Vector<T>& rhs)
+        {
+            *this = rhs;
+        }
         /// 初始化列表
         Vector(const std::initializer_list<T>&list)
         {
@@ -235,14 +239,19 @@ namespace Joestar
                 mBuffer[i] = value;
             }
         }
-		~Vector() {
+
+		~Vector()
+        {
             DestructItems(0, mSize);
 			JOJO_DELETE_ARRAY((U8*)mBuffer);
 		}
-		void Resize(U32 sz) {
+
+		void Resize(U32 sz)
+        {
 			U32 oldSz = mSize;
 			Reserve(sz);
-            ConstructItems(oldSz, sz - oldSz);
+            if (sz > oldSz)
+                ConstructItems(oldSz, sz - oldSz);
 			mSize = sz;
 		}
 		void Reserve(U32 cap) {
@@ -267,15 +276,34 @@ namespace Joestar
                 mBuffer = newBuffer;
 			}
 		}
-		const U32 Size() const {
+
+		const U32 Size() const
+        {
 			return mSize;
 		}
-		T& operator[](U32 index) {
+
+		T& operator[](U32 index)
+        {
 			return mBuffer[index];
 		}
-        const T& operator[](U32 index) const {
+
+        const T& operator[](U32 index) const
+        {
             return mBuffer[index];
         }
+
+        Vector& operator=(const Vector& rhs)
+        {
+            Reserve(rhs.mCapacity);
+            mCapacity = rhs.mCapacity;
+            mSize = rhs.mSize;
+            for (U32 i = 0; i < rhs.mSize; ++i)
+            {
+                JOJO_PLACEMENT_NEW(T(rhs.mBuffer[i]), mBuffer + i, MEMORY_CONTAINER);
+            }
+            return *this;
+        }
+
 		void Push(const T& value)
 		{
 			if (mSize >= mCapacity) {
@@ -284,10 +312,13 @@ namespace Joestar
 			JOJO_PLACEMENT_NEW(T(value), mBuffer + mSize, MEMORY_CONTAINER);
 			++mSize;
 		}
-		void Clear() {
+		void Clear()
+        {
 			mSize = 0;
 		}
-		T* Buffer() const {
+
+		T* Buffer() const
+        {
 			return mBuffer;
 		}
 		T& Back() {

@@ -28,7 +28,7 @@ namespace Joestar {
         return VK_FALSE;
     }
 
-    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+    VkResult CreateDebugUtilsMessengerEXT1(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
         auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
         if (func != nullptr) {
             return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -66,7 +66,7 @@ namespace Joestar {
         }
         return details;
     }
-    bool CheckDeviceExtensionSupport(VkPhysicalDevice device) {
+    bool CheckDeviceExtensionSupport1(VkPhysicalDevice device) {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -86,8 +86,8 @@ namespace Joestar {
 #else
     const bool enableValidationLayers = true;
 #endif
-    RenderThreadVulkan::RenderThreadVulkan(Vector<GFXCommandBuffer*>& cBuffers, Vector<GFXCommandBuffer*>& computeBuffers):
-        RenderThread(cBuffers, computeBuffers)
+    RenderThreadVulkan::RenderThreadVulkan(EngineContext* ctx, Vector<GFXCommandBuffer*>& cBuffers, Vector<GFXCommandBuffer*>& computeBuffers):
+        RenderThread(ctx, cBuffers, computeBuffers)
     {
         vkCtx.physicalDevice = VK_NULL_HANDLE;
     }
@@ -191,7 +191,7 @@ namespace Joestar {
 
         return true;
     }
-    void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+    void PopulateDebugMessengerCreateInfo1(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
         createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -203,9 +203,9 @@ namespace Joestar {
         if (!enableValidationLayers) return;
 
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
-        PopulateDebugMessengerCreateInfo(createInfo);
+        PopulateDebugMessengerCreateInfo1(createInfo);
 
-        if (CreateDebugUtilsMessengerEXT(vkCtx.instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+        if (CreateDebugUtilsMessengerEXT1(vkCtx.instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
             LOGERROR("failed to set up debug messenger!\n");
         }
     }
@@ -231,6 +231,10 @@ namespace Joestar {
 
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
+        Vector<const char*> test;
+        test.Push(glfwExtensions[0]);
+        test.Push(glfwExtensions[1]);
+
         createInfo.enabledExtensionCount = glfwExtensionCount;
         createInfo.ppEnabledExtensionNames = glfwExtensions;
         if (enableValidationLayers) {
@@ -251,7 +255,7 @@ namespace Joestar {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.Size());
             createInfo.ppEnabledLayerNames = validationLayers.Buffer();
 
-            PopulateDebugMessengerCreateInfo(debugCreateInfo);
+            PopulateDebugMessengerCreateInfo1(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
         }
         else {
@@ -266,6 +270,7 @@ namespace Joestar {
     }
 
     void RenderThreadVulkan::CreateSurface() {
+        
         if (glfwCreateWindowSurface(vkCtx.instance, window, nullptr, &vkCtx.surface) != VK_SUCCESS) {
             LOGERROR("failed to create window vkCtx.surface!");
         }
@@ -322,7 +327,7 @@ bool RenderThreadVulkan::IsDeviceSuitable(VkPhysicalDevice device) {
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
     VkPhysicalDeviceFeatures deviceFeatures;
     vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-    bool extensionsSupported = CheckDeviceExtensionSupport(device);
+    bool extensionsSupported = CheckDeviceExtensionSupport1(device);
 
     bool swapChainAdequate = false;
     if (extensionsSupported) {

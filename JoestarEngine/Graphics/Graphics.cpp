@@ -23,23 +23,25 @@ namespace Joestar {
 	}
 
 	void Graphics::Init() {
-		GlobalConfig* cfg = GetSubsystem<GlobalConfig>();
-		GFX_API gfxAPI = (GFX_API)cfg->GetConfig<int>(CONFIG_GFX_API);
+		//GlobalConfig* cfg = GetSubsystem<GlobalConfig>();
+		//GFX_API gfxAPI = (GFX_API)cfg->GetConfig<int>(CONFIG_GFX_API);
 		/*switch (gfxAPI) {
 
 		}*/
-		if (gfxAPI == GFX_API_VULKAN) {
-			renderThread = new RenderThreadVulkan(cmdBuffers, computeCmdBuffers);
-		}
-		else if (gfxAPI == GFX_API_OPENGL) {
-			//renderThread = new RenderThreadGL(cmdBuffers, computeCmdBuffers);
-		}
-		else if (gfxAPI == GFX_API_D3D11) {
-			renderThread = new RenderThreadD3D11(cmdBuffers, computeCmdBuffers);
-		}
+			//auto* a1 = new RenderThreadVulkan(mContext, cmdBuffers, computeCmdBuffers);
+		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
+		//if (gfxAPI == GFX_API_VULKAN) {
+		//}
+		//else if (gfxAPI == GFX_API_OPENGL) {
+		//	//renderThread = new RenderThreadGL(cmdBuffers, computeCmdBuffers);
+		//}
+		//else if (gfxAPI == GFX_API_D3D11) {
+		//	renderThread = new RenderThreadD3D11(cmdBuffers, computeCmdBuffers);
+		//}
 	}
 
 	void Graphics::MainLoop() {
+		return;
 		//Flush cmd buffer from last frame
 		while (computeCmdBuffer->ready || cmdBuffer->ready) {
 			//busy wait, must be both in unready state

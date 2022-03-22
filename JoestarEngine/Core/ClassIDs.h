@@ -36,6 +36,8 @@ enum ClassIDType {
 	DefineClassID(Image, 27)
 	DefineClassID(Camera, 28)
 	DefineClassID(Window, 29)
+	DefineClassID(Thread, 30)
+	DefineClassID(RenderThread, 31)
 
 	kClassIDCount
 };

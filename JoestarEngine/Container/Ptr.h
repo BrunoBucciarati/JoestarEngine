@@ -6,10 +6,15 @@ namespace Joestar
 	{
 	public:
 		SharedPtr() : mPtr(nullptr)
-		SharedPtr(T* ptr) : mPtr(ptr) {
+		{}
+
+		SharedPtr(T* ptr) : mPtr(ptr)
+		{
 			AddRef();
 		}
-		SharedPtr(const SharedPtr<T>& rhs) : mPtr(rhs.mPtr) {
+
+		SharedPtr(const SharedPtr<T>& rhs) : mPtr(rhs.mPtr)
+		{
 			AddRef();
 		}
 		~SharedPtr()
@@ -48,10 +53,15 @@ namespace Joestar
 	{
 	public:
 		WeakPtr() : mPtr(nullptr)
-		WeakPtr(T* ptr) : mPtr(ptr) {
+		{}
+
+		WeakPtr(T* ptr) : mPtr(ptr)
+		{
 			AddRef();
 		}
-		WeakPtr(const WeakPtr<T>& rhs) : mPtr(rhs.mPtr) {
+
+		WeakPtr(const WeakPtr<T>& rhs) : mPtr(rhs.mPtr)
+		{
 			AddRef();
 		}
 		~WeakPtr()
@@ -87,10 +97,19 @@ namespace Joestar
 	{
 	public:
 		UniquePtr() : mPtr(nullptr)
-		UniquePtr(T* ptr) : mPtr(ptr) {
+		{}
+		UniquePtr(T* ptr) : mPtr(ptr)
+		{
 		}
-		UniquePtr(const UniquePtr<T>& rhs) : mPtr(rhs.mPtr) {
+		UniquePtr(const UniquePtr<T>& rhs) : mPtr(rhs.mPtr)
+		{
 		}
+		UniquePtr& operator=(T* ptr)
+		{
+			mPtr = ptr;
+			return *this;
+		}
+
 		~UniquePtr()
 		{
 			if (mPtr)
