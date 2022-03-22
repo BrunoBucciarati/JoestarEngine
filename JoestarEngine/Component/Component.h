@@ -1,6 +1,5 @@
 #pragma once
-//#include "../Base/GameObject.h"
-#include "../Base/Object.h"
+#include "../Core/Object.h"
 
 namespace Joestar {
 	class GameObject;

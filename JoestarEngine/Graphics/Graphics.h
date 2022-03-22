@@ -1,8 +1,8 @@
 #pragma once
 #include "Mesh.h"
 #include "../Thread/RenderThread.h"
-#include "../Base/SubSystem.h"
-#include "../Base/EngineContext.h"
+#include "../Core/SubSystem.h"
+#include "../Core/EngineContext.h"
 #include "RenderCommand.h"
 #include "../Math/Vector4.h"
 #include "GraphicDefines.h"

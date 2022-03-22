@@ -1,7 +1,6 @@
 #pragma once
-#include <string>
 #include "Image.h"
-#include "../Base/Object.h"
+#include "../Core/Object.h"
 #include "GraphicDefines.h"
 namespace Joestar {
 	class Texture : public Object {

@@ -1,8 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <vector>
-#include "../Base/ClassIDs.h"
-#include "../Base/EngineContext.h"
+#include "../Core/ClassIDs.h"
+#include "../Core/EngineContext.h"
 #include "../Graphics/Graphics.h"
 namespace Joestar {
     class Application {

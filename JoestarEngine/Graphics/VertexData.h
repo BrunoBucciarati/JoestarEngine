@@ -3,7 +3,7 @@
 #include "../Math/Vector2.h"
 #include "VulkanHeader.h"
 #include "GraphicDefines.h"
-#include "../Base/ObjectDefines.h"
+#include "../Core/ObjectDefines.h"
 #include <vector>
 #include "../Base/StringHash.h"
 

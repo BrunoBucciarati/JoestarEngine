@@ -1,5 +1,5 @@
 #pragma once
-#include "../Base/SubSystem.h"
+#include "../Core/SubSystem.h"
 #include "Log.h"
 
 #ifndef JOESTAR_MEMORY_H

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include "Object.h"
 #include "ObjectDefines.h"
 namespace Joestar {

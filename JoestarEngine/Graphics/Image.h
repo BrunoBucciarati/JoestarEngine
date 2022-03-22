@@ -1,5 +1,5 @@
 #pragma once
-#include "../Base/Object.h"
+#include "../Core/Object.h"
 namespace Joestar {
 	class Image : public Object {
 		REGISTER_OBJECT(Image, Object)

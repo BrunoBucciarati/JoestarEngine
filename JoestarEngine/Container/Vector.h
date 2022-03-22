@@ -1,6 +1,6 @@
 #pragma once
-#include "../Base/Platform.h"
-#include "../Base/Functions.h"
+#include "../Core/Platform.h"
+#include "../Core/Functions.h"
 #include "../IO/MemoryManager.h"
 namespace Joestar
 {

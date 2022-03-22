@@ -1,5 +1,5 @@
 #pragma once
-#include "../Base/SubSystem.h"
+#include "../Core/SubSystem.h"
 #include <windows.h>
 namespace Joestar {
 	class Window : public SubSystem {

@@ -3,7 +3,7 @@
 #define NEW_COMPONENT(CLASS) new CLASS(mContext, this);
 #include "../Container/Vector.h"
 #include "../Component/Component.h"
-#include "Object.h"
+#include "../Core/Object.h"
 #include "../Component/Transform.h"
 namespace Joestar {
 #define GetTransform() static_cast<Transform*>(components[0])

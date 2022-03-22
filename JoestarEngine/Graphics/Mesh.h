@@ -5,7 +5,7 @@
 #include "../Container/Str.h"
 #include "../Container/HashMap.h"
 #include "VertexData.h"
-#include "../Base/Object.h"
+#include "../Core/Object.h"
 
 namespace Joestar {
     enum MeshTopology {

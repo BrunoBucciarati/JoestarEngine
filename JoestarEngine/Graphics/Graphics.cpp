@@ -1,5 +1,5 @@
 #include "Graphics.h"
-#include "../Base/Scene.h"
+#include "../Scene/Scene.h"
 #include "../Misc/GlobalConfig.h"
 #include "../Thread/RenderThreadVulkan.h"
 //#include "../Thread/RenderThreadGL.h"

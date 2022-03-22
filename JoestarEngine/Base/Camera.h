@@ -5,7 +5,7 @@
 #include "../Math/Matrix4x4.h"
 #include "../IO/HID.h"
 #include "../IO/Log.h"
-#include "../Base/Object.h"
+#include "../Core/Object.h"
 #include "../Misc/GlobalConfig.h"
 
 namespace Joestar {

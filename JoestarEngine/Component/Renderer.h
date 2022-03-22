@@ -2,7 +2,7 @@
 #include "../Graphics/Mesh.h"
 #include "../Graphics/Material.h"
 #include "../Base/Camera.h"
-#include "../Base/ObjectDefines.h"
+#include "../Core/ObjectDefines.h"
 #include "../Math/Matrix4x4.h"
 #include "../Component/Component.h"
 namespace Joestar {

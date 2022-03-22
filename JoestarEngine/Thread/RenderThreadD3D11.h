@@ -31,7 +31,7 @@ namespace Joestar {
 		//  下面的变量是在D3DApp构造函数中设置的。但是，你可以在派生类中重写这些值。
 
 		//  窗口标题。D3DApp的默认标题是"D3D11 Application"。
-		std::wstring mMainWndCaption;
+		//std::wstring mMainWndCaption;
 
 		//  Hardware device还是reference device？D3DApp默认使用D3D_DRIVER_TYPE_HARDWARE。
 		D3D_DRIVER_TYPE md3dDriverType;

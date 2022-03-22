@@ -3,7 +3,7 @@
 #define MATERIAL_H
 #include "Shader/Shader.h"
 #include "../Container/Vector.h"
-#include "../Base/Object.h"
+#include "../Core/Object.h"
 #include "ProgramCPU.h"
 #include "Texture2D.h"
 

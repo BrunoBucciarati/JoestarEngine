@@ -1,6 +1,6 @@
 #pragma once
-#include "../Base/ObjectDefines.h"
-#include "../Base/SubSystem.h"
+#include "../Core/ObjectDefines.h"
+#include "../Core/SubSystem.h"
 #include "../Container/Variant.h"
 #include "../Container/HashMap.h"
 namespace Joestar {

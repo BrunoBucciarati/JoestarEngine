@@ -1,5 +1,5 @@
 #pragma once
-#include "../Base/Platform.h"
+#include "../Core/Platform.h"
 namespace Joestar {
 	template<class T> inline U32 MakeHash(const T& data) {
 		return data.Hash();

@@ -1,5 +1,5 @@
 #pragma once
-#include "../Base/Platform.h"
+#include "../Core/Platform.h"
 #include "../IO/MemoryManager.h"
 #include "Str.h"
 namespace Joestar {

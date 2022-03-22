@@ -1,5 +1,5 @@
 #pragma once
-#include "../Base/Platform.h"
+#include "../Core/Platform.h"
 #include "../Base/StringHash.h"
 #include <cstring>
 namespace Joestar {

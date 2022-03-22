@@ -1,5 +1,5 @@
 #pragma once
-#include "../Base/ObjectDefines.h"
+#include "../Core/ObjectDefines.h"
 
 namespace Joestar {
 	struct FrameBufferDef {

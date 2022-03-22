@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include "../GraphicDefines.h"
-#include "../../Base/Object.h"
+#include "../../Core/Object.h"
 #include "../../Base/StringHash.h"
 #include "ShaderParser.h"
 namespace Joestar {
