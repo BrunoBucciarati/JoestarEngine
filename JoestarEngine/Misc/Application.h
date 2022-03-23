@@ -5,6 +5,7 @@
 #include "../Core/EngineContext.h"
 #include "../Graphics/Graphics.h"
 namespace Joestar {
+    class View;
     class Application {
     public:
         void Run();
@@ -21,5 +22,6 @@ namespace Joestar {
 
     private:
         EngineContext* gContext;
+        View* mMainView;
     };
 }

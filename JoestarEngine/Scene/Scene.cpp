@@ -9,12 +9,11 @@
 #include "../Component/Renderer.h"
 #include "../IO/MemoryManager.h"
 #include "../Misc/TimeManager.h"
+#include "../Base/Camera.h"
 const U32 SH_LEVEL = 1;
 
 namespace Joestar {
     Scene::Scene(EngineContext* ctx) : Super(ctx) {
-        camera = NEW_OBJECT(Camera);
-
         graphics = GetSubsystem<Graphics>();
 
         GameObject* sphere = NEW_OBJECT(GameObject);
@@ -52,18 +51,6 @@ namespace Joestar {
         CreateLights();
 
         CreateCompute();
-
-        tests.Push(plane);
-        tests.Push(sphere);
-        tests.Push(sphere);
-        testSet.Insert(1);
-        testMap.Insert(1, plane);
-        tests.Push(plane);
-        tests.Push(sphere);
-        tests.Push(sphere);
-        tests.Push(sphere);
-
-        HashSet<Pair<GameObject*, GameObject*>>::Iterator it;
     }
 
     Scene::~Scene() {}
@@ -114,30 +101,30 @@ namespace Joestar {
 
     void Scene::Update(float dt) {
         HID* hid = GetSubsystem<HID>();
-        camera->ProcessHID(hid, 0.01f);
+        //camera->ProcessHID(hid, 0.01f);
 
-        //Test Selection Movement
-        if (selection) {
-            Vector3f p = selection->GetPosition();
-            if (hid->CheckKeyboardInput(KEY_UP)) {
-                p.y = p.y + 0.1;
-                selection->SetPosition(p);
-            }
-            if (hid->CheckKeyboardInput(KEY_LEFT)) {
-                p.x = p.x - 0.1;
-                selection->SetPosition(p);
-            }
-            if (hid->CheckKeyboardInput(KEY_RIGHT)) {
-                p.x = p.x + 0.1;
-                selection->SetPosition(p);
-            }
-            if (hid->CheckKeyboardInput(KEY_DOWN)) {
-                p.y = p.y - 0.1;
-                selection->SetPosition(p);
-            }
-        }
+        ////Test Selection Movement
+        //if (selection) {
+        //    Vector3f p = selection->GetPosition();
+        //    if (hid->CheckKeyboardInput(KEY_UP)) {
+        //        p.y = p.y + 0.1;
+        //        selection->SetPosition(p);
+        //    }
+        //    if (hid->CheckKeyboardInput(KEY_LEFT)) {
+        //        p.x = p.x - 0.1;
+        //        selection->SetPosition(p);
+        //    }
+        //    if (hid->CheckKeyboardInput(KEY_RIGHT)) {
+        //        p.x = p.x + 0.1;
+        //        selection->SetPosition(p);
+        //    }
+        //    if (hid->CheckKeyboardInput(KEY_DOWN)) {
+        //        p.y = p.y - 0.1;
+        //        selection->SetPosition(p);
+        //    }
+        //}
 
-        RenderScene();
+        //RenderScene();
     }
 
     void Scene::PreRenderCompute() {
@@ -188,7 +175,7 @@ namespace Joestar {
         //DELETE_OBJECT(shadowCam);
     }
 
-    void Scene::RenderScene() {
+    void Scene::RenderScene(Camera* camera) {
         RenderShadowMap();
 
         graphics->BeginRenderPass("Scene");

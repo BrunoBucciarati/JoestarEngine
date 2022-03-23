@@ -1,6 +1,7 @@
 #pragma once
 #include "../Core/RefCount.h"
 #include "../Container/Ptr.h"
+#include "GPUResource.h"
 namespace Joestar {
     class PipelineLayout : RefCount
     {
@@ -12,7 +13,7 @@ namespace Joestar {
 
     };
 
-	class PipelineState : RefCount
+	class PipelineState : GPUResource
 	{
     protected:
         SharedPtr<PipelineShader> mShader;

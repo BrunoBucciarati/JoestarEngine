@@ -38,6 +38,7 @@ enum ClassIDType {
 	DefineClassID(Window, 29)
 	DefineClassID(Thread, 30)
 	DefineClassID(RenderThread, 31)
+	DefineClassID(View, 32)
 
 	kClassIDCount
 };

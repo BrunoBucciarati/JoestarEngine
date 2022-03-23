@@ -1,6 +1,5 @@
 #pragma once
 #include "../Base/GameObject.h"
-#include "../Base/Camera.h"
 #include "../Base/Light.h"
 #include "../Graphics/UniformData.h"
 #include "../Graphics/FrameBufferDef.h"
@@ -11,12 +10,13 @@
 #include "../Container/HashMap.h"
 
 namespace Joestar {
-	class Scene : public SubSystem {
-		REGISTER_SUBSYSTEM(Scene);
+	class Camera;
+	class Scene : public Object {
+		REGISTER_OBJECT(Scene, Object);
 	public:
 		explicit Scene(EngineContext* ctx);
 		void PreRenderCompute();
-		void RenderScene();
+		void RenderScene(Camera* camera);
 		void RenderLights();
 		void RenderSkybox();
 		void Update(float);
@@ -27,7 +27,6 @@ namespace Joestar {
 		Vector<GameObject*> gameObjects;
 		Vector<Light*> lights;
 		Light* mainLight;
-		Camera* camera;
 		GameObject* selection;
 		Material* skyboxMat;
 		Material* lightMat;
@@ -41,9 +40,5 @@ namespace Joestar {
 		Texture* shCube;
 		LightBlocks lightBlocks;
 		Graphics* graphics;
-		Vector<GameObject*> tests;
-		HashSet<int> testSet;
-		HashSet<GameObject*> testGOSet;
-		HashMap<int, GameObject*> testMap;
 	};
 }

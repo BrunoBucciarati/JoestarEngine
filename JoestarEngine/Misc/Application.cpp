@@ -1,12 +1,10 @@
 #include "Application.h"
 #include "../Core/EngineContext.h"
 #include "../Core/SubSystem.h"
-//#include "../Graphics/GraphicsGL.h"
-//#include "../Graphics/GraphicsVulkan.h"
 #include "GlobalConfig.h"
 #include "../Graphics/GraphicDefines.h"
+#include "../Graphics/View.h"
 #include "../IO/HID.h"
-#include "../Scene/Scene.h"
 #include "../Graphics/Shader/ShaderParser.h"
 #include "../Graphics/ProceduralMesh.h"
 #include "../Graphics/Window.h"
@@ -15,8 +13,9 @@
 #include "TimeManager.h"
 
 namespace Joestar {
+	F32 TARGET_FPS = 1.0F / 120.0F;
 	void Application::Start() {
-		gContext = new EngineContext;
+		gContext = JOJO_NEW(EngineContext);
 		InitSubSystem(MemoryManager, gContext)
 		InitSubSystem(TimeManager, gContext)
 		InitSubSystem(FileSystem, gContext)
@@ -34,7 +33,8 @@ namespace Joestar {
 		InitSubSystem(HID, gContext)
 		InitSubSystem(ShaderParser, gContext)
 		InitSubSystem(ProceduralMesh, gContext)
-		InitSubSystem(Scene, gContext)
+
+		mMainView = JOJO_NEW(View(gContext));
 	}
 
 	void Application::Run()
@@ -49,9 +49,16 @@ namespace Joestar {
 	void Application::Update() {
 		float dt = GetSubSystem<TimeManager>()->GetElapseTime();
 		GetSubSystem<TimeManager>()->BeginFrame();
-		GetSubSystem<Scene>()->Update(dt);
+		mMainView->Update(dt);
+
 		GetSubSystem<Graphics>()->MainLoop();
+
+		mMainView->Render();
 		GetSubSystem<TimeManager>()->EndFrame();
+		if (dt < TARGET_FPS)
+		{
+			Sleep(1000.F*(TARGET_FPS - dt));
+		}
 	}
 
 	static Application* appInstance;

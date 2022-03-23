@@ -4,19 +4,16 @@
 		static const char* GetTypeStatic() {return #CLASS;}\
 		static uint32_t GetClassIDStatic() {return ClassID(CLASS);}\
 		virtual uint32_t GetClassID() {return ClassID(CLASS);} \
-	protected:\
 		virtual ~CLASS();\
-	public:
+	typedef Object Super;
 
 #define REGISTER_OBJECT(CLASS, PARENT)\
 	public:\
 		static const char* GetTypeStatic() {return #CLASS;}\
 		static uint32_t GetClassIDStatic() {return ClassID(CLASS);}\
 		virtual uint32_t GetClassID() {return ClassID(CLASS);} \
-	typedef PARENT Super;\
-	protected:\
 		virtual ~CLASS();\
-	public:
+	typedef PARENT Super;
 	
 #define REGISTER_SUBSYSTEM(CLASS) REGISTER_OBJECT(CLASS, SubSystem);
 #define REGISTER_COMPONENT(CLASS) \

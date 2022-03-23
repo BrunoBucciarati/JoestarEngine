@@ -5,7 +5,6 @@
 #include "../Window.h"
 #include <vulkan/vulkan_win32.h>
 
-#define MAX_FRAMES_IN_FLIGHT 3
 namespace Joestar {
     VkResult globalResult;
 #define VK_CHECK(fn) \
@@ -357,7 +356,7 @@ namespace Joestar {
         }
     }
 
-	void RenderAPIVK::CreateSwapChain()
+	GPUResourceHandle RenderAPIVK::CreateSwapChain(GPUResourceCreateInfo& ci, U32 num)
 	{
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(mPhysicalDevice);
 
@@ -428,6 +427,7 @@ namespace Joestar {
             createInfo.subresourceRange.layerCount = 1;
             VK_CHECK(vkCreateImageView(mDevice, &createInfo, nullptr, &mSwapChainImageViews[i]));
         }
+        return 0;
 	}
 
     void RenderAPIVK::CreateCommandPool()
@@ -438,35 +438,44 @@ namespace Joestar {
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
 
         VK_CHECK(vkCreateCommandPool(mDevice, &poolInfo, nullptr, &mCommandPool));
-
     }
 
-    void RenderAPIVK::CreateCommandBuffers()
+    GPUResourceHandle RenderAPIVK::CreateCommandBuffers(GPUResourceCreateInfo& createInfo, U32 num)
     {
-        CreateCommandPool();
+        GPUResourceHandle handle = mCommandBuffers.Size();
+        CommandBufferVK& cb = mCommandBuffers.EmplaceBack();
 
-        mCommandBuffers.Resize(mSwapChainImageViews.Size());
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = mCommandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = mCommandBuffers.Size();
+        allocInfo.commandBufferCount = num;
+        cb.Create(mDevice, allocInfo);
 
-        VK_CHECK(vkAllocateCommandBuffers(mDevice, &allocInfo, mCommandBuffers.Buffer()));
+        return handle;
     }
 
-    void RenderAPIVK::CreateSyncObjects()
+    GPUResourceHandle RenderAPIVK::CreateMainCommandBuffers(U32 num)
+    {
+        CreateCommandPool();
+
+        GPUResourceCreateInfo ci;
+        return CreateCommandBuffers(ci, num);
+
+    }
+
+    GPUResourceHandle RenderAPIVK::CreateSyncObjects(GPUResourceCreateInfo& createInfo, U32 num)
     {
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        mImageAvailableSemaphores.Resize(MAX_FRAMES_IN_FLIGHT);
-        mRenderFinishedSemaphores.Resize(MAX_FRAMES_IN_FLIGHT);
+        mImageAvailableSemaphores.Resize(num);
+        mRenderFinishedSemaphores.Resize(num);
 
-        mInFlightFences.Resize(MAX_FRAMES_IN_FLIGHT);
+        mInFlightFences.Resize(num);
         VkFenceCreateInfo fenceInfo = {};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        for (U32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+        for (U32 i = 0; i < num; ++i) {
             if (vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS ||
                 vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS ||
                 vkCreateFence(mDevice, &fenceInfo, nullptr, &mInFlightFences[i]) != VK_SUCCESS) {
@@ -474,5 +483,6 @@ namespace Joestar {
                 LOGERROR("failed to create synchronization objects for a frame!");
             }
         }
+        return 0;
     }
 }

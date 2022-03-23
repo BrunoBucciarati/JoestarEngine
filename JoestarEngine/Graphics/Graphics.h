@@ -14,6 +14,9 @@
 #include "UniformData.h"
 #include "FrameBufferDef.h"
 namespace Joestar {
+	class PipelineState;
+	class CommandBuffer;
+
 	class Graphics : public SubSystem {
 		REGISTER_SUBSYSTEM(Graphics)
 	public:

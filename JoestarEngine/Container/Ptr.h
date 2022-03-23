@@ -44,6 +44,14 @@ namespace Joestar
 		T* Get() const {
 			return mPtr;
 		}
+		operator bool()
+		{
+			return mPtr != nullptr;
+		}
+		operator T* ()
+		{
+			return mPtr;
+		}
 	private:
 		T* mPtr;
 	};
@@ -88,6 +96,14 @@ namespace Joestar
 		T* Get() const {
 			return mPtr;
 		}
+		operator bool()
+		{
+			return mPtr != nullptr;
+		}
+		operator T* ()
+		{
+			return mPtr;
+		}
 	private:
 		T* mPtr;
 	};
@@ -123,6 +139,14 @@ namespace Joestar
 		}
 		T* operator [](int index) {
 			return mPtr[index];
+		}
+		operator bool()
+		{
+			return mPtr != nullptr;
+		}
+		operator T* ()
+		{
+			return mPtr;
 		}
 		bool Null() {
 			return !!mPtr;

@@ -312,6 +312,25 @@ namespace Joestar
 			JOJO_PLACEMENT_NEW(T(value), mBuffer + mSize, MEMORY_CONTAINER);
 			++mSize;
 		}
+
+
+        /// Create an element at the end.
+        template <class... Args> T& EmplaceBack(Args&&... args)
+        {
+            if (mSize < mCapacity)
+            {
+                // Optimize common case
+                ++mSize;
+                JOJO_PLACEMENT_NEW(T(std::forward<Args>(args)...), &Back(), MEMORY_CONTAINER);
+            }
+            else
+            {
+                T value(std::forward<Args>(args)...);
+                Push(std::move(value));
+            }
+            return Back();
+        }
+
 		void Clear()
         {
 			mSize = 0;

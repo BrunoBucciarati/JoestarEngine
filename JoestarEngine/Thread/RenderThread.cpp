@@ -4,6 +4,7 @@
 #include "../Graphics/Vulkan/RenderAPIVK.h"
 #include "../Misc/GlobalConfig.h"
 namespace Joestar {
+#define MAX_FRAMES_IN_FLIGHT 3
     RenderThread::~RenderThread()
     {
         
@@ -28,21 +29,10 @@ namespace Joestar {
         Window* window = GetSubsystem<Window>();
         mProtocol->SetWindow(window);
         mProtocol->CreateDevice();
-        mProtocol->CreateSwapChain();
-        mProtocol->CreateCommandBuffers();
-        mProtocol->CreateSyncObjects();
-        //glfwSetWindowUserPointer(window);
-        //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        //Application* app = Application::GetApplication();
-        //GlobalConfig* cfg = app->GetEngineContext()->GetSubsystem<GlobalConfig>();
-        //uint32_t width = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_WIDTH);
-        //uint32_t height = cfg->GetConfig<uint32_t>(CONFIG_WINDOW_HEIGHT);
-        //window = glfwCreateWindow(width, height, "Joestar Engine", nullptr, nullptr);
 
-        //glfwSetWindowUserPointer(window, this);
-        //glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        //glfwSetCursorPosCallback(window, MouseCallback);
-        //glfwSetScrollCallback(window, ScrollCallback);
+        GPUResourceCreateInfo info{};
+        mProtocol->CreateSwapChain(info, MAX_FRAMES_IN_FLIGHT);
+        mProtocol->CreateMainCommandBuffers(MAX_FRAMES_IN_FLIGHT);
+        mProtocol->CreateSyncObjects(info, MAX_FRAMES_IN_FLIGHT);
 	}
 }
