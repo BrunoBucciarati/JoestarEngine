@@ -26,6 +26,7 @@ namespace Joestar {
 		void CreateSyncObjects(U32 num = 1);
 		void CreateCommandBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1);
 		void CreateFrameBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1);
+		void CreateBackBuffers();
 		void CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo);
 		void CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo);
 
@@ -52,8 +53,6 @@ namespace Joestar {
 		VkDebugUtilsMessengerEXT mDebugMessenger;
 
 		VkCommandPool mCommandPool;
-
-		Vector<VkFramebuffer> mSwapChainFramebuffers;
 
 		Vector<VkSemaphore> mImageAvailableSemaphores;
 		Vector<VkSemaphore> mRenderFinishedSemaphores;

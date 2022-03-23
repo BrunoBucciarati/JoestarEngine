@@ -14,6 +14,7 @@ namespace Joestar
 		virtual void CreateMainCommandBuffers(U32 num = 1) = 0;
 		virtual void CreateCommandBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
 		virtual void CreateSyncObjects(U32 num = 1) = 0;
+		virtual void CreateBackBuffers() = 0;
 		virtual void CreateFrameBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
 		virtual void CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo) = 0;
 		virtual void CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo) = 0;

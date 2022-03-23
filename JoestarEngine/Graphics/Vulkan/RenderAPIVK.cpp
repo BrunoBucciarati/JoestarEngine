@@ -497,7 +497,7 @@ namespace Joestar {
         imageInfo.flags = 0; // Optional  
         image.Create(mDevice, imageInfo, createInfo.num);
 
-        U32 memoryTypeIdx = FindMemoryType(image.memRequirements->memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mPhysicalDevice);
+        U32 memoryTypeIdx = FindMemoryType(image.memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mPhysicalDevice);
         image.AllocMemory(mDevice, memoryTypeIdx);
 
     }
@@ -518,6 +518,12 @@ namespace Joestar {
         viewInfo.subresourceRange.baseArrayLayer = createInfo.baseLayer;
         viewInfo.subresourceRange.layerCount = createInfo.layer;
         imageView.Create(mDevice, viewInfo, createInfo.num);
+    }
+
+
+    void RenderAPIVK::CreateBackBuffers()
+    {
+        
     }
 
     void RenderAPIVK::CreateFrameBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num) {
