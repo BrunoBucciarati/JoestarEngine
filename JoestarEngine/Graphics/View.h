@@ -5,6 +5,7 @@ namespace Joestar
 {
 	class Camera;
 	class Scene;
+	class Graphics;
 	class View : public Object
 	{
 		REGISTER_OBJECT(View, Object);
@@ -15,5 +16,6 @@ namespace Joestar
 	private:
 		UniquePtr<Camera> mCamera;
 		UniquePtr<Scene> mScene;
+		WeakPtr<Graphics> mGraphics;
 	};
 }

@@ -74,8 +74,14 @@ namespace Joestar {
 	public:
 		void Create(VkDevice& device, VkCommandBufferAllocateInfo& allocInfo)
 		{
+			if (bCreated)
+				return;
 			if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS)
+			{
 				LOGERROR("failed to allocate command buffer!\n");
+				return;
+			}
+			bCreated = true;
 		}
 
 		void Begin()
@@ -99,19 +105,20 @@ namespace Joestar {
 
 	private:
 		VkCommandBuffer commandBuffer;
+		bool bCreated{false};
 	};
 
 	class RenderAPIVK : public RenderAPIProtocol
 	{
 	public:
 		void CreateDevice();
-		GPUResourceHandle CreateSwapChain(GPUResourceCreateInfo& createInfo, U32 num = 1);
-		GPUResourceHandle CreateMainCommandBuffers(U32 num = 1);
-		GPUResourceHandle CreateSyncObjects(GPUResourceCreateInfo& createInfo, U32 num = 1);
+		void CreateSwapChain( GPUResourceCreateInfo& createInfo, U32 num = 1);
+		void CreateMainCommandBuffers(U32 num = 1);
+		void CreateSyncObjects(GPUResourceCreateInfo& createInfo, U32 num = 1);
+		void CreateCommandBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1);
 	private:
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		void CreateCommandPool();
-		GPUResourceHandle CreateCommandBuffers(GPUResourceCreateInfo& createInfo, U32 num = 1);
 		void CreateInstance();
 		void SetupDebugMessenger();
 		void CreateSurface();

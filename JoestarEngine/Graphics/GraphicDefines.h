@@ -72,7 +72,7 @@ namespace Joestar {
 		4
 	};
 
-	const U32 MAX_CMDBUFFERS_IN_FLIGHT = 3;
+	const U32 MAX_CMDLISTS_IN_FLIGHT = 3;
 
 }
 #endif

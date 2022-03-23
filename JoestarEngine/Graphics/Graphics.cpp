@@ -5,15 +5,17 @@
 //#include "../Thread/RenderThreadGL.h"
 #include "../Thread/RenderThreadD3D11.h"
 #include "../IO/MemoryManager.h"
+#include "CommandBuffer.h"
+#include "GFXCommandList.h"
 
 namespace Joestar {
 	Graphics::Graphics(EngineContext* context) : Super(context) {
-		cmdBuffers.Resize(MAX_CMDBUFFERS_IN_FLIGHT);
+		cmdBuffers.Resize(MAX_CMDLISTS_IN_FLIGHT);
 		for (auto& cmdBuffer : cmdBuffers)
 			cmdBuffer = JOJO_NEW(GFXCommandBuffer(1024));
 		cmdBuffer = cmdBuffers[0];
 
-		computeCmdBuffers.Resize(MAX_CMDBUFFERS_IN_FLIGHT);
+		computeCmdBuffers.Resize(MAX_CMDLISTS_IN_FLIGHT);
 		for (auto& cmdBuffer : computeCmdBuffers)
 			cmdBuffer = JOJO_NEW(GFXCommandBuffer(256));
 		computeCmdBuffer = computeCmdBuffers[0];
@@ -29,7 +31,6 @@ namespace Joestar {
 
 		}*/
 			//auto* a1 = new RenderThreadVulkan(mContext, cmdBuffers, computeCmdBuffers);
-		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
 		//if (gfxAPI == GFX_API_VULKAN) {
 		//}
 		//else if (gfxAPI == GFX_API_OPENGL) {
@@ -38,28 +39,50 @@ namespace Joestar {
 		//else if (gfxAPI == GFX_API_D3D11) {
 		//	renderThread = new RenderThreadD3D11(cmdBuffers, computeCmdBuffers);
 		//}
+
+		//创建MainCmdList
+		ThreadCommandList cmdLists;
+		for (int i = 0; i < MAX_CMDLISTS_IN_FLIGHT; ++i)
+		{
+			cmdLists.cmdList[i] = JOJO_NEW(GFXCommandList);
+		}
+		mThreadCommandLists.Push(cmdLists);
+
+		//创建MainCommandBuffer
+		CreateCommandBuffer();
+
+		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
+		renderThread->SetGFXCommandList(cmdLists.cmdList);
+	}
+
+	GFXCommandList* Graphics::GetMainCmdList()
+	{
+		return mThreadCommandLists[0].cmdList[frameIdx];
 	}
 
 	void Graphics::MainLoop() {
+		U32 idx = frameIdx % MAX_CMDLISTS_IN_FLIGHT;
+		GetMainCmdList()->Flush();
+		++frameIdx;
 		return;
 		//Flush cmd buffer from last frame
-		while (computeCmdBuffer->ready || cmdBuffer->ready) {
-			//busy wait, must be both in unready state
-		}
-		if (!computeCmdBuffer->Empty() || !cmdBuffer->Empty()) {
-			computeCmdBuffer->Flush();
-			cmdBuffer->Flush();
-		}
-		//renderThread->DrawFrame(cmdBuffer);
+		//while (computeCmdBuffer->ready || cmdBuffer->ready) {
+		//	//busy wait, must be both in unready state
+		//}
+		//if (!computeCmdBuffer->Empty() || !cmdBuffer->Empty()) {
+		//	computeCmdBuffer->Flush();
+		//	cmdBuffer->Flush();
+		//}
+		////renderThread->DrawFrame(cmdBuffer);
+		////cmdBuffer->Clear();
+		//U32 idx = ++frameIdx % MAX_CMDLISTS_IN_FLIGHT;
+		//cmdBuffer = cmdBuffers[idx];
+		//computeCmdBuffer = computeCmdBuffers[idx];
+		//while (computeCmdBuffer->ready || cmdBuffer->ready) {
+		//	//busy wait, must be both in unready state
+		//}
 		//cmdBuffer->Clear();
-		U32 idx = ++frameIdx % MAX_CMDBUFFERS_IN_FLIGHT;
-		cmdBuffer = cmdBuffers[idx];
-		computeCmdBuffer = computeCmdBuffers[idx];
-		while (computeCmdBuffer->ready || cmdBuffer->ready) {
-			//busy wait, must be both in unready state
-		}
-		cmdBuffer->Clear();
-		computeCmdBuffer->Clear();
+		//computeCmdBuffer->Clear();
 	}
 
 	void Graphics::Clear() {
@@ -252,5 +275,21 @@ namespace Joestar {
 		computeCmdBuffer->WriteCommandType(ComputeCMD_UpdatePushConstant);
 		computeCmdBuffer->WriteBuffer<U32>(size);
 		computeCmdBuffer->WriteBufferPtr(data, size);
+	}
+
+	CommandBuffer* Graphics::GetMainCommandBuffer()
+	{
+		return mCommandBuffers[0];
+	}
+
+	CommandBuffer* Graphics::CreateCommandBuffer()
+	{
+		GPUResourceHandle handle = mCommandBuffers.Size();
+		CommandBuffer* cb = JOJO_NEW(CommandBuffer);
+		cb->handle = handle;
+		mCommandBuffers.Push(cb);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateCommandBuffer);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+		return cb;
 	}
 }

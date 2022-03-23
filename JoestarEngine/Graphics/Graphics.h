@@ -16,6 +16,7 @@
 namespace Joestar {
 	class PipelineState;
 	class CommandBuffer;
+	class GFXCommandList;
 
 	class Graphics : public SubSystem {
 		REGISTER_SUBSYSTEM(Graphics)
@@ -54,6 +55,10 @@ namespace Joestar {
 		void UpdatePushConstant(void* data, U32 size);
 		void WriteBackComputeBuffer();
 
+		CommandBuffer* GetMainCommandBuffer();
+		CommandBuffer* CreateCommandBuffer();
+		GFXCommandList* GetMainCmdList();
+
 	private:
 		RenderThread* renderThread;
 		Vector<GFXCommandBuffer*> cmdBuffers;
@@ -63,5 +68,13 @@ namespace Joestar {
 		Vector4f defaultClearColor;
 		bool isCompute = false;
 		U32 frameIdx = 0;
+
+		Vector<CommandBuffer*> mCommandBuffers;
+
+		struct ThreadCommandList
+		{
+			GFXCommandList* cmdList[MAX_CMDLISTS_IN_FLIGHT];
+		};
+		Vector<ThreadCommandList> mThreadCommandLists;
 	};
 }

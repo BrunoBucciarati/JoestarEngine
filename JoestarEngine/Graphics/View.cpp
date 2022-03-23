@@ -1,6 +1,7 @@
 #include "View.h"
 #include "../Base/Camera.h"
 #include "../Scene/Scene.h"
+#include "../Graphics/CommandBuffer.h"
 
 namespace Joestar
 {
@@ -8,6 +9,7 @@ namespace Joestar
 	{
 		mCamera = NEW_OBJECT(Camera);
 		mScene = NEW_OBJECT(Scene);
+		mGraphics = GetSubsystem<Graphics>();
 	}
 
 	View::~View()
@@ -23,6 +25,7 @@ namespace Joestar
 
 	void View::Render()
 	{
+		CommandBuffer* cb = mGraphics->GetMainCommandBuffer();
 		if (mScene)
 		{
 			mScene->RenderScene(mCamera);

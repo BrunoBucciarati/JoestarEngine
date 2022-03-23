@@ -9,10 +9,10 @@ namespace Joestar
 	{
 	public:
 		virtual void CreateDevice() = 0;
-		virtual GPUResourceHandle CreateSwapChain(GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
-		virtual GPUResourceHandle CreateMainCommandBuffers(U32 num = 1) = 0;
-		virtual GPUResourceHandle CreateCommandBuffers(GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
-		virtual GPUResourceHandle CreateSyncObjects(GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
+		virtual void CreateSwapChain(GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
+		virtual void CreateMainCommandBuffers(U32 num = 1) = 0;
+		virtual void CreateCommandBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
+		virtual void CreateSyncObjects(GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
 
 		void SetWindow(Window* w);
 	protected:

@@ -224,6 +224,7 @@
     <ClInclude Include="Core\RefCount.h" />
     <ClInclude Include="Core\SubSystem.h" />
     <ClInclude Include="Graphics\CommandBuffer.h" />
+    <ClInclude Include="Graphics\GFXCommandList.h" />
     <ClInclude Include="Graphics\GPUProgramVulkan.h" />
     <ClInclude Include="Graphics\GPUResource.h" />
     <ClInclude Include="Graphics\GraphicDefines.h" />

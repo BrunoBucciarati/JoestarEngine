@@ -460,7 +460,7 @@ namespace Joestar {
         }
 
         while (!bExit) {
-            U32 idx = frameIndex % MAX_CMDBUFFERS_IN_FLIGHT;
+            U32 idx = frameIndex % MAX_CMDLISTS_IN_FLIGHT;
             //always dispatch compute first, then draw
             while (!computeCmdBuffers[idx]->ready || !cmdBuffers[idx]->ready) {
                 //busy wait

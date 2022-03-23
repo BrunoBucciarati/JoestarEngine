@@ -356,7 +356,7 @@ namespace Joestar {
         }
     }
 
-	GPUResourceHandle RenderAPIVK::CreateSwapChain(GPUResourceCreateInfo& ci, U32 num)
+	void RenderAPIVK::CreateSwapChain(GPUResourceCreateInfo& ci, U32 num)
 	{
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(mPhysicalDevice);
 
@@ -427,7 +427,6 @@ namespace Joestar {
             createInfo.subresourceRange.layerCount = 1;
             VK_CHECK(vkCreateImageView(mDevice, &createInfo, nullptr, &mSwapChainImageViews[i]));
         }
-        return 0;
 	}
 
     void RenderAPIVK::CreateCommandPool()
@@ -440,10 +439,11 @@ namespace Joestar {
         VK_CHECK(vkCreateCommandPool(mDevice, &poolInfo, nullptr, &mCommandPool));
     }
 
-    GPUResourceHandle RenderAPIVK::CreateCommandBuffers(GPUResourceCreateInfo& createInfo, U32 num)
+    void RenderAPIVK::CreateCommandBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num)
     {
-        GPUResourceHandle handle = mCommandBuffers.Size();
-        CommandBufferVK& cb = mCommandBuffers.EmplaceBack();
+        if (handle > mCommandBuffers.Size() - 1)
+            mCommandBuffers.Resize(handle + 1);
+        CommandBufferVK& cb = mCommandBuffers[handle];
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -451,20 +451,18 @@ namespace Joestar {
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = num;
         cb.Create(mDevice, allocInfo);
-
-        return handle;
     }
 
-    GPUResourceHandle RenderAPIVK::CreateMainCommandBuffers(U32 num)
+    void RenderAPIVK::CreateMainCommandBuffers(U32 num)
     {
         CreateCommandPool();
 
         GPUResourceCreateInfo ci;
-        return CreateCommandBuffers(ci, num);
+        return CreateCommandBuffers(0, ci, num);
 
     }
 
-    GPUResourceHandle RenderAPIVK::CreateSyncObjects(GPUResourceCreateInfo& createInfo, U32 num)
+    void RenderAPIVK::CreateSyncObjects(GPUResourceCreateInfo& createInfo, U32 num)
     {
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -483,6 +481,5 @@ namespace Joestar {
                 LOGERROR("failed to create synchronization objects for a frame!");
             }
         }
-        return 0;
     }
 }
