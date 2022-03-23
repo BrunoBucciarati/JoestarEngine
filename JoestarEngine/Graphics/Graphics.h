@@ -17,6 +17,10 @@ namespace Joestar {
 	class PipelineState;
 	class CommandBuffer;
 	class GFXCommandList;
+	class FrameBuffer;
+	class SwapChain;
+	class GPUImage;
+	class GPUImageView;
 
 	class Graphics : public SubSystem {
 		REGISTER_SUBSYSTEM(Graphics)
@@ -57,6 +61,15 @@ namespace Joestar {
 
 		CommandBuffer* GetMainCommandBuffer();
 		CommandBuffer* CreateCommandBuffer();
+
+		FrameBuffer* GetBackBuffer();
+		FrameBuffer* CreateFrameBuffer();
+
+		void CreateImage(GPUImage*, U32);
+		void CreateImageView(GPUImageView*, U32);
+
+		void CreateSwapChain();
+		void CreateSyncObjects();
 		GFXCommandList* GetMainCmdList();
 
 	private:
@@ -70,11 +83,17 @@ namespace Joestar {
 		U32 frameIdx = 0;
 
 		Vector<CommandBuffer*> mCommandBuffers;
+		Vector<FrameBuffer*> mFrameBuffers;
+		Vector<GPUImage*> mImages;
+		Vector<GPUImageView*> mImageViews;
+		SwapChain* mSwapChain;
 
 		struct ThreadCommandList
 		{
 			GFXCommandList* cmdList[MAX_CMDLISTS_IN_FLIGHT];
 		};
 		Vector<ThreadCommandList> mThreadCommandLists;
+		U32 msaaSamples{ 0 };
+		bool bFloatingPointRT{ false };
 	};
 }

@@ -398,10 +398,28 @@
     <ClInclude Include="IO\MemoryWriter.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\Vulkan\CreateInfosVK.h">
+    <ClInclude Include="Graphics\GFXCommandList.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\GFXCommandList.h">
+    <ClInclude Include="Graphics\FrameBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\GPUTexture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RenderTarget.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\SwapChain.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\GPUCreateInfos.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Vulkan\RenderEnumsVK.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Vulkan\RenderStructsVK.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

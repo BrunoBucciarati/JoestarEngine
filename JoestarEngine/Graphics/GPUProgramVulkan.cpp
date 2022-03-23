@@ -9,17 +9,6 @@
 #define DEBUG_COMPUTE_PIPELINE 0
 
 namespace Joestar {
-	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device) {
-		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(device, &memProperties);
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-				return i;
-			}
-		}
-
-		LOGERROR("failed to find suitable memory type!");
-	}
 
 	VkCompareOp VKCompareOps[] = {
 		VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_LESS, VK_COMPARE_OP_LESS_OR_EQUAL,
@@ -998,7 +987,7 @@ namespace Joestar {
 			case ComputeCMD_DispatchCompute: {
 				CHECK_COMPUTE(ComputeCMD_DispatchCompute)
 				U32 sz = 3 * sizeof(U32);
-				cmdBuffer->ReadBufferPtr(computePipeline->group, sz);
+				cmdBuffer->ReadBufferPtr((U8*)computePipeline->group, sz);
 				//memcpy(computePipeline->group, cmdBuffer[i].data, cmdBuffer[i].size);
 				PrepareCompute(computePipeline);
 				DispatchCompute(computePipeline);

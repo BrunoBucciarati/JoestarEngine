@@ -306,7 +306,7 @@ namespace Joestar {
             allocInfo.memoryTypeIndex = memoryTypeIdx;
 
             if (vkAllocateMemory(ctx->device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-                throw std::runtime_error("failed to allocate image memory!");
+                LOGERROR("failed to allocate image memory!");
             }
 
             vkBindImageMemory(ctx->device, image, imageMemory, 0);

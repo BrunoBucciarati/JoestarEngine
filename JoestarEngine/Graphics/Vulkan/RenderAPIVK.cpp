@@ -4,6 +4,7 @@
 #include "../../Math/MathDefs.h"
 #include "../Window.h"
 #include <vulkan/vulkan_win32.h>
+#include "RenderEnumsVK.h"
 
 namespace Joestar {
     VkResult globalResult;
@@ -43,6 +44,18 @@ namespace Joestar {
         else {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }
+    }
+
+    U32 FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device) {
+        VkPhysicalDeviceMemoryProperties memProperties;
+        vkGetPhysicalDeviceMemoryProperties(device, &memProperties);
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+
+        LOGERROR("failed to find suitable memory type!");
     }
 
     bool CheckValidationLayerSupport() {
@@ -356,7 +369,7 @@ namespace Joestar {
         }
     }
 
-	void RenderAPIVK::CreateSwapChain(GPUResourceCreateInfo& ci, U32 num)
+	void RenderAPIVK::CreateSwapChain(GPUSwapChainCreateInfo& ci, U32 num)
 	{
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(mPhysicalDevice);
 
@@ -398,24 +411,24 @@ namespace Joestar {
 
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(mDevice, &createInfo, nullptr, &mSwapChain) != VK_SUCCESS) {
+        if (vkCreateSwapchainKHR(mDevice, &createInfo, nullptr, &mSwapChain.swapChain) != VK_SUCCESS) {
             LOGERROR("Failed to create swap chain!");
         }
-        vkGetSwapchainImagesKHR(mDevice, mSwapChain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(mDevice, mSwapChain.swapChain, &imageCount, nullptr);
 
-        mSwapChainImages.Resize(imageCount);
-        vkGetSwapchainImagesKHR(mDevice, mSwapChain, &imageCount, mSwapChainImages.Buffer());
-        mSwapChainImageFormat = surfaceFormat.format;
-        mSwapChainExtent = extent;
+        mSwapChain.imageViews.Resize(imageCount);
+        vkGetSwapchainImagesKHR(mDevice, mSwapChain.swapChain, &imageCount, mSwapChain.images.Buffer());
+        mSwapChain.format = surfaceFormat.format;
+        mSwapChain.extent = extent;
 
-        mSwapChainImageViews.Resize(mSwapChainImages.Size());
-        for (U32 i = 0; i < mSwapChainImages.Size(); ++i)
+        mSwapChain.imageViews.Resize(mSwapChain.images.Size());
+        for (U32 i = 0; i < mSwapChain.images.Size(); ++i)
         {
             VkImageViewCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image = mSwapChainImages[i];
+            createInfo.image = mSwapChain.images[i];
             createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = mSwapChainImageFormat;
+            createInfo.format = mSwapChain.format;
             createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
             createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
             createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -425,7 +438,7 @@ namespace Joestar {
             createInfo.subresourceRange.levelCount = 1;
             createInfo.subresourceRange.baseArrayLayer = 0;
             createInfo.subresourceRange.layerCount = 1;
-            VK_CHECK(vkCreateImageView(mDevice, &createInfo, nullptr, &mSwapChainImageViews[i]));
+            VK_CHECK(vkCreateImageView(mDevice, &createInfo, nullptr, &mSwapChain.imageViews[i]));
         }
 	}
 
@@ -441,7 +454,7 @@ namespace Joestar {
 
     void RenderAPIVK::CreateCommandBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num)
     {
-        if (handle > mCommandBuffers.Size() - 1)
+        if (handle + 1 > mCommandBuffers.Size())
             mCommandBuffers.Resize(handle + 1);
         CommandBufferVK& cb = mCommandBuffers[handle];
 
@@ -459,10 +472,92 @@ namespace Joestar {
 
         GPUResourceCreateInfo ci;
         return CreateCommandBuffers(0, ci, num);
-
     }
 
-    void RenderAPIVK::CreateSyncObjects(GPUResourceCreateInfo& createInfo, U32 num)
+    void RenderAPIVK::CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo)
+    {
+        if (handle + 1 > mImages.Size())
+            mImages.Resize(handle + 1);
+        ImageVK& image = mImages[handle];
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = GetImageType(createInfo.type);
+        imageInfo.extent.width = createInfo.width;
+        imageInfo.extent.height = createInfo.height;
+        imageInfo.extent.depth = createInfo.depth;
+        imageInfo.mipLevels = createInfo.mipLevels;
+        imageInfo.arrayLayers = createInfo.layer;
+        imageInfo.format = GetImageFormat(createInfo.format);
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = GetImageUsageBits(createInfo.usage);;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.samples = VkSampleCountFlagBits(createInfo.samples);
+        //imageInfo.flags = viewType == VK_IMAGE_VIEW_TYPE_CUBE ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0; // Optional  
+        imageInfo.flags = 0; // Optional  
+        image.Create(mDevice, imageInfo, createInfo.num);
+
+        U32 memoryTypeIdx = FindMemoryType(image.memRequirements->memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mPhysicalDevice);
+        image.AllocMemory(mDevice, memoryTypeIdx);
+
+    }
+    void RenderAPIVK::CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo)
+    {
+        if (handle + 1 > mImageViews.Size())
+            mImageViews.Resize(handle + 1);
+        ImageViewVK& imageView = mImageViews[handle];
+        ImageVK image = mImages[createInfo.imageHandle];
+        imageView.image = &image;
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.viewType = GetImageViewType(createInfo.type);
+        viewInfo.format = GetImageFormat(createInfo.format);
+        viewInfo.subresourceRange.aspectMask = GetImageAspectBits(createInfo.aspectBits);
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = createInfo.mipLevels;
+        viewInfo.subresourceRange.baseArrayLayer = createInfo.baseLayer;
+        viewInfo.subresourceRange.layerCount = createInfo.layer;
+        imageView.Create(mDevice, viewInfo, createInfo.num);
+    }
+
+    void RenderAPIVK::CreateFrameBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num) {
+        //if (!vkCtxPtr->swapChainFramebuffers.Empty()) return;
+        //pass->fb = new FrameBufferVK{ vkCtxPtr };
+        //CreateColorResources(pass);
+        //CreateDepthResources(pass);
+        //vkCtxPtr->swapChainFramebuffers.Resize(vkCtxPtr->swapChainImageViews.Size());
+        //for (size_t i = 0; i < vkCtxPtr->swapChainImageViews.Size(); i++) {
+        //    Vector<VkImageView> attachments;
+        //    if (pass->msaa) {
+        //        attachments = {
+        //            pass->fb->colorImage->imageView,
+        //            pass->fb->depthImage->imageView,
+        //            vkCtxPtr->swapChainImageViews[i]
+        //        };
+        //    }
+        //    else {
+        //        attachments = {
+        //            vkCtxPtr->swapChainImageViews[i],
+        //            pass->fb->depthImage->imageView
+        //        };
+        //    }
+
+        //    VkFramebufferCreateInfo framebufferInfo{};
+        //    framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        //    framebufferInfo.renderPass = pass->renderPass;
+        //    framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.Size());
+        //    framebufferInfo.pAttachments = attachments.Buffer();
+        //    framebufferInfo.width = vkCtxPtr->swapChainExtent.width;
+        //    framebufferInfo.height = vkCtxPtr->swapChainExtent.height;
+        //    framebufferInfo.layers = 1;
+
+        //    if (vkCreateFramebuffer(vkCtxPtr->device, &framebufferInfo, nullptr, &vkCtxPtr->swapChainFramebuffers[i]) != VK_SUCCESS) {
+        //        LOGERROR("failed to create framebuffer!");
+        //    }
+        //}
+    }
+
+    void RenderAPIVK::CreateSyncObjects(U32 num)
     {
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

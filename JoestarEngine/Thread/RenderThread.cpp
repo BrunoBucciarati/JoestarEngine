@@ -4,6 +4,7 @@
 #include "../Graphics/GFXCommandList.h"
 #include "../Graphics/Vulkan/RenderAPIVK.h"
 #include "../Misc/GlobalConfig.h"
+#include "../Graphics/GPUCreateInfos.h"
 namespace Joestar {
 #define MAX_FRAMES_IN_FLIGHT 3
     RenderThread::~RenderThread()
@@ -31,9 +32,8 @@ namespace Joestar {
             if (!mCmdList)
                 continue;
             U32 idx = frameIndex % MAX_CMDLISTS_IN_FLIGHT;
-            //always dispatch compute first, then draw
             while (!mCmdList[idx]->readFlag) {
-                //wait for 0.1 sec
+                //wait for 0.01 sec
                 Sleep(10.F);
             }
 
@@ -42,6 +42,8 @@ namespace Joestar {
             {
                 ExecuteGFXCommand((U32)command, mCmdList[idx]);
             }
+            //已经处理完这波指令了，清掉
+            mCmdList[idx]->Clear();
             mCmdList[idx]->readFlag = false;
             ++frameIndex;
         }
@@ -63,6 +65,56 @@ namespace Joestar {
                 GPUResourceCreateInfo createInfo;
                 cmdList->ReadBuffer<GPUResourceCreateInfo>(createInfo);
                 mProtocol->CreateCommandBuffers(handle, createInfo);
+                break;
+            }
+            case GFXCommand::CreateFrameBuffer:
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+                if (0 == handle)
+                {
+                    mProtocol->CreateMainCommandBuffers(MAX_CMDLISTS_IN_FLIGHT);
+                    break;
+                }
+                GPUResourceCreateInfo createInfo;
+                cmdList->ReadBuffer<GPUResourceCreateInfo>(createInfo);
+                mProtocol->CreateCommandBuffers(handle, createInfo);
+                break;
+            }
+            case GFXCommand::CreateImage:
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUImageCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+
+                mProtocol->CreateImage(handle, createInfo);
+                break;
+            }
+            case GFXCommand::CreateImageView:
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUImageViewCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateImageView(handle, createInfo);
+                break;
+            }
+            case GFXCommand::CreateSwapChain:
+            {
+                GPUSwapChainCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateSwapChain(createInfo);
+                break;
+            }
+            case GFXCommand::CreateSyncObjects:
+            {
+                U32 num;
+                cmdList->ReadBuffer<U32>(num);
+                mProtocol->CreateSyncObjects(num);
+                break;
             }
             default: break;
         }
@@ -78,10 +130,5 @@ namespace Joestar {
         Window* window = GetSubsystem<Window>();
         mProtocol->SetWindow(window);
         mProtocol->CreateDevice();
-
-        GPUResourceCreateInfo info{};
-        mProtocol->CreateSwapChain(info, MAX_FRAMES_IN_FLIGHT);
-        //mProtocol->CreateMainCommandBuffers(MAX_FRAMES_IN_FLIGHT);
-        mProtocol->CreateSyncObjects(info, MAX_FRAMES_IN_FLIGHT);
 	}
 }

@@ -66,7 +66,7 @@ namespace Joestar {
 		template<typename T>
 		void WriteBuffer(T& t);
 
-		void WriteBufferPtr(void* p, U32 sz) {
+		void WriteBufferPtr(U8* p, U32 sz) {
 			while (sz + cursor > size) {
 				DoubleSizeBuffer();
 			}
@@ -74,7 +74,7 @@ namespace Joestar {
 			cursor += sz;
 		}
 
-		bool ReadBufferPtr(void* p, U32 sz) {
+		bool ReadBufferPtr(U8* p, U32 sz) {
 			if (sz + cursor > last) {
 				return false;
 			}

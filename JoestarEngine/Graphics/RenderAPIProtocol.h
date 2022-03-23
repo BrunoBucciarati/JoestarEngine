@@ -1,6 +1,7 @@
 #pragma once
 #include "../Core/Platform.h"
 #include "GPUResource.h"
+#include "GPUCreateInfos.h"
 namespace Joestar
 {
 	class Window;
@@ -9,10 +10,14 @@ namespace Joestar
 	{
 	public:
 		virtual void CreateDevice() = 0;
-		virtual void CreateSwapChain(GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
+		virtual void CreateSwapChain(GPUSwapChainCreateInfo& createInfo, U32 num = 1) = 0;
 		virtual void CreateMainCommandBuffers(U32 num = 1) = 0;
 		virtual void CreateCommandBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
-		virtual void CreateSyncObjects(GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
+		virtual void CreateSyncObjects(U32 num = 1) = 0;
+		virtual void CreateFrameBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
+		virtual void CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo) = 0;
+		virtual void CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo) = 0;
+		//virtual void CreateTexture(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
 
 		void SetWindow(Window* w);
 	protected:

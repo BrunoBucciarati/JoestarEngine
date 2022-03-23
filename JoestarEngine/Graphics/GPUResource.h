@@ -4,21 +4,21 @@
 namespace Joestar
 {
 	typedef U32 GPUResourceHandle;
-	class GPUResource
-	{
-	public:
-		GPUResourceHandle handle;
-	};
-
-
 
 	class GPUResourceCreateInfo
 	{
 	public:
-		MemoryReader reader;
+		MemoryReadWriter rwMem;
 		bool Empty() const
 		{
-			return reader.Empty();
+			return rwMem.Empty();
 		}
+	};
+
+	class GPUResource
+	{
+	public:
+		GPUResourceHandle handle;
+		GPUResourceCreateInfo* createInfo;
 	};
 }

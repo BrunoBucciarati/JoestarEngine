@@ -7,6 +7,9 @@
 #include "../IO/MemoryManager.h"
 #include "CommandBuffer.h"
 #include "GFXCommandList.h"
+#include "SwapChain.h"
+#include "Window.h"
+#include "GPUCreateInfos.h"
 
 namespace Joestar {
 	Graphics::Graphics(EngineContext* context) : Super(context) {
@@ -47,9 +50,12 @@ namespace Joestar {
 			cmdLists.cmdList[i] = JOJO_NEW(GFXCommandList);
 		}
 		mThreadCommandLists.Push(cmdLists);
-
+		//创建交换链
+		CreateSwapChain();
 		//创建MainCommandBuffer
 		CreateCommandBuffer();
+		//创建BackBuffer
+		CreateFrameBuffer();
 
 		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
 		renderThread->SetGFXCommandList(cmdLists.cmdList);
@@ -57,11 +63,10 @@ namespace Joestar {
 
 	GFXCommandList* Graphics::GetMainCmdList()
 	{
-		return mThreadCommandLists[0].cmdList[frameIdx];
+		return mThreadCommandLists[0].cmdList[frameIdx % MAX_CMDLISTS_IN_FLIGHT];
 	}
 
 	void Graphics::MainLoop() {
-		U32 idx = frameIdx % MAX_CMDLISTS_IN_FLIGHT;
 		GetMainCmdList()->Flush();
 		++frameIdx;
 		return;
@@ -250,7 +255,7 @@ namespace Joestar {
 	void Graphics::DispatchCompute(U32 group[3]) {
 		computeCmdBuffer->WriteCommandType(ComputeCMD_DispatchCompute);
 		U32 sz = sizeof(U32) * 3;
-		computeCmdBuffer->WriteBufferPtr(group, sz);
+		computeCmdBuffer->WriteBufferPtr((U8*)group, sz);
 	}
 
 	void Graphics::WriteBackComputeBuffer() {
@@ -274,7 +279,7 @@ namespace Joestar {
 	void Graphics::UpdatePushConstant(void* data, U32 size) {
 		computeCmdBuffer->WriteCommandType(ComputeCMD_UpdatePushConstant);
 		computeCmdBuffer->WriteBuffer<U32>(size);
-		computeCmdBuffer->WriteBufferPtr(data, size);
+		computeCmdBuffer->WriteBufferPtr((U8*)data, size);
 	}
 
 	CommandBuffer* Graphics::GetMainCommandBuffer()
@@ -291,5 +296,106 @@ namespace Joestar {
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateCommandBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 		return cb;
+	}
+
+	FrameBuffer* Graphics::GetBackBuffer()
+	{
+		return mFrameBuffers[0];
+	}
+
+	FrameBuffer* Graphics::CreateFrameBuffer()
+	{
+		GPUResourceHandle handle = mCommandBuffers.Size();
+		FrameBuffer* fb = JOJO_NEW(FrameBuffer);
+		fb->handle = handle;
+		mFrameBuffers.Push(fb);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateFrameBuffer);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+		return fb;
+	}
+
+	void Graphics::CreateImage(GPUImage* image, U32 num = 1)
+	{
+		GPUResourceHandle handle = mImages.Size();
+		image->handle = handle;
+		mImages.Push(image);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateImage);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+
+		GPUImageCreateInfo createInfo{
+			image->GetType(),
+			image->GetFormat(),
+			image->GetUsage(),
+			image->GetWidth(),
+			image->GetHeight(),
+			image->GetDepth(),
+			image->GetLayer(),
+			image->GetMipLevels(),
+			image->GetSamples(),
+			num
+		};
+		GetMainCmdList()->WriteBuffer<GPUImageCreateInfo>(createInfo);
+	}
+
+	void Graphics::CreateImageView(GPUImageView* imageView, U32 num = 1)
+	{
+		GPUResourceHandle handle = mImageViews.Size();
+		imageView->handle = handle;
+		mImageViews.Push(imageView);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateImageView);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+
+		GPUImageViewCreateInfo createInfo{
+			imageView->image->handle,
+			imageView->GetType(),
+			imageView->GetFormat(),
+			imageView->GetAspectBits(),
+			imageView->GetMipLevels(),
+			imageView->GetBaseMipLevel(),
+			imageView->GetLayer(),
+			imageView->GetBaseLayer(),
+			num
+		};
+		GetMainCmdList()->WriteBuffer<GPUImageViewCreateInfo>(createInfo);
+	}
+
+	void Graphics::CreateSwapChain()
+	{
+		mSwapChain = JOJO_NEW(SwapChain);
+
+		//GPUImage* img = JOJO_NEW(GPUImage(ImageType::TYPE_2D));
+		//Window* window = GetSubsystem<Window>();
+		//img->SetWidth(window->GetWidth());
+		//img->SetHeight(window->GetHeight());
+		//if (bFloatingPointRT)
+		//{
+		//	img->SetFormat(ImageFormat::RG11B10);
+		//}
+		//else
+		//{
+		//	img->SetFormat(ImageFormat::R8G8B8A8_SRGB);
+		//}
+		//img->SetUsage(U32(ImageUsageBits::COLOR_ATTACHMENT_BIT));
+		//CreateImage(img, MAX_CMDLISTS_IN_FLIGHT);
+
+		//GPUImageView* imgView = JOJO_NEW(GPUImageView(ImageViewType::TYPE_2D));
+		//imgView->image = img;
+		//imgView->SetAspectBits(U32(ImageAspectFlagBits::COLOR_BIT));
+		//CreateImageView(imgView, MAX_CMDLISTS_IN_FLIGHT);
+
+		//mSwapChain->imageView = imgView;
+
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateSwapChain);
+
+		GPUSwapChainCreateInfo createInfo{
+			//mSwapChain->imageView->handle
+		};
+		GetMainCmdList()->WriteBuffer<GPUSwapChainCreateInfo>(createInfo);
+	}
+
+	void Graphics::CreateSyncObjects()
+	{
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateSyncObjects);
+		GetMainCmdList()->WriteBuffer<U32>(MAX_CMDLISTS_IN_FLIGHT);
 	}
 }
