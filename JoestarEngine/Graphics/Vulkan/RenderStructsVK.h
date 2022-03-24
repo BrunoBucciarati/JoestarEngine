@@ -69,7 +69,6 @@ namespace Joestar {
 			imageMemorys.Resize(images.Size());
 			for (int i = 0; i < images.Size(); ++i)
 			{
-				//imageMemorys[i] = JOJO_NEW(VkDeviceMemory, MEMORY_GFX_MEMORY);
 				if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemorys[i]) != VK_SUCCESS) {
 					LOGERROR("failed to allocate image memory!");
 				}
@@ -82,6 +81,11 @@ namespace Joestar {
 			return images[idx];
 		}
 		VkMemoryRequirements memRequirements;
+
+		void SetRawImages(Vector<VkImage>& imgs)
+		{
+			images = imgs;
+		}
 
 	private:
 		Vector<VkImage> images;
@@ -103,6 +107,35 @@ namespace Joestar {
 			}
 		}
 		Vector<VkImageView> imageViews;
+
+		void SetRawImageViews(Vector<VkImageView>& imgs)
+		{
+			imageViews = imgs;
+		}
+	};
+
+	class RenderPassVK
+	{
+	public:
+		VkRenderPass renderPass;
+	};
+
+	class FrameBufferVK
+	{
+	public:
+		Vector<ImageViewVK*> colorAttachments;
+		ImageViewVK* depthStencilAttachment;
+		Vector<VkFramebuffer> frameBuffers;
+		U32 msaaSamples{ 1 };
+		void SetRawImages(Vector<VkImage>& images, U32 idx = 0)
+		{
+			colorAttachments[idx]->image->SetRawImages(images);
+		}
+		void SetRawImageViews(Vector<VkImageView>& imageViews, U32 idx = 0)
+		{
+			colorAttachments[idx]->SetRawImageViews(imageViews);
+		}
+		RenderPassVK* renderPass;
 	};
 
 	class SwapChainVK
@@ -113,5 +146,10 @@ namespace Joestar {
 		VkExtent2D extent;
 		Vector<VkImage> images;
 		Vector<VkImageView> imageViews;
+		FrameBufferVK* frameBuffer{nullptr};
+		U32 GetImageCount()
+		{
+			return images.Size();
+		}
 	};
 }

@@ -305,12 +305,17 @@ namespace Joestar {
 
 	FrameBuffer* Graphics::CreateFrameBuffer()
 	{
-		GPUResourceHandle handle = mCommandBuffers.Size();
+		GPUResourceHandle handle = mFrameBuffers.Size();
 		FrameBuffer* fb = JOJO_NEW(FrameBuffer);
 		fb->handle = handle;
 		mFrameBuffers.Push(fb);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateFrameBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+
+		GPUFrameBufferCreateInfo createInfo{
+			1
+		};
+		GetMainCmdList()->WriteBuffer<GPUFrameBufferCreateInfo>(createInfo);
 		return fb;
 	}
 

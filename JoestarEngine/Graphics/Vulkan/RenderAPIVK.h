@@ -25,12 +25,14 @@ namespace Joestar {
 		void CreateMainCommandBuffers(U32 num = 1);
 		void CreateSyncObjects(U32 num = 1);
 		void CreateCommandBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1);
-		void CreateFrameBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1);
-		void CreateBackBuffers();
+		void CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo);
+		void CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo);
 		void CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo);
 		void CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo);
 
 	private:
+		void CreateImage(ImageVK& image, VkImageCreateInfo& createInfo, U32 num = 1);
+		VkFormat FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		void CreateCommandPool();
 		void CreateInstance();
@@ -59,6 +61,7 @@ namespace Joestar {
 		Vector<VkFence> mInFlightFences;
 
 		Vector<CommandBufferVK> mCommandBuffers;
+		Vector<FrameBufferVK> mFrameBuffers;
 		Vector<ImageVK> mImages;
 		Vector<ImageViewVK> mImageViews;
 

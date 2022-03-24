@@ -71,14 +71,15 @@ namespace Joestar {
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUFrameBufferCreateInfo createInfo;
+                cmdList->ReadBuffer<GPUFrameBufferCreateInfo>(createInfo);
                 if (0 == handle)
                 {
-                    mProtocol->CreateMainCommandBuffers(MAX_CMDLISTS_IN_FLIGHT);
+                    mProtocol->CreateBackBuffers(createInfo);
                     break;
                 }
-                GPUResourceCreateInfo createInfo;
-                cmdList->ReadBuffer<GPUResourceCreateInfo>(createInfo);
-                mProtocol->CreateCommandBuffers(handle, createInfo);
+                mProtocol->CreateFrameBuffers(handle, createInfo);
                 break;
             }
             case GFXCommand::CreateImage:

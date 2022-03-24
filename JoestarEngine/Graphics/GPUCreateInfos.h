@@ -33,4 +33,9 @@ namespace Joestar
 	{
 		GPUResourceHandle imageViewHandle;
 	};
+
+	struct GPUFrameBufferCreateInfo
+	{
+		U32 msaaSamples{ 1 };
+	};
 }

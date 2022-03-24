@@ -268,7 +268,7 @@ namespace Joestar
 				}
                 T* newBuffer = reinterpret_cast<T*>(JOJO_NEW_ARRAY(U8, mCapacity * sizeof(T), MEMORY_CONTAINER));
 				if (mBuffer) {
-                    for (int i = 0; i < oldCapacity; ++i)
+                    for (U32 i = 0; i < oldCapacity; ++i)
                         JOJO_PLACEMENT_NEW(T(std::move(mBuffer[i])), newBuffer + i, MEMORY_CONTAINER);
                     DestructItems(0, oldCapacity);
 					JOJO_DELETE_ARRAY((U8*)mBuffer, MEMORY_CONTAINER);

@@ -391,7 +391,7 @@ namespace Joestar {
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        uint32_t queueFamilyIndices[] = { mQueueFamilyIndices.graphicsFamily, mQueueFamilyIndices.presentFamily };
+        U32 queueFamilyIndices[] = { mQueueFamilyIndices.graphicsFamily, mQueueFamilyIndices.presentFamily };
 
         if (mQueueFamilyIndices.graphicsFamily != mQueueFamilyIndices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -411,18 +411,16 @@ namespace Joestar {
 
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(mDevice, &createInfo, nullptr, &mSwapChain.swapChain) != VK_SUCCESS) {
-            LOGERROR("Failed to create swap chain!");
-        }
-        vkGetSwapchainImagesKHR(mDevice, mSwapChain.swapChain, &imageCount, nullptr);
+        VK_CHECK(vkCreateSwapchainKHR(mDevice, &createInfo, nullptr, &mSwapChain.swapChain));
+        VK_CHECK(vkGetSwapchainImagesKHR(mDevice, mSwapChain.swapChain, &imageCount, nullptr));
 
-        mSwapChain.imageViews.Resize(imageCount);
-        vkGetSwapchainImagesKHR(mDevice, mSwapChain.swapChain, &imageCount, mSwapChain.images.Buffer());
+        mSwapChain.images.Resize(imageCount);
+        VK_CHECK(vkGetSwapchainImagesKHR(mDevice, mSwapChain.swapChain, &imageCount, mSwapChain.images.Buffer()));
         mSwapChain.format = surfaceFormat.format;
         mSwapChain.extent = extent;
 
         mSwapChain.imageViews.Resize(mSwapChain.images.Size());
-        for (U32 i = 0; i < mSwapChain.images.Size(); ++i)
+        for (U32 i = 0; i < mSwapChain.GetImageCount(); ++i)
         {
             VkImageViewCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -495,12 +493,20 @@ namespace Joestar {
         imageInfo.samples = VkSampleCountFlagBits(createInfo.samples);
         //imageInfo.flags = viewType == VK_IMAGE_VIEW_TYPE_CUBE ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0; // Optional  
         imageInfo.flags = 0; // Optional  
-        image.Create(mDevice, imageInfo, createInfo.num);
+
+        CreateImage(image, imageInfo, createInfo.num);
+
+    }
+
+    void RenderAPIVK::CreateImage(ImageVK& image, VkImageCreateInfo& imageInfo, U32 num)
+    {
+        image.Create(mDevice, imageInfo, num);
 
         U32 memoryTypeIdx = FindMemoryType(image.memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mPhysicalDevice);
         image.AllocMemory(mDevice, memoryTypeIdx);
-
     }
+
+
     void RenderAPIVK::CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo)
     {
         if (handle + 1 > mImageViews.Size())
@@ -520,47 +526,133 @@ namespace Joestar {
         imageView.Create(mDevice, viewInfo, createInfo.num);
     }
 
+    //void GPUProgramVulkan::CreateColorResources(RenderPassVK* pass) {
+    //    VkFormat colorFormat = vkCtxPtr->swapChainImageFormat;
+    //    pass->fb->colorImage = new ImageVK{
+    //        vkCtxPtr, vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, pass->msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+    //    };
+    //    CommandBufferVK cb{ vkCtxPtr };
+    //    cb.Begin();
+    //    pass->fb->colorImage->Create();
+    //    pass->fb->colorImage->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT, cb);
+    //    cb.End();
+    //}
 
-    void RenderAPIVK::CreateBackBuffers()
+    //void GPUProgramVulkan::CreateDepthResources(RenderPassVK* pass) {
+    //    VkFormat depthFormat = FindDepthFormat();
+    //    pass->fb->depthImage = new ImageVK{
+    //        vkCtxPtr,
+    //        vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height,
+    //        1, pass->msaaSamples,  depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+    //    };
+    //    pass->fb->depthImage->Create();
+    //    CommandBufferVK cb{ vkCtxPtr };
+    //    cb.Begin();
+    //    pass->fb->depthImage->CreateImageView(VK_IMAGE_ASPECT_DEPTH_BIT, cb);
+    //    pass->fb->depthImage->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
+    //    cb.End();
+    //}
+
+    void RenderAPIVK::CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo)
     {
-        
+
     }
 
-    void RenderAPIVK::CreateFrameBuffers(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num) {
-        //if (!vkCtxPtr->swapChainFramebuffers.Empty()) return;
-        //pass->fb = new FrameBufferVK{ vkCtxPtr };
-        //CreateColorResources(pass);
-        //CreateDepthResources(pass);
-        //vkCtxPtr->swapChainFramebuffers.Resize(vkCtxPtr->swapChainImageViews.Size());
-        //for (size_t i = 0; i < vkCtxPtr->swapChainImageViews.Size(); i++) {
-        //    Vector<VkImageView> attachments;
-        //    if (pass->msaa) {
-        //        attachments = {
-        //            pass->fb->colorImage->imageView,
-        //            pass->fb->depthImage->imageView,
-        //            vkCtxPtr->swapChainImageViews[i]
-        //        };
-        //    }
-        //    else {
-        //        attachments = {
-        //            vkCtxPtr->swapChainImageViews[i],
-        //            pass->fb->depthImage->imageView
-        //        };
-        //    }
+    void RenderAPIVK::CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo)
+    {
+        if (mSwapChain.frameBuffer)
+            return;
+        mSwapChain.frameBuffer = JOJO_NEW(FrameBufferVK);
+        if (mFrameBuffers.Empty())
+            mFrameBuffers.Resize(1);
+        mFrameBuffers[0] = *mSwapChain.frameBuffer;
 
-        //    VkFramebufferCreateInfo framebufferInfo{};
-        //    framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        //    framebufferInfo.renderPass = pass->renderPass;
-        //    framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.Size());
-        //    framebufferInfo.pAttachments = attachments.Buffer();
-        //    framebufferInfo.width = vkCtxPtr->swapChainExtent.width;
-        //    framebufferInfo.height = vkCtxPtr->swapChainExtent.height;
-        //    framebufferInfo.layers = 1;
+        mSwapChain.frameBuffer->frameBuffers.Resize(mSwapChain.imageViews.Size());
+        VkFormat depthFormat = FindSupportedFormat(
+            { VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT },
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+        );
 
-        //    if (vkCreateFramebuffer(vkCtxPtr->device, &framebufferInfo, nullptr, &vkCtxPtr->swapChainFramebuffers[i]) != VK_SUCCESS) {
-        //        LOGERROR("failed to create framebuffer!");
-        //    }
-        //}
+        ImageVK* depthImage = JOJO_NEW(ImageVK);
+        VkImageCreateInfo depthImgCreateInfo{};
+        depthImgCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+        depthImgCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        depthImgCreateInfo.extent.width = mSwapChain.extent.width;
+        depthImgCreateInfo.extent.height = mSwapChain.extent.height;
+        depthImgCreateInfo.format = depthFormat;
+        depthImgCreateInfo.mipLevels = 1;
+        depthImgCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        depthImgCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        depthImgCreateInfo.samples = (VkSampleCountFlagBits)msaaSamples;
+        CreateImage(*depthImage, depthImgCreateInfo, mSwapChain.GetImageCount());
+
+        ImageViewVK* depthStencilView = JOJO_NEW(ImageViewVK);
+        depthStencilView->image = depthImage;
+        mSwapChain.frameBuffer->depthStencilAttachment = depthStencilView;
+
+        VkImageViewCreateInfo depthViewCreateInfo{};
+        depthViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        depthViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        depthViewCreateInfo.format = depthFormat;
+        depthViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        depthViewCreateInfo.subresourceRange.baseMipLevel = 0;
+        depthViewCreateInfo.subresourceRange.levelCount = 1;
+        depthViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+        depthViewCreateInfo.subresourceRange.layerCount = 1;
+        depthStencilView->Create(mDevice, depthViewCreateInfo, mSwapChain.GetImageCount());
+
+        ImageViewVK* colorView = JOJO_NEW(ImageViewVK);
+        colorView->imageViews = mSwapChain.imageViews;
+        mSwapChain.frameBuffer->colorAttachments.Push(colorView);
+        mSwapChain.frameBuffer->SetRawImages(mSwapChain.images);
+        mSwapChain.frameBuffer->SetRawImageViews(mSwapChain.imageViews);
+
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = mSwapChain.extent.width;
+        imageInfo.extent.height = mSwapChain.extent.height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = mSwapChain.format;
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.samples = VkSampleCountFlagBits(mSwapChain.frameBuffer->msaaSamples);
+        imageInfo.flags = 0; // Optional  
+        CreateImage(*colorView->image, imageInfo, mSwapChain.GetImageCount());
+
+        RenderPassVK* renderPass = JOJO_NEW(RenderPassVK);
+        mSwapChain.frameBuffer->renderPass = renderPass;
+
+        for (U32 i = 0; i < mSwapChain.GetImageCount(); ++i)
+        {
+            Vector<VkImageView> attachments;
+            if (msaaSamples > 1) {
+                //todo
+            }
+            else
+            {
+                attachments = {
+                    mSwapChain.imageViews[i],
+                    depthStencilView->imageViews[i]
+                };
+            }
+
+            VkFramebufferCreateInfo framebufferInfo{};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = renderPass->renderPass;
+            framebufferInfo.attachmentCount = attachments.Size();
+            framebufferInfo.pAttachments = attachments.Buffer();
+            framebufferInfo.width = mSwapChain.extent.width;
+            framebufferInfo.height = mSwapChain.extent.height;
+            framebufferInfo.layers = 1;
+
+            VK_CHECK(vkCreateFramebuffer(mDevice, &framebufferInfo, nullptr, &mSwapChain.frameBuffer->frameBuffers[i]));
+        }        
     }
 
     void RenderAPIVK::CreateSyncObjects(U32 num)
@@ -582,5 +674,21 @@ namespace Joestar {
                 LOGERROR("failed to create synchronization objects for a frame!");
             }
         }
+    }
+
+    VkFormat RenderAPIVK::FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+        for (VkFormat format : candidates) {
+            VkFormatProperties props;
+            vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &props);
+
+            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+                return format;
+            }
+            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+                return format;
+            }
+        }
+
+        LOGERROR("failed to find supported format!");
     }
 }
