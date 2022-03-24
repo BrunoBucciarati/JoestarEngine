@@ -2,6 +2,25 @@
 #include "GPUTexture.h"
 namespace Joestar
 {
+	enum class AttachmentLoadOP
+	{
+		LOAD = 0,
+		CLEAR = 1,
+		DONT_CARE = 2
+	};
+	enum class AttachmentStoreOP
+	{
+		STORE = 0,
+		DONT_CARE = 1,
+		NONE = 2
+	};
+	enum class GPUQueue
+	{
+		GRAPHICS = 0,
+		PRESENT = 1,
+		COMPUTE = 2
+	};
+
 	struct GPUImageCreateInfo
 	{
 		ImageType type;
@@ -37,5 +56,25 @@ namespace Joestar
 	struct GPUFrameBufferCreateInfo
 	{
 		U32 msaaSamples{ 1 };
+	};
+
+	struct GPURenderPassCreateInfo
+	{
+		ImageFormat colorFormat;
+		ImageFormat depthStencilFormat;
+		AttachmentLoadOP colorLoadOp;
+		AttachmentStoreOP colorStoreOp;
+		AttachmentLoadOP depthLoadOp;
+		AttachmentStoreOP depthStoreOp;
+		AttachmentLoadOP stencilLoadOp;
+		AttachmentStoreOP stencilStoreOp;
+		bool clear{ false };
+		
+		U32 msaaSamples{ 1 };
+	};
+
+	struct GPUCommandBufferCreateInfo
+	{
+		GPUQueue queue;
 	};
 }

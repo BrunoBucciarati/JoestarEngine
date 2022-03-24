@@ -31,6 +31,7 @@ namespace Joestar {
 		void CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo);
 
 	private:
+		void CreateRenderPass(RenderPassVK* rp, GPURenderPassCreateInfo& createInfo);
 		void CreateImage(ImageVK& image, VkImageCreateInfo& createInfo, U32 num = 1);
 		VkFormat FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);

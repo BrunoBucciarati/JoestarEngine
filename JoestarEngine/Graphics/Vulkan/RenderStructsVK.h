@@ -5,14 +5,16 @@ namespace Joestar {
 	class CommandBufferVK
 	{
 	public:
-		void Create(VkDevice& device, VkCommandBufferAllocateInfo& allocInfo, U32 num = 1)
+		void Create(VkDevice& inDevice, VkCommandBufferAllocateInfo& allocInfo, U32 num = 1)
 		{
 			if (bCreated)
 				return;
+            device = inDevice;
+            pool = allocInfo.commandPool;
 			commandBuffers.Resize(num);
 			for (U32 i = 0; i < num; ++i)
 			{
-				if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffers[i]) != VK_SUCCESS)
+				if (vkAllocateCommandBuffers(inDevice, &allocInfo, &commandBuffers[i]) != VK_SUCCESS)
 				{
 					LOGERROR("failed to allocate command buffer!\n");
 					return;
@@ -40,9 +42,40 @@ namespace Joestar {
 			}
 		}
 
+        void Submit(VkPipelineStageFlags waitMask = 0, VkFence fence = VK_NULL_HANDLE) {
+            VkSubmitInfo submitInfo = {};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pWaitDstStageMask = &waitMask;
+            submitInfo.pCommandBuffers = &GetCommandBuffer();
+
+            vkQueueSubmit(queue, 1, &submitInfo, fence);
+            vkQueueWaitIdle(queue);
+            vkFreeCommandBuffers(device, pool, 1, &GetCommandBuffer());
+        }
+
+        VkCommandBuffer& GetCommandBuffer(U32 idx = 0)
+        {
+            return commandBuffers[idx];
+        }
+
+        void SetQueue(VkQueue& q)
+        {
+            queue = q;
+        }
+
+        void SetIndex(U32 idx)
+        {
+            index = idx;
+        }
+
 	private:
 		Vector<VkCommandBuffer> commandBuffers;
 		bool bCreated{ false };
+        VkDevice device;
+        VkCommandPool pool;
+        VkQueue queue;
+        U32 index{ 0 };
 	};
 
 	class ImageVK
@@ -112,6 +145,129 @@ namespace Joestar {
 		{
 			imageViews = imgs;
 		}
+        void TransitionImageLayout(CommandBufferVK& cb, VkImageLayout oldLayout, VkImageLayout newLayout, U32 aspect = VK_IMAGE_ASPECT_COLOR_BIT) {
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.oldLayout = oldLayout;
+            barrier.newLayout = newLayout;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = image->GetImage();
+            barrier.subresourceRange.aspectMask = aspect;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+            VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+            // Source layouts (old)
+            // Source access mask controls actions that have to be finished on the old layout
+            // before it will be transitioned to the new layout
+            switch (oldLayout)
+            {
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                // Image layout is undefined (or does not matter)
+                // Only valid as initial layout
+                // No flags required, listed only for completeness
+                barrier.srcAccessMask = 0;
+                break;
+
+            case VK_IMAGE_LAYOUT_PREINITIALIZED:
+                // Image is preinitialized
+                // Only valid as initial layout for linear images, preserves memory contents
+                // Make sure host writes have been finished
+                barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                // Image is a color attachment
+                // Make sure any writes to the color buffer have been finished
+                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                // Image is a depth/stencil attachment
+                // Make sure any writes to the depth/stencil buffer have been finished
+                barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                // Image is a transfer source
+                // Make sure any reads from the image have been finished
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // Image is a transfer destination
+                // Make sure any writes to the image have been finished
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                // Image is read by a shader
+                // Make sure any shader reads from the image have been finished
+                barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                break;
+            default:
+                // Other source layouts aren't handled (yet)
+                break;
+            }
+
+            // Target layouts (new)
+            // Destination access mask controls the dependency for the new image layout
+            switch (newLayout)
+            {
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // Image will be used as a transfer destination
+                // Make sure any writes to the image have been finished
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                // Image will be used as a transfer source
+                // Make sure any reads from the image have been finished
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                // Image will be used as a color attachment
+                // Make sure any writes to the color buffer have been finished
+                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                // Image layout will be used as a depth/stencil attachment
+                // Make sure any writes to depth/stencil buffer have been finished
+                barrier.dstAccessMask = barrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                break;
+
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                // Image will be read in a shader (sampler, input attachment)
+                // Make sure any writes to the image have been finished
+                if (barrier.srcAccessMask == 0)
+                {
+                    barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+                }
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                break;
+            default:
+                // Other source layouts aren't handled (yet)
+                break;
+            }
+
+            cb.Begin();
+
+            vkCmdPipelineBarrier(
+                cb.GetCommandBuffer(),
+                srcStageMask, dstStageMask,
+                0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier
+            );
+            cb.End();
+            cb.Submit();
+        }
 	};
 
 	class RenderPassVK

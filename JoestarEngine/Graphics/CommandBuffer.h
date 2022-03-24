@@ -3,6 +3,7 @@
 namespace Joestar {
 	class CommandBuffer : public GPUResource
 	{
-
+	public:
+		GPUQueue queue;
 	};
 }
