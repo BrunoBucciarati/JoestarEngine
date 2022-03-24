@@ -67,6 +67,10 @@ namespace Joestar {
 	}
 
 	void Graphics::MainLoop() {
+		while (GetMainCmdList()->readFlag)
+		{
+			Sleep(10);
+		}
 		GetMainCmdList()->Flush();
 		++frameIdx;
 		return;

@@ -214,34 +214,25 @@ namespace Joestar {
 
         Vector<const char*> surfaceExtension{
             VK_KHR_SURFACE_EXTENSION_NAME,
-            VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+            VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+            VK_EXT_DEBUG_UTILS_EXTENSION_NAME
         };
         createInfo.enabledExtensionCount = surfaceExtension.Size();
         createInfo.ppEnabledExtensionNames = surfaceExtension.Buffer();
-        if (bEnableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.Size());
-            createInfo.ppEnabledLayerNames = ValidationLayers.Buffer();
-        }
-        else {
-            createInfo.enabledLayerCount = 0;
-        }
-        VK_CHECK(vkCreateInstance(&createInfo, nullptr, &mInstance))
-
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-        if (bEnableValidationLayers) {
+        if (bEnableValidationLayers)
+        {
             createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.Size());
             createInfo.ppEnabledLayerNames = ValidationLayers.Buffer();
 
+            VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
             PopulateDebugMessengerCreateInfo(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
         }
-        else {
+        else
+        {
             createInfo.enabledLayerCount = 0;
-
-            createInfo.pNext = nullptr;
         }
-
-        VK_CHECK(vkCreateInstance(&createInfo, nullptr, &mInstance));
+        VK_CHECK(vkCreateInstance(&createInfo, nullptr, &mInstance))
     }
 
     VkSampleCountFlagBits RenderAPIVK::GetMaxUsableSampleCount() {
@@ -352,10 +343,12 @@ namespace Joestar {
     }
 
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, Window* window) {
-        if (capabilities.currentExtent.width != UINT32_MAX) {
+        if (capabilities.currentExtent.width != UINT32_MAX)
+        {
             return capabilities.currentExtent;
         }
-        else {
+        else
+        {
 
             VkExtent2D actualExtent = {
                 window->GetWidth(),
@@ -422,21 +415,21 @@ namespace Joestar {
         mSwapChain.imageViews.Resize(mSwapChain.images.Size());
         for (U32 i = 0; i < mSwapChain.GetImageCount(); ++i)
         {
-            VkImageViewCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image = mSwapChain.images[i];
-            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = mSwapChain.format;
-            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            createInfo.subresourceRange.baseMipLevel = 0;
-            createInfo.subresourceRange.levelCount = 1;
-            createInfo.subresourceRange.baseArrayLayer = 0;
-            createInfo.subresourceRange.layerCount = 1;
-            VK_CHECK(vkCreateImageView(mDevice, &createInfo, nullptr, &mSwapChain.imageViews[i]));
+            VkImageViewCreateInfo imageCreateInfo{};
+            imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            imageCreateInfo.image = mSwapChain.images[i];
+            imageCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            imageCreateInfo.format = mSwapChain.format;
+            imageCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            imageCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            imageCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            imageCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            imageCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            imageCreateInfo.subresourceRange.baseMipLevel = 0;
+            imageCreateInfo.subresourceRange.levelCount = 1;
+            imageCreateInfo.subresourceRange.baseArrayLayer = 0;
+            imageCreateInfo.subresourceRange.layerCount = 1;
+            VK_CHECK(vkCreateImageView(mDevice, &imageCreateInfo, nullptr, &mSwapChain.imageViews[i]));
         }
 	}
 
