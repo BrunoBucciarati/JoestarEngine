@@ -1,7 +1,9 @@
 #pragma once
 #include "../Core/RefCount.h"
+#include "../Core/ObjectDefines.h"
 #include "../Container/Ptr.h"
-#include "GPUResource.h"
+#include "GraphicDefines.h"
+#include "GPUTexture.h"
 namespace Joestar {
     class PipelineLayout : RefCount
     {
@@ -13,7 +15,7 @@ namespace Joestar {
 
     };
 
-	class PipelineState : GPUResource
+	class PipelineState : public GPUResource
 	{
     protected:
         SharedPtr<PipelineShader> mShader;
@@ -41,7 +43,7 @@ namespace Joestar {
 
     };
 
-    class ViewportState : RefCount
+    class ViewportState : public GPUResource
     {
 
     };
@@ -66,9 +68,38 @@ namespace Joestar {
 
     };
 
-    class RenderPass : RefCount
+    class RenderPass : public GPUResource
     {
-
+    public:
+        void SetLoadOP(AttachmentLoadOP op)
+        {
+            SetColorLoadOP(op);
+            SetDepthStencilLoadOP(op);
+        }
+        void SetDepthStencilLoadOP(AttachmentLoadOP op)
+        {
+            SetDepthLoadOP(op);
+            SetStencilLoadOP(op);
+        }
+        void SetStoreOP(AttachmentStoreOP op)
+        {
+            SetColorStoreOP(op);
+            SetDepthStencilStoreOP(op);
+        }
+        void SetDepthStencilStoreOP(AttachmentStoreOP  op)
+        {
+            SetDepthStoreOP(op);
+            SetStencilStoreOP(op);
+        }
+        GET_SET_STATEMENT_PREFIX_INITVALUE(bool, Clear, b, false);
+        GET_SET_STATEMENT_INITVALUE(ImageFormat, ColorFormat, ImageFormat::R8G8B8A8_SRGB);
+        GET_SET_STATEMENT_INITVALUE(ImageFormat, DepthStencilFormat, ImageFormat::D32S8);
+        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOP, ColorLoadOP, AttachmentLoadOP::LOAD);
+        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOP, DepthLoadOP, AttachmentLoadOP::LOAD);
+        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOP, StencilLoadOP, AttachmentLoadOP::LOAD);
+        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOP, ColorStoreOP, AttachmentStoreOP::STORE);
+        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOP, DepthStoreOP, AttachmentStoreOP::STORE);
+        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOP, StencilStoreOP, AttachmentStoreOP::STORE);
     };
 
     //typedef struct VkGraphicsPipelineCreateInfo {
@@ -101,6 +132,6 @@ namespace Joestar {
         SharedPtr<MultiSampleState> mMultiSampleState;
         SharedPtr<DepthStencilState> mDepthStencilState;
         SharedPtr<ColorBlendState> mColorBlendState;
-        SharedPtr<RenderPass> mRenderPass;
+        RenderPass* mRenderPass;
     };
 }

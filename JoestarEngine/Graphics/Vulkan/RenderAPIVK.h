@@ -29,8 +29,12 @@ namespace Joestar {
 		void CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo);
 		void CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo);
 		void CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo);
+		void CreateIndexBuffer(GPUResourceHandle handle, GPUIndexBufferCreateInfo& createInfo);
+		void CreateVertexBuffer(GPUResourceHandle handle, GPUVertexBufferCreateInfo& createInfo);
+		void CreateUniformBuffer(GPUResourceHandle handle, GPUUniformBufferCreateInfo& createInfo);
 
 	private:
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CreateRenderPass(RenderPassVK* rp, GPURenderPassCreateInfo& createInfo);
 		void CreateImage(ImageVK& image, VkImageCreateInfo& createInfo, U32 num = 1);
 		VkFormat FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -65,7 +69,11 @@ namespace Joestar {
 		Vector<FrameBufferVK> mFrameBuffers;
 		Vector<ImageVK> mImages;
 		Vector<ImageViewVK> mImageViews;
+		Vector<VertexBufferVK> mVertexBuffers;
+		Vector<IndexBufferVK> mIndexBuffers;
+		Vector<UniformBufferVK> mUniformBuffers;
 
 		SwapChainVK mSwapChain;
+		U32 mDeviceLocalMemoryTypeIdx{ 0 };
 	};
 }

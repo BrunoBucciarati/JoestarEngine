@@ -21,6 +21,12 @@ namespace Joestar {
 	class SwapChain;
 	class GPUImage;
 	class GPUImageView;
+	class GPUMemory;
+	class VertexBuffer;
+	class IndexBuffer;
+	class GPUVertexBuffer;
+	class GPUIndexBuffer;
+	class RenderPass;
 
 	class Graphics : public SubSystem {
 		REGISTER_SUBSYSTEM(Graphics)
@@ -36,8 +42,8 @@ namespace Joestar {
 		void FlushUniformBuffer(U32 hash = 0);
 		void FlushUniformBuffer(const char*);
 		void UpdateLightBlock(LightBlocks& lb);
-		void UpdateVertexBuffer(VertexBuffer* vb);
-		void UpdateIndexBuffer(IndexBuffer* ib);
+		//void UpdateVertexBuffer(VertexBuffer* vb);
+		//void UpdateIndexBuffer(IndexBuffer* ib);
 		void UpdateMaterial(Material* mat);
 		void UseShader(Shader* shader);
 		void UpdateTexture(Texture*, U8 binding = 0);
@@ -48,14 +54,14 @@ namespace Joestar {
 		void EndRenderPass(String name);
 		void SetDepthCompare(DepthCompareFunc fun);
 		void SetPolygonMode(PolygonMode fun);
-		void UpdateInstanceBuffer(InstanceBuffer* ib);
+		//void UpdateInstanceBuffer(InstanceBuffer* ib);
 		void SetFrameBuffer(FrameBufferDef* def);
 
 		void DispatchCompute(U32 group[3]);
 		void BeginCompute(const char* name);
 		void EndCompute(const char* name);
-		void DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib);
-		void UpdateComputeBuffer(ComputeBuffer* cb, U8 binding = 0);
+		//void DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib);
+		//void UpdateComputeBuffer(ComputeBuffer* cb, U8 binding = 0);
 		void UpdatePushConstant(void* data, U32 size);
 		void WriteBackComputeBuffer();
 
@@ -67,12 +73,21 @@ namespace Joestar {
 
 		void CreateImage(GPUImage*, U32);
 		void CreateImageView(GPUImageView*, U32);
+		GPUMemory* CreateGPUMemory();
+		GPUVertexBuffer* CreateGPUVertexBuffer(VertexBuffer*);
+		GPUIndexBuffer* CreateGPUIndexBuffer(IndexBuffer*);
+		GPUUniformBuffer* CreateGPUUniformBuffer(U32 hash);
+		GPUUniformBuffer* CreateGPUUniformBuffer(const String& name);
+		void CreateRenderPass(RenderPass*);
+		RenderPass* GetMainRenderPass();
 
 		void CreateSwapChain();
 		void CreateSyncObjects();
 		GFXCommandList* GetMainCmdList();
 
 	private:
+		void CreateBuiltinUniforms();
+		void CreateMainRenderPass();
 		RenderThread* renderThread;
 		Vector<GFXCommandBuffer*> cmdBuffers;
 		Vector<GFXCommandBuffer*> computeCmdBuffers;
@@ -86,6 +101,11 @@ namespace Joestar {
 		Vector<FrameBuffer*> mFrameBuffers;
 		Vector<GPUImage*> mImages;
 		Vector<GPUImageView*> mImageViews;
+		Vector<GPUMemory*> mGPUMemories;
+		Vector<GPUVertexBuffer*> mGPUVertexBuffers;
+		Vector<GPUIndexBuffer*> mGPUIndexBuffers;
+		Vector<GPUUniformBuffer*> mGPUUniformBuffers;
+		Vector<RenderPass*> mRenderPasses;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

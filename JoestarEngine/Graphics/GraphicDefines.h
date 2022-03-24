@@ -74,5 +74,42 @@ namespace Joestar {
 
 	const U32 MAX_CMDLISTS_IN_FLIGHT = 3;
 
+	enum class UniformType {
+		Vec4 = 0,
+		Mat3,
+		Mat4,
+		Sampler
+	};
+
+	enum class BulitinUniforms {
+		MODEL_MATRIX = 0,
+		VIEW_MATRIX,
+		PROJECTION_MATRIX,
+		COUNT
+	};
+
+	const UniformType BUILTIN_UNIFORM_TYPE[] = {
+		UniformType::Mat4,
+		UniformType::Mat4,
+		UniformType::Mat4
+	};
+	enum class AttachmentLoadOP
+	{
+		LOAD = 0,
+		CLEAR = 1,
+		DONT_CARE = 2
+	};
+	enum class AttachmentStoreOP
+	{
+		STORE = 0,
+		DONT_CARE = 1,
+		NONE = 2
+	};
+	enum class GPUQueue
+	{
+		GRAPHICS = 0,
+		PRESENT = 1,
+		COMPUTE = 2
+	};
 }
 #endif

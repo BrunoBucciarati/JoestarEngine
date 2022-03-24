@@ -47,6 +47,8 @@ namespace Joestar {
 		R8G8B8A8_SRGB = 0,
 		B8G8R8A8_SRGB = 1,
 		RG11B10 = 2,
+		D24S8 = 3,
+		D32S8 = 4,
 		FormatCount
 	};
 	class GPUImage : public GPUResource

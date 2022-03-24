@@ -1,7 +1,142 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include "../../IO/Log.h"
+#include "../../Core/Platform.h"
+#include "../../Container/Vector.h"
 namespace Joestar {
+
+#define VK_CHECK(f) \
+	if (VK_SUCCESS != f) {LOGERROR("[VK_ERROR:%d]%s\n", f, #f)};
+
+    static U32 FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device);
+
+    class BufferVK
+    {
+    public:
+        void SetDevice(VkDevice& dv, VkPhysicalDevice& pd)
+        {
+            device = dv;
+            physicalDevice = pd;
+        }
+        PODVector<VkDeviceMemory> memorys;
+        PODVector<VkBuffer> buffers;
+        VkDeviceSize size;
+        VkBufferUsageFlags usage;
+        VkMemoryPropertyFlags properties{ VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
+        VkMemoryRequirements requirements;
+        U32 memoryTypeIdx;
+        VkDevice device;
+        VkPhysicalDevice physicalDevice;
+        U32 count{ 1 };
+        U32 index{ 0 };
+
+        void CreateBuffer()
+        {
+            buffers.Resize(count);
+            memorys.Resize(count);
+
+            VkBufferCreateInfo bufferInfo{};
+            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            bufferInfo.size = size;
+            bufferInfo.usage = usage;
+            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+            for (U32 i = 0; i < count; ++i)
+                VK_CHECK(vkCreateBuffer(device, &bufferInfo, nullptr, &buffers[i]));
+
+            VkMemoryRequirements memRequirements;
+            vkGetBufferMemoryRequirements(device, buffers[0], &memRequirements);
+            memoryTypeIdx = FindMemoryType(memRequirements.memoryTypeBits, properties, physicalDevice);
+
+            VkMemoryAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            allocInfo.allocationSize = memRequirements.size;
+            allocInfo.memoryTypeIndex = memoryTypeIdx;
+
+            for (U32 i = 0; i < count; ++i)
+            {
+                VK_CHECK(vkAllocateMemory(device, &allocInfo, nullptr, &memorys[i]));
+                VK_CHECK(vkBindBufferMemory(device, buffers[i], memorys[i], 0));
+            }
+
+        }
+
+        VkBuffer GetBuffer()
+        {
+            return buffers[index];
+        }
+
+
+        void SetData(U8* cpuData) {
+            void* data;
+            vkMapMemory(device, memorys[index], 0, size, 0, &data);
+            memcpy(data, cpuData, size);
+            vkUnmapMemory(device, memorys[index]);
+        }
+    };
+
+    class VertexBufferVK : public BufferVK
+    {
+    public:
+        VertexBufferVK()
+        {
+            usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        }
+        void Create(U32 sz, U32 ct)
+        {
+            count = ct;
+            size = sz * ct;
+            CreateBuffer();
+        }
+        Vector<VkVertexInputAttributeDescription> attributeDescriptions;
+        VkVertexInputBindingDescription bindingDescription;
+    private:
+        U32 count;
+    };
+
+    class IndexBufferVK : public BufferVK
+    {
+    public:
+        IndexBufferVK()
+        {
+            usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        }
+        void Create(U32 sz, U32 ct)
+        {
+            count = ct;
+            size = sz * ct;
+            CreateBuffer();
+        }
+    private:
+        U32 count;
+    };
+
+    class UniformBufferVK : public BufferVK
+    {
+    public:
+        UniformBufferVK()
+        {
+            usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        }
+        
+        Vector<VkDescriptorBufferInfo> bufferInfos{};
+        Vector<VkDescriptorImageInfo> imageInfos{};
+    };
+
+    class StagingBufferVK : public BufferVK
+    {
+    public:
+        StagingBufferVK()
+        {
+            usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        }
+        void Create(U8* data)
+        {
+            CreateBuffer();
+            SetData(data);
+        }
+    };
+
 	class CommandBufferVK
 	{
 	public:

@@ -10,6 +10,19 @@
 #include "SwapChain.h"
 #include "Window.h"
 #include "GPUCreateInfos.h"
+#include "PipelineState.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+
+#define CREATE_NEW_HANDLE_VEC(_VAR, _TYP, _VECTORNAME) \
+	GPUResourceHandle handle = _VECTORNAME.Size(); \
+	_TYP* _VAR = JOJO_NEW(_TYP, MEMORY_GFX_STRUCT); \
+	_VAR->handle = handle; \
+	_VECTORNAME.Push(_VAR);
+
+#define CREATE_NEW_HANDLE(_VAR, _TYP) \
+	CREATE_NEW_HANDLE_VEC(_VAR, _TYP, m##_TYP##s)
+
 
 namespace Joestar {
 	Graphics::Graphics(EngineContext* context) : Super(context) {
@@ -56,9 +69,30 @@ namespace Joestar {
 		CreateCommandBuffer();
 		//创建BackBuffer
 		CreateFrameBuffer();
+		//创建内建的Uniform
+		CreateBuiltinUniforms();
+		//创建主RenderPass
+		CreateMainRenderPass();
 
 		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
 		renderThread->SetGFXCommandList(cmdLists.cmdList);
+	}
+
+	void Graphics::CreateMainRenderPass()
+	{
+		RenderPass* rp = JOJO_NEW(RenderPass, MEMORY_GFX_STRUCT);
+		rp->SetClear(true);
+		rp->SetLoadOP(AttachmentLoadOP::DONT_CARE);
+		rp->SetStoreOP(AttachmentStoreOP::DONT_CARE);
+		CreateRenderPass(rp);
+	}
+
+	void Graphics::CreateBuiltinUniforms()
+	{
+		for (U32 i = 0; i < (U32)BulitinUniforms::COUNT; ++i)
+		{
+			CreateGPUUniformBuffer(i);			
+		}
 	}
 
 	GFXCommandList* Graphics::GetMainCmdList()
@@ -136,20 +170,20 @@ namespace Joestar {
 		cmdBuffer->WriteBuffer<LightBlocks>(lb);
 	}
 
-	void Graphics::UpdateVertexBuffer(VertexBuffer* vb) {
-		cmdBuffer->WriteCommandType(RenderCMD_UpdateVertexBuffer);
-		cmdBuffer->WriteBuffer<VertexBuffer*>(vb);
-	}
+	//void Graphics::UpdateVertexBuffer(VertexBuffer* vb) {
+	//	cmdBuffer->WriteCommandType(RenderCMD_UpdateVertexBuffer);
+	//	cmdBuffer->WriteBuffer<VertexBuffer*>(vb);
+	//}
 
-	void Graphics::UpdateIndexBuffer(IndexBuffer* ib) {
-		cmdBuffer->WriteCommandType(RenderCMD_UpdateIndexBuffer);
-		cmdBuffer->WriteBuffer<IndexBuffer*>(ib);
-	}
+	//void Graphics::UpdateIndexBuffer(IndexBuffer* ib) {
+	//	cmdBuffer->WriteCommandType(RenderCMD_UpdateIndexBuffer);
+	//	cmdBuffer->WriteBuffer<IndexBuffer*>(ib);
+	//}
 
-	void Graphics::UpdateInstanceBuffer(InstanceBuffer* ib) {
-		cmdBuffer->WriteCommandType(RenderCMD_UpdateInstanceBuffer);
-		cmdBuffer->WriteBuffer<InstanceBuffer*>(ib);
-	}
+	//void Graphics::UpdateInstanceBuffer(InstanceBuffer* ib) {
+	//	cmdBuffer->WriteCommandType(RenderCMD_UpdateInstanceBuffer);
+	//	cmdBuffer->WriteBuffer<InstanceBuffer*>(ib);
+	//}
 
 	void Graphics::DrawIndexed(Mesh* mesh, U32 count) {
 		cmdBuffer->WriteCommandType(RenderCMD_DrawIndexed);
@@ -202,29 +236,29 @@ namespace Joestar {
 
 	}
 
-	void Graphics::DrawMesh(Mesh* mesh, Material* mat) {
-		//UpdateMaterial(mat);
-		UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
-		if (mesh->GetIB()->GetSize() > 0) {
-			UpdateIndexBuffer(mesh->GetIB());
-			DrawIndexed(mesh);
-		} else {
-			DrawArray(mesh);
-		}
-	}
+	//void Graphics::DrawMesh(Mesh* mesh, Material* mat) {
+	//	//UpdateMaterial(mat);
+	//	UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
+	//	if (mesh->GetIB()->GetSize() > 0) {
+	//		UpdateIndexBuffer(mesh->GetIB());
+	//		DrawIndexed(mesh);
+	//	} else {
+	//		DrawArray(mesh);
+	//	}
+	//}
 
-	void Graphics::DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib) {
-		//UpdateMaterial(mat);
-		UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
-		UpdateInstanceBuffer(ib);
-		if (mesh->GetIB()->GetSize() > 0) {
-			UpdateIndexBuffer(mesh->GetIB());
-			DrawIndexed(mesh, ib->GetCount());
-		}
-		else {
-			DrawArray(mesh, ib->GetCount());
-		}
-	}
+	//void Graphics::DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib) {
+	//	//UpdateMaterial(mat);
+	//	UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
+	//	UpdateInstanceBuffer(ib);
+	//	if (mesh->GetIB()->GetSize() > 0) {
+	//		UpdateIndexBuffer(mesh->GetIB());
+	//		DrawIndexed(mesh, ib->GetCount());
+	//	}
+	//	else {
+	//		DrawArray(mesh, ib->GetCount());
+	//	}
+	//}
 
 	void Graphics::BeginRenderPass(String name) {
 		cmdBuffer->WriteCommandType(RenderCMD_BeginRenderPass);
@@ -273,11 +307,11 @@ namespace Joestar {
 		isCompute = false;
 	}
 
-	void Graphics::UpdateComputeBuffer(ComputeBuffer* cb, U8 binding) {
-		computeCmdBuffer->WriteCommandType(ComputeCMD_UpdateComputeBuffer);
-		computeCmdBuffer->WriteBuffer<ComputeBuffer*>(cb);
-		computeCmdBuffer->WriteBuffer<U8>(binding);
-	}
+	//void Graphics::UpdateComputeBuffer(ComputeBuffer* cb, U8 binding) {
+	//	computeCmdBuffer->WriteCommandType(ComputeCMD_UpdateComputeBuffer);
+	//	computeCmdBuffer->WriteBuffer<ComputeBuffer*>(cb);
+	//	computeCmdBuffer->WriteBuffer<U8>(binding);
+	//}
 
 
 	void Graphics::UpdatePushConstant(void* data, U32 size) {
@@ -321,6 +355,109 @@ namespace Joestar {
 		};
 		GetMainCmdList()->WriteBuffer<GPUFrameBufferCreateInfo>(createInfo);
 		return fb;
+	}
+
+	GPUMemory* Graphics::CreateGPUMemory()
+	{
+		GPUResourceHandle handle = mGPUMemories.Size();
+		GPUMemory* mem = JOJO_NEW(GPUMemory, MEMORY_GFX_STRUCT);
+		mem->handle = handle;
+		mGPUMemories.Push(mem);
+		return mem;
+	}
+
+	GPUVertexBuffer* Graphics::CreateGPUVertexBuffer(VertexBuffer* vertexBuffer)
+	{
+		CREATE_NEW_HANDLE(vb, GPUVertexBuffer);
+		vertexBuffer->SetGPUBuffer(vb);
+
+		GPUMemory* mem = CreateGPUMemory();
+		mem->size = vertexBuffer->GetSize();
+		mem->data = vertexBuffer->Data();
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateMemory);
+		GetMainCmdList()->WriteBuffer<U32>(mem->size);
+		GetMainCmdList()->WriteBufferPtr(mem->data, mem->size);
+
+		GPUVertexBufferCreateInfo createInfo
+		{
+			vertexBuffer->GetVertexCount(),
+			vertexBuffer->GetVertexSize(),
+			mem->handle
+		};
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateIndexBuffer);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+		GetMainCmdList()->WriteBuffer<GPUVertexBufferCreateInfo>(createInfo);
+		
+		return vb;
+	}
+
+	GPUIndexBuffer* Graphics::CreateGPUIndexBuffer(IndexBuffer* indexBuffer)
+	{
+		CREATE_NEW_HANDLE(ib, GPUIndexBuffer);
+		indexBuffer->SetGPUBuffer(ib);
+
+		GPUMemory* mem = CreateGPUMemory();
+		mem->size = indexBuffer->GetSize();
+		mem->data = indexBuffer->Data();
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateMemory);
+		GetMainCmdList()->WriteBuffer<U32>(mem->size);
+		GetMainCmdList()->WriteBufferPtr(mem->data, mem->size);
+
+
+		GPUIndexBufferCreateInfo createInfo
+		{
+			indexBuffer->GetIndexCount(),
+			indexBuffer->GetIndexSize(),
+			mem->handle
+		};
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateIndexBuffer);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+		GetMainCmdList()->WriteBuffer<GPUIndexBufferCreateInfo>(createInfo);
+
+		return ib;
+	}
+
+	GPUUniformBuffer* Graphics::CreateGPUUniformBuffer(const String& name)
+	{
+		return CreateGPUUniformBuffer(name.Hash());
+	}
+
+	GPUUniformBuffer* Graphics::CreateGPUUniformBuffer(U32 hash)
+	{
+		CREATE_NEW_HANDLE(ub, GPUUniformBuffer);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateUniformBuffer);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+
+		GPUUniformBufferCreateInfo createInfo{
+			hash
+		};
+		GetMainCmdList()->WriteBuffer<GPUUniformBufferCreateInfo>(createInfo);
+
+		return ub;
+	}
+
+	void Graphics::CreateRenderPass(RenderPass* pass)
+	{
+		pass->handle = mRenderPasses.Size();
+		mRenderPasses.Push(pass);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateRenderPass);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(pass->handle);
+		GPURenderPassCreateInfo createInfo{
+			pass->GetColorFormat(),
+			pass->GetDepthStencilFormat(),
+			pass->GetColorLoadOP(),
+			pass->GetDepthLoadOP(),
+			pass->GetStencilLoadOP(),
+			pass->GetColorStoreOP(),
+			pass->GetDepthStoreOP(),
+			pass->GetStencilStoreOP()
+		};
+		GetMainCmdList()->WriteBuffer<GPURenderPassCreateInfo>(createInfo);
+	}
+
+	RenderPass* Graphics::GetMainRenderPass()
+	{
+		return mRenderPasses[0];
 	}
 
 	void Graphics::CreateImage(GPUImage* image, U32 num = 1)

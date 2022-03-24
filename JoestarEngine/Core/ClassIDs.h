@@ -39,6 +39,9 @@ enum ClassIDType {
 	DefineClassID(Thread, 30)
 	DefineClassID(RenderThread, 31)
 	DefineClassID(View, 32)
+	DefineClassID(MeshRenderer, 33)
+	DefineClassID(VertexBuffer, 34)
+	DefineClassID(IndexBuffer, 34)
 
 	kClassIDCount
 };

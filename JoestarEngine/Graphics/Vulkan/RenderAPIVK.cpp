@@ -6,6 +6,10 @@
 #include <vulkan/vulkan_win32.h>
 #include "RenderEnumsVK.h"
 
+#define GET_STRUCT_BY_HANDLE(_VAR, _TYP, _HANDLE) \
+    if (_HANDLE + 1 > m##_TYP##s.Size()) m##_TYP##s.Resize(_HANDLE + 1); \
+    _TYP##VK& _VAR =  m##_TYP##s[_HANDLE];
+
 namespace Joestar {
     VkResult globalResult;
 #define VK_CHECK(fn) \
@@ -57,6 +61,7 @@ namespace Joestar {
 
         LOGERROR("failed to find suitable memory type!");
     }
+
 
     bool CheckValidationLayerSupport() {
         U32 layerCount = 0;
@@ -776,6 +781,58 @@ namespace Joestar {
                 LOGERROR("failed to create synchronization objects for a frame!");
             }
         }
+    }
+
+    void RenderAPIVK::CreateIndexBuffer(GPUResourceHandle handle, GPUIndexBufferCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(indexBuffer, IndexBuffer, handle);
+        indexBuffer.SetDevice(mDevice, mPhysicalDevice);
+        GPUMemory& mem = mMemories[createInfo.memoryHandle];
+
+        StagingBufferVK stagingBuffer;
+        stagingBuffer.SetDevice(mDevice, mPhysicalDevice);
+        stagingBuffer.size = mem.size;
+        stagingBuffer.Create(mem.data);
+
+        indexBuffer.Create(createInfo.indexSize, createInfo.indexCount);
+        CopyBuffer(stagingBuffer.GetBuffer(), indexBuffer.GetBuffer(), indexBuffer.size);
+    }
+
+    void RenderAPIVK::CreateVertexBuffer(GPUResourceHandle handle, GPUVertexBufferCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(vertexBuffer, VertexBuffer, handle);
+        vertexBuffer.SetDevice(mDevice, mPhysicalDevice);
+        GPUMemory& mem = mMemories[createInfo.memoryHandle];
+
+        StagingBufferVK stagingBuffer;
+        stagingBuffer.SetDevice(mDevice, mPhysicalDevice);
+        stagingBuffer.size = mem.size;
+        stagingBuffer.Create(mem.data);
+
+        vertexBuffer.Create(createInfo.vertexSize, createInfo.vertexCount);
+        CopyBuffer(stagingBuffer.GetBuffer(), vertexBuffer.GetBuffer(), vertexBuffer.size);
+    }
+
+    void RenderAPIVK::CreateUniformBuffer(GPUResourceHandle handle, GPUUniformBufferCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(uniformBuffer, UniformBuffer, handle);
+        uniformBuffer.SetDevice(mDevice, mPhysicalDevice);
+        uniformBuffer.count = mSwapChain.GetImageCount();
+        uniformBuffer.CreateBuffer();
+    }
+
+    void RenderAPIVK::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+    {
+        CommandBufferVK& cb = mCommandBuffers[0];
+        cb.Begin();
+
+        VkBufferCopy copyRegion{};
+        copyRegion.srcOffset = 0; // Optional
+        copyRegion.dstOffset = 0; // Optional
+        copyRegion.size = size;
+        vkCmdCopyBuffer(cb.GetCommandBuffer(), srcBuffer, dstBuffer, 1, &copyRegion);
+
+        cb.End();
     }
 
     VkFormat RenderAPIVK::FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {

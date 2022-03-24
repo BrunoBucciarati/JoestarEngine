@@ -6,11 +6,18 @@ namespace Joestar
 	enum class GFXCommand
 	{
 		CreateSwapChain = 0,
-		CreateCommandBuffer = 1,
-		CreateFrameBuffer = 2,
-		CreateImage = 3,
-		CreateImageView = 4,
-		CreateSyncObjects = 5,
+		CreateCommandBuffer,
+		CreateFrameBuffer,
+		CreateImage,
+		CreateImageView,
+		CreateSyncObjects,
+		CreateIndexBuffer,
+		CreateVertexBuffer,
+		CreateUniformBuffer,
+		CreateRenderPass,
+		CreatePipelineState,
+		CreateMemory,
+		CreateSyncObjects,
 		CommandCount
 	};
 	class GFXCommandList : public MemoryReadWriter

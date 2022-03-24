@@ -11,8 +11,6 @@ namespace Joestar {
 		REGISTER_COMPONENT(Renderer);
 	public:
 		void Init();
-		Mesh* mesh;
-		Material* mat;
 		void Render(Camera* cam);
 		void RenderToShadowMap();
 	private:

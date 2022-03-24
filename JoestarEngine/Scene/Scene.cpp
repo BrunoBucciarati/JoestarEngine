@@ -6,7 +6,7 @@
 #include "../Graphics/ProceduralMesh.h"
 #include "../Math/Vector3.h"
 #include "../Graphics/TextureCube.h"
-#include "../Component/Renderer.h"
+#include "../Component/MeshRenderer.h"
 #include "../IO/MemoryManager.h"
 #include "../Misc/TimeManager.h"
 #include "../Base/Camera.h"
@@ -16,60 +16,60 @@ namespace Joestar {
     Scene::Scene(EngineContext* ctx) : Super(ctx) {
         graphics = GetSubsystem<Graphics>();
 
-        GameObject* sphere = NEW_OBJECT(GameObject);
-        gameObjects.Push(sphere);
-        Renderer* sr = sphere->GetComponent<Renderer>();
-        sr->mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
-        sr->mat = NEW_OBJECT(Material);
-        sr->mat->SetPBR();
-        sphere->SetPosition(0, 1.2, 0);
-        selection = sphere;
+        //GameObject* sphere = NEW_OBJECT(GameObject);
+        //gameObjects.Push(sphere);
+        //MeshRenderer* sr = sphere->GetComponent<MeshRenderer>();
+        //sr->SetMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere());
+        //sr->SetMaterial(NEW_OBJECT(Material));
+        //sr->GetMaterial()->SetPBR();
+        //sphere->SetPosition(0, 1.2, 0);
+        //selection = sphere;
 
         GameObject* plane = NEW_OBJECT(GameObject);
         gameObjects.Push(plane);
-        Renderer* pr = plane->GetComponent<Renderer>();
-        pr->mesh = GetSubsystem<ProceduralMesh>()->GetPlane();
-        pr->mat = NEW_OBJECT(Material);
-        pr->mat->SetPlaneMat();
+        MeshRenderer* pr = plane->GetComponent<MeshRenderer>();
+        pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
+        //pr->SetMaterial(NEW_OBJECT(Material));
+        //pr->GetMaterial()->SetPlaneMat();
 
 
-        lightBatch = NEW_OBJECT(LightBatch);
+        //lightBatch = NEW_OBJECT(LightBatch);
 
-        if (!skyboxMat) {
-            skyboxMat = NEW_OBJECT(Material);
-            Shader* shader = NEW_OBJECT(Shader);
-            shader->SetShader("skybox");
-            skyboxMat->SetShader(shader);
+        //if (!skyboxMat) {
+        //    skyboxMat = NEW_OBJECT(Material);
+        //    Shader* shader = NEW_OBJECT(Shader);
+        //    shader->SetShader("skybox");
+        //    skyboxMat->SetShader(shader);
 
-            TextureCube* cube = NEW_OBJECT(TextureCube);
-            //cube->hasMipMap = false;
-            String skydir = "Textures/skybox/";
-            cube->TextureFromImage(skydir);
-            skyboxMat->SetTexture(cube);
-        }
+        //    TextureCube* cube = NEW_OBJECT(TextureCube);
+        //    //cube->hasMipMap = false;
+        //    String skydir = "Textures/skybox/";
+        //    cube->TextureFromImage(skydir);
+        //    skyboxMat->SetTexture(cube);
+        //}
 
-        CreateLights();
+        //CreateLights();
 
-        CreateCompute();
+        //CreateCompute();
     }
 
     Scene::~Scene() {}
 
     void Scene::CreateCompute() {
-        shComputeShader = NEW_OBJECT(Shader);
-        //shComputeShader->SetShader("computeTest", kComputeShader);
-        shComputeShader->SetShader("computeSH", kComputeShader);
+        //shComputeShader = NEW_OBJECT(Shader);
+        ////shComputeShader->SetShader("computeTest", kComputeShader);
+        //shComputeShader->SetShader("computeSH", kComputeShader);
 
-        shComputeBuffer = JOJO_NEW(ComputeBuffer("SHCoef"), MEMORY_GFX_STRUCT);
-        shComputeBuffer->SetSize(128);
+        //shComputeBuffer = JOJO_NEW(ComputeBuffer("SHCoef"), MEMORY_GFX_STRUCT);
+        //shComputeBuffer->SetSize(128);
 
-        shCube = NEW_OBJECT(TextureCube);
-        String skydir = "Textures/shcube/";
-        shCube->TextureFromImage(skydir);
-        shCube->hasMipMap = false;
+        //shCube = NEW_OBJECT(TextureCube);
+        //String skydir = "Textures/shcube/";
+        //shCube->TextureFromImage(skydir);
+        //shCube->hasMipMap = false;
 
 
-        PreRenderCompute();
+        //PreRenderCompute();
     }
 
     void Scene::CreateLights() {
@@ -129,19 +129,19 @@ namespace Joestar {
 
     void Scene::PreRenderCompute() {
         //compute sh
-        graphics->BeginCompute("SH COMPUTE");
-        graphics->UseShader(shComputeShader);
-        Texture* tex = shCube;
-        computeSHConsts.sizeAndLevel[0] = tex->GetWidth();
-        computeSHConsts.sizeAndLevel[1] = tex->GetHeight();
-        computeSHConsts.sizeAndLevel[2] = SH_LEVEL;
-        graphics->UpdatePushConstant(&computeSHConsts, sizeof(ComputeSHConsts));
-        graphics->UpdateTexture(tex, 1);
-        graphics->UpdateComputeBuffer(shComputeBuffer, 0);
-        U32 group[3] = { 1, 1, 6 };
-        graphics->WriteBackComputeBuffer();
-        graphics->DispatchCompute(group);
-        graphics->EndCompute("SH COMPUTE");
+        //graphics->BeginCompute("SH COMPUTE");
+        //graphics->UseShader(shComputeShader);
+        //Texture* tex = shCube;
+        //computeSHConsts.sizeAndLevel[0] = tex->GetWidth();
+        //computeSHConsts.sizeAndLevel[1] = tex->GetHeight();
+        //computeSHConsts.sizeAndLevel[2] = SH_LEVEL;
+        //graphics->UpdatePushConstant(&computeSHConsts, sizeof(ComputeSHConsts));
+        //graphics->UpdateTexture(tex, 1);
+        //graphics->UpdateComputeBuffer(shComputeBuffer, 0);
+        //U32 group[3] = { 1, 1, 6 };
+        //graphics->WriteBackComputeBuffer();
+        //graphics->DispatchCompute(group);
+        //graphics->EndCompute("SH COMPUTE");
     }
 
     void Scene::RenderShadowMap() {
@@ -176,29 +176,30 @@ namespace Joestar {
     }
 
     void Scene::RenderScene(Camera* camera) {
-        RenderShadowMap();
+        //RenderShadowMap();
 
         graphics->BeginRenderPass("Scene");
-        graphics->Clear();
-        graphics->SetDepthCompare(DEPTH_COMPARE_LESS);
-        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera->GetProjectionMatrix());
-        graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera->GetViewMatrix());
-        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_CAMERAPOS, camera->GetPosition());
-        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNDIRECTION, mainLight->GetDirection());
-        graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNCOLOR, mainLight->GetIntensityMixColor());
-        graphics->FlushUniformBuffer();
-        RenderLights();
+        gameObjects[0]->GetComponent<MeshRenderer>()->Render(camera);
+        //graphics->Clear();
+        //graphics->SetDepthCompare(DEPTH_COMPARE_LESS);
+        //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera->GetProjectionMatrix());
+        //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera->GetViewMatrix());
+        //graphics->UpdateBuiltinVec3(BUILTIN_VEC3_CAMERAPOS, camera->GetPosition());
+        //graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNDIRECTION, mainLight->GetDirection());
+        //graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNCOLOR, mainLight->GetIntensityMixColor());
+        //graphics->FlushUniformBuffer();
+        //RenderLights();
 
-        Renderer* render;
-        for (Vector<GameObject*>::ConstIterator iter = gameObjects.Begin(); iter != gameObjects.End(); iter++) {
-            render = (*iter)->HasComponent<Renderer>();
-            if (render) {
-                render->Render(camera);
-            }
-        }
+        //Renderer* render;
+        //for (Vector<GameObject*>::ConstIterator iter = gameObjects.Begin(); iter != gameObjects.End(); iter++) {
+        //    render = (*iter)->HasComponent<Renderer>();
+        //    if (render) {
+        //        render->Render(camera);
+        //    }
+        //}
 
 
-        RenderSkybox();
+        //RenderSkybox();
         graphics->EndRenderPass("Scene");
     }
 
@@ -235,7 +236,7 @@ namespace Joestar {
         graphics->SetPolygonMode(POLYGON_MODE_FILL);
         graphics->UpdateMaterial(lightBatch->GetMaterial());
         graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, lightBatch->GetModelMatrix());
-        graphics->DrawMeshInstanced(lightBatch->GetMesh(), lightBatch->GetMaterial(), lightBatch->GetInstanceBuffer());
+        //graphics->DrawMeshInstanced(lightBatch->GetMesh(), lightBatch->GetMaterial(), lightBatch->GetInstanceBuffer());
     }
 
     void Scene::RenderSkybox() {

@@ -117,6 +117,50 @@ namespace Joestar {
                 mProtocol->CreateSyncObjects(num);
                 break;
             }
+            case GFXCommand::CreateIndexBuffer:
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUIndexBufferCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateIndexBuffer(handle, createInfo);
+                break;
+            }
+            case GFXCommand::CreateVertexBuffer:
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUVertexBufferCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateVertexBuffer(handle, createInfo);
+                break;
+            }
+            case GFXCommand::CreateUniformBuffer:
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUUniformBufferCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateVertexBuffer(handle, createInfo);
+                break;
+            }
+            case GFXCommand::CreateMemory:
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                U32 size;
+                cmdList->ReadBuffer(size);
+
+                U8* data = JOJO_NEW_ARRAY(U8, size, MEMORY_GFX_MEMORY);
+                cmdList->ReadBufferPtr(data, size);
+
+                mProtocol->CreateMemory(handle, size, data);
+                break;
+            }
             default: break;
         }
     }

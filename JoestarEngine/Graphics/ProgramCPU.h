@@ -8,8 +8,8 @@ namespace Joestar {
 		REGISTER_OBJECT(ProgramCPU, Object)
 	public:
 		explicit ProgramCPU(EngineContext* ctx);
-		VertexBuffer* vb;
-		IndexBuffer* ib;
-		Shader* shader;
+		//VertexBuffer* vb;
+		//IndexBuffer* ib;
+		//Shader* shader;
 	};
 }
