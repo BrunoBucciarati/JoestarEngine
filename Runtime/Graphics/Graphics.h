@@ -13,21 +13,26 @@
 #include "ProgramCPU.h"
 #include "UniformData.h"
 #include "FrameBufferDef.h"
+#include "CommandBuffer.h"
+#include "PipelineState.h"
+#include "GPUResource.h"
+#include "FrameBuffer.h"
 namespace Joestar {
-	class PipelineState;
-	class CommandBuffer;
-	class GFXCommandList;
-	class FrameBuffer;
-	class SwapChain;
-	class GPUImage;
-	class GPUImageView;
-	class GPUMemory;
 	class VertexBuffer;
 	class IndexBuffer;
-	class GPUVertexBuffer;
-	class GPUIndexBuffer;
-	class RenderPass;
-	class PipelineState;
+	class GFXCommandList;
+	class CommandBuffer;
+	class FrameBuffer;
+	class SwapChain;
+	//class GPUImage;
+	//class GPUImageView;
+	//class GPUMemory;
+	//class GPUVertexBuffer;
+	//class GPUIndexBuffer;
+	//class RenderPass;
+	//class PipelineState;
+	//class ComputePipelineState;
+	//class GraphicsPipelineState;
 
 	class Graphics : public SubSystem {
 		REGISTER_SUBSYSTEM(Graphics)
@@ -71,6 +76,7 @@ namespace Joestar {
 
 		FrameBuffer* GetBackBuffer();
 		FrameBuffer* CreateFrameBuffer();
+		void CreateDescriptorPool();
 
 		void CreateImage(GPUImage*, U32);
 		void CreateImageView(GPUImageView*, U32);
@@ -83,6 +89,7 @@ namespace Joestar {
 		GPUUniformBuffer* CreateGPUUniformBuffer(U32 hash, const UniformType& type);
 		GPUUniformBuffer* CreateGPUUniformBuffer(const String& name,const UniformType& type);
 		void CreateRenderPass(RenderPass*);
+		void CreateGraphicsPipelineState(GraphicsPipelineState*);
 		RenderPass* GetMainRenderPass();
 
 		void CreateSwapChain();
@@ -101,16 +108,17 @@ namespace Joestar {
 		bool isCompute = false;
 		U32 frameIdx = 0;
 
-		Vector<CommandBuffer*> mCommandBuffers;
-		Vector<FrameBuffer*> mFrameBuffers;
-		Vector<GPUImage*> mImages;
-		Vector<GPUImageView*> mImageViews;
-		Vector<GPUMemory*> mGPUMemories;
-		Vector<GPUVertexBuffer*> mGPUVertexBuffers;
-		Vector<GPUIndexBuffer*> mGPUIndexBuffers;
-		Vector<GPUUniformBuffer*> mGPUUniformBuffers;
-		Vector<RenderPass*> mRenderPasses;
-		Vector<PipelineState*> mPipelines;
+		Vector<SharedPtr<CommandBuffer>> mCommandBuffers;
+		Vector<SharedPtr<FrameBuffer>> mFrameBuffers;
+		Vector<SharedPtr<GPUImage>> mImages;
+		Vector<SharedPtr<GPUImageView>> mImageViews;
+		Vector<SharedPtr<GPUMemory>> mGPUMemories;
+		Vector<SharedPtr<GPUVertexBuffer>> mGPUVertexBuffers;
+		Vector<SharedPtr<GPUIndexBuffer>> mGPUIndexBuffers;
+		Vector<SharedPtr<GPUUniformBuffer>> mGPUUniformBuffers;
+		Vector<SharedPtr<RenderPass>> mRenderPasses;
+		Vector<SharedPtr<GraphicsPipelineState>> mGraphicsPSOs;
+		Vector<SharedPtr<ComputePipelineState>> mComputePSOs;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

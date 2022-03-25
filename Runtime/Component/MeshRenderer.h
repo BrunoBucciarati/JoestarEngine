@@ -1,6 +1,8 @@
 #pragma once
 #include "Renderer.h"
 #include "../Container/Ptr.h"
+#include "../Graphics/Mesh.h"
+#include "../Graphics/Material.h"
 namespace Joestar
 {
 	class MeshRenderer : public Renderer

@@ -243,7 +243,7 @@ namespace Joestar
 		~Vector()
         {
             DestructItems(0, mSize);
-			JOJO_DELETE_ARRAY((U8*)mBuffer);
+			JOJO_DELETE_ARRAY((U8*)mBuffer, MEMORY_CONTAINER);
 		}
 
 		void Resize(U32 sz)
@@ -357,13 +357,13 @@ namespace Joestar
         }
         virtual void DestructItems(U32 st, U32 length)
         {
-            for (int i = 0; i < length; ++i) {
-                mBuffer[st + i].~T();
+            for (U32 i = 0; i < length; ++i) {
+                (mBuffer + st + i)->~T();
             }
         }
         virtual void ConstructItems(U32 st, U32 length)
         {
-            for (int i = 0; i < length; ++i) {
+            for (U32 i = 0; i < length; ++i) {
                 JOJO_PLACEMENT_NEW(T, mBuffer + st + i, MEMORY_CONTAINER);
             }
         }

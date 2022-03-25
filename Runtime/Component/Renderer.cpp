@@ -2,7 +2,6 @@
 #include "../Misc/Application.h"
 #include "../Graphics/Graphics.h"
 #include "../Base/GameObject.h"
-#include "../Graphics/PipelineState.h"
 namespace Joestar {
 	void Renderer::Init()
 	{
@@ -10,13 +9,14 @@ namespace Joestar {
 	}
 	Renderer::~Renderer(){}
 
-	void Renderer::Render(Camera* cam)
+	void Renderer::Render(RenderPass* pass)
 	{
 		//if (mesh && mat) {
 		//	graphics->UpdateMaterial(mat);
 		//	graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, gameObject->GetAfflineTransform());
 		//	graphics->DrawMesh(mesh, mat);
 		//}
+		auto& pso = GetPipelineState(pass);
 	}
 
 	void Renderer::RenderToShadowMap()
@@ -25,5 +25,22 @@ namespace Joestar {
 		//	graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, gameObject->GetAfflineTransform());
 		//	graphics->DrawMesh(mesh, mat);
 		//}
+	}
+
+
+	SharedPtr<GraphicsPipelineState>& Renderer::GetPipelineState(RenderPass* pass)
+	{
+		if (pass->handle + 1 > mPSOs.Size())
+		{
+			mPSOs.Resize(pass->handle + 1);
+		}
+		SharedPtr<GraphicsPipelineState>& pso = mPSOs[pass->handle];
+		if (!pso)
+		{
+			pso = JOJO_NEW(GraphicsPipelineState, MEMORY_GFX_STRUCT);
+			pso->SetRenderPass(pass);
+			mGraphics->CreateGraphicsPipelineState(pso);
+		}
+		return pso;
 	}
 }

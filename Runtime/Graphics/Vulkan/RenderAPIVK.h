@@ -33,7 +33,7 @@ namespace Joestar {
 		void CreateVertexBuffer(GPUResourceHandle handle, GPUVertexBufferCreateInfo& createInfo);
 		void CreateUniformBuffer(GPUResourceHandle handle, GPUUniformBufferCreateInfo& createInfo);
 		void CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo);
-
+		void CreateDescriptorPool(U32 num = 1);
 	private:
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CreateRenderPass(RenderPassVK* rp, GPURenderPassCreateInfo& createInfo);

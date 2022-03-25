@@ -201,13 +201,13 @@ namespace Joestar {
 		{ UniformDataType::Mat4, UniformFrequency::PASS }
 	};
 
-	enum class AttachmentLoadOP
+	enum class AttachmentLoadOp
 	{
 		LOAD = 0,
 		CLEAR = 1,
 		DONT_CARE = 2
 	};
-	enum class AttachmentStoreOP
+	enum class AttachmentStoreOp
 	{
 		STORE = 0,
 		DONT_CARE = 1,

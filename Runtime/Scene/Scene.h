@@ -11,6 +11,7 @@
 
 namespace Joestar {
 	class Camera;
+	class RenderPass;
 	class Scene : public Object {
 		REGISTER_OBJECT(Scene, Object);
 	public:
@@ -39,6 +40,7 @@ namespace Joestar {
 		ComputeSHConsts computeSHConsts;
 		Texture* shCube;
 		LightBlocks lightBlocks;
-		Graphics* graphics;
+		Graphics* mGraphics;
+		SharedPtr<RenderPass> mMainRenderPass;
 	};
 }

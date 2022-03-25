@@ -44,15 +44,31 @@ namespace Joestar
 	{
 		ImageFormat colorFormat{ ImageFormat::B8G8R8A8_SRGB };
 		ImageFormat depthStencilFormat{ImageFormat::D32S8};
-		AttachmentLoadOP colorLoadOp{ AttachmentLoadOP::DONT_CARE };
-		AttachmentLoadOP depthLoadOp{ AttachmentLoadOP::DONT_CARE };
-		AttachmentLoadOP stencilLoadOp{ AttachmentLoadOP::DONT_CARE };
-		AttachmentStoreOP colorStoreOp{ AttachmentStoreOP::DONT_CARE };
-		AttachmentStoreOP depthStoreOp{ AttachmentStoreOP::DONT_CARE };
-		AttachmentStoreOP stencilStoreOp{ AttachmentStoreOP::DONT_CARE };
+		AttachmentLoadOp colorLoadOp{ AttachmentLoadOp::DONT_CARE };
+		AttachmentLoadOp depthLoadOp{ AttachmentLoadOp::DONT_CARE };
+		AttachmentLoadOp stencilLoadOp{ AttachmentLoadOp::DONT_CARE };
+		AttachmentStoreOp colorStoreOp{ AttachmentStoreOp::DONT_CARE };
+		AttachmentStoreOp depthStoreOp{ AttachmentStoreOp::DONT_CARE };
+		AttachmentStoreOp stencilStoreOp{ AttachmentStoreOp::DONT_CARE };
 		bool clear{ false };
 		
 		U32 msaaSamples{ 1 };
+	};
+
+	struct GPUPipelineStateCreateInfo
+	{
+	};
+
+	struct GPUGraphicsPipelineStateCreateInfo : GPUPipelineStateCreateInfo
+	{
+		GPUResourceHandle viewportHandle;
+		GPUResourceHandle multisampleHandle;
+		GPUResourceHandle depthStencilStateHandle;
+		GPUResourceHandle colorBlendStateHandle;
+		GPUResourceHandle renderPassHandle;
+	};
+	struct GPUComputePipelineStateCreateInfo : GPUPipelineStateCreateInfo
+	{
 	};
 
 	struct GPUCommandBufferCreateInfo

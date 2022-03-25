@@ -1,8 +1,5 @@
 #pragma once
-#include "../Core/RefCount.h"
-#include "../Core/ObjectDefines.h"
-#include "../Container/Ptr.h"
-#include "../Container/Vector.h"
+#include "../Core/Minimal.h"
 #include "GraphicDefines.h"
 #include "GPUTexture.h"
 #include "Viewport.h"
@@ -11,7 +8,7 @@ namespace Joestar {
     {
     };
 
-    class PipelineShader : RefCount
+    class PipelineShader : public GPUResource
     {
 
     };
@@ -159,58 +156,57 @@ namespace Joestar {
     class RenderPass : public GPUResource
     {
     public:
-        void SetLoadOP(AttachmentLoadOP op)
+        void SetLoadOp(AttachmentLoadOp op)
         {
-            SetColorLoadOP(op);
-            SetDepthStencilLoadOP(op);
+            SetColorLoadOp(op);
+            SetDepthStencilLoadOp(op);
         }
-        void SetDepthStencilLoadOP(AttachmentLoadOP op)
+        void SetDepthStencilLoadOp(AttachmentLoadOp op)
         {
-            SetDepthLoadOP(op);
-            SetStencilLoadOP(op);
+            SetDepthLoadOp(op);
+            SetStencilLoadOp(op);
         }
-        void SetStoreOP(AttachmentStoreOP op)
+        void SetStoreOp(AttachmentStoreOp op)
         {
-            SetColorStoreOP(op);
-            SetDepthStencilStoreOP(op);
+            SetColorStoreOp(op);
+            SetDepthStencilStoreOp(op);
         }
-        void SetDepthStencilStoreOP(AttachmentStoreOP  op)
+        void SetDepthStencilStoreOp(AttachmentStoreOp  op)
         {
-            SetDepthStoreOP(op);
-            SetStencilStoreOP(op);
+            SetDepthStoreOp(op);
+            SetStencilStoreOp(op);
         }
         GET_SET_STATEMENT_PREFIX_INITVALUE(bool, Clear, b, false);
         GET_SET_STATEMENT_INITVALUE(ImageFormat, ColorFormat, ImageFormat::R8G8B8A8_SRGB);
         GET_SET_STATEMENT_INITVALUE(ImageFormat, DepthStencilFormat, ImageFormat::D32S8);
-        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOP, ColorLoadOP, AttachmentLoadOP::LOAD);
-        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOP, DepthLoadOP, AttachmentLoadOP::LOAD);
-        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOP, StencilLoadOP, AttachmentLoadOP::LOAD);
-        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOP, ColorStoreOP, AttachmentStoreOP::STORE);
-        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOP, DepthStoreOP, AttachmentStoreOP::STORE);
-        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOP, StencilStoreOP, AttachmentStoreOP::STORE);
+        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOp, ColorLoadOp, AttachmentLoadOp::LOAD);
+        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOp, DepthLoadOp, AttachmentLoadOp::LOAD);
+        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOp, StencilLoadOp, AttachmentLoadOp::LOAD);
+        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOp, ColorStoreOp, AttachmentStoreOp::STORE);
+        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOp, DepthStoreOp, AttachmentStoreOp::STORE);
+        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOp, StencilStoreOp, AttachmentStoreOp::STORE);
         void InsertAllHash() override
         {
             HashInsert(bClear);
             HashInsert(mColorFormat);
             HashInsert(mDepthStencilFormat);
-            HashInsert(mColorLoadOP);
-            HashInsert(mDepthLoadOP);
-            HashInsert(mStencilLoadOP);
-            HashInsert(mColorStoreOP);
-            HashInsert(mDepthStoreOP);
-            HashInsert(mStencilStoreOP);
+            HashInsert(mColorLoadOp);
+            HashInsert(mDepthLoadOp);
+            HashInsert(mStencilLoadOp);
+            HashInsert(mColorStoreOp);
+            HashInsert(mDepthStoreOp);
+            HashInsert(mStencilStoreOp);
         }
     };
 
     class GraphicsPipelineState : public PipelineState
     {
-    private:
         VertexInputState* mVertexInputState;
         RasterizationState* mRasterizationState;
         MultiSampleState* mMultiSampleState;
         DepthStencilState* mDepthStencilState;
         ColorBlendState* mColorBlendState;
-        RenderPass* mRenderPass;
+        GET_SET_STATEMENT(RenderPass*, RenderPass);
         Viewport* mViewport;
         void InsertAllHash() override
         {

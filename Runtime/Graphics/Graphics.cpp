@@ -69,6 +69,7 @@ namespace Joestar {
 		CreateCommandBuffer();
 		//创建BackBuffer
 		CreateFrameBuffer();
+		CreateDescriptorPool();
 		//创建内建的Uniform
 		CreateBuiltinUniforms();
 		//创建主RenderPass
@@ -82,9 +83,8 @@ namespace Joestar {
 	{
 		RenderPass* rp = JOJO_NEW(RenderPass, MEMORY_GFX_STRUCT);
 		rp->SetClear(true);
-		rp->SetLoadOP(AttachmentLoadOP::DONT_CARE);
-		rp->SetStoreOP(AttachmentStoreOP::DONT_CARE);
-		rp->Rehash();
+		rp->SetLoadOp(AttachmentLoadOp::DONT_CARE);
+		rp->SetStoreOp(AttachmentStoreOp::DONT_CARE);
 		CreateRenderPass(rp);
 	}
 
@@ -451,8 +451,22 @@ namespace Joestar {
 		return ub;
 	}
 
+	void Graphics::CreateGraphicsPipelineState(GraphicsPipelineState* pso)
+	{
+		pso->Rehash();
+		pso->handle = mGraphicsPSOs.Size();
+		mGraphicsPSOs.Push(pso);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateGraphicsPipelineState);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(pso->handle);
+		GPUPipelineStateCreateInfo createInfo{
+
+		};
+		GetMainCmdList()->WriteBuffer<GPUPipelineStateCreateInfo>(createInfo);
+	}
+
 	void Graphics::CreateRenderPass(RenderPass* pass)
 	{
+		pass->Rehash();
 		pass->handle = mRenderPasses.Size();
 		mRenderPasses.Push(pass);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateRenderPass);
@@ -460,12 +474,12 @@ namespace Joestar {
 		GPURenderPassCreateInfo createInfo{
 			pass->GetColorFormat(),
 			pass->GetDepthStencilFormat(),
-			pass->GetColorLoadOP(),
-			pass->GetDepthLoadOP(),
-			pass->GetStencilLoadOP(),
-			pass->GetColorStoreOP(),
-			pass->GetDepthStoreOP(),
-			pass->GetStencilStoreOP(),
+			pass->GetColorLoadOp(),
+			pass->GetDepthLoadOp(),
+			pass->GetStencilLoadOp(),
+			pass->GetColorStoreOp(),
+			pass->GetDepthStoreOp(),
+			pass->GetStencilStoreOp(),
 			pass->GetClear()
 		};
 		GetMainCmdList()->WriteBuffer<GPURenderPassCreateInfo>(createInfo);
@@ -558,6 +572,12 @@ namespace Joestar {
 	void Graphics::CreateSyncObjects()
 	{
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateSyncObjects);
+		GetMainCmdList()->WriteBuffer<U32>(MAX_CMDLISTS_IN_FLIGHT);
+	}
+
+	void Graphics::CreateDescriptorPool()
+	{
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateDescriptorPool);
 		GetMainCmdList()->WriteBuffer<U32>(MAX_CMDLISTS_IN_FLIGHT);
 	}
 }

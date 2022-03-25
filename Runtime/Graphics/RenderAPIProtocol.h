@@ -24,6 +24,7 @@ namespace Joestar
 		virtual void CreateVertexBuffer(GPUResourceHandle handle, GPUVertexBufferCreateInfo& createInfo) = 0;
 		virtual void CreateUniformBuffer(GPUResourceHandle handle, GPUUniformBufferCreateInfo& createInfo) = 0;
 		virtual void CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo) = 0;
+		virtual void CreateDescriptorPool(U32 num = 1) = 0;
 
 		///Uniform Functions
 		void CreateMemory(GPUResourceHandle handle, U32 size, U8* data);
@@ -32,6 +33,8 @@ namespace Joestar
 		void SetWindow(Window* w);
 	protected:
 		U32 maxMsaaSamples;
+		U32 maxBindings{16};
+		U32 maxUniformBuffers{ 1024 };
 		Window* window;
 		GPUResourceHandle gCommandBufferHandle{0};
 		GPUResourceHandle gPipelineStateHandle{0};

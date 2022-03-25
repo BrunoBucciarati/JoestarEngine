@@ -1112,70 +1112,70 @@ namespace Joestar {
 
     template <class T>
     void GPUProgramVulkan::CreateDescriptorSetLayout(T* call) {
-        Vector<VkDescriptorSetLayoutBinding> bindings;
-        bindings.Reserve(call->shader->ubs.Size());
-        for (int i = 0; i < call->shader->ubs.Size(); ++i) {
-            //UniformBufferVK11* ubvk = uniformVKs[call->shader->ubs[i].id];
-            UniformDef& ubdef = call->shader->ubs[i];
-            VkDescriptorSetLayoutBinding layoutBinding{};
-            layoutBinding.binding = ubdef.binding;
-            layoutBinding.descriptorType = UniformBufferVK11::GetDescriptorType(ubdef);// VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            layoutBinding.stageFlags = UniformBufferVK11::GetStageFlags(ubdef);
-            layoutBinding.descriptorCount = 1;
-            layoutBinding.pImmutableSamplers = nullptr;
+        //Vector<VkDescriptorSetLayoutBinding> bindings;
+        //bindings.Reserve(call->shader->ubs.Size());
+        //for (int i = 0; i < call->shader->ubs.Size(); ++i) {
+        //    //UniformBufferVK11* ubvk = uniformVKs[call->shader->ubs[i].id];
+        //    UniformDef& ubdef = call->shader->ubs[i];
+        //    VkDescriptorSetLayoutBinding layoutBinding{};
+        //    layoutBinding.binding = ubdef.binding;
+        //    layoutBinding.descriptorType = UniformBufferVK11::GetDescriptorType(ubdef);// VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        //    layoutBinding.stageFlags = UniformBufferVK11::GetStageFlags(ubdef);
+        //    layoutBinding.descriptorCount = 1;
+        //    layoutBinding.pImmutableSamplers = nullptr;
 
-            bindings.Push(layoutBinding);
-        }
+        //    bindings.Push(layoutBinding);
+        //}
 
-        VkDescriptorSetLayoutCreateInfo layoutInfo{};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = static_cast<U32>(bindings.Size());
-        layoutInfo.pBindings = bindings.Buffer();
+        //VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        //layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        //layoutInfo.bindingCount = static_cast<U32>(bindings.Size());
+        //layoutInfo.pBindings = bindings.Buffer();
 
-        if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(call->descriptorSetLayout)) != VK_SUCCESS) {
-            LOGERROR("failed to create descriptor set layout!");
-        }
+        //if (vkCreateDescriptorSetLayout(vkCtxPtr->device, &layoutInfo, nullptr, &(call->descriptorSetLayout)) != VK_SUCCESS) {
+        //    LOGERROR("failed to create descriptor set layout!");
+        //}
     }
 
     template<class T>
     void GPUProgramVulkan::CreatePipelineLayout(T* call) {
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 1; // Optional
-        VkDescriptorSetLayout layouts[] = { call->descriptorSetLayout };
-        pipelineLayoutInfo.pSetLayouts = layouts; // Optional
+        //VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        //pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        //pipelineLayoutInfo.setLayoutCount = 1; // Optional
+        //VkDescriptorSetLayout layouts[] = { call->descriptorSetLayout };
+        //pipelineLayoutInfo.pSetLayouts = layouts; // Optional
 
-        PushConstsVK* pushConsts = call->pushConst;
-        if (pushConsts) {
-            VkPushConstantRange pushConstantRange{};
-            pushConstantRange.stageFlags = pushConsts->GetStageFlags();
-            pushConstantRange.offset = 0;
-            pushConstantRange.size = pushConsts->size;
-            pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
-            pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
-            VK_CHECK(vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)))
-        } else {
-            VK_CHECK(vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)))
-        }
+        //PushConstsVK* pushConsts = call->pushConst;
+        //if (pushConsts) {
+        //    VkPushConstantRange pushConstantRange{};
+        //    pushConstantRange.stageFlags = pushConsts->GetStageFlags();
+        //    pushConstantRange.offset = 0;
+        //    pushConstantRange.size = pushConsts->size;
+        //    pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
+        //    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
+        //    VK_CHECK(vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)))
+        //} else {
+        //    VK_CHECK(vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)))
+        //}
     }
 
     template <class T>
     void GPUProgramVulkan::CmdUpdateTexture(Texture* tex, T* call, U8 binding) {
         //check if uniform buffer is ready
-        if (textureVKs.find(tex->id) == textureVKs.end()) {
-            TextureVK* vkTex = JOJO_NEW(TextureVK(tex), MEMORY_GFX_STRUCT);
-            CreateTextureImage(vkTex, call->shader->GetUniformDef(binding));
-            textureVKs[vkTex->ID()] = vkTex;
-        }
-        call->textures.Push(tex->id);
+        //if (textureVKs.find(tex->id) == textureVKs.end()) {
+        //    TextureVK* vkTex = JOJO_NEW(TextureVK(tex), MEMORY_GFX_STRUCT);
+        //    CreateTextureImage(vkTex, call->shader->GetUniformDef(binding));
+        //    textureVKs[vkTex->ID()] = vkTex;
+        //}
+        //call->textures.Push(tex->id);
 
-        if (uniformVKs.find(tex->id) == uniformVKs.end()) {
-            UniformBufferVK11* texUB = JOJO_NEW(UniformBufferVK11, MEMORY_GFX_STRUCT);
-            texUB->texID = tex->id;
-            texUB->id = tex->id;
-            uniformVKs[tex->id] = texUB;
-        }
-        //update binding tex
-        call->ubs[binding] = tex->id;
+        //if (uniformVKs.find(tex->id) == uniformVKs.end()) {
+        //    UniformBufferVK11* texUB = JOJO_NEW(UniformBufferVK11, MEMORY_GFX_STRUCT);
+        //    texUB->texID = tex->id;
+        //    texUB->id = tex->id;
+        //    uniformVKs[tex->id] = texUB;
+        //}
+        ////update binding tex
+        //call->ubs[binding] = tex->id;
     }
 }

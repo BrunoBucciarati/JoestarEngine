@@ -46,7 +46,7 @@ namespace Joestar {
 	public:
 		GFXCommandBuffer(U32 sz) {
 			size = sz;
-			data = JOJO_NEW(U8[sz]);
+			data = JOJO_NEW(U8[sz], MEMORY_GFX_STRUCT);
 			memset(data, 0, sz);
 			cursor = 0;
 		}
@@ -105,7 +105,7 @@ namespace Joestar {
 	private:
 		void DoubleSizeBuffer() {
 			U8* oldData = data;
-			data = JOJO_NEW(U8[2 * size]);
+			data = JOJO_NEW(U8[2 * size], MEMORY_GFX_STRUCT);
 			memset(data, 0, 2 * size);
 			memcpy(data, oldData, size);
 			size *= 2;

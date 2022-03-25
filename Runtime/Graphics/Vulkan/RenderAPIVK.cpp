@@ -831,6 +831,29 @@ namespace Joestar {
         cb.Submit();
     }
 
+    void RenderAPIVK::CreateDescriptorPool(U32 num) {
+        //already exist
+        if (mDescriptorPool != VK_NULL_HANDLE) return;
+        Vector<VkDescriptorPoolSize> poolSizes;
+        //创建一个足够大的池子，后续有需要还要补扩容逻辑
+        poolSizes.Push({ VK_DESCRIPTOR_TYPE_SAMPLER , maxBindings * num });
+        poolSizes.Push({ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE , maxBindings * num });
+        poolSizes.Push({ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE , maxBindings * num });
+        poolSizes.Push({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER , maxUniformBuffers * num });
+        poolSizes.Push({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER , maxBindings * num });
+        poolSizes.Push({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC , maxBindings * num });
+        poolSizes.Push({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC , maxBindings * num });
+        poolSizes.Push({ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT , maxBindings * num });
+
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = poolSizes.Size();
+        poolInfo.pPoolSizes = poolSizes.Buffer();
+        poolInfo.maxSets = 4;
+
+        VK_CHECK(vkCreateDescriptorPool(mDevice, &poolInfo, nullptr, &mDescriptorPool));
+    }
+
     VkFormat RenderAPIVK::FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
         for (VkFormat format : candidates) {
             VkFormatProperties props;

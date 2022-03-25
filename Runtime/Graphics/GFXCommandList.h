@@ -14,9 +14,11 @@ namespace Joestar
 		CreateVertexBuffer,
 		CreateUniformBuffer,
 		CreateRenderPass,
-		CreatePipelineState,
+		CreateGraphicsPipelineState,
+		CreateComputePipelineState,
 		CreateMemory,
 		CreateSyncObjects,
+		CreateDescriptorPool,
 		CommandCount
 	};
 	class GFXCommandList : public MemoryReadWriter
@@ -37,7 +39,7 @@ namespace Joestar
 			MemoryReadWriter::Flush();
 			readFlag = true;
 		}
-		//当这个标志为true时意味着可读
+		//褰撹繖涓爣蹇椾负true鏃舵剰鍛崇潃鍙
 		std::atomic_bool readFlag{ false };
 	};
 }
