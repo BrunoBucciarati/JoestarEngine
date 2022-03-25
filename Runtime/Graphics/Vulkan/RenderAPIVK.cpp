@@ -455,13 +455,24 @@ namespace Joestar {
     {
         GET_STRUCT_BY_HANDLE(cb, CommandBuffer, handle);
 
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        VkCommandBufferAllocateInfo allocInfo = cb.GetDefaultAllocInfo();
+        CreateCommandBuffers(cb, allocInfo, num);
+    }
+
+    void RenderAPIVK::CreateCommandBuffers(CommandBufferVK& cb, VkCommandBufferAllocateInfo& allocInfo, U32 num)
+    {
         allocInfo.commandPool = mCommandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = num;
         cb.Create(mDevice, allocInfo);
         cb.SetQueue(mGraphicsQueue);
+    }
+
+    CommandBufferVK RenderAPIVK::GetTempCommandBuffer()
+    {
+        CommandBufferVK cb;
+        VkCommandBufferAllocateInfo allocInfo = cb.GetDefaultAllocInfo();
+        CreateCommandBuffers(cb, allocInfo, 1);      
+        return std::move(cb);
     }
 
     void RenderAPIVK::CreateMainCommandBuffers(U32 num)
@@ -681,7 +692,8 @@ namespace Joestar {
         depthViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         depthViewCreateInfo.subresourceRange.layerCount = 1;
         depthStencilView->Create(mDevice, depthViewCreateInfo, mSwapChain.GetImageCount());
-        depthStencilView->TransitionImageLayout(mCommandBuffers[0], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+        CommandBufferVK cb = GetTempCommandBuffer();
+        depthStencilView->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
         ImageViewVK* colorView = JOJO_NEW(ImageViewVK);
         colorView->imageViews = mSwapChain.imageViews;
@@ -806,7 +818,7 @@ namespace Joestar {
 
     void RenderAPIVK::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     {
-        CommandBufferVK& cb = mCommandBuffers[0];
+        CommandBufferVK cb = GetTempCommandBuffer();
         cb.Begin();
 
         VkBufferCopy copyRegion{};
@@ -816,6 +828,7 @@ namespace Joestar {
         vkCmdCopyBuffer(cb.GetCommandBuffer(), srcBuffer, dstBuffer, 1, &copyRegion);
 
         cb.End();
+        cb.Submit();
     }
 
     VkFormat RenderAPIVK::FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {

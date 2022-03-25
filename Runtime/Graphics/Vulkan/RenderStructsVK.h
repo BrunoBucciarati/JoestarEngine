@@ -140,6 +140,14 @@ namespace Joestar {
 	class CommandBufferVK
 	{
 	public:
+        static VkCommandBufferAllocateInfo GetDefaultAllocInfo()
+        {
+            VkCommandBufferAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            allocInfo.commandBufferCount = 1;
+            return allocInfo;
+        }
 		void Create(VkDevice& inDevice, VkCommandBufferAllocateInfo& allocInfo, U32 num = 1)
 		{
 			if (bCreated)

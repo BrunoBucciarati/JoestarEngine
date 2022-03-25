@@ -393,7 +393,7 @@ namespace Joestar {
 			vertexBuffer->GetVertexSize(),
 			mem->handle
 		};
-		GetMainCmdList()->WriteCommand(GFXCommand::CreateIndexBuffer);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateVertexBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 		GetMainCmdList()->WriteBuffer<GPUVertexBufferCreateInfo>(createInfo);
 		

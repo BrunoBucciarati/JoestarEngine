@@ -38,6 +38,8 @@ namespace Joestar {
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CreateRenderPass(RenderPassVK* rp, GPURenderPassCreateInfo& createInfo);
 		void CreateImage(ImageVK& image, VkImageCreateInfo& createInfo, U32 num = 1);
+		void CreateCommandBuffers(CommandBufferVK& cb, VkCommandBufferAllocateInfo& createInfo, U32 num = 1);
+		CommandBufferVK GetTempCommandBuffer();
 		VkFormat FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		void CreateCommandPool();
