@@ -36,7 +36,7 @@ namespace Joestar {
 		void Init();
 		virtual void DrawTriangle() {}
 		void MainLoop();
-		void DrawMesh(Mesh* mesh, Material* mat);
+		//void DrawM esh(Mesh* mesh, Material* mat);
 		void Clear();
 		void UpdateBuiltinMatrix(BUILTIN_VALUE typ, Matrix4x4f& mat);
 		void UpdateBuiltinVec3(BUILTIN_VALUE typ, Vector3f& mat);
@@ -77,7 +77,9 @@ namespace Joestar {
 		GPUMemory* CreateGPUMemory();
 		void SetGPUMemory(GPUMemory*);
 		GPUVertexBuffer* CreateGPUVertexBuffer(VertexBuffer*);
+		void RemoveGPUVertexBuffer(GPUVertexBuffer* vb);
 		GPUIndexBuffer* CreateGPUIndexBuffer(IndexBuffer*);
+		void RemoveGPUIndexBuffer(GPUIndexBuffer* vb);
 		GPUUniformBuffer* CreateGPUUniformBuffer(U32 hash);
 		GPUUniformBuffer* CreateGPUUniformBuffer(const String& name);
 		void CreateRenderPass(RenderPass*);

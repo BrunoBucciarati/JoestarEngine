@@ -5,7 +5,7 @@
 
 namespace Joestar {
 	class Transform : public Component {
-		REGISTER_COMPONENT(Transform)
+		REGISTER_COMPONENT_ROOT(Transform)
 	public:
 		void Init();
 		Vector3f& GetPosition() { return translate; }

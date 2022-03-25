@@ -8,6 +8,10 @@ namespace Joestar
 		mGPUBuffer(nullptr)
 	{
 	}
+	VertexBuffer::~VertexBuffer()
+	{
+		mGraphics->RemoveGPUVertexBuffer(mGPUBuffer);
+	}
 
 	void VertexBuffer::SetData(U8* data)
 	{

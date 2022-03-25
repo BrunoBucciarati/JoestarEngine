@@ -45,6 +45,7 @@ namespace Joestar {
 		void CreateSurface();
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
+		U32 FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties);
 		QueueFamilyIndices FindQueueFamilies();
 		VkSampleCountFlagBits GetMaxUsableSampleCount();
 		bool IsDeviceSuitable(VkPhysicalDevice device);

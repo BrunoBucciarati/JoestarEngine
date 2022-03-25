@@ -242,6 +242,6 @@ namespace Joestar {
     void Scene::RenderSkybox() {
         graphics->SetDepthCompare(DEPTH_COMPARE_LESSEQUAL);
         graphics->UpdateMaterial(skyboxMat);
-        graphics->DrawMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere(), skyboxMat);
+        //graphics->DrawMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere(), skyboxMat);
     }
 }

@@ -150,6 +150,7 @@
     <ClCompile Include="Base\StringHash.cpp" />
     <ClCompile Include="Component\Component.cpp" />
     <ClCompile Include="Base\Light.cpp" />
+    <ClCompile Include="Component\MeshRenderer.cpp" />
     <ClCompile Include="Component\Renderer.cpp" />
     <ClCompile Include="Component\Transform.cpp" />
     <ClCompile Include="Container\Str.cpp" />
@@ -187,6 +188,7 @@
     <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector3.cpp" />
     <ClCompile Include="Misc\TimeManager.cpp" />
+    <ClCompile Include="Resource\Resource.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Thread\RenderThread.cpp" />
     <ClCompile Include="Thread\RenderThreadD3D11.cpp" />

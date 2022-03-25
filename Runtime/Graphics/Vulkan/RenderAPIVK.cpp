@@ -50,9 +50,9 @@ namespace Joestar {
         }
     }
 
-    U32 FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device) {
+    U32 RenderAPIVK::FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties) {
         VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(device, &memProperties);
+        vkGetPhysicalDeviceMemoryProperties(mPhysicalDevice, &memProperties);
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
             if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
                 return i;
@@ -501,7 +501,7 @@ namespace Joestar {
     {
         image.Create(mDevice, imageInfo, num);
 
-        U32 memoryTypeIdx = FindMemoryType(image.memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mPhysicalDevice);
+        U32 memoryTypeIdx = FindMemoryType(image.memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
         image.AllocMemory(mDevice, memoryTypeIdx);
     }
 

@@ -367,6 +367,16 @@ namespace Joestar {
 		return mem;
 	}
 
+	void Graphics::RemoveGPUVertexBuffer(GPUVertexBuffer* vb)
+	{
+
+	}
+
+	void Graphics::RemoveGPUIndexBuffer(GPUIndexBuffer* vb)
+	{
+
+	}
+
 	GPUVertexBuffer* Graphics::CreateGPUVertexBuffer(VertexBuffer* vertexBuffer)
 	{
 		CREATE_NEW_HANDLE(vb, GPUVertexBuffer);

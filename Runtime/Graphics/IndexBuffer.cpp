@@ -8,6 +8,10 @@ namespace Joestar
 		mGPUBuffer(nullptr)
 	{
 	}
+	IndexBuffer::~IndexBuffer()
+	{
+		mGraphics->RemoveGPUIndexBuffer(mGPUBuffer);
+	}
 
 	void IndexBuffer::SetData(U8* data)
 	{
