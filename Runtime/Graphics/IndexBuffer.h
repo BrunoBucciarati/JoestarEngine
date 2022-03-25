@@ -27,7 +27,9 @@ namespace Joestar
 		}
 		void SetSize(U32 sz, bool largeIndices = false)
 		{
-			mData = JOJO_NEW_ARRAY(U8, sz, MEMORY_GFX_STRUCT);
+			mIndexCount = sz;
+			mIndexSize = largeIndices ? 4 : 2;
+			mData = JOJO_NEW_ARRAY(U8, GetSize(), MEMORY_GFX_STRUCT);
 			bLargeIndices = largeIndices;
 		}
 		U32 GetIndexSize() const

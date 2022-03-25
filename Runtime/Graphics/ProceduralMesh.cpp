@@ -49,11 +49,11 @@ namespace Joestar {
         }
 
         VertexBuffer* vb = mesh->GetVB();
-        vb->SetSize(vertices.Size() * sizeof(VertexLoad), elements);
+        vb->SetSize(vertices.Size(), elements);
         vb->SetData((U8*)vertices.Buffer());
 
         IndexBuffer* ib = mesh->GetIB();
-        ib->SetSize(indices.Size() * sizeof(U16));
+        ib->SetSize(indices.Size());
         ib->SetData((U8*)indices.Buffer());
 
         mesh->SetTopology(MESH_TOPOLOGY_TRIANGLE_STRIP);
@@ -107,11 +107,11 @@ namespace Joestar {
         }
 
         VertexBuffer* vb = mesh->GetVB();
-        vb->SetSize(vertices.Size() * sizeof(VertexLoad), elements);
+        vb->SetSize(vertices.Size(), elements);
         vb->SetData((U8*)vertices.Buffer());
 
         IndexBuffer* ib = mesh->GetIB();
-        ib->SetSize(indices.Size() * sizeof(U16));
+        ib->SetSize(indices.Size());
         ib->SetData((U8*)indices.Buffer());
 
         mesh->SetTopology(MESH_TOPOLOGY_TRIANGLE_STRIP);

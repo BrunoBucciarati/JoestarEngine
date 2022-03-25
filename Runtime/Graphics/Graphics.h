@@ -80,8 +80,8 @@ namespace Joestar {
 		void RemoveGPUVertexBuffer(GPUVertexBuffer* vb);
 		GPUIndexBuffer* CreateGPUIndexBuffer(IndexBuffer*);
 		void RemoveGPUIndexBuffer(GPUIndexBuffer* vb);
-		GPUUniformBuffer* CreateGPUUniformBuffer(U32 hash);
-		GPUUniformBuffer* CreateGPUUniformBuffer(const String& name);
+		GPUUniformBuffer* CreateGPUUniformBuffer(U32 hash, const UniformType& type);
+		GPUUniformBuffer* CreateGPUUniformBuffer(const String& name,const UniformType& type);
 		void CreateRenderPass(RenderPass*);
 		RenderPass* GetMainRenderPass();
 

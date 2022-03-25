@@ -92,7 +92,7 @@ namespace Joestar {
 	{
 		for (U32 i = 0; i < (U32)BulitinUniforms::COUNT; ++i)
 		{
-			CreateGPUUniformBuffer(i);			
+			CreateGPUUniformBuffer(i, BuiltinUniformTypes[i]);
 		}
 	}
 
@@ -403,6 +403,7 @@ namespace Joestar {
 	void Graphics::SetGPUMemory(GPUMemory* mem)
 	{
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateMemory);
+		GetMainCmdList()->WriteBuffer<U32>(mem->handle);
 		GetMainCmdList()->WriteBuffer<U32>(mem->size);
 		GetMainCmdList()->WriteBufferPtr(mem->data, mem->size);
 
@@ -431,19 +432,19 @@ namespace Joestar {
 		return ib;
 	}
 
-	GPUUniformBuffer* Graphics::CreateGPUUniformBuffer(const String& name)
+	GPUUniformBuffer* Graphics::CreateGPUUniformBuffer(const String& name, const UniformType& type)
 	{
-		return CreateGPUUniformBuffer(name.Hash());
+		return CreateGPUUniformBuffer(name.Hash(), type);
 	}
 
-	GPUUniformBuffer* Graphics::CreateGPUUniformBuffer(U32 hash)
+	GPUUniformBuffer* Graphics::CreateGPUUniformBuffer(U32 hash, const UniformType& type)
 	{
 		CREATE_NEW_HANDLE(ub, GPUUniformBuffer);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateUniformBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 
 		GPUUniformBufferCreateInfo createInfo{
-			hash
+			type
 		};
 		GetMainCmdList()->WriteBuffer<GPUUniformBufferCreateInfo>(createInfo);
 
@@ -464,7 +465,8 @@ namespace Joestar {
 			pass->GetStencilLoadOP(),
 			pass->GetColorStoreOP(),
 			pass->GetDepthStoreOP(),
-			pass->GetStencilStoreOP()
+			pass->GetStencilStoreOP(),
+			pass->GetClear()
 		};
 		GetMainCmdList()->WriteBuffer<GPURenderPassCreateInfo>(createInfo);
 	}

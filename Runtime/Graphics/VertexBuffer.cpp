@@ -13,9 +13,26 @@ namespace Joestar
 		mGraphics->RemoveGPUVertexBuffer(mGPUBuffer);
 	}
 
+	void VertexBuffer::SetSize(U32 count, PODVector<VertexElement>&elements)
+	{
+		SetVertexElements(elements);
+		mVertexCount = count;
+		mData = JOJO_NEW_ARRAY(U8, GetSize(), MEMORY_GFX_STRUCT);
+	}
+
 	void VertexBuffer::SetData(U8* data)
 	{
 		memcpy(mData, data, GetSize());
 		mGPUBuffer = mGraphics->CreateGPUVertexBuffer(this);
+	}
+
+	void VertexBuffer::SetVertexElements(PODVector<VertexElement>& elements)
+	{
+		mVertexElements = elements;
+		mVertexSize = 0;
+		for (auto& ele : elements)
+		{
+			mVertexSize += VertexTypeSize[(U32)ele.type];
+		}
 	}
 }

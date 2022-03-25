@@ -32,6 +32,7 @@ namespace Joestar {
 		void CreateIndexBuffer(GPUResourceHandle handle, GPUIndexBufferCreateInfo& createInfo);
 		void CreateVertexBuffer(GPUResourceHandle handle, GPUVertexBufferCreateInfo& createInfo);
 		void CreateUniformBuffer(GPUResourceHandle handle, GPUUniformBufferCreateInfo& createInfo);
+		void CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo);
 
 	private:
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -73,6 +74,7 @@ namespace Joestar {
 		Vector<VertexBufferVK> mVertexBuffers;
 		Vector<IndexBufferVK> mIndexBuffers;
 		Vector<UniformBufferVK> mUniformBuffers;
+		Vector<RenderPassVK> mRenderPasses;
 		VkDescriptorPool mDescriptorPool;
 
 		SwapChainVK mSwapChain;

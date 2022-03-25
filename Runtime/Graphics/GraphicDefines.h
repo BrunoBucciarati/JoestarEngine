@@ -169,6 +169,13 @@ namespace Joestar {
 		Sampler
 	};
 
+	const U32 UniformDataTypeSize[] = {
+		4 * sizeof(float),
+		12 * sizeof(float),
+		16 * sizeof(float),
+		4
+	};
+
 	enum class UniformFrequency {
 		FRAME = 0,
 		PASS,
@@ -188,11 +195,12 @@ namespace Joestar {
 		UniformFrequency frequency{ UniformFrequency::OBJECT };
 	};
 
-	const UniformType BUILTIN_UNIFORM_TYPE[] = {
+	const UniformType BuiltinUniformTypes[] = {
 		{ UniformDataType::Mat4, UniformFrequency::OBJECT },
 		{ UniformDataType::Mat4, UniformFrequency::PASS },
 		{ UniformDataType::Mat4, UniformFrequency::PASS }
 	};
+
 	enum class AttachmentLoadOP
 	{
 		LOAD = 0,
@@ -234,7 +242,15 @@ namespace Joestar {
 		VEC3,
 		VEC2,
 		FLOAT,
-		INT
+		U8
+	};
+
+	const U32 VertexTypeSize[] = {
+		4 * sizeof(F32),
+		3 * sizeof(F32),
+		2 * sizeof(F32),
+		sizeof(F32),
+		sizeof(U8)
 	};
 }
 #endif

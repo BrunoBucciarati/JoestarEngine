@@ -5,8 +5,19 @@
 #include "../Graphics/Vulkan/RenderAPIVK.h"
 #include "../Misc/GlobalConfig.h"
 #include "../Graphics/GPUCreateInfos.h"
+#include "../IO/Log.h"
 namespace Joestar {
 #define MAX_FRAMES_IN_FLIGHT 3
+#define DEBUG_CMD 1
+#if DEBUG_CMD
+#define CASECMD(CMD_TYPE) \
+    case CMD_TYPE: \
+    LOGWARN("CMD:%s\n", #CMD_TYPE);
+#else
+#define CASECMD(CMD_TYPE) \
+    case CMD_TYPE:
+#endif
+
     RenderThread::~RenderThread()
     {
         
@@ -53,7 +64,7 @@ namespace Joestar {
     {
         switch (GFXCommand(command))
         {
-            case GFXCommand::CreateCommandBuffer:
+            CASECMD(GFXCommand::CreateCommandBuffer)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
@@ -67,7 +78,7 @@ namespace Joestar {
                 mProtocol->CreateCommandBuffers(handle, createInfo);
                 break;
             }
-            case GFXCommand::CreateFrameBuffer:
+            CASECMD(GFXCommand::CreateFrameBuffer)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
@@ -82,7 +93,7 @@ namespace Joestar {
                 mProtocol->CreateFrameBuffers(handle, createInfo);
                 break;
             }
-            case GFXCommand::CreateImage:
+            CASECMD(GFXCommand::CreateImage)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
@@ -93,7 +104,7 @@ namespace Joestar {
                 mProtocol->CreateImage(handle, createInfo);
                 break;
             }
-            case GFXCommand::CreateImageView:
+            CASECMD(GFXCommand::CreateImageView)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
@@ -103,21 +114,21 @@ namespace Joestar {
                 mProtocol->CreateImageView(handle, createInfo);
                 break;
             }
-            case GFXCommand::CreateSwapChain:
+            CASECMD(GFXCommand::CreateSwapChain)
             {
                 GPUSwapChainCreateInfo createInfo;
                 cmdList->ReadBuffer(createInfo);
                 mProtocol->CreateSwapChain(createInfo);
                 break;
             }
-            case GFXCommand::CreateSyncObjects:
+            CASECMD(GFXCommand::CreateSyncObjects)
             {
                 U32 num;
                 cmdList->ReadBuffer<U32>(num);
                 mProtocol->CreateSyncObjects(num);
                 break;
             }
-            case GFXCommand::CreateIndexBuffer:
+            CASECMD(GFXCommand::CreateIndexBuffer)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
@@ -127,7 +138,7 @@ namespace Joestar {
                 mProtocol->CreateIndexBuffer(handle, createInfo);
                 break;
             }
-            case GFXCommand::CreateVertexBuffer:
+            CASECMD(GFXCommand::CreateVertexBuffer)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
@@ -137,7 +148,7 @@ namespace Joestar {
                 mProtocol->CreateVertexBuffer(handle, createInfo);
                 break;
             }
-            case GFXCommand::CreateUniformBuffer:
+            CASECMD(GFXCommand::CreateUniformBuffer)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
@@ -147,7 +158,17 @@ namespace Joestar {
                 mProtocol->CreateUniformBuffer(handle, createInfo);
                 break;
             }
-            case GFXCommand::CreateMemory:
+            CASECMD(GFXCommand::CreateRenderPass)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPURenderPassCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateRenderPass(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateMemory)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
@@ -161,7 +182,11 @@ namespace Joestar {
                 mProtocol->CreateMemory(handle, size, data);
                 break;
             }
-            default: break;
+            default:
+            {
+                LOGERROR("CMD NOT FOUND: %s\n", GFXCommand(command));
+                break;
+            }
         }
     }
 

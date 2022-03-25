@@ -5,5 +5,6 @@ namespace Joestar
 	class UniformBuffer
 	{
 		U32 hash;
+		UniformType type;
 	};
 }

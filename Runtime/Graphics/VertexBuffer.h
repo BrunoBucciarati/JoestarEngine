@@ -30,11 +30,8 @@ namespace Joestar
 		{
 			return mVertexSize * mVertexCount;
 		}
-		void SetSize(U32 sz, PODVector<VertexElement>& elements)
-		{
-			mVertexElements = elements;
-			mData = JOJO_NEW_ARRAY(U8, sz, MEMORY_GFX_STRUCT);
-		}
+		void SetSize(U32 count, PODVector<VertexElement>& elements);
+		
 		U32 GetVertexSize() const
 		{
 			return mVertexSize;
@@ -45,7 +42,7 @@ namespace Joestar
 		}
 		void SetData(U8* data);
 
-		
+		void SetVertexElements(PODVector<VertexElement>& elements);
 
 	private:
 		U32 mVertexSize{ 0 };

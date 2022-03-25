@@ -6,9 +6,12 @@
 #include <vulkan/vulkan_win32.h>
 #include "RenderEnumsVK.h"
 
+#define GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, _VEC) \
+    if (_HANDLE + 1 > _VEC.Size()) _VEC.Resize(_HANDLE + 1); \
+    _TYP##VK& _VAR =  _VEC[_HANDLE];
+
 #define GET_STRUCT_BY_HANDLE(_VAR, _TYP, _HANDLE) \
-    if (_HANDLE + 1 > m##_TYP##s.Size()) m##_TYP##s.Resize(_HANDLE + 1); \
-    _TYP##VK& _VAR =  m##_TYP##s[_HANDLE];
+    GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, m##_TYP##s);
 
 namespace Joestar {
     VkResult globalResult;
@@ -271,7 +274,7 @@ namespace Joestar {
             if (IsDeviceSuitable(device))
             {
                 mPhysicalDevice = device;
-                msaaSamples = GetMaxUsableSampleCount();
+                maxMsaaSamples = GetMaxUsableSampleCount();
                 break;
             }
         }
@@ -450,9 +453,7 @@ namespace Joestar {
 
     void RenderAPIVK::CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo, U32 num)
     {
-        if (handle + 1 > mCommandBuffers.Size())
-            mCommandBuffers.Resize(handle + 1);
-        CommandBufferVK& cb = mCommandBuffers[handle];
+        GET_STRUCT_BY_HANDLE(cb, CommandBuffer, handle);
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -524,33 +525,6 @@ namespace Joestar {
         viewInfo.subresourceRange.layerCount = createInfo.layer;
         imageView.Create(mDevice, viewInfo, createInfo.num);
     }
-
-    //void GPUProgramVulkan::CreateColorResources(RenderPassVK* pass) {
-    //    VkFormat colorFormat = vkCtxPtr->swapChainImageFormat;
-    //    pass->fb->colorImage = new ImageVK{
-    //        vkCtxPtr, vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height, 1, pass->msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-    //    };
-    //    CommandBufferVK cb{ vkCtxPtr };
-    //    cb.Begin();
-    //    pass->fb->colorImage->Create();
-    //    pass->fb->colorImage->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT, cb);
-    //    cb.End();
-    //}
-
-    //void GPUProgramVulkan::CreateDepthResources(RenderPassVK* pass) {
-    //    VkFormat depthFormat = FindDepthFormat();
-    //    pass->fb->depthImage = new ImageVK{
-    //        vkCtxPtr,
-    //        vkCtxPtr->swapChainExtent.width, vkCtxPtr->swapChainExtent.height,
-    //        1, pass->msaaSamples,  depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-    //    };
-    //    pass->fb->depthImage->Create();
-    //    CommandBufferVK cb{ vkCtxPtr };
-    //    cb.Begin();
-    //    pass->fb->depthImage->CreateImageView(VK_IMAGE_ASPECT_DEPTH_BIT, cb);
-    //    pass->fb->depthImage->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
-    //    cb.End();
-    //}
 
     void RenderAPIVK::CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo)
     {
@@ -677,17 +651,20 @@ namespace Joestar {
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
         );
 
-        ImageVK* depthImage = JOJO_NEW(ImageVK);
+        ImageVK* depthImage = JOJO_NEW(ImageVK, MEMORY_GFX_STRUCT);
         VkImageCreateInfo depthImgCreateInfo{};
+        depthImgCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         depthImgCreateInfo.imageType = VK_IMAGE_TYPE_2D;
         depthImgCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         depthImgCreateInfo.extent.width = mSwapChain.extent.width;
         depthImgCreateInfo.extent.height = mSwapChain.extent.height;
+        depthImgCreateInfo.extent.depth = 1;
+        depthImgCreateInfo.arrayLayers = 1;
         depthImgCreateInfo.format = depthFormat;
         depthImgCreateInfo.mipLevels = 1;
         depthImgCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         depthImgCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        depthImgCreateInfo.samples = (VkSampleCountFlagBits)msaaSamples;
+        depthImgCreateInfo.samples = (VkSampleCountFlagBits)createInfo.msaaSamples;
         CreateImage(*depthImage, depthImgCreateInfo, mSwapChain.GetImageCount());
 
         ImageViewVK* depthStencilView = JOJO_NEW(ImageViewVK);
@@ -730,7 +707,7 @@ namespace Joestar {
         CreateImage(*colorView->image, imageInfo, mSwapChain.GetImageCount());
 
         RenderPassVK* renderPass = JOJO_NEW(RenderPassVK);
-        GPURenderPassCreateInfo rpInfo{};
+        GPURenderPassCreateInfo rpInfo;
         CreateRenderPass(renderPass, rpInfo);
 
         mSwapChain.frameBuffer->renderPass = renderPass;
@@ -738,7 +715,7 @@ namespace Joestar {
         for (U32 i = 0; i < mSwapChain.GetImageCount(); ++i)
         {
             Vector<VkImageView> attachments;
-            if (msaaSamples > 1) {
+            if (createInfo.msaaSamples > 1) {
                 //todo
             }
             else
@@ -818,7 +795,13 @@ namespace Joestar {
         GET_STRUCT_BY_HANDLE(uniformBuffer, UniformBuffer, handle);
         uniformBuffer.SetDevice(mDevice, mPhysicalDevice);
         uniformBuffer.count = mSwapChain.GetImageCount();
+        uniformBuffer.size = UniformDataTypeSize[(U32)createInfo.type.dataType];
         uniformBuffer.CreateBuffer();
+    }
+
+    void RenderAPIVK::CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE_FROM_VECTOR(renderPass, RenderPass, handle, mRenderPasses);
     }
 
     void RenderAPIVK::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)

@@ -42,14 +42,14 @@ namespace Joestar
 
 	struct GPURenderPassCreateInfo
 	{
-		ImageFormat colorFormat;
-		ImageFormat depthStencilFormat;
-		AttachmentLoadOP colorLoadOp;
-		AttachmentLoadOP depthLoadOp;
-		AttachmentLoadOP stencilLoadOp;
-		AttachmentStoreOP colorStoreOp;
-		AttachmentStoreOP depthStoreOp;
-		AttachmentStoreOP stencilStoreOp;
+		ImageFormat colorFormat{ ImageFormat::B8G8R8A8_SRGB };
+		ImageFormat depthStencilFormat{ImageFormat::D32S8};
+		AttachmentLoadOP colorLoadOp{ AttachmentLoadOP::DONT_CARE };
+		AttachmentLoadOP depthLoadOp{ AttachmentLoadOP::DONT_CARE };
+		AttachmentLoadOP stencilLoadOp{ AttachmentLoadOP::DONT_CARE };
+		AttachmentStoreOP colorStoreOp{ AttachmentStoreOP::DONT_CARE };
+		AttachmentStoreOP depthStoreOp{ AttachmentStoreOP::DONT_CARE };
+		AttachmentStoreOP stencilStoreOp{ AttachmentStoreOP::DONT_CARE };
 		bool clear{ false };
 		
 		U32 msaaSamples{ 1 };
@@ -76,6 +76,6 @@ namespace Joestar
 
 	struct GPUUniformBufferCreateInfo
 	{
-		U32 type{ 0 };
+		UniformType type;
 	};
 }

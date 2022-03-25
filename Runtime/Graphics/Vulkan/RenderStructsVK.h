@@ -18,8 +18,8 @@ namespace Joestar {
             device = dv;
             physicalDevice = pd;
         }
-        PODVector<VkDeviceMemory> memorys;
-        PODVector<VkBuffer> buffers;
+        Vector<VkDeviceMemory> memorys;
+        Vector<VkBuffer> buffers;
         VkDeviceSize size;
         VkBufferUsageFlags usage;
         VkMemoryPropertyFlags properties{ VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
@@ -256,8 +256,8 @@ namespace Joestar {
 		}
 
 	private:
-		Vector<VkImage> images;
-		Vector<VkDeviceMemory> imageMemorys;
+        Vector<VkImage> images;
+        Vector<VkDeviceMemory> imageMemorys{};
 	};
 
 	class ImageViewVK
@@ -269,6 +269,7 @@ namespace Joestar {
 			imageViews.Resize(num);
 			for (U32 i = 0; i < num; ++i)
 			{
+                viewInfo.image = image->GetImage(i);
 				if (vkCreateImageView(device, &viewInfo, nullptr, &imageViews[i]) != VK_SUCCESS) {
 					LOGERROR("failed to create texture image view!");
 				}
@@ -420,6 +421,8 @@ namespace Joestar {
 		U32 msaaSamples{ 1 };
 		void SetRawImages(Vector<VkImage>& images, U32 idx = 0)
 		{
+            if (!colorAttachments[idx]->image)
+                colorAttachments[idx]->image = JOJO_NEW(ImageVK, MEMORY_GFX_STRUCT);
 			colorAttachments[idx]->image->SetRawImages(images);
 		}
 		void SetRawImageViews(Vector<VkImageView>& imageViews, U32 idx = 0)
