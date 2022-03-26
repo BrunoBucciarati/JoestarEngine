@@ -1,29 +1,23 @@
 #pragma once
-#include <string>
-#include <vector>
 #include "../GraphicDefines.h"
-#include "../../Core/Object.h"
-#include "../../Base/StringHash.h"
-#include "ShaderParser.h"
+#include "../GPUResource.h"
+#include "../../Resource/Resource.h"
+#include "../../Container/Str.h"
 namespace Joestar {
-	class Shader : public Object {
-		REGISTER_OBJECT(Shader, Object)
+	class ShaderReflection;
+
+	class Shader : public Resource {
+		REGISTER_OBJECT(Shader, Resource)
 	public:
-		explicit Shader(EngineContext* ctx) : Super(ctx) {}
-		inline String& GetName() { return name; };
-		void SetShader(String n, U32 flag = kVertexShader | kFragmentShader);
-		U32 GetVertexAttributeFlag();
-		U32 GetInstanceAttributeFlag();
-		U16 GetUniformBindingByName(String& name);
-		U16 GetUniformBindingByHash(U32 hash);
-		U16 GetSamplerBinding(int count);
-		UniformDef& GetUniformDefByHash(U32 hash);
-		UniformDef& GetPushConsts();
-		UniformDef& GetUniformDef(U8 b);
-		U32 id;
-		U32 flag;
-		ShaderInfo info;
+		explicit Shader(EngineContext* ctx);
+		void SetShader(String n, ShaderStage stage = ShaderStage::VS_PS);
+		void SetLanguage(ShaderLanguage lang);
+		bool LoadFile(const String& path);
 	private:
-		String name;
+		String GetDirectoryByLang(ShaderLanguage lang);
+		ShaderStage mStage;
+		ShaderLanguage mLang{ShaderLanguage::GLSL};
+		ShaderLanguage mTargetLang;
+		UniquePtr<ShaderReflection> mReflection;
 	};
 }

@@ -25,10 +25,14 @@ namespace Joestar
 		virtual void CreateUniformBuffer(GPUResourceHandle handle, GPUUniformBufferCreateInfo& createInfo) = 0;
 		virtual void CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo) = 0;
 		virtual void CreateDescriptorPool(U32 num = 1) = 0;
-
+		virtual void CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo) = 0;
+		virtual void CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo) = 0;
 		///Uniform Functions
 		void CreateMemory(GPUResourceHandle handle, U32 size, U8* data);
-		//virtual void CreateTexture(GPUResourceHandle handle, GPUResourceCreateInfo& createInfo, U32 num = 1) = 0;
+		void CreateColorBlendState(GPUResourceHandle handle, GPUColorBlendStateCreateInfo& createInfo);
+		void CreateDepthStencilState(GPUResourceHandle handle, GPUDepthStencilStateCreateInfo& createInfo);
+		void CreateRasterizationState(GPUResourceHandle handle, GPURasterizationStateCreateInfo& createInfo);
+		void CreateMultiSampleState(GPUResourceHandle handle, GPUMultiSampleStateCreateInfo& createInfo);
 
 		void SetWindow(Window* w);
 	protected:
@@ -39,7 +43,9 @@ namespace Joestar
 		GPUResourceHandle gCommandBufferHandle{0};
 		GPUResourceHandle gPipelineStateHandle{0};
 		Vector<GPUMemory> mMemories;
-		//Vector<GPUResourceHandle> mCommandBufferHandles;
-		//Vector<GPUResourceHandle> mPipelineStateHandles;
+		Vector<GPUColorBlendStateCreateInfo> mColorBlendStates;
+		Vector<GPUDepthStencilStateCreateInfo> mDepthStencilStates;
+		Vector<GPURasterizationStateCreateInfo> mRasterizationStates;
+		Vector<GPUMultiSampleStateCreateInfo> mMultiSampleStates;
 	};
 }

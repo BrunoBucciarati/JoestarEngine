@@ -1,5 +1,6 @@
 #include "CommandBuffer.h"
-
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 namespace Joestar
 {
 	void CommandBuffer::Begin()
@@ -29,5 +30,23 @@ namespace Joestar
 		mGraphicsPSO = pso;
 		mEncoder.WriteCommand(CommandBufferCMD::BindGraphicsPipeline);
 		mEncoder.WriteBuffer(mGraphicsPSO->handle);
+	}
+	void CommandBuffer::BindVertexBuffer(VertexBuffer* vb, U32 binding)
+	{
+		mEncoder.WriteCommand(CommandBufferCMD::BindVertexBuffer);
+		mEncoder.WriteBuffer(vb->GetGPUHandle());
+		mEncoder.WriteBuffer(binding);
+	}
+	void CommandBuffer::BindIndexBuffer(IndexBuffer* ib)
+	{
+		mEncoder.WriteCommand(CommandBufferCMD::BindIndexBuffer);
+		mEncoder.WriteBuffer(ib->GetGPUHandle());
+	}
+	void CommandBuffer::DrawIndexed(U32 count, U32 indexStart, U32 vertStart)
+	{
+		mEncoder.WriteCommand(CommandBufferCMD::DrawIndexed);
+		mEncoder.WriteBuffer(count);
+		mEncoder.WriteBuffer(indexStart);
+		mEncoder.WriteBuffer(vertStart);
 	}
 }

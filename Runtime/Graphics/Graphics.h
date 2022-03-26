@@ -24,6 +24,7 @@ namespace Joestar {
 	class CommandBuffer;
 	class FrameBuffer;
 	class SwapChain;
+	class Shader;
 	//class GPUImage;
 	//class GPUImageView;
 	//class GPUMemory;
@@ -53,8 +54,6 @@ namespace Joestar {
 		void UpdateMaterial(Material* mat);
 		void UseShader(Shader* shader);
 		void UpdateTexture(Texture*, U8 binding = 0);
-		void DrawIndexed(Mesh* mesh, U32 instanceCount = 0);
-		void DrawArray(Mesh* mesh, U32 instanceCount = 0);
 		void UpdateProgram(ProgramCPU* p);
 		void BeginRenderPass(String name);
 		void EndRenderPass(String name);
@@ -71,6 +70,7 @@ namespace Joestar {
 		void UpdatePushConstant(void* data, U32 size);
 		void WriteBackComputeBuffer();
 
+		//NEW GRAPHICS
 		CommandBuffer* GetMainCommandBuffer();
 		CommandBuffer* CreateCommandBuffer();
 
@@ -94,6 +94,7 @@ namespace Joestar {
 
 		void CreateSwapChain();
 		void CreateSyncObjects();
+		void CreateShader(Shader* shader);
 		GFXCommandList* GetMainCmdList();
 
 		RasterizationState* GetDefaultRasterizationState()
@@ -145,6 +146,7 @@ namespace Joestar {
 		Vector<SharedPtr<ColorBlendState>> mColorBlendStates;
 		Vector<SharedPtr<GraphicsPipelineState>> mGraphicsPSOs;
 		Vector<SharedPtr<ComputePipelineState>> mComputePSOs;
+		Vector<SharedPtr<GPUShader>> mShaders;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

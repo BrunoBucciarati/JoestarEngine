@@ -52,6 +52,9 @@ namespace Joestar {
         gameObjects.Push(plane);
         MeshRenderer* pr = plane->GetComponent<MeshRenderer>();
         pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
+        pr->SetMaterial(NEW_OBJECT(Material));
+        pr->GetMaterial()->SetShader("vertex", ShaderStage::VS);
+        pr->GetMaterial()->SetShader("fragment", ShaderStage::PS);
 
         mMainRenderPass = JOJO_NEW(RenderPass, MEMORY_GFX_STRUCT);
         mMainRenderPass->SetLoadOp(AttachmentLoadOp::DONT_CARE);
@@ -79,30 +82,30 @@ namespace Joestar {
     }
 
     void Scene::CreateLights() {
-        mainLight = NEW_OBJECT(DirectionalLight);
-        mainLight->SetDirection(0.0, -1.0, 0.0);
-        mainLight->SetPosition(0.0, 3.0, 0.0);
-        mainLight->SetIntensity(20.f);
+        //mainLight = NEW_OBJECT(DirectionalLight);
+        //mainLight->SetDirection(0.0, -1.0, 0.0);
+        //mainLight->SetPosition(0.0, 3.0, 0.0);
+        //mainLight->SetIntensity(20.f);
 
-        Vector<Vector3f> lightPos;
-        lightPos.Push({ 5.0, 4.0, 4.0 });
-        lightPos.Push({ -5.0, 4.0, 5.0 });
-        lightPos.Push({ -5.0, 4.0, -4.0 });
-        lightPos.Push({ 5.0, 4.0, -4.0 });
+        //Vector<Vector3f> lightPos;
+        //lightPos.Push({ 5.0, 4.0, 4.0 });
+        //lightPos.Push({ -5.0, 4.0, 5.0 });
+        //lightPos.Push({ -5.0, 4.0, -4.0 });
+        //lightPos.Push({ 5.0, 4.0, -4.0 });
 
-        for (int i = 0; i < lightPos.Size(); ++i) {
-            PointLight* pointLight = NEW_OBJECT(PointLight);
-            pointLight->SetPosition(lightPos[i]);
-            pointLight->SetIntensity(50.f);
-            lights.Push(pointLight);
-        }
+        //for (int i = 0; i < lightPos.Size(); ++i) {
+        //    PointLight* pointLight = NEW_OBJECT(PointLight);
+        //    pointLight->SetPosition(lightPos[i]);
+        //    pointLight->SetIntensity(50.f);
+        //    lights.Push(pointLight);
+        //}
 
-        lightMat = NEW_OBJECT(Material);
-        Shader* shader = NEW_OBJECT(Shader);
-        shader->SetShader("light");
-        lightMat->SetShader(shader);
+        //lightMat = NEW_OBJECT(Material);
+        //Shader* shader = NEW_OBJECT(Shader);
+        //shader->SetShader("light");
+        //lightMat->SetShader(shader);
 
-        lightBatch->SetLights(lights);
+        //lightBatch->SetLights(lights);
     }
 
     void Scene::Update(float dt) {
@@ -182,31 +185,7 @@ namespace Joestar {
     }
 
     void Scene::RenderScene(CommandBuffer* cb) {
-        //RenderShadowMap();
-
-        mGraphics->BeginRenderPass("Scene");
         gameObjects[0]->GetComponent<MeshRenderer>()->Render(cb);
-        //graphics->Clear();
-        //graphics->SetDepthCompare(DEPTH_COMPARE_LESS);
-        //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera->GetProjectionMatrix());
-        //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_VIEW, camera->GetViewMatrix());
-        //graphics->UpdateBuiltinVec3(BUILTIN_VEC3_CAMERAPOS, camera->GetPosition());
-        //graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNDIRECTION, mainLight->GetDirection());
-        //graphics->UpdateBuiltinVec3(BUILTIN_VEC3_SUNCOLOR, mainLight->GetIntensityMixColor());
-        //graphics->FlushUniformBuffer();
-        //RenderLights();
-
-        //Renderer* render;
-        //for (Vector<GameObject*>::ConstIterator iter = gameObjects.Begin(); iter != gameObjects.End(); iter++) {
-        //    render = (*iter)->HasComponent<Renderer>();
-        //    if (render) {
-        //        render->Render(camera);
-        //    }
-        //}
-
-
-        //RenderSkybox();
-        mGraphics->EndRenderPass("Scene");
     }
 
     void Scene::RenderLights() {

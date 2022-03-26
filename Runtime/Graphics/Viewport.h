@@ -2,9 +2,8 @@
 #include "../Math/Rect.h"
 namespace Joestar
 {
-	class Viewport
+	struct Viewport
 	{
-	public:
 		Rect rect;
 		Rect scissor;
 		F32 minDepth{ 0.0f };

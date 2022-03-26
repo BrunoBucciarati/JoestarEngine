@@ -8,7 +8,7 @@ namespace Joestar
 {
 	class Graphics;
 
-	class IndexBuffer : Object
+	class IndexBuffer : public Object
 	{
 		REGISTER_OBJECT_ROOT(IndexBuffer);
 	public:
@@ -41,6 +41,10 @@ namespace Joestar
 			return mIndexCount;
 		}
 		void SetData(U8* data);
+		GPUResourceHandle GetGPUHandle()
+		{
+			return mGPUBuffer->handle;
+		}
 
 	private:
 		U32 mIndexSize{ 0 };

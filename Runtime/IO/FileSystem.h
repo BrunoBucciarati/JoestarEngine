@@ -1,22 +1,23 @@
 #pragma once
 #include "../Core/SubSystem.h"
 #include "File.h"
+#include "../Container/Ptr.h"
 #include <direct.h>
 namespace Joestar {
 	typedef void ReadFileCallback(File*);
 	class FileSystem : public SubSystem {
-		REGISTER_SUBSYSTEM(FileSystem)
+		REGISTER_SUBSYSTEM(FileSystem);
 		explicit FileSystem(EngineContext* ctx) : Super(ctx){}
-		const char* GetResourceDir() {
+		String GetResourceDir() {
 			return "../Resources/";
 		}
-		const char* GetModelDir() {
+		String GetModelDir() {
 			return "../Resources/Models/";
 		}
-		const char* GetTextureDir() {
+		String GetTextureDir() {
 			return "../Resources/Textures/";
 		}
-		const char* GetShaderDir() {
+		String GetShaderDir() {
 			return "../Resources/Shaders/";
 		}
 
@@ -28,11 +29,11 @@ namespace Joestar {
 			return path;
 		}
 
-		void ReadFileAsync(const char* filePath, ReadFileCallback callback);
-		File* ReadFile(const char* filePath);
-		bool WriteFile(const char* filePath, String& data);
-		File* OpenFile(const char* filePath);
+		void ReadFileAsync(const String& filePath, ReadFileCallback callback);
+		File* ReadFile(const String& filePath);
+		bool WriteFile(const String& filePath, String& data);
+		File* OpenFile(const String& filePath);
 
-		File* GetShaderCodeFile(const char* file);
+		File* GetShaderCodeFile(const String& file);
 	};
 }

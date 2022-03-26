@@ -21,7 +21,7 @@ namespace Joestar {
 
         GPUProgram() {}
         File* ShaderCodeFile(const char* file);
-        virtual void SetShader(const char* shaderPath, ShaderStage stage) {}
+        virtual void SetShader(const char* shaderPath) {}
         virtual const char* GetShaderDirectory() { return ""; }
         virtual void Use() {}
         virtual void SetBool(const String& name, bool value) const {}

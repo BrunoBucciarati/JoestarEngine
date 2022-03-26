@@ -191,6 +191,76 @@ namespace Joestar {
                 mProtocol->CreateMemory(handle, size, data);
                 break;
             }
+            CASECMD(GFXCommand::CreateColorBlendState)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUColorBlendStateCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                createInfo.attachments.Resize(createInfo.numAttachments);
+                for (U32 i = 0; i < createInfo.numAttachments; ++i)
+                {
+                    cmdList->ReadBuffer(createInfo.attachments[i]);
+
+                }
+                mProtocol->CreateColorBlendState(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateDepthStencilState)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUDepthStencilStateCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateDepthStencilState(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateRasterizationState)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPURasterizationStateCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateRasterizationState(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateMultiSampleState)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUMultiSampleStateCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateMultiSampleState(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateGraphicsPipelineState)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUGraphicsPipelineStateCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateGraphicsPipelineState(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateComputePipelineState)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUComputePipelineStateCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateComputePipelineState(handle, createInfo);
+                break;
+            }
+            //    CreateRasterizationState,
+            //    CreateMultiSampleState,
+            //    CreateGraphicsPipelineState,
+            //    CreateComputePipelineState,
             default:
             {
                 LOGERROR("CMD NOT FOUND: %s\n", GFXCommand(command));

@@ -23,8 +23,8 @@
 	REGISTER_OBJECT(CLASS, PARENT); \
 	explicit CLASS(EngineContext* ctx, GameObject* obj) : Super(ctx, obj) {Init();}
 
-#define NEW_OBJECT(CLASS)\
-	new CLASS(mContext)
+#define NEW_OBJECT(CLASS, ...)\
+	new CLASS(mContext, __VA_ARGS__	)
 
 #define DELETE_OBJECT(obj)\
 	obj->Destroy();

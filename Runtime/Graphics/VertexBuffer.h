@@ -8,7 +8,7 @@ namespace Joestar
 {
 	class Graphics;
 
-	class VertexBuffer : Object
+	class VertexBuffer : public Object
 	{
 		REGISTER_OBJECT_ROOT(VertexBuffer);
 	public:
@@ -41,6 +41,10 @@ namespace Joestar
 		PODVector<VertexElement>& GetVertexElements()
 		{
 			return mVertexElements;
+		}
+		GPUResourceHandle GetGPUHandle()
+		{
+			return mGPUBuffer->handle;
 		}
 
 	private:

@@ -6,13 +6,12 @@ namespace Joestar {
 	void Renderer::Init()
 	{
 		mGraphics = GetSubsystem<Graphics>();
+		mDepthStencilState = mGraphics->GetDefaultDepthStencilState();
+		mColorBlendState = mGraphics->GetDefaultColorBlendState();
+		mMultiSampleState = mGraphics->GetDefaultMultiSampleState();
+		mRasterizationState = mGraphics->GetDefaultRasterizationState();
 	}
 	Renderer::~Renderer(){}
-
-	void Renderer::Render(CommandBuffer* cb)
-	{
-		auto& pso = GetPipelineState(cb);
-	}
 
 	void Renderer::RenderToShadowMap()
 	{
@@ -36,10 +35,10 @@ namespace Joestar {
 		pso->SetRenderPass(pass);
 		pso->SetViewport(cb->GetViewport());
 		//这些值先用default的，后面加了材质设置需要这里做些新的逻辑 --todo
-		pso->SetDepthStencilState(mGraphics->GetDefaultDepthStencilState());
-		pso->SetColorBlendState(mGraphics->GetDefaultColorBlendState());
-		pso->SetMultiSampleState(mGraphics->GetDefaultMultiSampleState());
-		pso->SetRasterizationState(mGraphics->GetDefaultRasterizationState());
+		pso->SetDepthStencilState(mDepthStencilState);
+		pso->SetColorBlendState(mColorBlendState);
+		pso->SetMultiSampleState(mMultiSampleState);
+		pso->SetRasterizationState(mRasterizationState);
 		mGraphics->CreateGraphicsPipelineState(pso);
 		return pso;
 	}

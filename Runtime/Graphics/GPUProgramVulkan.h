@@ -27,6 +27,16 @@
     }
 
 namespace Joestar {
+    enum TTT
+    {
+        kVertexShader,
+        kFragmentShader,
+        kComputeShader
+    };
+    struct UniformDef
+    {
+        int a;
+    };
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device);
 
     struct BufferVK1 {
@@ -80,16 +90,16 @@ namespace Joestar {
     struct PushConstsVK {
         U32 size = 0;
         U8* data;
-        UniformDef def;
+        //UniformDef def;
 
         VkShaderStageFlags GetStageFlags() {
             VkShaderStageFlags flag = 0;
-            if (def.stageFlag & kVertexShader)
-                flag |= VK_SHADER_STAGE_VERTEX_BIT;
-            if (def.stageFlag & kFragmentShader)
-                flag |= VK_SHADER_STAGE_FRAGMENT_BIT;
-            if (def.stageFlag & kComputeShader)
-                flag |= VK_SHADER_STAGE_COMPUTE_BIT;
+            //if (def.stageFlag & kVertexShader)
+            //    flag |= VK_SHADER_STAGE_VERTEX_BIT;
+            //if (def.stageFlag & kFragmentShader)
+            //    flag |= VK_SHADER_STAGE_FRAGMENT_BIT;
+            //if (def.stageFlag & kComputeShader)
+            //    flag |= VK_SHADER_STAGE_COMPUTE_BIT;
             return flag;
         }
     };
@@ -150,19 +160,19 @@ namespace Joestar {
     struct ShaderVK {
         Vector<UniformDef> ubs;
         ShaderVK(Shader* s, VulkanContext* c) : shader(s), ctx(c) {
-            for (auto& uniform : shader->info.uniforms) {
-                if (uniform.dataType == ShaderDataTypePushConst) {
-                    pushConstDef = &uniform;
-                } else if (uniform.IsSampler()) {
-                    ubs.Push(uniform);
-                } else if (uniform.dataType == ShaderDataTypeBuffer) {
-                    uniform.id = hashString(uniform.name.CString());
-                    ubs.Push(uniform);
-                } else {
-                    uniform.id = hashString(uniform.name.CString());
-                    ubs.Push(uniform);
-                }
-            }
+            //for (auto& uniform : shader->info.uniforms) {
+            //    if (uniform.dataType == ShaderDataTypePushConst) {
+            //        pushConstDef = &uniform;
+            //    } else if (uniform.IsSampler()) {
+            //        ubs.Push(uniform);
+            //    } else if (uniform.dataType == ShaderDataTypeBuffer) {
+            //        uniform.id = hashString(uniform.name.CString());
+            //        ubs.Push(uniform);
+            //    } else {
+            //        uniform.id = hashString(uniform.name.CString());
+            //        ubs.Push(uniform);
+            //    }
+            //}
             //std::sort(ubs.Begin(), ubs.End(), [&](UniformDef& a, UniformDef& b) {
             //    return a.binding < b.binding;
             //});
@@ -171,38 +181,41 @@ namespace Joestar {
             Clean();
         }
         String& GetName() {
-            return shader->GetName();
+            String a;
+            return a;
         }
         U8 GetUniformBindingByName(String& name) {
-            return shader->GetUniformBindingByName(name);
+            return 0;//shader->GetUniformBindingByName(name);
         }
         U8 GetUniformBindingByHash(U32 hash) {
-            return shader->GetUniformBindingByHash(hash);
+            return 0;//shader->GetUniformBindingByHash(hash);
         }
         UniformDef& GetUniformDefByHash(U32 hash) {
-            return shader->GetUniformDefByHash(hash);
+            UniformDef a{};
+            return a;
         }
         UniformDef& GetUniformDef(U8 binding) {
-            return shader->GetUniformDef(binding);
+            UniformDef a{};
+            return a;
         }
         U8 GetSamplerBinding(int count) {
-            return shader->GetSamplerBinding(count);
+            return 0;//shader->GetSamplerBinding(count);
         }
-        U32 ID() { return shader->id; }
-        UniformDef* GetPushConstsDef() { return pushConstDef; }
+        U32 ID() { return 0; }// shader->id; }
+        UniformDef* GetPushConstsDef() { return nullptr; }
         Shader* shader;
         UniformDef* pushConstDef = nullptr;
         Vector <VkShaderModule> shaderModules;
         Vector<VkPipelineShaderStageCreateInfo> shaderStage;
         bool operator ==(ShaderVK& s2) {
-            return GetName() == s2.GetName();
+            return false;// GetName() == s2.GetName();
         }
         void Clean() {
             for (auto& modu : shaderModules)
                 vkDestroyShaderModule(ctx->device, modu, nullptr);
         }
         bool HasStage(ShaderStage stage) {
-            return shader->flag & stage;
+            return false;// shader->flag& stage;
         }
         VkShaderModule CreateShaderModule(File* file) {
             VkShaderModuleCreateInfo createInfo{};
@@ -233,13 +246,13 @@ namespace Joestar {
         void Prepare() {
             if (!shaderModules.Empty()) return;
             Application* app = Application::GetApplication();
-            ShaderParser* sp = app->GetSubSystem<ShaderParser>();
+            //ShaderParser* sp = app->GetSubSystem<ShaderParser>();
             FileSystem* fs = app->GetSubSystem<FileSystem>();
-            String& path = sp->GetShaderOutputDir();
+            //String& path = sp->GetShaderOutputDir();
 
-            CHECK_ADD_SHADER_STAGE(kVertexShader, "vert", VK_SHADER_STAGE_VERTEX_BIT)
-            CHECK_ADD_SHADER_STAGE(kFragmentShader, "frag", VK_SHADER_STAGE_FRAGMENT_BIT)
-            CHECK_ADD_SHADER_STAGE(kComputeShader, "comp", VK_SHADER_STAGE_COMPUTE_BIT)
+            //CHECK_ADD_SHADER_STAGE(kVertexShader, "vert", VK_SHADER_STAGE_VERTEX_BIT)
+            //CHECK_ADD_SHADER_STAGE(kFragmentShader, "frag", VK_SHADER_STAGE_FRAGMENT_BIT)
+            //CHECK_ADD_SHADER_STAGE(kComputeShader, "comp", VK_SHADER_STAGE_COMPUTE_BIT)
         }
         VulkanContext* ctx;
     };
@@ -703,30 +716,30 @@ namespace Joestar {
         }
 
         static VkImageLayout GetTargetImageLayout(UniformDef& def) {
-            if (def.IsImage()) return VK_IMAGE_LAYOUT_GENERAL;
+            //if (def.IsImage()) return VK_IMAGE_LAYOUT_GENERAL;
             return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
 
         static VkDescriptorType GetDescriptorType(UniformDef& def) {
-            if (def.IsImage()) {
-                return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            }
-            if (def.IsSampler()) return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            if (def.IsBuffer()) return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            //if (def.IsImage()) {
+            //    return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            //}
+            //if (def.IsSampler()) return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            //if (def.IsBuffer()) return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         }
 
         static VkShaderStageFlags GetStageFlags(UniformDef& def) {
             VkShaderStageFlags flags;
-            if (def.stageFlag & kVertexShader) {
-                flags |= VK_SHADER_STAGE_VERTEX_BIT;
-            }
-            if (def.stageFlag & kFragmentShader) {
-                flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
-            }
-            if (def.stageFlag & kComputeShader) {
-                flags |= VK_SHADER_STAGE_COMPUTE_BIT;
-            }
+            //if (def.stageFlag & kVertexShader) {
+            //    flags |= VK_SHADER_STAGE_VERTEX_BIT;
+            //}
+            //if (def.stageFlag & kFragmentShader) {
+            //    flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+            //}
+            //if (def.stageFlag & kComputeShader) {
+            //    flags |= VK_SHADER_STAGE_COMPUTE_BIT;
+            //}
             return flags;
         }
     };
@@ -736,7 +749,7 @@ namespace Joestar {
         Vector<U32> ubs;
         IndexBufferVK11* ib = nullptr;
         ShaderVK* shader;
-        MeshTopology topology;
+        //MeshTopology topology;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
         VkCompareOp depthOp = VK_COMPARE_OP_LESS;
@@ -1078,34 +1091,34 @@ namespace Joestar {
             Vector<VkWriteDescriptorSet> descriptorWrites{};
             descriptorWrites.Resize(call->shader->ubs.Size());
             int samplerCount = 0;
-            for (int j = 0; j < call->shader->ubs.Size(); ++j) {
-                UniformBufferVK11* ub = uniformVKs[call->ubs[j]];
-                UniformDef& def = call->shader->ubs[j];
-                if (def.IsSampler() || def.IsImage()) {
-                    std::map<U32, TextureVK*>::iterator it = textureVKs.find(call->textures[samplerCount]);
-                    TextureVK* tex = it->second;
+            //for (int j = 0; j < call->shader->ubs.Size(); ++j) {
+            //    UniformBufferVK11* ub = uniformVKs[call->ubs[j]];
+            //    UniformDef& def = call->shader->ubs[j];
+            //    if (def.IsSampler() || def.IsImage()) {
+            //        std::map<U32, TextureVK*>::iterator it = textureVKs.find(call->textures[samplerCount]);
+            //        TextureVK* tex = it->second;
 
-                    descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[j].dstSet = call->descriptorSets[i];
-                    descriptorWrites[j].dstBinding = def.binding;
-                    descriptorWrites[j].dstArrayElement = 0;
-                    descriptorWrites[j].descriptorType = UniformBufferVK11::GetDescriptorType(def);
-                    descriptorWrites[j].descriptorCount = 1;
-                    descriptorWrites[j].pImageInfo = &tex->GetDescriptorImageInfo();
-                    ++samplerCount;
-                } else {
-                    U32 size = ub->buffers.Size();
-                    U32 idx = size == 1 ? 0 : i; //compute buffer only has 1 size
+            //        descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            //        descriptorWrites[j].dstSet = call->descriptorSets[i];
+            //        descriptorWrites[j].dstBinding = def.binding;
+            //        descriptorWrites[j].dstArrayElement = 0;
+            //        descriptorWrites[j].descriptorType = UniformBufferVK11::GetDescriptorType(def);
+            //        descriptorWrites[j].descriptorCount = 1;
+            //        descriptorWrites[j].pImageInfo = &tex->GetDescriptorImageInfo();
+            //        ++samplerCount;
+            //    } else {
+            //        U32 size = ub->buffers.Size();
+            //        U32 idx = size == 1 ? 0 : i; //compute buffer only has 1 size
 
-                    descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[j].dstSet = call->descriptorSets[i];
-                    descriptorWrites[j].dstBinding = def.binding;
-                    descriptorWrites[j].dstArrayElement = 0;
-                    descriptorWrites[j].descriptorType = UniformBufferVK11::GetDescriptorType(def);
-                    descriptorWrites[j].descriptorCount = 1;
-                    descriptorWrites[j].pBufferInfo = &ub->GetDescriptorBufferInfo(idx);
-                }
-            }
+            //        descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            //        descriptorWrites[j].dstSet = call->descriptorSets[i];
+            //        descriptorWrites[j].dstBinding = def.binding;
+            //        descriptorWrites[j].dstArrayElement = 0;
+            //        descriptorWrites[j].descriptorType = UniformBufferVK11::GetDescriptorType(def);
+            //        descriptorWrites[j].descriptorCount = 1;
+            //        descriptorWrites[j].pBufferInfo = &ub->GetDescriptorBufferInfo(idx);
+            //    }
+            //}
             vkUpdateDescriptorSets(vkCtxPtr->device, static_cast<U32>(descriptorWrites.Size()), descriptorWrites.Buffer(), 0, nullptr);
         }
     }

@@ -2,57 +2,77 @@
 #include "Log.h"
 #include <fstream>
 namespace Joestar {
-	File::File(const char* filename, bool write, bool async) {
+	File::File(EngineContext* ctx, const String& filename) : Super(ctx)
+	{
 		mSize = 0;
-		path = filename;
-		Open(filename, write);
+		mPath = filename;
+		Open(filename);
 
-		if (!file.is_open()) {
+		if (!mFile.is_open())
+		{
 			LOGERROR("failed to open file: %s!", filename);
 			return;
 		}
+		else
+		{
+			int a = 1;
+		}
 
-		if (async)
+		if (bAsync)
 			mReady = true;
-		size_t s = Tell();
+		U32 s = Tell();
 		Seek(0);
-		if (!write) {
+		if (!bWrite)
+		{
 			Read(s);
 			Close();
 		}
 	}
-	File::~File() {
+	File::~File()
+	{
 		delete mBuffer;
 	}
 
-	void File::Open(const char* filename, bool write) {
-		if (write) {
-			file.open(filename, std::ios::out | std::ios::binary);
-		} else {
-			file.open(filename, std::ios::in | std::ios::ate | std::ios::binary);
+	void File::Open(const String& filename)
+	{
+		if (bWrite)
+		{
+			mFile.open(filename.CString(), std::ios::out | std::ios::binary);
+		}
+		else
+		{
+			mFile.open(filename.CString(), std::ios::in | std::ios::ate | std::ios::binary);
 		}
 	}
 
-	void File::Close() {
-		file.close();
+	void File::Close()
+	{
+		mFile.close();
 	}
 
-	void File::Read(size_t size) {
-		mBuffer = new char[size+1];
-		memset(mBuffer, 0, size+1);
-		file.read((char*)mBuffer, size);
+	void File::Read(U32 size)
+	{
+		if (!size)
+			size = Size();
+		mBuffer = JOJO_NEW_ARRAY(char, size);
+		memset(mBuffer, 0, size);
+		auto& res = mFile.read((char*)mBuffer, size);
+		int c = 1;
 	}
 
-	void File::Write(const char* data, size_t size) {
-		file.write(data, size);
+	void File::Write(const char* data, U32 size)
+	{
+		mFile.write(data, size);
 	}
 
-	size_t File::Tell() {
-		mSize = (size_t)file.tellg();
+	U32 File::Tell()
+	{
+		mSize = (U32)mFile.tellg();
 		return mSize;
 	}
 
-	void File::Seek(size_t pos) {
-		file.seekg(pos);
+	void File::Seek(U32 pos)
+	{
+		mFile.seekg(pos);
 	}
 }

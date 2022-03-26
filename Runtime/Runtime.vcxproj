@@ -80,7 +80,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>$(SolutionDir)ThirdParty\glfw-3.3.4\include;$(SolutionDir)ThirdParty\glm-master;D:\VulkanSDK\1.2.182.0\Include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\stb_image;$(SolutionDir)ThirdParty\tinyobj;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(SolutionDir)ThirdParty\glfw-3.3.4\include;$(SolutionDir)ThirdParty\glm-master;D:\VulkanSDK\1.2.182.0\Include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\stb_image;$(SolutionDir)ThirdParty\tinyobj;$(SolutionDir)ThirdParty\SPIRV-Reflect;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>D:\VulkanSDK\1.2.182.0\Lib;$(SolutionDir)ThirdParty\glfw-3.3.4\build\src\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\ThirdParty\SPIRV-Reflect\spirv_reflect.c" />
     <ClCompile Include="Base\Camera.cpp" />
     <ClCompile Include="Base\GameObject.cpp" />
     <ClCompile Include="Base\StringHash.cpp" />
@@ -157,7 +158,9 @@
     <ClCompile Include="Core\EngineContext.cpp" />
     <ClCompile Include="Core\Object.cpp" />
     <ClCompile Include="Core\SubSystem.cpp" />
+    <ClCompile Include="Graphics\CommandBuffer.cpp" />
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
+    <ClCompile Include="Graphics\GraphicDefines.cpp" />
     <ClCompile Include="Graphics\Image.cpp" />
     <ClCompile Include="Graphics\IndexBuffer.cpp" />
     <ClCompile Include="Graphics\Material.cpp" />
@@ -168,6 +171,7 @@
     <ClCompile Include="Graphics\RenderAPIProtocol.cpp" />
     <ClCompile Include="Graphics\Shader\Shader.cpp" />
     <ClCompile Include="Graphics\Shader\ShaderParser.cpp" />
+    <ClCompile Include="Graphics\Shader\ShaderReflection.cpp" />
     <ClCompile Include="Graphics\Texture.cpp" />
     <ClCompile Include="Graphics\Texture2D.cpp" />
     <ClCompile Include="Graphics\TextureCube.cpp" />
@@ -233,6 +237,7 @@
     <ClInclude Include="Core\RefCount.h" />
     <ClInclude Include="Core\SubSystem.h" />
     <ClInclude Include="Graphics\CommandBuffer.h" />
+    <ClInclude Include="Graphics\Descriptor.h" />
     <ClInclude Include="Graphics\FrameBuffer.h" />
     <ClInclude Include="Graphics\GFXCommandList.h" />
     <ClInclude Include="Graphics\GPUCreateInfos.h" />
@@ -250,6 +255,7 @@
     <ClInclude Include="Graphics\Shader\Shader.h" />
     <ClInclude Include="Graphics\Shader\ShaderParser.h" />
     <ClInclude Include="Graphics\Shader\ShaderDefs.h" />
+    <ClInclude Include="Graphics\Shader\ShaderReflection.h" />
     <ClInclude Include="Graphics\SwapChain.h" />
     <ClInclude Include="Graphics\Texture.h" />
     <ClInclude Include="Graphics\Texture2D.h" />

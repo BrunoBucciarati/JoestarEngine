@@ -32,7 +32,7 @@ namespace Joestar {
 		GetSubSystem<Graphics>()->Init();
 
 		InitSubSystem(HID, gContext)
-		InitSubSystem(ShaderParser, gContext)
+		//InitSubSystem(ShaderParser, gContext)
 		InitSubSystem(ProceduralMesh, gContext)
 
 		mMainView = JOJO_NEW(View(gContext));

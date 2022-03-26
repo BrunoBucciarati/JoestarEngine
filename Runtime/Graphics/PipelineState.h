@@ -41,15 +41,6 @@ namespace Joestar {
 
     };
 
-    class VertexInputState : public GPUResource
-    {
-    public:
-        U32 mask{ 0xFFFFFFFF };
-        void InsertAllHash() override
-        {
-            HashInsert(mask);
-        }
-    };
 
 
     class RasterizationState : public GPUResource
@@ -211,7 +202,7 @@ namespace Joestar {
 
     class GraphicsPipelineState : public PipelineState
     {
-        GET_SET_STATEMENT(VertexInputState, VertexInputState);
+        //GET_SET_STATEMENT(VertexInputState, VertexInputState);
         GET_SET_STATEMENT(RenderPass*, RenderPass);
         GET_SET_STATEMENT(ColorBlendState*, ColorBlendState);
         GET_SET_STATEMENT(RasterizationState*, RasterizationState);
@@ -222,7 +213,6 @@ namespace Joestar {
         void InsertAllHash() override
         {
             HashInsert(PipelineState::Hash());
-            HashInsert(mVertexInputState.Hash());
             HashInsert(mRasterizationState->Hash());
             HashInsert(mMultiSampleState->Hash());
             HashInsert(mDepthStencilState->Hash());

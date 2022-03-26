@@ -4,4 +4,5 @@
 #include "../Container/Vector.h"
 #include "../Container/HashMap.h"
 #include "../Container/Ptr.h"
+#include "../Container/Str.h"
 #include "Object.h"

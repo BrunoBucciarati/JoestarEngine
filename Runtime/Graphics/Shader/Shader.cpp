@@ -1,83 +1,88 @@
 #include "Shader.h"
-#include "ShaderParser.h"
+#include "../../IO/FileSystem.h"
+#include "../../Misc/GlobalConfig.h"
+#include "../Graphics.h"
+#include "ShaderReflection.h"
 
 namespace Joestar {
-	Shader::~Shader() {
+	Shader::Shader(EngineContext* ctx): Super(ctx)
+	{
+		SetLanguage(mLang);
 
-	}
-	void Shader::SetShader(String n, U32 f) {
-		name = n;
-		id = hashString(n.CString());
-		GetSubsystem<ShaderParser>()->ParseShader(n, info, f);
-		flag = f;
-	}
-	U32 Shader::GetVertexAttributeFlag() {
-		U32 flag = 0;
-		for (int i = 0; i < info.attrs.size(); ++i) {
-			if (!info.attrs[i].instancing)
-				flag = flag | 1 << info.attrs[i].attr;
+		auto* cfg = GetSubsystem<GlobalConfig>();
+		GFX_API api = (GFX_API)cfg->GetConfig<U32>(CONFIG_GFX_API);
+		if (api == GFX_API_OPENGL)
+		{
+			mTargetLang = ShaderLanguage::GLSL;
 		}
-		return flag;
-	}
-
-	U32 Shader::GetInstanceAttributeFlag() {
-		U32 flag = 0;
-		for (int i = 0; i < info.attrs.size(); ++i) {
-			if (info.attrs[i].instancing)
-				flag = flag | 1 << info.attrs[i].attr;
+		else if (api == GFX_API_VULKAN)
+		{
+			mTargetLang = ShaderLanguage::SPIRV;
 		}
-		return flag;
+		else if (api == GFX_API_D3D11 || api == GFX_API_D3D12)
+		{
+			mTargetLang = ShaderLanguage::HLSL;
+		}
 	}
 
-	U16 Shader::GetUniformBindingByName(String& name) {
-		//for (int i = 0; i < info.uniforms.size(); i++) {
-		//	if (info.uniforms[i].name == name) {
-		//		return info.uniforms[i].binding;
-		//	}
-		//}
-		return 0;
+	Shader::~Shader()
+	{}
+
+	void Shader::SetShader(String name, ShaderStage stage)
+	{
+		SetName(name);
+		mStage = stage;
+		LoadFile(mDirectory + name);
 	}
 
-	U16 Shader::GetUniformBindingByHash(U32 hash) {
-		for (int i = 0; i < info.uniforms.size(); i++) {
-			if (hashString(info.uniforms[i].name.CString()) == hash) {
-				return info.uniforms[i].binding;
+	bool Shader::LoadFile(const String& path)
+	{
+		if (mLang == mTargetLang)
+		{
+			return Super::LoadFile(path + GetShaderSuffix(mLang, mStage));
+		}
+		//Compile To Spirv
+		else if (mTargetLang == ShaderLanguage::SPIRV)
+		{
+			String targetDirectory = GetDirectoryByLang(mTargetLang);
+			String spvFile = targetDirectory + GetName() + GetShaderSuffix(mTargetLang, mStage);
+			String compileSpvCmd = mDirectory + "glslc.exe " + (path + GetShaderSuffix(mLang, mStage)) + " -o " + spvFile;
+			system(compileSpvCmd.CString());
+
+			if (!Super::LoadFile(spvFile))
+			{
+				LOGERROR("Compile Spirv Failed! : CMD = %s", compileSpvCmd.CString());
 			}
+			mReflection = JOJO_NEW(ShaderReflection, MEMORY_GFX_STRUCT);
+			mReflection->ReflectSpirv(mFile);
+
+			GetSubsystem<Graphics>()->CreateShader(this);
 		}
+		return false;
 	}
 
-	UniformDef& Shader::GetUniformDefByHash(U32 hash) {
-		for (int i = 0; i < info.uniforms.size(); i++) {
-			if (hashString(info.uniforms[i].name.CString()) == hash) {
-				return info.uniforms[i];
-			}
+	String Shader::GetDirectoryByLang(ShaderLanguage lang)
+	{
+		String ret;
+		auto* fs = GetSubsystem<FileSystem>();
+		if (ShaderLanguage::GLSL == lang)
+		{
+			ret = fs->GetShaderDirAbsolute() + "GLSL/";
 		}
-	}
-	UniformDef& Shader::GetUniformDef(U8 b) {
-		for (int i = 0; i < info.uniforms.size(); i++) {
-			if (info.uniforms[i].binding == b) {
-				return info.uniforms[i];
-			}
+		else if (ShaderLanguage::HLSL == lang)
+		{
+			ret = fs->GetShaderDirAbsolute() + "HLSL/";
 		}
-	}
-
-	U16 Shader::GetSamplerBinding(int count) {
-		for (int i = 0; i < info.uniforms.size(); i++) {
-			if (info.uniforms[i].dataType > ShaderDataTypeSampler) {
-				if (count == 0)
-					return info.uniforms[i].binding;
-				--count;
-			}
+		else if (ShaderLanguage::SPIRV == lang)
+		{
+			ret = fs->GetShaderDirAbsolute() + "SPIRV/";
 		}
-		return 0;
+		return ret;
 	}
 
-	UniformDef& Shader::GetPushConsts() {
-		for (int i = 0; i < info.uniforms.size(); i++) {
-			if (info.uniforms[i].dataType == ShaderDataTypePushConst) {
-				return info.uniforms[i];
-			}
-		}
-		return info.uniforms[0];
+	void Shader::SetLanguage(ShaderLanguage lang)
+	{
+		mLang = lang;
+		mDirectory = GetDirectoryByLang(lang);
 	}
 }

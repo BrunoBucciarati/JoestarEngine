@@ -2,7 +2,6 @@
 #ifndef _JOESTAR_GRAPHICS_DEF_H_
 #define _JOESTAR_GRAPHICS_DEF_H_
 #include "../Math/Matrix4x4.h"
-#include <string>
 #include "../Platform/Platform.h"
 
 namespace Joestar {
@@ -261,5 +260,23 @@ namespace Joestar {
 			return VertexTypeSize[(U32)type];
 		}
 	};
+
+	enum class ShaderStage {
+		VS = 1 << 0,
+		PS = 1 << 1,
+		GS = 1 << 2,
+		CS = 1 << 3,
+		VS_PS = VS | PS,
+		VS_GS_PS = VS_PS | GS
+	};
+
+	enum class ShaderLanguage {
+		GLSL,
+		HLSL,
+		SPIRV,
+		METAL
+	};
+
+	const char* GetShaderSuffix(ShaderLanguage lang, ShaderStage);
 }
 #endif

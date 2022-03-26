@@ -10,8 +10,10 @@ namespace Joestar {
 		EndRenderPass,
 		BindGraphicsPipeline,
 		BindComputePipeline,
-		SetIndexBuffer,
-		SetVertexBuffer,
+		BindIndexBuffer,
+		BindVertexBuffer,
+		BindUniformBuffer,
+		PushConstant,
 		Draw,
 		DrawIndexed,
 		CommandCount
@@ -31,6 +33,8 @@ namespace Joestar {
 		}
 	};
 
+	class IndexBuffer;
+	class VertexBuffer;
 
 	class CommandBuffer : public GPUResource
 	{
@@ -42,6 +46,10 @@ namespace Joestar {
 		void BeginRenderPass(RenderPass* pass);
 		void EndRenderPass(RenderPass* pass);
 		void BindPipelineState(GraphicsPipelineState* pass);
+		void BindVertexBuffer(VertexBuffer* vb, U32 binding = 0);
+		void BindIndexBuffer(IndexBuffer* ib);
+		void DrawIndexed(U32 num, U32 indexStart = 0, U32 vertStart = 0);
+		void Draw(U32 num, U32 vertStart = 0);
 		RenderPass* GetRenderPass() const
 		{
 			return mPass;

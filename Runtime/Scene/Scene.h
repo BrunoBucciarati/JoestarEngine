@@ -12,7 +12,7 @@
 namespace Joestar {
 	class Camera;
 	class RenderPass;
-	class CommandBuffer
+	class CommandBuffer;
 	class Scene : public Object {
 		REGISTER_OBJECT(Scene, Object);
 	public:

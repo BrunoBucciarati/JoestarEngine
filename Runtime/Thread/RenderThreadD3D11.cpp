@@ -214,9 +214,9 @@ namespace Joestar {
 #endif
 
         FileSystem* fs = app->GetSubSystem<FileSystem>();
-        std::string path = fs->GetResourceDir();
+        String path = fs->GetResourceDir();
         path += "Shaders/hlsl/test.fx";
-        File* file = fs->ReadFile(path.c_str());
+        File* file = fs->ReadFile(path.CString());
 
         ID3D10Blob* compiledVSShader = 0;
         ID3D10Blob* compilationVSMsgs = 0;
@@ -432,9 +432,9 @@ namespace Joestar {
 #endif
         Application* app = Application::GetApplication();
         FileSystem* fs = app->GetSubSystem<FileSystem>();
-        std::string path = fs->GetResourceDir();
+        String path = fs->GetResourceDir();
         path += "Shaders/hlsl/cstest.fx";
-        File* file = fs->ReadFile(path.c_str());
+        File* file = fs->ReadFile(path.CString());
         ID3D10Blob* compiledCSShader = 0;
         ID3D10Blob* compilationCSMsgs = 0;
         hr = D3DCompile(file->GetBuffer(), file->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "CS",

@@ -189,6 +189,18 @@
     <ClCompile Include="Graphics\Vulkan\RenderEnumsVK.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\CommandBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ThirdParty\SPIRV-Reflect\spirv_reflect.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Shader\ShaderReflection.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\GraphicDefines.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -468,6 +480,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Core\Minimal.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Shader\ShaderReflection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Descriptor.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

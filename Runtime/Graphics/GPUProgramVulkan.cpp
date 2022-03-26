@@ -165,10 +165,10 @@ namespace Joestar {
 		tex->image->mipLevels = mipLevels;
 		tex->image->viewType = (tex->Type() == TEXTURE_CUBEMAP ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D);
 		tex->image->imageType = VK_IMAGE_TYPE_2D;
-		if (ub.IsImage()) {
-			tex->image->format = VK_FORMAT_R8G8B8A8_UNORM;
-			tex->image->usage = tex->image->usage | VK_IMAGE_USAGE_STORAGE_BIT;
-		}
+		//if (ub.IsImage()) {
+		//	tex->image->format = VK_FORMAT_R8G8B8A8_UNORM;
+		//	tex->image->usage = tex->image->usage | VK_IMAGE_USAGE_STORAGE_BIT;
+		//}
 		tex->image->Create();
 
 		BufferVK1 stagingBuffer{
@@ -184,23 +184,23 @@ namespace Joestar {
 		CommandBufferVK11 cb{ vkCtxPtr };
 		tex->image->imageLayout = UniformBufferVK11::GetTargetImageLayout(ub);
 		cb.Begin();
-		if (ub.IsSampler()) {
-			tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-			tex->image->CopyBufferToImage(stagingBuffer, cb);
-			if (tex->HasMipmap()) {
-				tex->image->GenerateMipmaps(cb);
-			} else {
-				tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tex->image->imageLayout);
-			}
-		} else if (ub.IsImage()) {
-			tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, tex->image->imageLayout);
-			tex->image->CopyBufferToImage(stagingBuffer, cb, tex->image->imageLayout);
-		}
+		//if (ub.IsSampler()) {
+		//	tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		//	tex->image->CopyBufferToImage(stagingBuffer, cb);
+		//	if (tex->HasMipmap()) {
+		//		tex->image->GenerateMipmaps(cb);
+		//	} else {
+		//		tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tex->image->imageLayout);
+		//	}
+		//} else if (ub.IsImage()) {
+		//	tex->image->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, tex->image->imageLayout);
+		//	tex->image->CopyBufferToImage(stagingBuffer, cb, tex->image->imageLayout);
+		//}
 		tex->image->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT, cb);
 		cb.End();
 
-		if (ub.IsSampler())
-			CreateTextureSampler(tex);
+		//if (ub.IsSampler())
+		//	CreateTextureSampler(tex);
 
 		tex->CreateDescriptorInfo();
 	}
@@ -339,15 +339,15 @@ namespace Joestar {
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		if (dc->topology == MESH_TOPOLOGY_TRIANGLE_STRIP) {
-			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		} else if (dc->topology == MESH_TOPOLOGY_LINE) {
-			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-		} else if (dc->topology == MESH_TOPOLOGY_LINE_STRIP) {
-			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-		} else {
-			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		}
+		//if (dc->topology == MESH_TOPOLOGY_TRIANGLE_STRIP) {
+		//	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		//} else if (dc->topology == MESH_TOPOLOGY_LINE) {
+		//	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+		//} else if (dc->topology == MESH_TOPOLOGY_LINE_STRIP) {
+		//	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+		//} else {
+		//	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		//}
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 		VkViewport viewport{};
@@ -737,7 +737,7 @@ namespace Joestar {
 			if (pc->size == 0) {
 				pc->data = JOJO_NEW(U8[size], MEMORY_GFX_STRUCT);
 				pc->size = size;
-				pc->def = *defPtr;
+				//pc->def = *defPtr;
 			}
 			cmdBuffer->ReadBufferPtr(pc->data, size);
 			break; 
@@ -852,16 +852,16 @@ namespace Joestar {
 				CHECK_PASS(RenderCMD_UseShader)
 				Shader* shader;
 				cmdBuffer->ReadBuffer<Shader*>(shader);
-				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
-					shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
-				}
+				//if (shaderVKs.find(shader->id) == shaderVKs.end()) {
+				//	shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
+				//}
 
-				drawcall->shader = shaderVKs[shader->id];
-				drawcall->HashInsert(shader->id);
-				drawcall->ubs.Resize(drawcall->shader->ubs.Size());
-				for (int i = 0; i < drawcall->ubs.Size(); ++i) {
-					drawcall->ubs[i] = drawcall->shader->ubs[i].id;
-				}
+				//drawcall->shader = shaderVKs[shader->id];
+				//drawcall->HashInsert(shader->id);
+				//drawcall->ubs.Resize(drawcall->shader->ubs.Size());
+				//for (int i = 0; i < drawcall->ubs.Size(); ++i) {
+				//	drawcall->ubs[i] = drawcall->shader->ubs[i].id;
+				//}
 				break;
 			}
 			case RenderCMD_UpdateTexture: {
@@ -892,21 +892,21 @@ namespace Joestar {
 			}
 			case RenderCMD_DrawIndexed: {
 				CHECK_PASS(RenderCMD_DrawIndexed)
-				cmdBuffer->ReadBuffer<U32>(drawcall->instanceCount);
-				cmdBuffer->ReadBuffer<MeshTopology>(drawcall->topology);
-				drawcall->HashInsert(drawcall->instanceCount);
-				drawcall->HashInsert(drawcall->topology);
-				pass->dcs.Push(drawcall);
+				//cmdBuffer->ReadBuffer<U32>(drawcall->instanceCount);
+				//cmdBuffer->ReadBuffer<MeshTopology>(drawcall->topology);
+				//drawcall->HashInsert(drawcall->instanceCount);
+				//drawcall->HashInsert(drawcall->topology);
+				//pass->dcs.Push(drawcall);
 
 				drawcall = new DrawCallVK;
 				break;
 			}
 			case RenderCMD_Draw: {
 				CHECK_PASS(RenderCMD_Draw)
-				cmdBuffer->ReadBuffer<U32>(drawcall->instanceCount);
-				cmdBuffer->ReadBuffer<MeshTopology>(drawcall->topology);
-				drawcall->HashInsert(drawcall->instanceCount);
-				drawcall->HashInsert(drawcall->topology);
+				//cmdBuffer->ReadBuffer<U32>(drawcall->instanceCount);
+				//cmdBuffer->ReadBuffer<MeshTopology>(drawcall->topology);
+				//drawcall->HashInsert(drawcall->instanceCount);
+				//drawcall->HashInsert(drawcall->topology);
 				pass->dcs.Push(drawcall);
 
 				drawcall = new DrawCallVK;
@@ -1022,16 +1022,16 @@ namespace Joestar {
 				CHECK_COMPUTE(ComputeCMD_UseShader)
 				Shader* shader;
 				cmdBuffer->ReadBuffer<Shader*>(shader);
-				if (shaderVKs.find(shader->id) == shaderVKs.end()) {
-					shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
-				}
+				//if (shaderVKs.find(shader->id) == shaderVKs.end()) {
+				//	shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
+				//}
 
-				computePipeline->shader = shaderVKs[shader->id];
-				computePipeline->HashInsert(shader->id);
-				computePipeline->ubs.Resize(computePipeline->shader->ubs.Size());
-				for (int i = 0; i < computePipeline->ubs.Size(); ++i) {
-					computePipeline->ubs[i] = computePipeline->shader->ubs[i].id;
-				}
+				//computePipeline->shader = shaderVKs[shader->id];
+				//computePipeline->HashInsert(shader->id);
+				//computePipeline->ubs.Resize(computePipeline->shader->ubs.Size());
+				//for (int i = 0; i < computePipeline->ubs.Size(); ++i) {
+				//	computePipeline->ubs[i] = computePipeline->shader->ubs[i].id;
+				//}
 				break;
 			}
 			case ComputeCMD_UpdatePushConstant: {
@@ -1045,7 +1045,7 @@ namespace Joestar {
 				if (computePipeline->pushConst->size == 0) {
 					computePipeline->pushConst->data = JOJO_NEW(U8[size], MEMORY_GFX_STRUCT);
 					computePipeline->pushConst->size = size;
-					computePipeline->pushConst->def = *def;
+					//computePipeline->pushConst->def = *def;
 				}
 				cmdBuffer->ReadBufferPtr(computePipeline->pushConst->data, size);
 				computePipeline->HashInsert(size);

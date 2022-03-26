@@ -1,28 +1,42 @@
 #pragma once
 #include <fstream>
+#include "../Core/Minimal.h"
 namespace Joestar {
-	class File {
+	class File : public Object {
+		REGISTER_OBJECT_ROOT(File);
 	public:
-		explicit File(const char* filename, bool write = false, bool async = false);
-		~File();
-		inline bool IsReady() {
+		explicit File(EngineContext* ctx, const String& filename);
+		inline bool IsReady()
+		{
 			return mReady;
 		}
-		inline char* GetBuffer() {
+		inline char* GetBuffer()
+		{
 			return mBuffer;
 		}
-		void Open(const char* filename, bool write = false);
+		void Open(const String& filename);
 		void Close();
-		void Read(size_t);
-		void Write(const char* data, size_t size);
-		void Seek(size_t);
-		size_t Size() { return mSize; }
-		size_t Tell();
+		void Read(U32=0);
+		void Write(const char* data, U32 size);
+		void Seek(U32);
+		U32 Size() { return mSize; }
+		U32 Tell();
+		bool Exist()
+		{
+			return !!mBuffer;
+		}
+		void SetWrite(bool flag)
+		{
+			bWrite = flag;
+		}
 	private:
-		char* mBuffer;
+		char* mBuffer{ nullptr };
 		bool mReady;
-		size_t mSize;
-		std::fstream file;
-		std::string path;
+		U32 mSize;
+		std::fstream mFile;
+		String mPath;
+		bool bAsync{ false };
+		bool bWrite{ false };
+		bool bRead{ true};
 	};
 }

@@ -10,13 +10,13 @@ namespace Joestar {
         elements.Push({ VertexSemantic::COLOR, VertexType::VEC3 });
         elements.Push({ VertexSemantic::TEXCOORD0, VertexType::VEC2 });
 
-        Vector<VertexLoad> vertices;
+        Vector<float> vertices;
         Vector<U16> indices;
 
         const unsigned int X_SEGMENTS = 64;
         const unsigned int Y_SEGMENTS = 64;
         const float PI = 3.14159265359;
-        vertices.Resize((X_SEGMENTS + 1) * (Y_SEGMENTS + 1));
+        vertices.Reserve((X_SEGMENTS + 1) * (Y_SEGMENTS + 1) * 11);
         for (unsigned int y = 0; y <= Y_SEGMENTS; ++y) {
             for (unsigned int x = 0; x <= X_SEGMENTS; ++x) {
                 float xSegment = (float)x / (float)X_SEGMENTS;
@@ -24,10 +24,17 @@ namespace Joestar {
                 float xPos = Cos(xSegment * 2.0f * PI) * Sin(ySegment * PI);
                 float yPos = Cos(ySegment * PI);
                 float zPos = Sin(xSegment * 2.0f * PI) * Sin(ySegment * PI);
-                vertices[y * (X_SEGMENTS + 1) + x].pos.Set(xPos, yPos, zPos);
-                vertices[y * (X_SEGMENTS + 1) + x].normal.Set(xPos, yPos, zPos);
-                vertices[y * (X_SEGMENTS + 1) + x].texCoord.Set(xSegment, ySegment);
-                vertices[y * (X_SEGMENTS + 1) + x].color.Set(1.f, 1.f, 1.f);
+                vertices.Push(xPos);
+                vertices.Push(yPos);
+                vertices.Push(zPos);
+                vertices.Push(xPos);
+                vertices.Push(yPos);
+                vertices.Push(zPos);
+                vertices.Push(1.F);
+                vertices.Push(1.F);
+                vertices.Push(1.F);
+                vertices.Push(xSegment);
+                vertices.Push(ySegment);
             }
         }
 
@@ -48,15 +55,16 @@ namespace Joestar {
             oddRow = !oddRow;
         }
 
-        VertexBuffer* vb = mesh->GetVB();
-        vb->SetSize(vertices.Size(), elements);
+        VertexBuffer* vb = NEW_OBJECT(VertexBuffer);
+        vb->SetSize(vertices.Size() / 11, elements);
         vb->SetData((U8*)vertices.Buffer());
+        mesh->SetVertexBuffer(vb);
 
-        IndexBuffer* ib = mesh->GetIB();
+        IndexBuffer* ib = NEW_OBJECT(IndexBuffer);
         ib->SetSize(indices.Size());
         ib->SetData((U8*)indices.Buffer());
+        mesh->SetIndexBuffer(ib);
 
-        mesh->SetTopology(MESH_TOPOLOGY_TRIANGLE_STRIP);
 
         return mesh;
     }
@@ -64,7 +72,7 @@ namespace Joestar {
 
     Mesh* ProceduralMesh::GenPlane() {
         Mesh* mesh = NEW_OBJECT(Mesh);
-        Vector<VertexLoad> vertices;
+        Vector<float> vertices;
         Vector<U16> indices;
         PODVector<VertexElement> elements;
         elements.Push({ VertexSemantic::POSITION, VertexType::VEC3 });
@@ -74,31 +82,45 @@ namespace Joestar {
 
         const unsigned int X_SEGMENTS = 16;
         const unsigned int Y_SEGMENTS = 16;
-        vertices.Resize(X_SEGMENTS * Y_SEGMENTS);
-        for (unsigned int y = 0; y < Y_SEGMENTS; ++y) {
-            for (unsigned int x = 0; x < X_SEGMENTS; ++x) {
+        vertices.Reserve(X_SEGMENTS * Y_SEGMENTS * 11);
+        for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
+        {
+            for (unsigned int x = 0; x < X_SEGMENTS; ++x)
+            {
                 float xSegment = (float)x / (float)X_SEGMENTS;
                 float ySegment = (float)y / (float)Y_SEGMENTS;
                 float xPos = 10 * xSegment - 5;
                 float yPos = 0;
                 float zPos = 10 * ySegment - 5;
-                vertices[y * X_SEGMENTS + x].pos.Set(xPos, yPos, zPos);
-                vertices[y * X_SEGMENTS + x].normal.Set(0, 1, 0);
-                vertices[y * X_SEGMENTS + x].texCoord.Set(xSegment, ySegment);
-                vertices[y * X_SEGMENTS + x].color.Set(.7f, .7f, .7f);
+                vertices.Push(xPos);
+                vertices.Push(yPos);
+                vertices.Push(zPos);
+                vertices.Push(0.F);
+                vertices.Push(1.F);
+                vertices.Push(0.F);
+                vertices.Push(.7F);
+                vertices.Push(.7F);
+                vertices.Push(.7F);
+                vertices.Push(xSegment);
+                vertices.Push(ySegment);
             }
         }
 
         bool oddRow = false;
-        for (unsigned int y = 0; y < Y_SEGMENTS - 1; ++y) {
-            if (!oddRow) {
-                for (unsigned int x = 0; x < X_SEGMENTS; ++x) {
+        for (unsigned int y = 0; y < Y_SEGMENTS - 1; ++y)
+        {
+            if (!oddRow)
+            {
+                for (unsigned int x = 0; x < X_SEGMENTS; ++x)
+                {
                     indices.Push(y * X_SEGMENTS + x);
                     indices.Push((y + 1) * X_SEGMENTS + x);
                 }
             }
-            else {
-                for (int x = X_SEGMENTS - 1; x >= 0; --x) {
+            else
+            {
+                for (int x = X_SEGMENTS - 1; x >= 0; --x)
+                {
                     indices.Push((y + 1) * X_SEGMENTS + x);
                     indices.Push(y * X_SEGMENTS + x);
                 }
@@ -106,15 +128,15 @@ namespace Joestar {
             oddRow = !oddRow;
         }
 
-        VertexBuffer* vb = mesh->GetVB();
-        vb->SetSize(vertices.Size(), elements);
+        VertexBuffer* vb = NEW_OBJECT(VertexBuffer);
+        vb->SetSize(vertices.Size() / 11, elements);
         vb->SetData((U8*)vertices.Buffer());
+        mesh->SetVertexBuffer(vb);
 
-        IndexBuffer* ib = mesh->GetIB();
+        IndexBuffer* ib = NEW_OBJECT(IndexBuffer);
         ib->SetSize(indices.Size());
         ib->SetData((U8*)indices.Buffer());
-
-        mesh->SetTopology(MESH_TOPOLOGY_TRIANGLE_STRIP);
+        mesh->SetIndexBuffer(ib);
 
         return mesh;
     }

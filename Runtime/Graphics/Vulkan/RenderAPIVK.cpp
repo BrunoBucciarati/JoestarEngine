@@ -868,4 +868,25 @@ namespace Joestar {
 
         LOGERROR("failed to find supported format!");
     }
+
+
+    void RenderAPIVK::CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(pso, GraphicsPipelineState, handle);
+        
+        pso.CreateIAState();
+        pso.CreateViewportState(createInfo.viewport);
+        pso.CreateRasterizationState(mRasterizationStates[createInfo.rasterizationStateHandle]);
+        pso.CreateMultiSampleState(mMultiSampleStates[createInfo.multiSampleStateHandle]);
+        pso.CreateDepthStencilState(mDepthStencilStates[createInfo.depthStencilStateHandle]);
+        pso.CreateColorBlendState(mColorBlendStates[createInfo.colorBlendStateHandle]);
+        pso.CreatePipelineLayout();
+        pso.Create();
+    }
+
+    void RenderAPIVK::CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(pso, ComputePipelineState, handle);
+        pso.Create(createInfo);
+    }
 }

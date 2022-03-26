@@ -4,7 +4,14 @@ namespace Joestar
 {
 	class UniformBuffer
 	{
-		U32 hash;
-		UniformType type;
+		GET_SET_STATEMENT(UniformType, Type);
+		GET_SET_STATEMENT(String, Name);
+		GET_SET_STATEMENT_INITVALUE(U32, Binding, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, Set, 0);
+	public:
+		void SetName(const char* name)
+		{
+			mName = name;
+		}
 	};
 }

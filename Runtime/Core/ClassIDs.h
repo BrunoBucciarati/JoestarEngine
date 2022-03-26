@@ -41,8 +41,9 @@ enum ClassIDType {
 	DefineClassID(View, 32)
 	DefineClassID(MeshRenderer, 33)
 	DefineClassID(VertexBuffer, 34)
-	DefineClassID(IndexBuffer, 34)
-	DefineClassID(Resource, 34)
+	DefineClassID(IndexBuffer, 35)
+	DefineClassID(Resource, 36)
+	DefineClassID(File, 37)
 
 	kClassIDCount
 };

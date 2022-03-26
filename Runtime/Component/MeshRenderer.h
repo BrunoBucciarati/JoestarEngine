@@ -27,6 +27,8 @@ namespace Joestar
 		{
 			return mMaterial;
 		}
+
+		void Render(CommandBuffer* cb) override;
 	private:
 		SharedPtr<Mesh> mMesh;
 		SharedPtr<Material> mMaterial;

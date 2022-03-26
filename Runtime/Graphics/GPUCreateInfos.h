@@ -1,5 +1,6 @@
 #pragma once
 #include "GPUTexture.h"
+#include "Viewport.h"
 #include "../Container/Vector.h"
 namespace Joestar
 {
@@ -61,8 +62,8 @@ namespace Joestar
 		bool depthWrite{ true };
 		CompareOp depthCompareOp{ CompareOp::LESS_EQUAL };
 		bool stencilTest{ false };
-		StencilOpState stencilTest{};
-		StencilOpState stencilTest{};
+		StencilOpState stencilFront{};
+		StencilOpState stencilBack{};
 	};
 
 	struct GPUMultiSampleStateCreateInfo
@@ -103,7 +104,7 @@ namespace Joestar
 	struct GPUColorBlendStateCreateInfo
 	{
 		bool logicOpEnable;
-		U32 numAttachmens;
+		U32 numAttachments;
 		Vector<GPUColorAttachmentStateCreateInfo> attachments;
 	};
 
@@ -113,11 +114,12 @@ namespace Joestar
 
 	struct GPUGraphicsPipelineStateCreateInfo : GPUPipelineStateCreateInfo
 	{
-		GPUResourceHandle viewportHandle;
-		GPUResourceHandle multisampleHandle;
-		GPUResourceHandle depthStencilStateHandle;
-		GPUResourceHandle colorBlendStateHandle;
 		GPUResourceHandle renderPassHandle;
+		GPUResourceHandle colorBlendStateHandle;
+		GPUResourceHandle multiSampleStateHandle;
+		GPUResourceHandle rasterizationStateHandle;
+		GPUResourceHandle depthStencilStateHandle;
+		Viewport viewport;
 	};
 	struct GPUComputePipelineStateCreateInfo : GPUPipelineStateCreateInfo
 	{
@@ -147,5 +149,10 @@ namespace Joestar
 	struct GPUUniformBufferCreateInfo
 	{
 		UniformType type;
+	};
+
+	struct GPUShaderCreateInfo
+	{
+
 	};
 }

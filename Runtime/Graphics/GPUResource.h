@@ -8,8 +8,9 @@ namespace Joestar
 
 	class GPUResource : public RefCount, public Hashable
 	{
+		static const U32 INVALID_HANDLE = 0xFFFFFFFF;
 	public:
-		GPUResourceHandle handle;
+		GPUResourceHandle handle{ INVALID_HANDLE };
 		U32 Rehash()
 		{
 			mHash = 0;
@@ -19,6 +20,14 @@ namespace Joestar
 		bool operator == (const GPUResource& rhs)
 		{
 			return handle == rhs.handle;
+		}
+		bool IsValid()
+		{
+			return handle != INVALID_HANDLE;
+		}
+		GPUResourceHandle GetHandle()
+		{
+			return handle;
 		}
 	protected:
 		template<typename T>
@@ -52,5 +61,11 @@ namespace Joestar
 	class GPUUniformBuffer : public GPUResource
 	{
 		U32 hash;
+	};
+
+	class GPUShader : public GPUResource
+	{
+	public:
+		void* file;
 	};
 }

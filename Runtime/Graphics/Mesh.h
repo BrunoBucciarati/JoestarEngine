@@ -12,51 +12,33 @@
 #include "IndexBuffer.h"
 
 namespace Joestar {
-    enum MeshTopology {
-        MESH_TOPOLOGY_TRIANGLE = 0,
-        MESH_TOPOLOGY_TRIANGLE_STRIP,
-        MESH_TOPOLOGY_LINE,
-        MESH_TOPOLOGY_LINE_STRIP,
-    };
-    struct VertexLoad {
-        Vector3f pos;
-        Vector3f normal;
-        Vector3f color;
-        Vector2f texCoord;
-
-        bool operator ==(const VertexLoad& v) {
-            return pos == v.pos && color == v.color && texCoord == v.texCoord;
-        }
-    };
 
 class Mesh : public Resource {
     REGISTER_OBJECT(Mesh, Resource)
 public:
-    VertexBuffer* vb;
-    IndexBuffer* ib;
-    //InstanceBuffer* instanceBuffer;
-    unsigned int cachedVAO;
-    bool cachedDirty;
     explicit Mesh(EngineContext* ctx);
 
-    VertexBuffer* GetVB() { return vb; }
-    //VertexBuffer* GetVB(U32 flag);
-    IndexBuffer* GetIB() { return ib; }
-
-    MeshTopology GetTopology() {
-        return mTopology;
+    VertexBuffer* GetVertexBuffer() { return mVertexBuffer; }
+    IndexBuffer* GetIndexBuffer() { return mIndexBuffer; }
+    void SetVertexBuffer(VertexBuffer* vb)
+    {
+        mVertexBuffer = vb;
+    }
+    void SetIndexBuffer(IndexBuffer* ib)
+    {
+        mIndexBuffer = ib;
+    }
+    U32 GetIndexCount()
+    {
+        return mIndexBuffer->GetIndexCount();
     }
 
-    void SetTopology(MeshTopology t) {
-        mTopology = t;
-    }
-
-    void Load(String path);
+    bool LoadFile(const String& path);
 
 private:
     // render data 
-    HashMap<U32, VertexBuffer*> customVBs;
-    MeshTopology mTopology;
+    SharedPtr<VertexBuffer> mVertexBuffer;
+    SharedPtr<IndexBuffer> mIndexBuffer;
 };
 }
 #endif

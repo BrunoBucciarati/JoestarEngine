@@ -486,4 +486,87 @@ namespace Joestar {
 			return images.Size();
 		}
 	};
+
+
+    class GraphicsPipelineStateVK
+    {
+    public:
+        void CreateIAState();
+
+        void CreateViewportState(Viewport& vp);
+
+        void CreateRasterizationState(GPURasterizationStateCreateInfo& createInfo);
+
+        void CreateMultiSampleState(GPUMultiSampleStateCreateInfo& createInfo);
+
+        void CreateDepthStencilState(GPUDepthStencilStateCreateInfo& createInfo);
+
+        void CreateColorBlendState(GPUColorBlendStateCreateInfo& createInfo);
+
+        void CreatePipelineLayout();
+
+        void SetRenderPass(RenderPassVK* rp)
+        {
+            renderPass = rp->renderPass;
+        }
+
+        void Create()
+        {
+            VkDynamicState dynamicStates[] = {
+                VK_DYNAMIC_STATE_VIEWPORT,
+                VK_DYNAMIC_STATE_LINE_WIDTH
+            };
+
+            VkPipelineDynamicStateCreateInfo dynamicState{};
+            dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+            dynamicState.dynamicStateCount = 2;
+            dynamicState.pDynamicStates = dynamicStates;
+
+            //CreatePipelineLayout<DrawCallVK>(dc);
+
+            //Create Vertex Buffer
+            //VkPipelineVertexInputStateCreateInfo& vertexInputInfo = dc->GetVertexInputInfo();
+            //VkPipelineShaderStageCreateInfo* shaderCreateInfo = dc->shader->shaderStage.Buffer();
+            //VkGraphicsPipelineCreateInfo pipelineInfo{};
+            //pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+            //pipelineInfo.stageCount = 2;
+            //pipelineInfo.pStages = shaderCreateInfo;
+            //pipelineInfo.pVertexInputState = &vertexInputInfo;
+            //pipelineInfo.pInputAssemblyState = &inputAssembly;
+            //pipelineInfo.pViewportState = &viewportState;
+            //pipelineInfo.pRasterizationState = &rasterizer;
+            //pipelineInfo.pMultisampleState = &multisampling;
+            //pipelineInfo.pDepthStencilState = &depthStencil;
+            //pipelineInfo.pColorBlendState = &colorBlending;
+            //pipelineInfo.pDynamicState = nullptr; // Optional
+
+            //pipelineInfo.layout = dc->pipelineLayout;
+            //pipelineInfo.renderPass = renderPass;
+            //pipelineInfo.subpass = 0;
+
+            //pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+            ////pipelineInfo.basePipelineIndex = -1; // Optional
+            //if (vkCreateGraphicsPipelines(mDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &(dc->graphicsPipeline)) != VK_SUCCESS) {
+            //    LOGERROR("failed to create graphics pipeline!");
+            //}
+
+        }
+    private:
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+        VkPipelineViewportStateCreateInfo viewportState{};
+        VkPipelineRasterizationStateCreateInfo rasterizer{};
+        VkPipelineMultisampleStateCreateInfo multisampling{};
+        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        VkPipelineColorBlendStateCreateInfo colorBlending{};
+        VkRenderPass renderPass{};
+    };
+
+    class ComputePipelineStateVK
+    {
+    public:
+        void Create(GPUComputePipelineStateCreateInfo& info)
+        {
+
+        }
+    };
 }

@@ -190,20 +190,6 @@ namespace Joestar {
 		cmdBuffer->WriteBuffer<LightBlocks>(lb);
 	}
 
-	void Graphics::DrawIndexed(Mesh* mesh, U32 count) {
-		cmdBuffer->WriteCommandType(RenderCMD_DrawIndexed);
-		cmdBuffer->WriteBuffer<U32>(count);
-		MeshTopology topology = mesh->GetTopology();
-		cmdBuffer->WriteBuffer<MeshTopology>(topology);
-	}
-
-	void Graphics::DrawArray(Mesh* mesh, U32 count) {
-		cmdBuffer->WriteCommandType(RenderCMD_Draw);
-		cmdBuffer->WriteBuffer<U32>(count);
-		MeshTopology topology = mesh->GetTopology();
-		cmdBuffer->WriteBuffer<MeshTopology>(topology);
-	}
-
 
 	void Graphics::UseShader(Shader* shader) {
 		if (isCompute) {
@@ -220,9 +206,9 @@ namespace Joestar {
 	void Graphics::UpdateMaterial(Material* mat) {
 		UseShader(mat->GetShader());
 		Vector<Texture*>& textures = mat->GetTextures();
-		for (int i = 0; i < textures.Size(); i++) {
-			UpdateTexture(textures[i], mat->GetShader()->GetSamplerBinding(i));
-		}
+		//for (int i = 0; i < textures.Size(); i++) {
+		//	UpdateTexture(textures[i], mat->GetShader()->GetSamplerBinding(i));
+		//}
 	}
 
 	void Graphics::UpdateTexture(Texture* t, U8 binding) {
@@ -469,9 +455,14 @@ namespace Joestar {
 		mGraphicsPSOs.Push(pso);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateGraphicsPipelineState);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(pso->handle);
-		GPUPipelineStateCreateInfo createInfo{
+		GPUGraphicsPipelineStateCreateInfo createInfo{};
+		createInfo.renderPassHandle = pso->GetRenderPass()->GetHandle();
+		createInfo.colorBlendStateHandle = pso->GetColorBlendState()->GetHandle();
+		createInfo.depthStencilStateHandle = pso->GetDepthStencilState()->GetHandle();
+		createInfo.rasterizationStateHandle = pso->GetRasterizationState()->GetHandle();
+		createInfo.multiSampleStateHandle = pso->GetMultiSampleState()->GetHandle();
+		createInfo.viewport = *pso->GetViewport();
 
-		};
 		GetMainCmdList()->WriteBuffer<GPUPipelineStateCreateInfo>(createInfo);
 	}
 
@@ -520,7 +511,7 @@ namespace Joestar {
 			state->GetDepthCompareOp(),
 			state->GetStencilTest(),
 			state->GetStencilFront(),
-			state->GetStencilBack(),
+			state->GetStencilBack()
 		};
 		GetMainCmdList()->WriteBuffer<GPUDepthStencilStateCreateInfo>(createInfo);
 	}
@@ -679,5 +670,15 @@ namespace Joestar {
 	{
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateDescriptorPool);
 		GetMainCmdList()->WriteBuffer<U32>(MAX_CMDLISTS_IN_FLIGHT);
+	}
+
+	void Graphics::CreateShader(Shader* shader)
+	{
+		GPUShader* gpuShader = JOJO_NEW(GPUShader);
+		gpuShader->handle = mShaders.Size();
+		gpuShader->file = shader->GetFile();
+		mShaders.Push(gpuShader);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateShader);
+		GetMainCmdList()->WriteBuffer<GPUShader>(*gpuShader);
 	}
 }
