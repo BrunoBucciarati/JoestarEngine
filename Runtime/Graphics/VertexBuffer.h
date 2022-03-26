@@ -8,11 +8,6 @@ namespace Joestar
 {
 	class Graphics;
 
-	struct VertexElement {
-		VertexSemantic semantic;
-		VertexType type;
-	};
-
 	class VertexBuffer : Object
 	{
 		REGISTER_OBJECT_ROOT(VertexBuffer);
@@ -43,6 +38,10 @@ namespace Joestar
 		void SetData(U8* data);
 
 		void SetVertexElements(PODVector<VertexElement>& elements);
+		PODVector<VertexElement>& GetVertexElements()
+		{
+			return mVertexElements;
+		}
 
 	private:
 		U32 mVertexSize{ 0 };

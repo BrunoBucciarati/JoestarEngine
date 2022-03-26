@@ -1,8 +1,9 @@
 #pragma once
-#include <vulkan/vulkan.h>
 #include "../../IO/Log.h"
 #include "../../Platform/Platform.h"
 #include "../../Container/Vector.h"
+#include "../GraphicDefines.h"
+#include "RenderEnumsVK.h"
 namespace Joestar {
 
 #define VK_CHECK(f) \
@@ -82,16 +83,47 @@ namespace Joestar {
         {
             usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
         }
-        void Create(U32 sz, U32 ct)
+        void Create(U32 sz, U32 ct, PODVector<VertexElement>& elements)
         {
             count = ct;
             size = sz * ct;
+            bindingDescription.binding = binding;
+            bindingDescription.stride = sz;
+            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+            SetVertexElements(elements);
             CreateBuffer();
         }
+
+        void SetVertexElements(PODVector<VertexElement>& elements)
+        {
+            attributeDescriptions.Resize(elements.Size());
+
+            U32 offset = 0;
+            for (U32 i = 0; i < elements.Size(); ++i)
+            {
+                attributeDescriptions[i].binding = binding;
+                attributeDescriptions[i].offset = offset;
+                attributeDescriptions[i].format = GetInputFormatVK(elements[i].type);
+                offset += elements[i].GetSize();
+            }
+
+            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+            createInfo.vertexBindingDescriptionCount = 1;
+            createInfo.vertexAttributeDescriptionCount = attributeDescriptions.Size();
+            createInfo.pVertexBindingDescriptions = &bindingDescription;
+            createInfo.pVertexAttributeDescriptions = attributeDescriptions.Buffer();
+        }
+        VkPipelineVertexInputStateCreateInfo& GetInputStateCreateInfo()
+        {
+            return createInfo;
+        }
+
+    private:
         Vector<VkVertexInputAttributeDescription> attributeDescriptions;
         VkVertexInputBindingDescription bindingDescription;
-    private:
+        VkPipelineVertexInputStateCreateInfo createInfo;
         U32 count;
+        U32 binding{ 0 };
     };
 
     class IndexBufferVK : public BufferVK

@@ -43,7 +43,12 @@ namespace Joestar {
 
     class VertexInputState : public GPUResource
     {
-
+    public:
+        U32 mask{ 0xFFFFFFFF };
+        void InsertAllHash() override
+        {
+            HashInsert(mask);
+        }
     };
 
 
@@ -99,7 +104,7 @@ namespace Joestar {
     {
         GET_SET_STATEMENT_PREFIX_INITVALUE(bool, DepthTest, b, true);
         GET_SET_STATEMENT_PREFIX_INITVALUE(bool, DepthWrite, b, true);
-        GET_SET_STATEMENT_INITVALUE(CompareOp, DeptyCompareOp, CompareOp::ALWAYS);
+        GET_SET_STATEMENT_INITVALUE(CompareOp, DepthCompareOp, CompareOp::ALWAYS);
         GET_SET_STATEMENT_PREFIX_INITVALUE(bool, StencilTest, b, false);
         GET_SET_STATEMENT_INITVALUE(StencilOpState, StencilFront, );
         GET_SET_STATEMENT_INITVALUE(StencilOpState, StencilBack, );
@@ -107,7 +112,7 @@ namespace Joestar {
         {
             HashInsert(bDepthTest);
             HashInsert(bDepthWrite);
-            HashInsert(mDeptyCompareOp);
+            HashInsert(mDepthCompareOp);
             if (bStencilTest)
             {
                 HashInsert(mStencilFront.Hash());
@@ -118,7 +123,7 @@ namespace Joestar {
 
     class ColorAttachmentState : public GPUResource
     {
-        GET_SET_STATEMENT_PREFIX_INITVALUE(bool, BlendEnable, b, true);
+        GET_SET_STATEMENT_PREFIX_INITVALUE(bool, BlendEnable, b, false);
         GET_SET_STATEMENT_INITVALUE(BlendFactor, SrcColorBlendFactor, BlendFactor::SRC_ALPHA);
         GET_SET_STATEMENT_INITVALUE(BlendFactor, DstColorBlendFactor, BlendFactor::DST_ALPHA);
         GET_SET_STATEMENT_INITVALUE(BlendOp, ColorBlendOp, BlendOp::ADD);
@@ -141,14 +146,19 @@ namespace Joestar {
 
     class ColorBlendState : public GPUResource
     {
-        GET_SET_STATEMENT_PREFIX_INITVALUE(bool, LogicOpEnable, b, true);
-        GET_SET_STATEMENT(Vector<ColorAttachmentState>, ColorAttachments);
+        GET_SET_STATEMENT_PREFIX_INITVALUE(bool, LogicOpEnable, b, false);
+        GET_SET_STATEMENT(Vector<ColorAttachmentState>, Attachments);
+    public:
+        void AddAttachment(const ColorAttachmentState& state)
+        {
+            mAttachments.Push(state);
+        }
         void InsertAllHash() override
         {
             HashInsert(bLogicOpEnable);
-            for (U32 i = 0; i < mColorAttachments.Size(); ++i)
+            for (U32 i = 0; i < mAttachments.Size(); ++i)
             {
-                HashInsert(mColorAttachments[i].Hash());
+                HashInsert(mAttachments[i].Hash());
             }
         }
     };
@@ -201,17 +211,18 @@ namespace Joestar {
 
     class GraphicsPipelineState : public PipelineState
     {
-        VertexInputState* mVertexInputState;
-        RasterizationState* mRasterizationState;
-        MultiSampleState* mMultiSampleState;
-        DepthStencilState* mDepthStencilState;
-        ColorBlendState* mColorBlendState;
+        GET_SET_STATEMENT(VertexInputState, VertexInputState);
         GET_SET_STATEMENT(RenderPass*, RenderPass);
-        Viewport* mViewport;
+        GET_SET_STATEMENT(ColorBlendState*, ColorBlendState);
+        GET_SET_STATEMENT(RasterizationState*, RasterizationState);
+        GET_SET_STATEMENT(MultiSampleState*, MultiSampleState);
+        GET_SET_STATEMENT(DepthStencilState*, DepthStencilState);
+        GET_SET_STATEMENT(Viewport*, Viewport);
+
         void InsertAllHash() override
         {
             HashInsert(PipelineState::Hash());
-            HashInsert(mVertexInputState->Hash());
+            HashInsert(mVertexInputState.Hash());
             HashInsert(mRasterizationState->Hash());
             HashInsert(mMultiSampleState->Hash());
             HashInsert(mDepthStencilState->Hash());

@@ -176,6 +176,7 @@
     <ClCompile Include="Graphics\VertexData.cpp" />
     <ClCompile Include="Graphics\View.cpp" />
     <ClCompile Include="Graphics\Vulkan\RenderAPIVK.cpp" />
+    <ClCompile Include="Graphics\Vulkan\RenderEnumsVK.cpp" />
     <ClCompile Include="Graphics\Vulkan\RenderStructsVK.cpp" />
     <ClCompile Include="Graphics\Window.cpp" />
     <ClCompile Include="IO\File.cpp" />

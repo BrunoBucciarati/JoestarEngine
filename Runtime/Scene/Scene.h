@@ -12,12 +12,13 @@
 namespace Joestar {
 	class Camera;
 	class RenderPass;
+	class CommandBuffer
 	class Scene : public Object {
 		REGISTER_OBJECT(Scene, Object);
 	public:
 		explicit Scene(EngineContext* ctx);
 		void PreRenderCompute();
-		void RenderScene(Camera* camera);
+		void RenderScene(CommandBuffer* cb);
 		void RenderLights();
 		void RenderSkybox();
 		void Update(float);

@@ -50,6 +50,7 @@ namespace Joestar
 
 	class MemoryWriter : public MemoryRWBase
 	{
+	public:
 		template<typename T>
 		void WriteBuffer(T& t)
 		{

@@ -181,11 +181,11 @@ namespace Joestar {
         //DELETE_OBJECT(shadowCam);
     }
 
-    void Scene::RenderScene(Camera* camera) {
+    void Scene::RenderScene(CommandBuffer* cb) {
         //RenderShadowMap();
 
         mGraphics->BeginRenderPass("Scene");
-        gameObjects[0]->GetComponent<MeshRenderer>()->Render(mMainRenderPass);
+        gameObjects[0]->GetComponent<MeshRenderer>()->Render(cb);
         //graphics->Clear();
         //graphics->SetDepthCompare(DEPTH_COMPARE_LESS);
         //graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_PROJECTION, camera->GetProjectionMatrix());

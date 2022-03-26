@@ -25,9 +25,12 @@ namespace Joestar
 	void View::Render()
 	{
 		CommandBuffer* cb = mGraphics->GetMainCommandBuffer();
+		cb->SetViewport(&mViewport);
+		cb->BeginRenderPass(mGraphics->GetMainRenderPass());
 		if (mScene)
 		{
-			mScene->RenderScene(mCamera);
+			mScene->RenderScene(cb);
 		}
+		cb->EndRenderPass(mGraphics->GetMainRenderPass());
 	}
 }

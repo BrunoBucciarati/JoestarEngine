@@ -145,7 +145,16 @@ namespace Joestar {
 
                 GPUVertexBufferCreateInfo createInfo;
                 cmdList->ReadBuffer(createInfo);
+
+                createInfo.elements.Reserve(createInfo.elementCount);
+                for (U32 i = 0; i < createInfo.elementCount; ++i)
+                {
+                    VertexElement element;
+                    cmdList->ReadBuffer(element);
+                    createInfo.elements.Push(element);
+                }
                 mProtocol->CreateVertexBuffer(handle, createInfo);
+
                 break;
             }
             CASECMD(GFXCommand::CreateUniformBuffer)

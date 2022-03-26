@@ -16,6 +16,10 @@ namespace Joestar
 			InsertAllHash();
 			return mHash;
 		}
+		bool operator == (const GPUResource& rhs)
+		{
+			return handle == rhs.handle;
+		}
 	protected:
 		template<typename T>
 		void HashInsert(T val)

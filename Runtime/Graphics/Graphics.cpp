@@ -74,9 +74,28 @@ namespace Joestar {
 		CreateBuiltinUniforms();
 		//创建主RenderPass
 		CreateMainRenderPass();
+		//创建一些default的状态
+		CreateDefaultStates();
 
 		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
 		renderThread->SetGFXCommandList(cmdLists.cmdList);
+	}
+
+	void Graphics::CreateDefaultStates()
+	{
+		ColorBlendState* cs = JOJO_NEW(ColorBlendState, MEMORY_GFX_STRUCT);
+		ColorAttachmentState attachmentState;
+		cs->GetAttachments().Push(attachmentState);
+		CreateColorBlendState(cs);
+
+		DepthStencilState* ds = JOJO_NEW(DepthStencilState, MEMORY_GFX_STRUCT);
+		CreateDepthStencilState(ds);
+
+		RasterizationState* rs = JOJO_NEW(RasterizationState, MEMORY_GFX_STRUCT);
+		CreateRasterizationState(rs);
+
+		MultiSampleState* ms = JOJO_NEW(MultiSampleState, MEMORY_GFX_STRUCT);
+		CreateMultiSampleState(ms);
 	}
 
 	void Graphics::CreateMainRenderPass()
@@ -170,21 +189,6 @@ namespace Joestar {
 		cmdBuffer->WriteBuffer<BUILTIN_VALUE>(bv);
 		cmdBuffer->WriteBuffer<LightBlocks>(lb);
 	}
-
-	//void Graphics::UpdateVertexBuffer(VertexBuffer* vb) {
-	//	cmdBuffer->WriteCommandType(RenderCMD_UpdateVertexBuffer);
-	//	cmdBuffer->WriteBuffer<VertexBuffer*>(vb);
-	//}
-
-	//void Graphics::UpdateIndexBuffer(IndexBuffer* ib) {
-	//	cmdBuffer->WriteCommandType(RenderCMD_UpdateIndexBuffer);
-	//	cmdBuffer->WriteBuffer<IndexBuffer*>(ib);
-	//}
-
-	//void Graphics::UpdateInstanceBuffer(InstanceBuffer* ib) {
-	//	cmdBuffer->WriteCommandType(RenderCMD_UpdateInstanceBuffer);
-	//	cmdBuffer->WriteBuffer<InstanceBuffer*>(ib);
-	//}
 
 	void Graphics::DrawIndexed(Mesh* mesh, U32 count) {
 		cmdBuffer->WriteCommandType(RenderCMD_DrawIndexed);
@@ -387,15 +391,22 @@ namespace Joestar {
 		mem->data = vertexBuffer->GetData();
 		SetGPUMemory(mem);
 
+		PODVector<VertexElement>& elements = vertexBuffer->GetVertexElements();
 		GPUVertexBufferCreateInfo createInfo
 		{
 			vertexBuffer->GetVertexCount(),
 			vertexBuffer->GetVertexSize(),
+			elements.Size(),
 			mem->handle
 		};
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateVertexBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 		GetMainCmdList()->WriteBuffer<GPUVertexBufferCreateInfo>(createInfo);
+
+		for (auto& element : elements)
+		{
+			GetMainCmdList()->WriteBuffer<VertexElement>(element);
+		}
 		
 		return vb;
 	}
@@ -462,6 +473,95 @@ namespace Joestar {
 
 		};
 		GetMainCmdList()->WriteBuffer<GPUPipelineStateCreateInfo>(createInfo);
+	}
+
+	void Graphics::CreateColorBlendState(ColorBlendState* state)
+	{
+		state->Rehash();
+		state->handle = mColorBlendStates.Size();
+		mColorBlendStates.Push(state);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateColorBlendState);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(state->handle);
+		U32 num = state->GetAttachments().Size();
+		GPUColorBlendStateCreateInfo createInfo{
+			state->GetLogicOpEnable(),
+			num,
+		};
+		GetMainCmdList()->WriteBuffer<GPUColorBlendStateCreateInfo>(createInfo);
+
+		for (U32 i = 0; i < num; ++i)
+		{
+			ColorAttachmentState attachmentState = state->GetAttachments()[i];
+			GPUColorAttachmentStateCreateInfo attachCreateInfo
+			{
+				attachmentState.GetBlendEnable(),
+				attachmentState.GetSrcColorBlendFactor(),
+				attachmentState.GetDstColorBlendFactor(),
+				attachmentState.GetColorBlendOp(),
+				attachmentState.GetSrcAlphaBlendFactor(),
+				attachmentState.GetDstAlphaBlendFactor(),
+				attachmentState.GetAlphaBlendOp(),
+				attachmentState.GetColorWriteMask()
+			};
+			GetMainCmdList()->WriteBuffer<GPUColorAttachmentStateCreateInfo>(attachCreateInfo);
+		}
+	}
+
+	void Graphics::CreateDepthStencilState(DepthStencilState* state)
+	{
+		state->Rehash();
+		state->handle = mDepthStencilStates.Size();
+		mDepthStencilStates.Push(state);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateDepthStencilState);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(state->handle);
+		GPUDepthStencilStateCreateInfo createInfo{
+			state->GetDepthTest(),
+			state->GetDepthWrite(),
+			state->GetDepthCompareOp(),
+			state->GetStencilTest(),
+			state->GetStencilFront(),
+			state->GetStencilBack(),
+		};
+		GetMainCmdList()->WriteBuffer<GPUDepthStencilStateCreateInfo>(createInfo);
+	}
+
+	void Graphics::CreateRasterizationState(RasterizationState* state)
+	{
+		state->Rehash();
+		state->handle = mRasterizationStates.Size();
+		mRasterizationStates.Push(state);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateRasterizationState);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(state->handle);
+		GPURasterizationStateCreateInfo createInfo{
+			state->GetDepthClamp(),
+			state->GetDiscardEnable(),
+			state->GetPolygonMode(),
+			state->GetLineWidth(),
+			state->GetCullMode(),
+			state->GetFrontFace(),
+			state->GetDepthBias(),
+			state->GetDepthBiasConstantFactor(),
+			state->GetDepthBiasClamp(),
+			state->GetDepthBiasSlopeFactor()
+		};
+		GetMainCmdList()->WriteBuffer<GPURasterizationStateCreateInfo>(createInfo);
+	}
+
+	void Graphics::CreateMultiSampleState(MultiSampleState* state)
+	{
+		state->Rehash();
+		state->handle = mMultiSampleStates.Size();
+		mMultiSampleStates.Push(state);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateMultiSampleState);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(state->handle);
+		GPUMultiSampleStateCreateInfo createInfo{
+			state->GetSampleShading(),
+			state->GetRasterizationSamples(),
+			state->GetMinSampleShading(),
+			state->GetAlphaToCoverage(),
+			state->GetAlphaToOne()
+		};
+		GetMainCmdList()->WriteBuffer<GPUMultiSampleStateCreateInfo>(createInfo);
 	}
 
 	void Graphics::CreateRenderPass(RenderPass* pass)

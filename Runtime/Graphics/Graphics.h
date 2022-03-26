@@ -96,9 +96,31 @@ namespace Joestar {
 		void CreateSyncObjects();
 		GFXCommandList* GetMainCmdList();
 
+		RasterizationState* GetDefaultRasterizationState()
+		{
+			return mRasterizationStates[0];
+		}
+		MultiSampleState* GetDefaultMultiSampleState()
+		{
+			return mMultiSampleStates[0];
+		}
+		DepthStencilState* GetDefaultDepthStencilState()
+		{
+			return mDepthStencilStates[0];
+		}
+		ColorBlendState* GetDefaultColorBlendState()
+		{
+			return mColorBlendStates[0];
+		}
+		void CreateRasterizationState(RasterizationState*);
+		void CreateMultiSampleState(MultiSampleState*);
+		void CreateDepthStencilState(DepthStencilState*);
+		void CreateColorBlendState(ColorBlendState*);
+
 	private:
 		void CreateBuiltinUniforms();
 		void CreateMainRenderPass();
+		void CreateDefaultStates();
 		RenderThread* renderThread;
 		Vector<GFXCommandBuffer*> cmdBuffers;
 		Vector<GFXCommandBuffer*> computeCmdBuffers;
@@ -117,6 +139,10 @@ namespace Joestar {
 		Vector<SharedPtr<GPUIndexBuffer>> mGPUIndexBuffers;
 		Vector<SharedPtr<GPUUniformBuffer>> mGPUUniformBuffers;
 		Vector<SharedPtr<RenderPass>> mRenderPasses;
+		Vector<SharedPtr<RasterizationState>> mRasterizationStates;
+		Vector<SharedPtr<MultiSampleState>> mMultiSampleStates;
+		Vector<SharedPtr<DepthStencilState>> mDepthStencilStates;
+		Vector<SharedPtr<ColorBlendState>> mColorBlendStates;
 		Vector<SharedPtr<GraphicsPipelineState>> mGraphicsPSOs;
 		Vector<SharedPtr<ComputePipelineState>> mComputePSOs;
 		SwapChain* mSwapChain;

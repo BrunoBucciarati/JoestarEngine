@@ -9,38 +9,38 @@ namespace Joestar {
 	}
 	Renderer::~Renderer(){}
 
-	void Renderer::Render(RenderPass* pass)
+	void Renderer::Render(CommandBuffer* cb)
 	{
-		//if (mesh && mat) {
-		//	graphics->UpdateMaterial(mat);
-		//	graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, gameObject->GetAfflineTransform());
-		//	graphics->DrawMesh(mesh, mat);
-		//}
-		auto& pso = GetPipelineState(pass);
+		auto& pso = GetPipelineState(cb);
 	}
 
 	void Renderer::RenderToShadowMap()
 	{
-		//if (mesh) {
-		//	graphics->UpdateBuiltinMatrix(BUILTIN_MATRIX_MODEL, gameObject->GetAfflineTransform());
-		//	graphics->DrawMesh(mesh, mat);
-		//}
 	}
 
 
-	SharedPtr<GraphicsPipelineState>& Renderer::GetPipelineState(RenderPass* pass)
+	SharedPtr<GraphicsPipelineState>& Renderer::GetPipelineState(CommandBuffer* cb)
 	{
-		if (pass->handle + 1 > mPSOs.Size())
+		RenderPass* pass = cb->GetRenderPass();
+		for (auto& pso : mPSOs)
 		{
-			mPSOs.Resize(pass->handle + 1);
+			if (pso->GetRenderPass() == pass && pso->GetViewport() == cb->GetViewport())
+			{
+				return pso;
+			}
 		}
-		SharedPtr<GraphicsPipelineState>& pso = mPSOs[pass->handle];
-		if (!pso)
-		{
-			pso = JOJO_NEW(GraphicsPipelineState, MEMORY_GFX_STRUCT);
-			pso->SetRenderPass(pass);
-			mGraphics->CreateGraphicsPipelineState(pso);
-		}
+
+		//没找到对应的，创建一个新的PSO
+		SharedPtr<GraphicsPipelineState>& pso = mPSOs.EmplaceBack();
+		pso = JOJO_NEW(GraphicsPipelineState, MEMORY_GFX_STRUCT);
+		pso->SetRenderPass(pass);
+		pso->SetViewport(cb->GetViewport());
+		//这些值先用default的，后面加了材质设置需要这里做些新的逻辑 --todo
+		pso->SetDepthStencilState(mGraphics->GetDefaultDepthStencilState());
+		pso->SetColorBlendState(mGraphics->GetDefaultColorBlendState());
+		pso->SetMultiSampleState(mGraphics->GetDefaultMultiSampleState());
+		pso->SetRasterizationState(mGraphics->GetDefaultRasterizationState());
+		mGraphics->CreateGraphicsPipelineState(pso);
 		return pso;
 	}
 }

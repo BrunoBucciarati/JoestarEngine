@@ -4,7 +4,6 @@
 #include "../../Math/MathDefs.h"
 #include "../Window.h"
 #include <vulkan/vulkan_win32.h>
-#include "RenderEnumsVK.h"
 
 #define GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, _VEC) \
     if (_HANDLE + 1 > _VEC.Size()) _VEC.Resize(_HANDLE + 1); \
@@ -798,7 +797,7 @@ namespace Joestar {
         stagingBuffer.size = mem.size;
         stagingBuffer.Create(mem.data);
 
-        vertexBuffer.Create(createInfo.vertexSize, createInfo.vertexCount);
+        vertexBuffer.Create(createInfo.vertexSize, createInfo.vertexCount, createInfo.elements);
         CopyBuffer(stagingBuffer.GetBuffer(), vertexBuffer.GetBuffer(), vertexBuffer.size);
     }
 

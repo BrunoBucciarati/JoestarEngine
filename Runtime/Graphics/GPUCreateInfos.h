@@ -1,8 +1,8 @@
 #pragma once
 #include "GPUTexture.h"
+#include "../Container/Vector.h"
 namespace Joestar
 {
-
 	struct GPUImageCreateInfo
 	{
 		ImageType type;
@@ -55,6 +55,58 @@ namespace Joestar
 		U32 msaaSamples{ 1 };
 	};
 
+	struct GPUDepthStencilStateCreateInfo
+	{
+		bool depthTest{ true };
+		bool depthWrite{ true };
+		CompareOp depthCompareOp{ CompareOp::LESS_EQUAL };
+		bool stencilTest{ false };
+		StencilOpState stencilTest{};
+		StencilOpState stencilTest{};
+	};
+
+	struct GPUMultiSampleStateCreateInfo
+	{
+		bool sampleShading;
+		U32 rasterizationSamples;
+		F32 minSampleShading;
+		bool alphaToCoverage;
+		bool alphaToOne;
+	};
+
+	struct GPURasterizationStateCreateInfo
+	{
+		bool depthClamp;
+		bool discardEnable;
+		PolygonMode polygonMode;
+		F32 lineWidth;
+		CullMode cullMode;
+		FrontFaceMode frontFace;
+		bool depthBias;
+		F32 depthBiasConstantFactor;
+		F32 depthBiasClamp;
+		F32 depthBiasSlopeFactor;
+	};
+
+	struct GPUColorAttachmentStateCreateInfo
+	{
+		bool blendEnable;
+		BlendFactor srcColorBlendFactor;
+		BlendFactor dstColorBlendFactor;
+		BlendOp colorBlendOp;
+		BlendFactor srcAlphaBlendFactor;
+		BlendFactor dstAlphaBlendFactor;
+		BlendOp alphaBlendOp;
+		ColorWriteMask writeMask;
+	};
+
+	struct GPUColorBlendStateCreateInfo
+	{
+		bool logicOpEnable;
+		U32 numAttachmens;
+		Vector<GPUColorAttachmentStateCreateInfo> attachments;
+	};
+
 	struct GPUPipelineStateCreateInfo
 	{
 	};
@@ -87,7 +139,9 @@ namespace Joestar
 	{
 		U32 vertexCount;
 		U32 vertexSize;
+		U32 elementCount{ 0 };
 		GPUResourceHandle memoryHandle;
+		PODVector<VertexElement> elements;
 	};
 
 	struct GPUUniformBufferCreateInfo

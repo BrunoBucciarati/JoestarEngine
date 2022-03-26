@@ -242,7 +242,7 @@ namespace Joestar {
 		VEC3,
 		VEC2,
 		FLOAT,
-		U8
+		UINT32
 	};
 
 	const U32 VertexTypeSize[] = {
@@ -251,6 +251,15 @@ namespace Joestar {
 		2 * sizeof(F32),
 		sizeof(F32),
 		sizeof(U8)
+	};
+
+	struct VertexElement {
+		VertexSemantic semantic;
+		VertexType type;
+		U32 GetSize()
+		{
+			return VertexTypeSize[(U32)type];
+		}
 	};
 }
 #endif
