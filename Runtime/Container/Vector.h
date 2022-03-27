@@ -379,6 +379,18 @@ namespace Joestar
             Joestar::Swap(mBuffer, rhs.mBuffer);
         }
 
+        Iterator Find(const T& key)
+        {
+            for (U32 i = 0; i < mSize; ++i)
+            {
+                if (key == mBuffer[i])
+                {
+                    return Iterator(mBuffer + i);
+                }
+            }
+            return End();
+        }
+
 	private:
         T* mBuffer{ nullptr };
 		U32 mSize{ 0 };

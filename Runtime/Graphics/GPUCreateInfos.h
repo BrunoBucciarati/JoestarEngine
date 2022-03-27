@@ -1,6 +1,7 @@
 #pragma once
 #include "GPUTexture.h"
 #include "Viewport.h"
+#include "Descriptor.h"
 #include "../Container/Vector.h"
 namespace Joestar
 {
@@ -164,6 +165,9 @@ namespace Joestar
 	{
 		U32 stageMask;
 		U32 numStages;
+		U32 numDescriptorSets;
 		PODVector<GPUResourceHandle> shaderHandles;
+		PODVector<U32> numSetBindings;
+		Vector<DescriptorSetLayout> setLayouts;
 	};
 }

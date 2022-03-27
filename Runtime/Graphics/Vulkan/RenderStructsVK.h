@@ -3,6 +3,7 @@
 #include "../../Platform/Platform.h"
 #include "../../Container/Vector.h"
 #include "../GraphicDefines.h"
+#include "../Shader/ShaderReflection.h"
 #include "RenderEnumsVK.h"
 namespace Joestar {
 
@@ -494,6 +495,7 @@ namespace Joestar {
         void Create(VkDevice& device, GPUShaderCreateInfo& shader);
         VkShaderModule shaderModule;
         VkShaderStageFlagBits flagBits;
+        ShaderReflection* reflection;
         String entryName = "main";
     };
 
@@ -514,7 +516,7 @@ namespace Joestar {
 
         void CreateColorBlendState(GPUColorBlendStateCreateInfo& createInfo);
 
-        void CreatePipelineLayout();
+        void CreatePipelineLayout(VkDevice& device, Vector<DescriptorSetLayout>&);
 
         void CreateShaderStages(PODVector<ShaderVK*>& shaders);
 
@@ -537,8 +539,11 @@ namespace Joestar {
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         Vector<VkVertexInputBindingDescription> vertexInputBindings{};
         Vector<VkVertexInputAttributeDescription> vertexInputAttributes{};
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         VkRenderPass renderPass{};
+        Vector<VkDescriptorSetLayout> setLayouts;
+        VkPipelineLayout pipelineLayout{};
         VkPipeline pipeline{};
     };
 

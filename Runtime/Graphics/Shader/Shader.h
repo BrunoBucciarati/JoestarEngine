@@ -25,6 +25,10 @@ namespace Joestar {
 		{
 			return mStage;
 		}
+		ShaderReflection* GetReflection()
+		{
+			return mReflection;
+		}
 	private:
 		String GetDirectoryByLang(ShaderLanguage lang);
 		ShaderStage mStage;

@@ -275,19 +275,34 @@ namespace Joestar {
                 GPUShaderProgramCreateInfo createInfo;
                 cmdList->ReadBuffer(createInfo);
                 createInfo.shaderHandles.Reserve(createInfo.numStages);
+                createInfo.numSetBindings.Reserve(createInfo.numDescriptorSets);
+                createInfo.setLayouts.Resize(createInfo.numDescriptorSets);
                 for (U32 i = 0; i < createInfo.numStages; ++i)
                 {
                     GPUResourceHandle shaderHandle;
                     cmdList->ReadBuffer<GPUResourceHandle>(shaderHandle);
                     createInfo.shaderHandles.Push(shaderHandle);
                 }
+                for (U32 i = 0; i < createInfo.numDescriptorSets; ++i)
+                {
+                    U32 numBindings;
+                    cmdList->ReadBuffer<U32>(numBindings);
+                    createInfo.numSetBindings.Push(numBindings);
+                    createInfo.setLayouts[i].SetNumBindings(numBindings);
+                }
+                for (U32 i = 0; i < createInfo.numDescriptorSets; ++i)
+                {
+                    for (U32 j = 0; j < createInfo.numSetBindings[i]; ++j)
+                    {
+                        DescriptorSetLayoutBinding binding;
+                        cmdList->ReadBuffer<DescriptorSetLayoutBinding>(binding);
+                        createInfo.setLayouts[i].AddBinding(binding);
+                    }
+                }
+
                 mProtocol->CreateShaderProgram(handle, createInfo);
                 break;
             }
-            //    CreateRasterizationState,
-            //    CreateMultiSampleState,
-            //    CreateGraphicsPipelineState,
-            //    CreateComputePipelineState,
             default:
             {
                 LOGERROR("CMD NOT FOUND: %s\n", GFXCommand(command));

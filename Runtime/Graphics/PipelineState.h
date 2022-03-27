@@ -4,6 +4,7 @@
 #include "GPUTexture.h"
 #include "Viewport.h"
 #include "Shader/ShaderProgram.h"
+#include "VertexBuffer.h"
 namespace Joestar {
     class PipelineLayout : public GPUResource
     {

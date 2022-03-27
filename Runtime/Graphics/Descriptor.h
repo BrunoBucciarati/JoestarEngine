@@ -25,7 +25,20 @@ namespace Joestar
 		U32 count{ 0 };
 		U32 stage{ 0 };
 		String name;
+		bool operator==(const DescriptorSetLayoutBinding& rhs)
+		{
+			return binding == rhs.binding;
+		}
+		bool MergeBinding(const DescriptorSetLayoutBinding& rhs)
+		{
+			if (rhs.type != type)
+				return false;
+			stage |= rhs.stage;
+			return true;
+		}
+		friend bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs);
 	};
+	bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs);
 
 	class DescriptorSetLayout
 	{
@@ -38,6 +51,11 @@ namespace Joestar
 		{
 			mLayoutBindings.Resize(num);
 		}
+		U32 GetNumBindings() const
+		{
+			return mLayoutBindings.Size();
+		}
+		bool AddBinding(const DescriptorSetLayoutBinding& binding);
 	private:
 		Vector<DescriptorSetLayoutBinding> mLayoutBindings;
 	};

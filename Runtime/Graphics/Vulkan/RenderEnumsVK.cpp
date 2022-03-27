@@ -98,7 +98,7 @@ namespace Joestar {
 			return VK_FORMAT_R32_UINT;
 	}
 
-	VkShaderStageFlagBits GetShaderStageFlagBits(ShaderStage stage)
+	VkShaderStageFlagBits GetShaderStageFlagBitsVK(ShaderStage stage)
 	{
 		if (ShaderStage::VS == stage)
 			return VK_SHADER_STAGE_VERTEX_BIT;
@@ -108,6 +108,20 @@ namespace Joestar {
 			return VK_SHADER_STAGE_COMPUTE_BIT;
 		if (ShaderStage::GS == stage)
 			return VK_SHADER_STAGE_GEOMETRY_BIT;
+	}
+
+	VkShaderStageFlags GetShaderStageFlagsVK(U32 stage)
+	{
+		if (ShaderStage::VS == (ShaderStage)stage)
+			return VK_SHADER_STAGE_VERTEX_BIT;
+		if (ShaderStage::PS == (ShaderStage)stage)
+			return VK_SHADER_STAGE_FRAGMENT_BIT;
+		if (ShaderStage::CS == (ShaderStage)stage)
+			return VK_SHADER_STAGE_COMPUTE_BIT;
+		if (ShaderStage::GS == (ShaderStage)stage)
+			return VK_SHADER_STAGE_GEOMETRY_BIT;
+		if (ShaderStage::VS_PS == (ShaderStage)stage)
+			return VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	}
 
 }

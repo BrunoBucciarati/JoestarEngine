@@ -10,7 +10,6 @@
 #include <sstream>
 #include "../IO/File.h"
 #include <iostream>
-#include "Shader/ShaderDefs.h"
 #include "../Container/Str.h"
 
 namespace Joestar {

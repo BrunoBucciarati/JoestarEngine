@@ -1,5 +1,7 @@
 #include "ShaderProgram.h"
 #include "../Graphics.h"
+#include "../GraphicDefines.h"
+#include "ShaderReflection.h"
 
 namespace Joestar
 {
@@ -23,6 +25,53 @@ namespace Joestar
 		return false;
 	}
 
+	ShaderProgram::ShaderProgram(EngineContext* ctx) : Super(ctx)
+	{
+		mDescriptorLayouts.Reserve(MAX_DESCRIPTOR_SETS);
+	}
+	ShaderProgram::~ShaderProgram()
+	{}
+
+	void ShaderProgram::CheckValid()
+	{
+		bValid = IsValidProgram(mStageMask);
+		//从不同的stage收集合并描述符
+		if (bValid)
+		{
+			mDescriptorLayouts.Clear();
+			if (mStageMask == (U32)ShaderStage::VS_PS)
+			{
+				U32 maxSets = 0;
+				for (auto& shader : mShaders)
+				{
+					auto* reflection = shader->GetReflection();
+					maxSets = Max(maxSets, reflection->GetNumDescriptorSetLayouts());
+				}
+				mDescriptorLayouts.Resize(maxSets);
+
+				for (auto& shader :mShaders)
+				{
+					auto* reflection = shader->GetReflection();
+					Vector<DescriptorSetLayout>& setLayouts = reflection->GetDescriptorSetLayouts();
+					for (U32 setIdx = 0; setIdx < setLayouts.Size(); ++setIdx)
+					{
+						DescriptorSetLayout& curSetLayout = mDescriptorLayouts[setIdx];
+						for (U32 bindingIdx = 0; bindingIdx < setLayouts[setIdx].GetNumBindings(); ++bindingIdx)
+						{
+							DescriptorSetLayoutBinding& binding = setLayouts[setIdx].GetLayoutBindings(bindingIdx);
+							if (!curSetLayout.AddBinding(binding))
+							{
+								bValid = false;
+								LOGERROR("PROGRAM DESCRIPTOR ERROR");
+								return;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	void ShaderProgram::SetShader(ShaderStage s, Shader* vs, Shader* ps)
 	{
 		if (s != ShaderStage::VS_PS)
@@ -43,7 +92,7 @@ namespace Joestar
 		}
 		mShaders[index] = shader;
 		mStageMask |= stage;
-		bValid = IsValidProgram(mStageMask);
+		CheckValid();
 		if (bValid)
 		{
 			GetSubsystem<Graphics>()->CreateShaderProgram(this);

@@ -278,5 +278,7 @@ namespace Joestar {
 	};
 
 	const char* GetShaderSuffix(ShaderLanguage lang, ShaderStage);
+
+	const U32 MAX_DESCRIPTOR_SETS = 4;
 }
 #endif

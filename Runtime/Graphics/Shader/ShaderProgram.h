@@ -1,11 +1,13 @@
 #pragma once
 #include "../../Core/Minimal.h"
 #include "Shader.h"
+#include "../Descriptor.h"
 namespace Joestar {
 	class ShaderProgram : public Object
 	{
 		REGISTER_OBJECT_ROOT(ShaderProgram);
 	public:
+		explicit ShaderProgram(EngineContext* ctx);
 		void SetShader(ShaderStage stage, Shader* vs, Shader* ps);
 		void SetShader(ShaderStage stage, const String& vs, const String& ps);
 		void SetShader(ShaderStage stage, const String& name);
@@ -25,10 +27,24 @@ namespace Joestar {
 		{
 			return mStageMask;
 		}
+		U32 GetNumDescriptorSets() const
+		{
+			return mDescriptorLayouts.Size();
+		}
+		U32 GetNumDescriptorBindings(U32 set) const
+		{
+			return mDescriptorLayouts[set].GetNumBindings();
+		}
+		DescriptorSetLayoutBinding& GetDescriptorBindings(U32 set, U32 idx)
+		{
+			return mDescriptorLayouts[set].GetLayoutBindings(idx);
+		}
 	private:
+		void CheckValid();
 		Vector<SharedPtr<Shader>> mShaders;
-		U32 mStageMask;
-		bool bValid;
+		Vector<DescriptorSetLayout> mDescriptorLayouts;
+		U32 mStageMask{ 0 };
+		bool bValid{ false };
 		GPUResourceHandle mGPUHandle;
 	};
 }

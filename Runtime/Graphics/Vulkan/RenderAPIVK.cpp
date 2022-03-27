@@ -1,6 +1,8 @@
 #include "RenderAPIVK.h"
 #include "../../Container/Vector.h"
 #include "../../Container/HashSet.h"
+#include "../../Graphics/Descriptor.h"
+#include "../../Graphics/Shader/ShaderReflection.h"
 #include "../../Math/MathDefs.h"
 #include "../Window.h"
 #include <vulkan/vulkan_win32.h>
@@ -880,20 +882,16 @@ namespace Joestar {
         pso.CreateMultiSampleState(mMultiSampleStates[createInfo.multiSampleStateHandle]);
         pso.CreateDepthStencilState(mDepthStencilStates[createInfo.depthStencilStateHandle]);
         pso.CreateColorBlendState(mColorBlendStates[createInfo.colorBlendStateHandle]);
-        pso.CreatePipelineLayout();
 
         GPUShaderProgramCreateInfo& program = mShaderPrograms[createInfo.shaderProramHandle];
         PODVector<ShaderVK*> shaders;
-        shaders.Reserve(program.numStages);
-        for (U32 i = 0; i < program.numStages; ++i)
-        {
-            ShaderVK& shader = mShaders[program.shaderHandles[i]];
-            shaders.Push(&shader);
-        }
         pso.CreateShaderStages(shaders);
+
         VertexBufferVK& vb = mVertexBuffers[createInfo.vertexBufferHandle];
         pso.CreateVertexInputInfo(vb);
-        pso.Create();
+
+        pso.CreatePipelineLayout(mDevice, program.setLayouts);
+        pso.Create(mDevice);
     }
 
     void RenderAPIVK::CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo)

@@ -16,5 +16,6 @@ namespace Joestar
 
 	VkFormat GetInputFormatVK(VertexType vt);
 
-	VkShaderStageFlagBits GetShaderStageFlagBits(ShaderStage stage);
+	VkShaderStageFlagBits GetShaderStageFlagBitsVK(ShaderStage stage);
+	VkShaderStageFlags GetShaderStageFlagsVK(U32 stage);
 }

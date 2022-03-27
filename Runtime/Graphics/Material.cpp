@@ -1,7 +1,8 @@
 #include "Material.h"
 
 namespace Joestar {
-	Material::Material(EngineContext* ctx) : Super(ctx)
+	Material::Material(EngineContext* ctx) : Super(ctx),
+		mShaderProgram(NEW_OBJECT(ShaderProgram))
 	{}
 	Material::~Material()
 	{
