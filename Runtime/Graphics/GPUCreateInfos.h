@@ -123,6 +123,10 @@ namespace Joestar
 		GPUResourceHandle depthStencilStateHandle;
 		GPUResourceHandle vertexBufferHandle;
 		Viewport viewport;
+		U32 numInputBindings;
+		U32 numInputAttributes;
+		PODVector<InputAttribute> inputAttributes;
+		PODVector<InputBinding> inputBindings;
 	};
 	struct GPUComputePipelineStateCreateInfo : GPUPipelineStateCreateInfo
 	{

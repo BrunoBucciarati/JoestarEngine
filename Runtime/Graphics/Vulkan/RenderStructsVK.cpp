@@ -31,7 +31,6 @@ namespace Joestar {
 
     void GraphicsPipelineStateVK::CreateViewportState(Viewport& vp)
     {
-        VkViewport viewport{};
         viewport.x = vp.rect.x;
         viewport.y = vp.rect.y;
         viewport.width = vp.rect.width;
@@ -39,7 +38,6 @@ namespace Joestar {
         viewport.minDepth = vp.minDepth;
         viewport.maxDepth = vp.maxDepth;
 
-        VkRect2D scissor{};
         scissor.offset = { (I32)vp.scissor.x, (I32)vp.scissor.y };
         scissor.extent.width = (U32)vp.scissor.width;
         scissor.extent.height = (U32)vp.scissor.height;
@@ -151,12 +149,12 @@ namespace Joestar {
 
     void GraphicsPipelineStateVK::CreateColorBlendState(GPUColorBlendStateCreateInfo& createInfo)
     {
-
-        Vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments{};
-        colorBlendAttachments.Reserve(createInfo.numAttachments);
-        for (auto& attachmentInfo : createInfo.attachments)
+        colorBlendAttachments.Resize(createInfo.numAttachments);
+        for (U32 i = 0; i < createInfo.numAttachments; ++i)
         {
-            VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+            auto& attachmentInfo = createInfo.attachments[i];
+            VkPipelineColorBlendAttachmentState& colorBlendAttachment = colorBlendAttachments[i];
+            colorBlendAttachment = {};
             colorBlendAttachment.colorWriteMask = VkColorComponentFlags(attachmentInfo.writeMask);
             colorBlendAttachment.blendEnable = attachmentInfo.blendEnable;
             colorBlendAttachment.srcColorBlendFactor = VkBlendFactor(attachmentInfo.srcColorBlendFactor); // Optional
@@ -167,7 +165,6 @@ namespace Joestar {
             colorBlendAttachment.alphaBlendOp = VkBlendOp(attachmentInfo.alphaBlendOp); // Optional
         }
 
-        VkPipelineColorBlendStateCreateInfo colorBlending{};
         colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         colorBlending.logicOpEnable = VK_FALSE;
         colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
@@ -179,9 +176,29 @@ namespace Joestar {
         colorBlending.blendConstants[3] = 0.0f; // Optional
     }
 
-    void GraphicsPipelineStateVK::CreateVertexInputInfo(VertexBufferVK& vb)
+    void GraphicsPipelineStateVK::CreateVertexInputInfo(PODVector<InputBinding>& bindings, PODVector<InputAttribute>& attributes)
     {
-        vertexInputInfo = vb.GetInputStateCreateInfo();
+        vertexInputBindings.Resize(bindings.Size());
+        for (U32 i = 0; i < bindings.Size(); ++i)
+        {
+            vertexInputBindings[i] = {};
+            vertexInputBindings[i].binding = bindings[i].binding;
+            vertexInputBindings[i].stride = bindings[i].stride;
+            vertexInputBindings[i].inputRate = bindings[i].instance ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
+        }
+        vertexInputAttributes.Resize(attributes.Size());
+        for (U32 i = 0; i < attributes.Size(); ++i)
+        {
+            vertexInputAttributes[i].binding = attributes[i].binding;
+            vertexInputAttributes[i].format = GetInputFormatVK(attributes[i].format);
+            vertexInputAttributes[i].location = attributes[i].location;
+            vertexInputAttributes[i].offset = attributes[i].offset;
+        }
+        vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertexInputInfo.vertexBindingDescriptionCount = vertexInputBindings.Size();
+        vertexInputInfo.vertexAttributeDescriptionCount = vertexInputAttributes.Size();
+        vertexInputInfo.pVertexBindingDescriptions = vertexInputBindings.Buffer();
+        vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributes.Buffer();
     }
 
     void GraphicsPipelineStateVK::Create(VkDevice& device)
@@ -228,12 +245,45 @@ namespace Joestar {
         File* file = (File*)shader.file;
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        size_t codeSize = file->Size();
+        U32 codeSize = file->Size();
         createInfo.codeSize = codeSize;
         createInfo.pCode = reinterpret_cast<const U32*>(file->GetBuffer());
 
         flagBits = GetShaderStageFlagBitsVK(shader.stage);
 
         VK_CHECK(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule))
+    }
+
+    void VertexBufferVK::Create(U32 sz, U32 ct, PODVector<VertexElement>& elements)
+    {
+        count = ct;
+        size = sz * ct;
+        bindingDescription.binding = binding;
+        bindingDescription.stride = sz;
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        SetVertexElements(elements);
+        CreateBuffer();
+    }
+
+    void VertexBufferVK::SetVertexElements(PODVector<VertexElement>& elements)
+    {
+        attributeDescriptions.Resize(elements.Size());
+
+        U32 offset = 0;
+        for (U32 i = 0; i < elements.Size(); ++i)
+        {
+            attributeDescriptions[i] = {};
+            attributeDescriptions[i].binding = binding;
+            attributeDescriptions[i].location = i;
+            attributeDescriptions[i].offset = offset;
+            attributeDescriptions[i].format = GetInputFormatVK(elements[i].type);
+            offset += elements[i].GetSize();
+        }
+
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        createInfo.vertexBindingDescriptionCount = 1;
+        createInfo.vertexAttributeDescriptionCount = attributeDescriptions.Size();
+        createInfo.pVertexBindingDescriptions = &bindingDescription;
+        createInfo.pVertexAttributeDescriptions = attributeDescriptions.Buffer();
     }
 }

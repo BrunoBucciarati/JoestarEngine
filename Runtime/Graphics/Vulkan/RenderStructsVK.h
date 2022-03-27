@@ -84,36 +84,10 @@ namespace Joestar {
         {
             usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
         }
-        void Create(U32 sz, U32 ct, PODVector<VertexElement>& elements)
-        {
-            count = ct;
-            size = sz * ct;
-            bindingDescription.binding = binding;
-            bindingDescription.stride = sz;
-            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-            SetVertexElements(elements);
-            CreateBuffer();
-        }
+        void Create(U32 sz, U32 ct, PODVector<VertexElement>& elements);
 
-        void SetVertexElements(PODVector<VertexElement>& elements)
-        {
-            attributeDescriptions.Resize(elements.Size());
+        void SetVertexElements(PODVector<VertexElement>& elements);
 
-            U32 offset = 0;
-            for (U32 i = 0; i < elements.Size(); ++i)
-            {
-                attributeDescriptions[i].binding = binding;
-                attributeDescriptions[i].offset = offset;
-                attributeDescriptions[i].format = GetInputFormatVK(elements[i].type);
-                offset += elements[i].GetSize();
-            }
-
-            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-            createInfo.vertexBindingDescriptionCount = 1;
-            createInfo.vertexAttributeDescriptionCount = attributeDescriptions.Size();
-            createInfo.pVertexBindingDescriptions = &bindingDescription;
-            createInfo.pVertexAttributeDescriptions = attributeDescriptions.Buffer();
-        }
         VkPipelineVertexInputStateCreateInfo& GetInputStateCreateInfo()
         {
             return createInfo;
@@ -122,7 +96,7 @@ namespace Joestar {
     private:
         Vector<VkVertexInputAttributeDescription> attributeDescriptions;
         VkVertexInputBindingDescription bindingDescription;
-        VkPipelineVertexInputStateCreateInfo createInfo;
+        VkPipelineVertexInputStateCreateInfo createInfo{};
         U32 count;
         U32 binding{ 0 };
     };
@@ -495,7 +469,6 @@ namespace Joestar {
         void Create(VkDevice& device, GPUShaderCreateInfo& shader);
         VkShaderModule shaderModule;
         VkShaderStageFlagBits flagBits;
-        ShaderReflection* reflection;
         String entryName = "main";
     };
 
@@ -520,7 +493,7 @@ namespace Joestar {
 
         void CreateShaderStages(PODVector<ShaderVK*>& shaders);
 
-        void CreateVertexInputInfo(VertexBufferVK& vb);
+        void CreateVertexInputInfo(PODVector<InputBinding>& bindings, PODVector<InputAttribute>& attributes);
 
         void SetRenderPass(RenderPassVK* rp)
         {
@@ -530,10 +503,11 @@ namespace Joestar {
         void Create(VkDevice&);
     private:
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-        VkPipelineViewportStateCreateInfo viewportState{};
         VkPipelineRasterizationStateCreateInfo rasterizer{};
         VkPipelineMultisampleStateCreateInfo multisampling{};
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        //Color Blend State
+        Vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments{};
         VkPipelineColorBlendStateCreateInfo colorBlending{};
         Vector<VkPipelineShaderStageCreateInfo> shaderStageInfos;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
@@ -543,6 +517,10 @@ namespace Joestar {
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         VkRenderPass renderPass{};
         Vector<VkDescriptorSetLayout> setLayouts;
+        //Viewport
+        VkViewport viewport{};
+        VkRect2D scissor{};
+        VkPipelineViewportStateCreateInfo viewportState{};
         VkPipelineLayout pipelineLayout{};
         VkPipeline pipeline{};
     };

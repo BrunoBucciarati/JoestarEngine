@@ -12,7 +12,7 @@ namespace Joestar {
 #if DEBUG_CMD
 #define CASECMD(CMD_TYPE) \
     case CMD_TYPE: \
-    LOGWARN("CMD:%s\n", #CMD_TYPE);
+    LOGWARN("Frame:%d CMD:%s\n",frameIndex, #CMD_TYPE);
 #else
 #define CASECMD(CMD_TYPE) \
     case CMD_TYPE:
@@ -244,6 +244,24 @@ namespace Joestar {
 
                 GPUGraphicsPipelineStateCreateInfo createInfo;
                 cmdList->ReadBuffer(createInfo);
+
+                createInfo.inputBindings.Clear();
+                createInfo.inputBindings.Reserve(createInfo.numInputBindings);
+                for (U32 i = 0; i < createInfo.numInputBindings; ++i)
+                {
+                    InputBinding binding;
+                    cmdList->ReadBuffer(binding);
+                    createInfo.inputBindings.Push(binding);
+                }
+
+                createInfo.inputAttributes.Clear();
+                createInfo.inputAttributes.Reserve(createInfo.numInputAttributes);
+                for (U32 i = 0; i < createInfo.numInputAttributes; ++i)
+                {
+                    InputAttribute attr;
+                    cmdList->ReadBuffer(attr);
+                    createInfo.inputAttributes.Push(attr);
+                }
                 mProtocol->CreateGraphicsPipelineState(handle, createInfo);
                 break;
             }
@@ -255,6 +273,13 @@ namespace Joestar {
                 GPUComputePipelineStateCreateInfo createInfo;
                 cmdList->ReadBuffer(createInfo);
                 mProtocol->CreateComputePipelineState(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateDescriptorPool)
+            {
+                U32 num;
+                cmdList->ReadBuffer(num);
+                mProtocol->CreateDescriptorPool(num);
                 break;
             }
             CASECMD(GFXCommand::CreateShader)
@@ -288,7 +313,6 @@ namespace Joestar {
                     U32 numBindings;
                     cmdList->ReadBuffer<U32>(numBindings);
                     createInfo.numSetBindings.Push(numBindings);
-                    createInfo.setLayouts[i].SetNumBindings(numBindings);
                 }
                 for (U32 i = 0; i < createInfo.numDescriptorSets; ++i)
                 {

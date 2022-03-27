@@ -46,6 +46,7 @@ namespace Joestar
 		{
 			return mGPUBuffer->handle;
 		}
+		U32 GetElementOffset(VertexSemantic);
 
 	private:
 		U32 mVertexSize{ 0 };

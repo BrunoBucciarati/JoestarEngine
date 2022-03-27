@@ -145,7 +145,7 @@ namespace Joestar {
     class ColorBlendState : public GPUResource
     {
         GET_SET_STATEMENT_PREFIX_INITVALUE(bool, LogicOpEnable, b, false);
-        GET_SET_STATEMENT(Vector<ColorAttachmentState>, Attachments);
+        GET_SET_STATEMENT_REF(Vector<ColorAttachmentState>, Attachments);
     public:
         void AddAttachment(const ColorAttachmentState& state)
         {
@@ -216,7 +216,28 @@ namespace Joestar {
         GET_SET_STATEMENT(MultiSampleState*, MultiSampleState);
         GET_SET_STATEMENT(DepthStencilState*, DepthStencilState);
         GET_SET_STATEMENT(Viewport*, Viewport);
-        GET_SET_STATEMENT(VertexBuffer*, VertexBuffer);
+        GET_SET_STATEMENT_REF(PODVector<InputBinding>, InputBindings);
+        GET_SET_STATEMENT_REF(PODVector<InputAttribute>, InputAttributes);
+
+        U32 GetNumInputBindings()
+        {
+            return mInputBindings.Size();
+        }
+
+        U32 GetNumInputAttributes()
+        {
+            return mInputAttributes.Size();
+        }
+
+        InputBinding& GetInputBinding(U32 idx)
+        {
+            return mInputBindings[idx];
+        }
+
+        InputAttribute& GetInputAttribute(U32 idx)
+        {
+            return mInputAttributes[idx];
+        }
 
         void InsertAllHash() override
         {

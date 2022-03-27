@@ -55,16 +55,23 @@ namespace Joestar
 		{
 			return mLayoutBindings.Size();
 		}
-		bool AddBinding(const DescriptorSetLayoutBinding& binding);
+		bool AddBinding(DescriptorSetLayoutBinding binding);
 	private:
 		Vector<DescriptorSetLayoutBinding> mLayoutBindings;
 	};
 
-	struct VertexInputAttribute
+	struct InputAttribute {
+		U32    location;
+		U32    binding;
+		VertexType    format;
+		U32    offset;
+		String name;
+	};
+
+	struct InputBinding
 	{
-		U32 location{ 0 };
 		U32 binding{ 0 };
-		VertexType type;
-		U32 offset{ 0 };
+		U32 stride{ 0 };
+		bool instance{ false };
 	};
 }

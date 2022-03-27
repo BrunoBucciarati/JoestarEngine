@@ -39,10 +39,16 @@ namespace Joestar {
 		{
 			return mDescriptorLayouts[set].GetLayoutBindings(idx);
 		}
+		PODVector<InputAttribute>& GetInputAttributes()
+		{
+			return mInputAttributes;
+		}
 	private:
 		void CheckValid();
+		void CollectInputAndDescriptors();
 		Vector<SharedPtr<Shader>> mShaders;
 		Vector<DescriptorSetLayout> mDescriptorLayouts;
+		PODVector<InputAttribute> mInputAttributes;
 		U32 mStageMask{ 0 };
 		bool bValid{ false };
 		GPUResourceHandle mGPUHandle;

@@ -17,9 +17,13 @@ namespace Joestar
 		{
 			return mDescriptorSetLayouts.Size();
 		}
+		Vector<InputAttribute>& GetInputAttributes()
+		{
+			return mInputAttributes;
+		}
 
 	private:
 		Vector<DescriptorSetLayout> mDescriptorSetLayouts;
-		Vector<VertexInputAttribute> mInputAttributes;
+		Vector<InputAttribute> mInputAttributes;
 	};
 }

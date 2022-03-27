@@ -35,36 +35,54 @@ namespace Joestar
 	void ShaderProgram::CheckValid()
 	{
 		bValid = IsValidProgram(mStageMask);
-		//´Ó²»Í¬µÄstageÊÕ¼¯ºÏ²¢ÃèÊö·û
-		if (bValid)
-		{
-			mDescriptorLayouts.Clear();
-			if (mStageMask == (U32)ShaderStage::VS_PS)
-			{
-				U32 maxSets = 0;
-				for (auto& shader : mShaders)
-				{
-					auto* reflection = shader->GetReflection();
-					maxSets = Max(maxSets, reflection->GetNumDescriptorSetLayouts());
-				}
-				mDescriptorLayouts.Resize(maxSets);
+	}
 
-				for (auto& shader :mShaders)
+	void ShaderProgram::CollectInputAndDescriptors()
+	{
+		//ä»ŽVS/CSæ”¶é›†è¾“å…¥
+		mInputAttributes.Clear();
+		if (mStageMask & (U32)ShaderStage::VS)
+		{
+			Shader* shader = GetShader(ShaderStage::VS);
+			auto* reflection = shader->GetReflection();
+			auto& refInputAttrs = reflection->GetInputAttributes();
+			mInputAttributes.Reserve(refInputAttrs.Size());
+			for (auto& ip : refInputAttrs)
+			{
+				mInputAttributes.Push(ip);
+			}
+		}
+		else if (mStageMask & (U32)ShaderStage::CS)
+		{
+			//todo
+		}
+		//ä»Žä¸åŒçš„stageæ”¶é›†åˆå¹¶æè¿°ç¬¦
+		mDescriptorLayouts.Clear();
+		if (mStageMask == (U32)ShaderStage::VS_PS)
+		{
+			U32 maxSets = 0;
+			for (auto& shader : mShaders)
+			{
+				auto* reflection = shader->GetReflection();
+				maxSets = Max(maxSets, reflection->GetNumDescriptorSetLayouts());
+			}
+			mDescriptorLayouts.Resize(maxSets);
+
+			for (auto& shader : mShaders)
+			{
+				auto* reflection = shader->GetReflection();
+				Vector<DescriptorSetLayout>& setLayouts = reflection->GetDescriptorSetLayouts();
+				for (U32 setIdx = 0; setIdx < setLayouts.Size(); ++setIdx)
 				{
-					auto* reflection = shader->GetReflection();
-					Vector<DescriptorSetLayout>& setLayouts = reflection->GetDescriptorSetLayouts();
-					for (U32 setIdx = 0; setIdx < setLayouts.Size(); ++setIdx)
+					DescriptorSetLayout& curSetLayout = mDescriptorLayouts[setIdx];
+					for (U32 bindingIdx = 0; bindingIdx < setLayouts[setIdx].GetNumBindings(); ++bindingIdx)
 					{
-						DescriptorSetLayout& curSetLayout = mDescriptorLayouts[setIdx];
-						for (U32 bindingIdx = 0; bindingIdx < setLayouts[setIdx].GetNumBindings(); ++bindingIdx)
+						DescriptorSetLayoutBinding& binding = setLayouts[setIdx].GetLayoutBindings(bindingIdx);
+						if (!curSetLayout.AddBinding(binding))
 						{
-							DescriptorSetLayoutBinding& binding = setLayouts[setIdx].GetLayoutBindings(bindingIdx);
-							if (!curSetLayout.AddBinding(binding))
-							{
-								bValid = false;
-								LOGERROR("PROGRAM DESCRIPTOR ERROR");
-								return;
-							}
+							bValid = false;
+							LOGERROR("PROGRAM DESCRIPTOR ERROR");
+							return;
 						}
 					}
 				}
@@ -81,7 +99,7 @@ namespace Joestar
 		SetShader(ShaderStage::VS, vs);
 		SetShader(ShaderStage::PS, ps);
 	}
-	//×îÖÕµÄ½Ó¿Ú
+	//æœ€ç»ˆçš„æŽ¥å£
 	void ShaderProgram::SetShader(ShaderStage s, Shader* shader)
 	{
 		U32 stage = (U32)s;
@@ -95,6 +113,7 @@ namespace Joestar
 		CheckValid();
 		if (bValid)
 		{
+			CollectInputAndDescriptors();
 			GetSubsystem<Graphics>()->CreateShaderProgram(this);
 		}
 	}

@@ -463,10 +463,22 @@ namespace Joestar {
 		createInfo.rasterizationStateHandle = pso->GetRasterizationState()->GetHandle();
 		createInfo.multiSampleStateHandle = pso->GetMultiSampleState()->GetHandle();
 		//其实只要Elements定义应该就行了，这样复用率可以很高 --todo
-		createInfo.vertexBufferHandle = pso->GetVertexBuffer()->GetGPUHandle();
+		createInfo.numInputAttributes = pso->GetNumInputAttributes();
+		createInfo.numInputBindings = pso->GetNumInputBindings();
 		createInfo.viewport = *pso->GetViewport();
 
-		GetMainCmdList()->WriteBuffer<GPUPipelineStateCreateInfo>(createInfo);
+		GetMainCmdList()->WriteBuffer<GPUGraphicsPipelineStateCreateInfo>(createInfo);
+		for (U32 i = 0; i < createInfo.numInputBindings; ++i)
+		{
+			InputBinding& binding = pso->GetInputBinding(i);
+			GetMainCmdList()->WriteBuffer(binding);
+		}
+
+		for (U32 i = 0; i < createInfo.numInputAttributes; ++i)
+		{
+			InputAttribute& attr = pso->GetInputAttribute(i);
+			GetMainCmdList()->WriteBuffer(attr);
+		}
 	}
 
 	void Graphics::CreateColorBlendState(ColorBlendState* state)

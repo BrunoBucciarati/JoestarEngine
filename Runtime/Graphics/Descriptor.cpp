@@ -5,7 +5,7 @@ namespace Joestar {
 		return lhs.binding == rhs.binding;
 	}
 
-	bool DescriptorSetLayout::AddBinding(const DescriptorSetLayoutBinding& binding)
+	bool DescriptorSetLayout::AddBinding(DescriptorSetLayoutBinding binding)
 	{
 		auto it = mLayoutBindings.Find(binding);
 		if (it == mLayoutBindings.End())

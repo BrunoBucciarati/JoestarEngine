@@ -13,7 +13,7 @@ namespace Joestar {
 		void Init();
 		virtual void Render(CommandBuffer*) = 0;
 		void RenderToShadowMap();
-		SharedPtr<GraphicsPipelineState>& GetPipelineState(CommandBuffer* pass);
+		virtual SharedPtr<GraphicsPipelineState> GetPipelineState(CommandBuffer* cb);
 		void SetMaterial(Material* mat)
 		{
 			mMaterial = mat;
@@ -26,10 +26,10 @@ namespace Joestar {
 	protected:
 		WeakPtr<Graphics> mGraphics;
 		Vector<SharedPtr<GraphicsPipelineState>> mPSOs;
-		SharedPtr<ColorBlendState> mColorBlendState;
-		SharedPtr<DepthStencilState> mDepthStencilState;
-		SharedPtr<MultiSampleState> mMultiSampleState;
-		SharedPtr<RasterizationState> mRasterizationState;
+		//SharedPtr<ColorBlendState> mColorBlendState;
+		//SharedPtr<DepthStencilState> mDepthStencilState;
+		//SharedPtr<MultiSampleState> mMultiSampleState;
+		//SharedPtr<RasterizationState> mRasterizationState;
 		SharedPtr<Material> mMaterial;
 	};
 }

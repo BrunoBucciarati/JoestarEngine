@@ -815,6 +815,7 @@ namespace Joestar {
     void RenderAPIVK::CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo)
     {
         GET_STRUCT_BY_HANDLE_FROM_VECTOR(renderPass, RenderPass, handle, mRenderPasses);
+        CreateRenderPass(&renderPass, createInfo);
     }
 
     void RenderAPIVK::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
@@ -885,12 +886,16 @@ namespace Joestar {
 
         GPUShaderProgramCreateInfo& program = mShaderPrograms[createInfo.shaderProramHandle];
         PODVector<ShaderVK*> shaders;
+        for (U32 i = 0; i < program.numStages; ++i)
+        {
+            shaders.Push(&mShaders[program.shaderHandles[i]]);
+        }
         pso.CreateShaderStages(shaders);
 
-        VertexBufferVK& vb = mVertexBuffers[createInfo.vertexBufferHandle];
-        pso.CreateVertexInputInfo(vb);
+        pso.CreateVertexInputInfo(createInfo.inputBindings, createInfo.inputAttributes);
 
         pso.CreatePipelineLayout(mDevice, program.setLayouts);
+        pso.SetRenderPass(&mRenderPasses[createInfo.renderPassHandle]);
         pso.Create(mDevice);
     }
 

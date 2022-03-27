@@ -1,8 +1,12 @@
 #pragma once
 #include "../IO/MemoryWriter.h"
+#include "../IO/Log.h"
 #include <atomic>
 namespace Joestar
 {
+#define DEBUG_CMD(CMD_TYPE) \
+    LOGWARN("CPU CMD:%s\n", #CMD_TYPE);
+
 	enum class GFXCommand
 	{
 		CreateSwapChain = 0,
@@ -32,6 +36,10 @@ namespace Joestar
 	public:
 		void WriteCommand(GFXCommand t)
 		{
+			if (t == GFXCommand::CreateShaderProgram)
+			{
+				int err = 1;
+			}
 			WriteBuffer<GFXCommand>(t);
 		}
 

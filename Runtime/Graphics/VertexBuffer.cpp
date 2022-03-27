@@ -35,4 +35,17 @@ namespace Joestar
 			mVertexSize += VertexTypeSize[(U32)ele.type];
 		}
 	}
+
+	U32 VertexBuffer::GetElementOffset(VertexSemantic sem)
+	{
+		U32 offset = 0;
+		for (auto& element : mVertexElements)
+		{
+			if (element.semantic == sem)
+			{
+				return offset;
+			}
+			offset += VertexTypeSize[(U32)element.type];
+		}
+	}
 }

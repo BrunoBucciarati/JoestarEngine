@@ -27,24 +27,25 @@ namespace Joestar
             mInputAttributes[i].location = var->location;
             if (var->format == SPV_REFLECT_FORMAT_R32G32_SFLOAT)
             {
-                mInputAttributes[i].type = VertexType::VEC2;
+                mInputAttributes[i].format = VertexType::VEC2;
             }
             else if (var->format == SPV_REFLECT_FORMAT_R32_SFLOAT)
             {
-                mInputAttributes[i].type = VertexType::FLOAT;
+                mInputAttributes[i].format = VertexType::FLOAT;
             }
             else if (var->format == SPV_REFLECT_FORMAT_R32G32B32_SFLOAT)
             {
-                mInputAttributes[i].type = VertexType::VEC3;
+                mInputAttributes[i].format = VertexType::VEC3;
             }
             else if (var->format == SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT)
             {
-                mInputAttributes[i].type = VertexType::VEC4;
+                mInputAttributes[i].format = VertexType::VEC4;
             }
             else if (var->format == SPV_REFLECT_FORMAT_R32_UINT)
             {
-                mInputAttributes[i].type = VertexType::UINT32;
+                mInputAttributes[i].format = VertexType::UINT32;
             }
+            mInputAttributes[i].name = var->name;
         }
 
 		// Output variables, descriptor bindings, descriptor sets, and push constants
