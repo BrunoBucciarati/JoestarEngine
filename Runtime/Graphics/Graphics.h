@@ -95,6 +95,7 @@ namespace Joestar {
 		void CreateSwapChain();
 		void CreateSyncObjects();
 		void CreateShader(Shader* shader);
+		void CreateShaderProgram(ShaderProgram* program);
 		GFXCommandList* GetMainCmdList();
 
 		RasterizationState* GetDefaultRasterizationState()
@@ -146,7 +147,8 @@ namespace Joestar {
 		Vector<SharedPtr<ColorBlendState>> mColorBlendStates;
 		Vector<SharedPtr<GraphicsPipelineState>> mGraphicsPSOs;
 		Vector<SharedPtr<ComputePipelineState>> mComputePSOs;
-		Vector<SharedPtr<GPUShader>> mShaders;
+		Vector<SharedPtr<Shader>> mShaders;
+		Vector<SharedPtr<ShaderProgram>> mShaderPrograms;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

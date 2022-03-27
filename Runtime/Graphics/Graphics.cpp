@@ -204,8 +204,8 @@ namespace Joestar {
 
 	//update material
 	void Graphics::UpdateMaterial(Material* mat) {
-		UseShader(mat->GetShader());
-		Vector<Texture*>& textures = mat->GetTextures();
+		//UseShader(mat->GetShader());
+		//Vector<Texture*>& textures = mat->GetTextures();
 		//for (int i = 0; i < textures.Size(); i++) {
 		//	UpdateTexture(textures[i], mat->GetShader()->GetSamplerBinding(i));
 		//}
@@ -456,11 +456,14 @@ namespace Joestar {
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateGraphicsPipelineState);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(pso->handle);
 		GPUGraphicsPipelineStateCreateInfo createInfo{};
+		createInfo.shaderProramHandle = pso->GetShaderProgram()->GetHandle();
 		createInfo.renderPassHandle = pso->GetRenderPass()->GetHandle();
 		createInfo.colorBlendStateHandle = pso->GetColorBlendState()->GetHandle();
 		createInfo.depthStencilStateHandle = pso->GetDepthStencilState()->GetHandle();
 		createInfo.rasterizationStateHandle = pso->GetRasterizationState()->GetHandle();
 		createInfo.multiSampleStateHandle = pso->GetMultiSampleState()->GetHandle();
+		//其实只要Elements定义应该就行了，这样复用率可以很高 --todo
+		createInfo.vertexBufferHandle = pso->GetVertexBuffer()->GetGPUHandle();
 		createInfo.viewport = *pso->GetViewport();
 
 		GetMainCmdList()->WriteBuffer<GPUPipelineStateCreateInfo>(createInfo);
@@ -630,28 +633,6 @@ namespace Joestar {
 	{
 		mSwapChain = JOJO_NEW(SwapChain);
 
-		//GPUImage* img = JOJO_NEW(GPUImage(ImageType::TYPE_2D));
-		//Window* window = GetSubsystem<Window>();
-		//img->SetWidth(window->GetWidth());
-		//img->SetHeight(window->GetHeight());
-		//if (bFloatingPointRT)
-		//{
-		//	img->SetFormat(ImageFormat::RG11B10);
-		//}
-		//else
-		//{
-		//	img->SetFormat(ImageFormat::R8G8B8A8_SRGB);
-		//}
-		//img->SetUsage(U32(ImageUsageBits::COLOR_ATTACHMENT_BIT));
-		//CreateImage(img, MAX_CMDLISTS_IN_FLIGHT);
-
-		//GPUImageView* imgView = JOJO_NEW(GPUImageView(ImageViewType::TYPE_2D));
-		//imgView->image = img;
-		//imgView->SetAspectBits(U32(ImageAspectFlagBits::COLOR_BIT));
-		//CreateImageView(imgView, MAX_CMDLISTS_IN_FLIGHT);
-
-		//mSwapChain->imageView = imgView;
-
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateSwapChain);
 
 		GPUSwapChainCreateInfo createInfo{
@@ -674,11 +655,34 @@ namespace Joestar {
 
 	void Graphics::CreateShader(Shader* shader)
 	{
-		GPUShader* gpuShader = JOJO_NEW(GPUShader);
-		gpuShader->handle = mShaders.Size();
-		gpuShader->file = shader->GetFile();
-		mShaders.Push(gpuShader);
+		shader->SetHandle(mShaders.Size());
+		mShaders.Push(shader);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateShader);
-		GetMainCmdList()->WriteBuffer<GPUShader>(*gpuShader);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(shader->GetHandle());
+		GPUShaderCreateInfo createInfo
+		{
+			shader->GetStage(),
+			shader->GetFile()
+		};
+		GetMainCmdList()->WriteBuffer<GPUShaderCreateInfo>(createInfo);
+	}
+
+	void Graphics::CreateShaderProgram(ShaderProgram* program)
+	{
+		program->SetHandle(mShaderPrograms.Size());
+		mShaderPrograms.Push(program);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateShaderProgram);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(program->GetHandle());
+		U32 numStages = program->GetNumStages();
+		GPUShaderProgramCreateInfo createInfo
+		{
+			program->GetStageMask(),
+			numStages
+		};
+		GetMainCmdList()->WriteBuffer<GPUShaderProgramCreateInfo>(createInfo);
+		for (U32 i = 0; i < numStages; ++i)
+		{
+			GetMainCmdList()->WriteBuffer<GPUResourceHandle>(program->GetShader(i)->GetHandle());
+		}
 	}
 }

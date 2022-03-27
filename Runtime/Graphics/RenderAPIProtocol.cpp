@@ -42,4 +42,9 @@ namespace Joestar {
 		GET_STRUCT_BY_HANDLE_FROM_VECTOR(state, GPUMultiSampleStateCreateInfo, handle, mMultiSampleStates);
 		state = createInfo;
 	}
+	void RenderAPIProtocol::CreateShaderProgram(GPUResourceHandle handle, GPUShaderProgramCreateInfo& createInfo)
+	{
+		GET_STRUCT_BY_HANDLE_FROM_VECTOR(state, GPUShaderProgramCreateInfo, handle, mShaderPrograms);
+		state = createInfo;
+	}
 }

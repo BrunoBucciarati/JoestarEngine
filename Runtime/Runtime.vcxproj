@@ -171,6 +171,7 @@
     <ClCompile Include="Graphics\RenderAPIProtocol.cpp" />
     <ClCompile Include="Graphics\Shader\Shader.cpp" />
     <ClCompile Include="Graphics\Shader\ShaderParser.cpp" />
+    <ClCompile Include="Graphics\Shader\ShaderProgram.cpp" />
     <ClCompile Include="Graphics\Shader\ShaderReflection.cpp" />
     <ClCompile Include="Graphics\Texture.cpp" />
     <ClCompile Include="Graphics\Texture2D.cpp" />
@@ -254,7 +255,7 @@
     <ClInclude Include="Graphics\RenderTarget.h" />
     <ClInclude Include="Graphics\Shader\Shader.h" />
     <ClInclude Include="Graphics\Shader\ShaderParser.h" />
-    <ClInclude Include="Graphics\Shader\ShaderDefs.h" />
+    <ClInclude Include="Graphics\Shader\ShaderProgram.h" />
     <ClInclude Include="Graphics\Shader\ShaderReflection.h" />
     <ClInclude Include="Graphics\SwapChain.h" />
     <ClInclude Include="Graphics\Texture.h" />

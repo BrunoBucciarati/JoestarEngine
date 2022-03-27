@@ -1,7 +1,5 @@
 #pragma once
-#ifndef MATERIAL_H
-#define MATERIAL_H
-#include "Shader/Shader.h"
+#include "Shader/ShaderProgram.h"
 #include "../Container/Str.h"
 #include "../Container/Vector.h"
 #include "../Core/Object.h"
@@ -11,27 +9,26 @@ namespace Joestar {
 	class Material : public Object {
 		REGISTER_OBJECT(Material, Object);
 	public:
-		explicit Material(EngineContext* ctx) : Super(ctx)
-		{}
+		explicit Material(EngineContext* ctx);
 		void SetDefault();
 		void SetPBR();
 		void SetPlaneMat();
 
 		void SetShader(const String& name, ShaderStage stage = ShaderStage::VS_PS);
 
-		void SetShader(Shader* shader)
+		void SetShader(Shader* shader, ShaderStage stage = ShaderStage::VS_PS)
 		{
-			mShader = shader;
+			mShaderProgram->SetShader(stage, shader);
 		}
 
 		void SetTexture(Texture* tex, U8 slot = 0);
-		Shader* GetShader()
+		Shader* GetShader(ShaderStage stage)
 		{ 
-			return mShader;
+			return mShaderProgram->GetShader(stage);
 		}
-		String GetShaderName()
+		String GetShaderName(ShaderStage stage)
 		{
-			return mShader->GetName();
+			return GetShader(stage)->GetName();
 		}
 		Vector<Texture*>& GetTextures()
 		{
@@ -41,9 +38,12 @@ namespace Joestar {
 		{
 			return mTextures[slot];
 		}
+		ShaderProgram* GetShaderProgram()
+		{
+			return mShaderProgram;
+		}
 	private:
 		Vector<Texture*> mTextures;
-		SharedPtr<Shader> mShader;
+		SharedPtr<ShaderProgram> mShaderProgram;
 	};
 }
-#endif

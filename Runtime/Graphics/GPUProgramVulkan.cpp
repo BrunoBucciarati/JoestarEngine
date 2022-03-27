@@ -853,7 +853,7 @@ namespace Joestar {
 				Shader* shader;
 				cmdBuffer->ReadBuffer<Shader*>(shader);
 				//if (shaderVKs.find(shader->id) == shaderVKs.end()) {
-				//	shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
+				//	shaderVKs[shader->id] = JOJO_NEW(ShaderVK1(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
 				//}
 
 				//drawcall->shader = shaderVKs[shader->id];
@@ -1023,7 +1023,7 @@ namespace Joestar {
 				Shader* shader;
 				cmdBuffer->ReadBuffer<Shader*>(shader);
 				//if (shaderVKs.find(shader->id) == shaderVKs.end()) {
-				//	shaderVKs[shader->id] = JOJO_NEW(ShaderVK(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
+				//	shaderVKs[shader->id] = JOJO_NEW(ShaderVK1(shader, vkCtxPtr), MEMORY_GFX_STRUCT);
 				//}
 
 				//computePipeline->shader = shaderVKs[shader->id];

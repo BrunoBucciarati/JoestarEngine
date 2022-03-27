@@ -13,11 +13,24 @@ namespace Joestar {
 		void SetShader(String n, ShaderStage stage = ShaderStage::VS_PS);
 		void SetLanguage(ShaderLanguage lang);
 		bool LoadFile(const String& path);
+		GPUResourceHandle GetHandle()
+		{
+			return mGPUHandle;
+		}
+		void SetHandle(GPUResourceHandle handle)
+		{
+			mGPUHandle = handle;
+		}
+		ShaderStage GetStage()
+		{
+			return mStage;
+		}
 	private:
 		String GetDirectoryByLang(ShaderLanguage lang);
 		ShaderStage mStage;
 		ShaderLanguage mLang{ShaderLanguage::GLSL};
 		ShaderLanguage mTargetLang;
 		UniquePtr<ShaderReflection> mReflection;
+		GPUResourceHandle mGPUHandle;
 	};
 }

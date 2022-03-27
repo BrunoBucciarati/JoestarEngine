@@ -24,6 +24,7 @@ namespace Joestar
 		CreateSyncObjects,
 		CreateDescriptorPool,
 		CreateShader,
+		CreateShaderProgram,
 		CommandCount
 	};
 	class GFXCommandList : public MemoryReadWriter

@@ -201,6 +201,9 @@
     <ClCompile Include="Graphics\GraphicDefines.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Shader\ShaderProgram.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -261,9 +264,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="IO\File.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\Shader\ShaderDefs.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\GPUProgramVulkan.h">
@@ -486,6 +486,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Descriptor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Shader\ShaderProgram.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

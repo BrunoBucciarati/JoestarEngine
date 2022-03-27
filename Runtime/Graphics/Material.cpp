@@ -1,14 +1,15 @@
 #include "Material.h"
 
 namespace Joestar {
+	Material::Material(EngineContext* ctx) : Super(ctx)
+	{}
 	Material::~Material()
 	{
 	}
 
 	void Material::SetShader(const String& name, ShaderStage stage)
 	{
-		mShader = NEW_OBJECT(Shader);
-		mShader->SetShader(name, stage);
+		mShaderProgram->SetShader(stage, name);
 	}
 
 	void Material::SetTexture(Texture* tex, U8 slot)

@@ -97,4 +97,17 @@ namespace Joestar {
 		if (vt == VertexType::UINT32)
 			return VK_FORMAT_R32_UINT;
 	}
+
+	VkShaderStageFlagBits GetShaderStageFlagBits(ShaderStage stage)
+	{
+		if (ShaderStage::VS == stage)
+			return VK_SHADER_STAGE_VERTEX_BIT;
+		if (ShaderStage::PS == stage)
+			return VK_SHADER_STAGE_FRAGMENT_BIT;
+		if (ShaderStage::CS == stage)
+			return VK_SHADER_STAGE_COMPUTE_BIT;
+		if (ShaderStage::GS == stage)
+			return VK_SHADER_STAGE_GEOMETRY_BIT;
+	}
+
 }

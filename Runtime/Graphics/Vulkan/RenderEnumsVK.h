@@ -15,4 +15,6 @@ namespace Joestar
 	U32 GetImageAspectBitsVK(U32 bits);
 
 	VkFormat GetInputFormatVK(VertexType vt);
+
+	VkShaderStageFlagBits GetShaderStageFlagBits(ShaderStage stage);
 }

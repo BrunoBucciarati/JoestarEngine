@@ -110,6 +110,7 @@ namespace Joestar
 
 	struct GPUPipelineStateCreateInfo
 	{
+		GPUResourceHandle shaderProramHandle;
 	};
 
 	struct GPUGraphicsPipelineStateCreateInfo : GPUPipelineStateCreateInfo
@@ -119,6 +120,7 @@ namespace Joestar
 		GPUResourceHandle multiSampleStateHandle;
 		GPUResourceHandle rasterizationStateHandle;
 		GPUResourceHandle depthStencilStateHandle;
+		GPUResourceHandle vertexBufferHandle;
 		Viewport viewport;
 	};
 	struct GPUComputePipelineStateCreateInfo : GPUPipelineStateCreateInfo
@@ -151,8 +153,17 @@ namespace Joestar
 		UniformType type;
 	};
 
+
 	struct GPUShaderCreateInfo
 	{
+		ShaderStage stage;
+		void* file;
+	};
 
+	struct GPUShaderProgramCreateInfo
+	{
+		U32 stageMask;
+		U32 numStages;
+		PODVector<GPUResourceHandle> shaderHandles;
 	};
 }

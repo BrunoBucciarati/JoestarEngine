@@ -3,27 +3,33 @@
 #include "GraphicDefines.h"
 #include "GPUTexture.h"
 #include "Viewport.h"
+#include "Shader/ShaderProgram.h"
 namespace Joestar {
     class PipelineLayout : public GPUResource
     {
     };
 
-    class PipelineShader : public GPUResource
-    {
-
-    };
-
 	class PipelineState : public GPUResource
 	{
+    public:
+        ShaderProgram* GetShaderProgram()
+        {
+            return mProgram;
+        }
+        void SetShaderProgram(ShaderProgram* p)
+        {
+            mProgram = p;
+        }
     protected:
-        SharedPtr<PipelineShader> mShader;
-        SharedPtr<PipelineLayout> mLayout;
-        U32 mIndex;
-        U64 mFlags;
+        ShaderProgram* mProgram;
+        PipelineLayout* mLayout;
+        U32 mIndex{ 0 };
+        U64 mFlags{ 0 };
         void InsertAllHash() override
         {
-            HashInsert(mIndex);
-            HashInsert(mFlags);
+            //HashInsert(mIndex);
+            //HashInsert(mFlags);
+            HashInsert(mProgram->GetHandle());
         }
 	};
 
@@ -209,6 +215,7 @@ namespace Joestar {
         GET_SET_STATEMENT(MultiSampleState*, MultiSampleState);
         GET_SET_STATEMENT(DepthStencilState*, DepthStencilState);
         GET_SET_STATEMENT(Viewport*, Viewport);
+        GET_SET_STATEMENT(VertexBuffer*, VertexBuffer);
 
         void InsertAllHash() override
         {

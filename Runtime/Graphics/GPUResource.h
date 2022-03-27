@@ -62,10 +62,4 @@ namespace Joestar
 	{
 		U32 hash;
 	};
-
-	class GPUShader : public GPUResource
-	{
-	public:
-		void* file;
-	};
 }

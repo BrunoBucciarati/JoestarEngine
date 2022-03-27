@@ -488,10 +488,21 @@ namespace Joestar {
 	};
 
 
+    class ShaderVK
+    {
+    public:
+        void Create(VkDevice& device, GPUShaderCreateInfo& shader);
+        VkShaderModule shaderModule;
+        VkShaderStageFlagBits flagBits;
+        String entryName = "main";
+    };
+
     class GraphicsPipelineStateVK
     {
     public:
         void CreateIAState();
+
+        void CreateShaderModule();
 
         void CreateViewportState(Viewport& vp);
 
@@ -505,52 +516,16 @@ namespace Joestar {
 
         void CreatePipelineLayout();
 
+        void CreateShaderStages(PODVector<ShaderVK*>& shaders);
+
+        void CreateVertexInputInfo(VertexBufferVK& vb);
+
         void SetRenderPass(RenderPassVK* rp)
         {
             renderPass = rp->renderPass;
         }
 
-        void Create()
-        {
-            VkDynamicState dynamicStates[] = {
-                VK_DYNAMIC_STATE_VIEWPORT,
-                VK_DYNAMIC_STATE_LINE_WIDTH
-            };
-
-            VkPipelineDynamicStateCreateInfo dynamicState{};
-            dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamicState.dynamicStateCount = 2;
-            dynamicState.pDynamicStates = dynamicStates;
-
-            //CreatePipelineLayout<DrawCallVK>(dc);
-
-            //Create Vertex Buffer
-            //VkPipelineVertexInputStateCreateInfo& vertexInputInfo = dc->GetVertexInputInfo();
-            //VkPipelineShaderStageCreateInfo* shaderCreateInfo = dc->shader->shaderStage.Buffer();
-            //VkGraphicsPipelineCreateInfo pipelineInfo{};
-            //pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            //pipelineInfo.stageCount = 2;
-            //pipelineInfo.pStages = shaderCreateInfo;
-            //pipelineInfo.pVertexInputState = &vertexInputInfo;
-            //pipelineInfo.pInputAssemblyState = &inputAssembly;
-            //pipelineInfo.pViewportState = &viewportState;
-            //pipelineInfo.pRasterizationState = &rasterizer;
-            //pipelineInfo.pMultisampleState = &multisampling;
-            //pipelineInfo.pDepthStencilState = &depthStencil;
-            //pipelineInfo.pColorBlendState = &colorBlending;
-            //pipelineInfo.pDynamicState = nullptr; // Optional
-
-            //pipelineInfo.layout = dc->pipelineLayout;
-            //pipelineInfo.renderPass = renderPass;
-            //pipelineInfo.subpass = 0;
-
-            //pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
-            ////pipelineInfo.basePipelineIndex = -1; // Optional
-            //if (vkCreateGraphicsPipelines(mDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &(dc->graphicsPipeline)) != VK_SUCCESS) {
-            //    LOGERROR("failed to create graphics pipeline!");
-            //}
-
-        }
+        void Create(VkDevice&);
     private:
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         VkPipelineViewportStateCreateInfo viewportState{};
@@ -558,7 +533,13 @@ namespace Joestar {
         VkPipelineMultisampleStateCreateInfo multisampling{};
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
         VkPipelineColorBlendStateCreateInfo colorBlending{};
+        Vector<VkPipelineShaderStageCreateInfo> shaderStageInfos;
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+        Vector<VkVertexInputBindingDescription> vertexInputBindings{};
+        Vector<VkVertexInputAttributeDescription> vertexInputAttributes{};
+        VkGraphicsPipelineCreateInfo pipelineInfo{};
         VkRenderPass renderPass{};
+        VkPipeline pipeline{};
     };
 
     class ComputePipelineStateVK

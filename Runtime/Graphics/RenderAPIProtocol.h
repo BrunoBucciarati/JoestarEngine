@@ -27,12 +27,14 @@ namespace Joestar
 		virtual void CreateDescriptorPool(U32 num = 1) = 0;
 		virtual void CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo) = 0;
 		virtual void CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo) = 0;
+		virtual void CreateShader(GPUResourceHandle handle, GPUShaderCreateInfo& createInfo) = 0;
 		///Uniform Functions
 		void CreateMemory(GPUResourceHandle handle, U32 size, U8* data);
 		void CreateColorBlendState(GPUResourceHandle handle, GPUColorBlendStateCreateInfo& createInfo);
 		void CreateDepthStencilState(GPUResourceHandle handle, GPUDepthStencilStateCreateInfo& createInfo);
 		void CreateRasterizationState(GPUResourceHandle handle, GPURasterizationStateCreateInfo& createInfo);
 		void CreateMultiSampleState(GPUResourceHandle handle, GPUMultiSampleStateCreateInfo& createInfo);
+		void CreateShaderProgram(GPUResourceHandle handle, GPUShaderProgramCreateInfo& createInfo);
 
 		void SetWindow(Window* w);
 	protected:
@@ -47,5 +49,6 @@ namespace Joestar
 		Vector<GPUDepthStencilStateCreateInfo> mDepthStencilStates;
 		Vector<GPURasterizationStateCreateInfo> mRasterizationStates;
 		Vector<GPUMultiSampleStateCreateInfo> mMultiSampleStates;
+		Vector<GPUShaderProgramCreateInfo> mShaderPrograms;
 	};
 }

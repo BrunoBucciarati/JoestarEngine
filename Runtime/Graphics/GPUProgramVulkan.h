@@ -157,9 +157,9 @@ namespace Joestar {
         }
     };
 
-    struct ShaderVK {
+    struct ShaderVK1 {
         Vector<UniformDef> ubs;
-        ShaderVK(Shader* s, VulkanContext* c) : shader(s), ctx(c) {
+        ShaderVK1(Shader* s, VulkanContext* c) : shader(s), ctx(c) {
             //for (auto& uniform : shader->info.uniforms) {
             //    if (uniform.dataType == ShaderDataTypePushConst) {
             //        pushConstDef = &uniform;
@@ -177,7 +177,7 @@ namespace Joestar {
             //    return a.binding < b.binding;
             //});
         }
-        ~ShaderVK() {
+        ~ShaderVK1() {
             Clean();
         }
         String& GetName() {
@@ -207,7 +207,7 @@ namespace Joestar {
         UniformDef* pushConstDef = nullptr;
         Vector <VkShaderModule> shaderModules;
         Vector<VkPipelineShaderStageCreateInfo> shaderStage;
-        bool operator ==(ShaderVK& s2) {
+        bool operator ==(ShaderVK1& s2) {
             return false;// GetName() == s2.GetName();
         }
         void Clean() {
@@ -748,7 +748,7 @@ namespace Joestar {
         Vector<VertexBufferVK11*> vbs{ 1 };
         Vector<U32> ubs;
         IndexBufferVK11* ib = nullptr;
-        ShaderVK* shader;
+        ShaderVK1* shader;
         //MeshTopology topology;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
@@ -850,7 +850,7 @@ namespace Joestar {
         VkDescriptorPool descriptorPool;
         VkPipelineLayout pipelineLayout;
         VkPipeline pipeline;
-        ShaderVK* shader;
+        ShaderVK1* shader;
         VkSampler textureSampler;
         U32 group[3];
         Vector<UniformBufferVK11*> computeBuffers;
@@ -1030,7 +1030,7 @@ namespace Joestar {
         bool hasCompute = false;
 
         std::map<U32, TextureVK*> textureVKs;
-        std::map<U32, ShaderVK*> shaderVKs;
+        std::map<U32, ShaderVK1*> shaderVKs;
         std::map<U32, UniformBufferVK11*> uniformVKs;
         std::map<U32, VertexBufferVK11*> vbs;
         std::map<U32, IndexBufferVK11*> ibs;

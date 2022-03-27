@@ -1,6 +1,14 @@
 #include "RenderStructsVK.h"
+#include "../../IO/File.h"
 
 namespace Joestar {
+    VkResult globalResult;
+#define VK_CHECK(fn) \
+    globalResult = fn; \
+    if (globalResult != VK_SUCCESS) \
+    { \
+        LOGERROR("[VK ERROR=%d] %s\n", globalResult, #fn); \
+    }
     U32 FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device) {
         VkPhysicalDeviceMemoryProperties memProperties;
         vkGetPhysicalDeviceMemoryProperties(device, &memProperties);
@@ -104,6 +112,20 @@ namespace Joestar {
         //}
     }
 
+    void GraphicsPipelineStateVK::CreateShaderStages(PODVector<ShaderVK*>& shaders)
+    {
+        shaderStageInfos.Resize(shaders.Size());
+        for (U32 i = 0; i < shaders.Size(); ++i)
+        {
+            shaderStageInfos[i] = {};
+            VkPipelineShaderStageCreateInfo& createInfo = shaderStageInfos[i];
+            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            createInfo.stage = shaders[i]->flagBits;
+            createInfo.module = shaders[i]->shaderModule;
+            createInfo.pName = shaders[i]->entryName.CString();
+        }
+    }
+
     void GraphicsPipelineStateVK::CreateColorBlendState(GPUColorBlendStateCreateInfo& createInfo)
     {
 
@@ -132,5 +154,63 @@ namespace Joestar {
         colorBlending.blendConstants[1] = 0.0f; // Optional
         colorBlending.blendConstants[2] = 0.0f; // Optional
         colorBlending.blendConstants[3] = 0.0f; // Optional
+    }
+
+    void GraphicsPipelineStateVK::CreateVertexInputInfo(VertexBufferVK& vb)
+    {
+        vertexInputInfo = vb.GetInputStateCreateInfo();
+    }
+
+    void GraphicsPipelineStateVK::Create(VkDevice& device)
+    {
+        VkDynamicState dynamicStates[] = {
+            VK_DYNAMIC_STATE_VIEWPORT,
+            VK_DYNAMIC_STATE_LINE_WIDTH
+        };
+
+        VkPipelineDynamicStateCreateInfo dynamicState{};
+        dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamicState.dynamicStateCount = 2;
+        dynamicState.pDynamicStates = dynamicStates;
+
+        //CreatePipelineLayout<DrawCallVK>(dc);
+
+        //Create Vertex Buffer
+        //VkPipelineVertexInputStateCreateInfo& vertexInputInfo = dc->GetVertexInputInfo();
+        //VkPipelineShaderStageCreateInfo* shaderCreateInfo = dc->shader->shaderStage.Buffer();
+        
+        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipelineInfo.stageCount = shaderStageInfos.Size();
+        pipelineInfo.pStages = shaderStageInfos.Buffer();
+        pipelineInfo.pVertexInputState = &vertexInputInfo;
+        pipelineInfo.pInputAssemblyState = &inputAssembly;
+        pipelineInfo.pViewportState = &viewportState;
+        pipelineInfo.pRasterizationState = &rasterizer;
+        pipelineInfo.pMultisampleState = &multisampling;
+        pipelineInfo.pDepthStencilState = &depthStencil;
+        pipelineInfo.pColorBlendState = &colorBlending;
+        pipelineInfo.pDynamicState = nullptr; // Optional
+
+        pipelineInfo.layout = dc->pipelineLayout;
+        pipelineInfo.renderPass = renderPass;
+        pipelineInfo.subpass = 0;
+
+        //pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+        ////pipelineInfo.basePipelineIndex = -1; // Optional
+        VK_CHECK(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline));
+    }
+
+    void ShaderVK::Create(VkDevice& device, GPUShaderCreateInfo& shader)
+    {
+        File* file = (File*)shader.file;
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        size_t codeSize = file->Size();
+        createInfo.codeSize = codeSize;
+        createInfo.pCode = reinterpret_cast<const U32*>(file->GetBuffer());
+
+        flagBits = GetShaderStageFlagBits(shader.stage);
+
+        VK_CHECK(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule))
     }
 }

@@ -881,6 +881,18 @@ namespace Joestar {
         pso.CreateDepthStencilState(mDepthStencilStates[createInfo.depthStencilStateHandle]);
         pso.CreateColorBlendState(mColorBlendStates[createInfo.colorBlendStateHandle]);
         pso.CreatePipelineLayout();
+
+        GPUShaderProgramCreateInfo& program = mShaderPrograms[createInfo.shaderProramHandle];
+        PODVector<ShaderVK*> shaders;
+        shaders.Reserve(program.numStages);
+        for (U32 i = 0; i < program.numStages; ++i)
+        {
+            ShaderVK& shader = mShaders[program.shaderHandles[i]];
+            shaders.Push(&shader);
+        }
+        pso.CreateShaderStages(shaders);
+        VertexBufferVK& vb = mVertexBuffers[createInfo.vertexBufferHandle];
+        pso.CreateVertexInputInfo(vb);
         pso.Create();
     }
 
@@ -888,5 +900,12 @@ namespace Joestar {
     {
         GET_STRUCT_BY_HANDLE(pso, ComputePipelineState, handle);
         pso.Create(createInfo);
+    }
+
+
+    void RenderAPIVK::CreateShader(GPUResourceHandle handle, GPUShaderCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(shader, Shader, handle);
+        shader.Create(mDevice, createInfo);
     }
 }

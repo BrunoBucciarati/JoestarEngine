@@ -33,6 +33,7 @@ namespace Joestar {
 		SharedPtr<GraphicsPipelineState>& pso = mPSOs.EmplaceBack();
 		pso = JOJO_NEW(GraphicsPipelineState, MEMORY_GFX_STRUCT);
 		pso->SetRenderPass(pass);
+		pso->SetShaderProgram(mMaterial->GetShaderProgram());
 		pso->SetViewport(cb->GetViewport());
 		//这些值先用default的，后面加了材质设置需要这里做些新的逻辑 --todo
 		pso->SetDepthStencilState(mDepthStencilState);

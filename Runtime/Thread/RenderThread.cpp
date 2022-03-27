@@ -257,6 +257,33 @@ namespace Joestar {
                 mProtocol->CreateComputePipelineState(handle, createInfo);
                 break;
             }
+            CASECMD(GFXCommand::CreateShader)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUShaderCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateShader(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateShaderProgram)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                GPUShaderProgramCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                createInfo.shaderHandles.Reserve(createInfo.numStages);
+                for (U32 i = 0; i < createInfo.numStages; ++i)
+                {
+                    GPUResourceHandle shaderHandle;
+                    cmdList->ReadBuffer<GPUResourceHandle>(shaderHandle);
+                    createInfo.shaderHandles.Push(shaderHandle);
+                }
+                mProtocol->CreateShaderProgram(handle, createInfo);
+                break;
+            }
             //    CreateRasterizationState,
             //    CreateMultiSampleState,
             //    CreateGraphicsPipelineState,
