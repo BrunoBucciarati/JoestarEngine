@@ -71,8 +71,9 @@ namespace Joestar {
 			return;
 		//todo 这里要反射拿到binding
 		DescriptorSet set{};
-		DescriptorSetLayoutBinding binding = mShaderProgram->GetUniformBinding(UniformFrequency::OBJECT, (U32)uniform);
-		set.binding = binding.binding;
+		U32 binding;
+		DescriptorSetLayoutBinding::Member binding = mShaderProgram->GetUniformMemberAndBinding(UniformFrequency::OBJECT, (U32)uniform, binding);
+		set.binding = binding;
 		set.set = (U32)UniformFrequency::OBJECT;
 		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
 		mDescriptorSets.Push(set);

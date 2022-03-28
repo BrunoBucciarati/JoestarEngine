@@ -26,8 +26,12 @@ namespace Joestar
 		DescriptorType type;
 		U32 count{ 0 };
 		U32 stage{ 0 };
-		PODVector<U32> memberIDs;
-		PODVector<U32> memberOffsets;
+		struct Member
+		{
+			U32 ID;
+			U32 offset;
+		};
+		PODVector<Member> members;
 		bool operator==(const DescriptorSetLayoutBinding& rhs)
 		{
 			return binding == rhs.binding;
