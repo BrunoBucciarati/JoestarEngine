@@ -169,11 +169,16 @@ namespace Joestar {
 		return mThreadCommandLists[0].cmdList[frameIdx % MAX_CMDLISTS_IN_FLIGHT];
 	}
 
-	void Graphics::MainLoop() {
+	void Graphics::WaitForRender()
+	{
 		while (GetMainCmdList()->readFlag)
 		{
 			Sleep(10);
 		}
+	}
+
+	void Graphics::DoRender() {
+		WaitForRender();
 		GetMainCmdList()->Flush();
 		++frameIdx;
 		return;

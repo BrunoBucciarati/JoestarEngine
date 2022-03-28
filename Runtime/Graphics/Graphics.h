@@ -42,7 +42,8 @@ namespace Joestar {
 		explicit Graphics(EngineContext* context);
 		void Init();
 		virtual void DrawTriangle() {}
-		void MainLoop();
+		void DoRender();
+		void WaitForRender();
 		//void DrawM esh(Mesh* mesh, Material* mat);
 		void Clear();
 		void UpdateBuiltinMatrix(BUILTIN_VALUE typ, Matrix4x4f& mat);

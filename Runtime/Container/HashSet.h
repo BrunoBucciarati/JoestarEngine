@@ -115,7 +115,7 @@ namespace Joestar {
 			return FindByHash(hash);
 		}
 
-		U32 Size() const
+		U32 Size()
 		{
 			U32 sz = 0;
 			for (int i = 0; i < buckets.Size(); ++i)

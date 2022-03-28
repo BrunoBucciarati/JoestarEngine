@@ -165,23 +165,7 @@ namespace Joestar {
             allocInfo.commandBufferCount = 1;
             return allocInfo;
         }
-		void Create(VkDevice& inDevice, VkCommandBufferAllocateInfo& allocInfo, U32 num = 1)
-		{
-			if (bCreated)
-				return;
-            device = inDevice;
-            pool = allocInfo.commandPool;
-			commandBuffers.Resize(num);
-			for (U32 i = 0; i < num; ++i)
-			{
-				if (vkAllocateCommandBuffers(inDevice, &allocInfo, &commandBuffers[i]) != VK_SUCCESS)
-				{
-					LOGERROR("failed to allocate command buffer!\n");
-					return;
-				}
-			}
-			bCreated = true;
-		}
+        void Create(VkDevice& inDevice, VkCommandBufferAllocateInfo& allocInfo, U32 num = 1);
 
 		void Begin(U32 idx = 0)
 		{

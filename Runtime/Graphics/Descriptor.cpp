@@ -27,6 +27,6 @@ namespace Joestar {
 			hash += (U32)binding.stage;
 			hash = hash << 5;
 		}
-		return;
+		return hash;
 	}
 }

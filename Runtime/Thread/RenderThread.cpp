@@ -318,7 +318,8 @@ namespace Joestar {
                 {
                     for (U32 j = 0; j < createInfo.numSetBindings[i]; ++j)
                     {
-                        DescriptorSetLayoutBinding binding;
+                        DescriptorSetLayoutBinding binding{};
+                        binding.name = "";
                         cmdList->ReadBuffer<DescriptorSetLayoutBinding>(binding);
                         createInfo.setLayouts[i].AddBinding(binding);
                     }
@@ -352,7 +353,7 @@ namespace Joestar {
                 {
                     cmdList->ReadBuffer(bindings[i]);
                 }
-                mProtocol->SetUniformBuffer(handle, data, size);
+                mProtocol->CreateDescriptorSetLayout(handle, bindings);
                 break;
             }
             default:

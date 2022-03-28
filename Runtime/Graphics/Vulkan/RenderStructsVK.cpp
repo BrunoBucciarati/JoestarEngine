@@ -311,4 +311,17 @@ namespace Joestar {
         VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &setLayout));
     }
 
+    void CommandBufferVK::Create(VkDevice& inDevice, VkCommandBufferAllocateInfo& allocInfo, U32 num)
+    {
+        if (bCreated)
+            return;
+        device = inDevice;
+        pool = allocInfo.commandPool;
+        commandBuffers.Resize(num);
+        for (U32 i = 0; i < num; ++i)
+        {
+            VK_CHECK(vkAllocateCommandBuffers(inDevice, &allocInfo, &commandBuffers[i]));
+        }
+        bCreated = true;
+    }
 }

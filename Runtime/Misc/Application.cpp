@@ -52,11 +52,14 @@ namespace Joestar {
 	void Application::Update() {
 		float dt = GetSubSystem<TimeManager>()->GetElapseTime();
 		GetSubSystem<TimeManager>()->BeginFrame();
+		//Logic Update
 		mMainView->Update(dt);
 
-		GetSubSystem<Graphics>()->MainLoop();
-
+		//Render Update
+		GetSubSystem<Graphics>()->WaitForRender();
 		mMainView->Render();
+		GetSubSystem<Graphics>()->DoRender();
+
 		GetSubSystem<TimeManager>()->EndFrame();
 		if (dt < TARGET_FPS)
 		{
