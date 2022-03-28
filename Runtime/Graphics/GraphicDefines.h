@@ -176,8 +176,7 @@ namespace Joestar {
 	};
 
 	enum class UniformFrequency {
-		FRAME = 0,
-		PASS,
+		PASS = 0,
 		OBJECT
 	};
 
@@ -287,6 +286,8 @@ namespace Joestar {
 	const U32 MAX_DESCRIPTOR_SETS = 4;
 
 	VertexSemantic GetMatchingSemantic(const char* name);
+
+	U32 GetUniformID(const char* name);
 
 	
 }

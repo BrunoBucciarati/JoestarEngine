@@ -1,4 +1,5 @@
 #include "GraphicDefines.h"
+#include "../IO/Log.h"
 namespace Joestar
 {
 	const char* GetShaderSuffix(ShaderLanguage lang, ShaderStage stage)
@@ -36,6 +37,17 @@ namespace Joestar
 			return VertexSemantic::TEXCOORD3;
 		if (strcmp(name, "aTexCoord4") == 0)
 			return VertexSemantic::TEXCOORD4;
+	}
+
+	U32 GetUniformID(const char* name)
+	{
+		if (strcmp(name, "proj") == 0)
+			return (U32)PerPassUniforms::PROJECTION_MATRIX;
+		if (strcmp(name, "view") == 0)
+			return (U32)PerPassUniforms::VIEW_MATRIX;
+		if (strcmp(name, "model") == 0)
+			return (U32)PerObjectUniforms::MODEL_MATRIX;
+		LOGERROR("Unknown Uniform: %s\n", name);
 	}
 
 	const UniformDataType PerObjectUniformTypes[] = {

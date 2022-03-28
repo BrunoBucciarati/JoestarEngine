@@ -20,13 +20,14 @@ namespace Joestar
 		INPUT_ATTACHMENT = 10,
 	};
 
-	struct DescriptorSetLayoutBinding
+	struct DescriptorSetLayoutBinding : Hashable
 	{
 		U32 binding{ 0 };
 		DescriptorType type;
 		U32 count{ 0 };
 		U32 stage{ 0 };
-		String name;
+		PODVector<U32> memberIDs;
+		PODVector<U32> memberOffsets;
 		bool operator==(const DescriptorSetLayoutBinding& rhs)
 		{
 			return binding == rhs.binding;
@@ -39,6 +40,7 @@ namespace Joestar
 			return true;
 		}
 		friend bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs);
+		U32 Hash();
 	};
 	bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs);
 
@@ -69,6 +71,8 @@ namespace Joestar
 	public:
 		UniformBuffer* ub;
 		U32 binding;
+		U32 offset;
+		U32 set;
 	};
 
 	struct InputAttribute {

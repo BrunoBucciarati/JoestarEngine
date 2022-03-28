@@ -47,6 +47,11 @@ namespace Joestar {
 		{
 			return mInputAttributes;
 		}
+		DescriptorSetLayoutBinding GetUniformBinding(UniformFrequency set, U32 ID)
+		{
+			return GetUniformBinding(U32(set), ID);
+		}
+		DescriptorSetLayoutBinding GetUniformBinding(U32 set, U32 ID);
 	private:
 		void CheckValid();
 		void CollectInputAndDescriptors();

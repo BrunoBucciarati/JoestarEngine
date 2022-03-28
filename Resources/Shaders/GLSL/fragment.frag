@@ -2,8 +2,8 @@
 layout(location = 0) out vec4 FragColor;
 
 layout(location = 0) in vec3 Normal;
-layout(location = 1)in vec4 WorldPos;
-layout(location = 2)in vec2 TexCoords;
+layout(location = 1) in vec4 WorldPos;
+layout(location = 2) in vec2 TexCoords;
 
 void main()
 {
