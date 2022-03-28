@@ -66,10 +66,13 @@ namespace Joestar {
 				break;
 			}
 		}
+
+		if (bFound)
+			return;
 		//todo 这里要反射拿到binding
 		DescriptorSet set{};
 		set.binding = 0;
-		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { PerObjectUniformTypes[(U32)uniform], UniformFrequency::OBJECT });
+		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
 		mDescriptorSets.Push(set);
 	}
 }

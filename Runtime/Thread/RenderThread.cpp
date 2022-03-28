@@ -300,29 +300,18 @@ namespace Joestar {
                 GPUShaderProgramCreateInfo createInfo;
                 cmdList->ReadBuffer(createInfo);
                 createInfo.shaderHandles.Reserve(createInfo.numStages);
-                createInfo.numSetBindings.Reserve(createInfo.numDescriptorSets);
-                createInfo.setLayouts.Resize(createInfo.numDescriptorSets);
+                createInfo.setLayoutHandles.Resize(createInfo.numSetLayouts);
                 for (U32 i = 0; i < createInfo.numStages; ++i)
                 {
                     GPUResourceHandle shaderHandle;
                     cmdList->ReadBuffer<GPUResourceHandle>(shaderHandle);
                     createInfo.shaderHandles.Push(shaderHandle);
                 }
-                for (U32 i = 0; i < createInfo.numDescriptorSets; ++i)
+                for (U32 i = 0; i < createInfo.numSetLayouts; ++i)
                 {
-                    U32 numBindings;
-                    cmdList->ReadBuffer<U32>(numBindings);
-                    createInfo.numSetBindings.Push(numBindings);
-                }
-                for (U32 i = 0; i < createInfo.numDescriptorSets; ++i)
-                {
-                    for (U32 j = 0; j < createInfo.numSetBindings[i]; ++j)
-                    {
-                        DescriptorSetLayoutBinding binding{};
-                        binding.name = "";
-                        cmdList->ReadBuffer<DescriptorSetLayoutBinding>(binding);
-                        createInfo.setLayouts[i].AddBinding(binding);
-                    }
+                    GPUResourceHandle layoutHandle;
+                    cmdList->ReadBuffer<GPUResourceHandle>(layoutHandle);
+                    createInfo.setLayoutHandles.Push(layoutHandle);
                 }
 
                 mProtocol->CreateShaderProgram(handle, createInfo);

@@ -912,7 +912,16 @@ namespace Joestar {
 
         pso.CreateVertexInputInfo(createInfo.inputBindings, createInfo.inputAttributes);
 
-        pso.CreatePipelineLayout(mDevice, program.setLayouts);
+        PODVector<VkDescriptorSetLayout> setLayouts;
+        setLayouts.Reserve(program.setLayoutHandles.Size());
+        for (U32 i = 0; i < program.setLayoutHandles.Size(); ++i)
+        {
+            if (GPUResource::IsValid(program.setLayoutHandles[i]))
+            {
+                setLayouts.Push(mDescriptorSetLayouts[program.setLayoutHandles[i]].setLayout);
+            }
+        }
+        pso.CreatePipelineLayout(mDevice, setLayouts);
         pso.SetRenderPass(&mRenderPasses[createInfo.renderPassHandle]);
         pso.Create(mDevice);
     }

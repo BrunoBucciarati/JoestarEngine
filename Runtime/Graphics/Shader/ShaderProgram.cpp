@@ -115,9 +115,9 @@ namespace Joestar
 		{
 			CollectInputAndDescriptors();
 			auto* graphics = GetSubsystem<Graphics>();
-			graphics->CreateShaderProgram(this);
 			for (U32 i = 0; i < mDescriptorLayouts.Size(); ++i)
-				graphics->CreateShaderProgram(this);
+				graphics->SetDescriptorSetLayout(&mDescriptorLayouts[i]);
+			graphics->CreateShaderProgram(this);
 		}
 	}
 	void ShaderProgram::SetShader(ShaderStage s, const String& name)

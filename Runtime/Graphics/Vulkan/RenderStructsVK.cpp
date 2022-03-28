@@ -88,31 +88,8 @@ namespace Joestar {
         depthStencil.stencilTestEnable = createInfo.stencilTest;
     }
 
-    void GraphicsPipelineStateVK::CreatePipelineLayout(VkDevice& device, Vector<DescriptorSetLayout>& inSetLayouts)
+    void GraphicsPipelineStateVK::CreatePipelineLayout(VkDevice& device, PODVector<VkDescriptorSetLayout>& setLayouts)
     {
-        setLayouts.Resize(inSetLayouts.Size());
-
-        for (U32 setIdx = 0; setIdx < inSetLayouts.Size(); ++setIdx)
-        {
-            Vector<VkDescriptorSetLayoutBinding> bindings;
-            for (U32 i = 0; i < inSetLayouts[setIdx].GetNumBindings(); ++i)
-            {
-                DescriptorSetLayoutBinding& binding = inSetLayouts[setIdx].GetLayoutBinding(i);
-                VkDescriptorSetLayoutBinding layoutBinding{};
-                layoutBinding.binding = binding.binding;
-                layoutBinding.descriptorType = VkDescriptorType(binding.type);
-                layoutBinding.stageFlags = GetShaderStageFlagsVK(binding.stage);
-                layoutBinding.descriptorCount = binding.count;
-                layoutBinding.pImmutableSamplers = nullptr;
-                bindings.Push(layoutBinding);
-            }
-            VkDescriptorSetLayoutCreateInfo layoutInfo{};
-            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            layoutInfo.bindingCount = static_cast<U32>(bindings.Size());
-            layoutInfo.pBindings = bindings.Buffer();
-
-            VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &setLayouts[setIdx]));
-        }
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = setLayouts.Size(); // Optional

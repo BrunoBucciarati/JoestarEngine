@@ -12,6 +12,8 @@ namespace Joestar {
 
     U32 FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device);
 
+    class DescriptorSetLayoutVK;
+
     class BufferVK
     {
     public:
@@ -128,7 +130,7 @@ namespace Joestar {
     public:
         UniformBufferVK()
         {
-            usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+            usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         }
         void Create(U32 sz)
         {
@@ -483,7 +485,7 @@ namespace Joestar {
 
         void CreateColorBlendState(GPUColorBlendStateCreateInfo& createInfo);
 
-        void CreatePipelineLayout(VkDevice& device, Vector<DescriptorSetLayout>&);
+        void CreatePipelineLayout(VkDevice& device, PODVector<VkDescriptorSetLayout>& inSetLayouts);
 
         void CreateShaderStages(PODVector<ShaderVK*>& shaders);
 

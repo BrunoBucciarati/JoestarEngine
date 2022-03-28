@@ -170,9 +170,8 @@ namespace Joestar
 	{
 		U32 stageMask;
 		U32 numStages;
-		U32 numDescriptorSets;
+		U32 numSetLayouts;
 		PODVector<GPUResourceHandle> shaderHandles;
-		PODVector<U32> numSetBindings;
-		Vector<DescriptorSetLayout> setLayouts;
+		PODVector<GPUResourceHandle> setLayoutHandles;
 	};
 }

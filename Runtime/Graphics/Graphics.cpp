@@ -708,12 +708,12 @@ namespace Joestar {
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateShaderProgram);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(program->GetHandle());
 		U32 numStages = program->GetNumStages();
-		U32 numSets = program->GetNumDescriptorSets();
+		U32 numSetLayouts = program->GetNumDescriptorSetLayouts();
 		GPUShaderProgramCreateInfo createInfo
 		{
 			program->GetStageMask(),
 			numStages,
-			numSets
+			numSetLayouts
 		};
 		GetMainCmdList()->WriteBuffer<GPUShaderProgramCreateInfo>(createInfo);
 		for (U32 i = 0; i < numStages; ++i)
@@ -721,23 +721,9 @@ namespace Joestar {
 			GetMainCmdList()->WriteBuffer<GPUResourceHandle>(program->GetShader(i)->GetHandle());
 		}
 
-		U32 bindingCount = 0;
-		PODVector<DescriptorSetLayoutBinding*> allBindings;
-		for (U32 i = 0; i < numSets; ++i)
+		for (U32 i = 0; i < numSetLayouts; ++i)
 		{
-			U32 numBindings = program->GetNumDescriptorBindings(i);
-			GetMainCmdList()->WriteBuffer<U32>(numBindings);
-			bindingCount += numBindings;
-
-			for (U32 j = 0; j < numBindings; ++j)
-			{
-				allBindings.Push(&program->GetDescriptorBinding(i, j));
-			}
-		}
-
-		for (U32 i = 0; i < allBindings.Size(); ++i)
-		{
-			GetMainCmdList()->WriteBuffer<DescriptorSetLayoutBinding>(*allBindings[i]);
+			GetMainCmdList()->WriteBuffer<GPUResourceHandle>(program->GetDescriptorSetLayout(i).GetHandle());
 		}
 	}
 }

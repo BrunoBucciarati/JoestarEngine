@@ -25,6 +25,7 @@ namespace Joestar
 		{
 			return handle != INVALID_HANDLE;
 		}
+		static bool IsValid(GPUResourceHandle handle);
 		GPUResourceHandle GetHandle()
 		{
 			return handle;

@@ -27,7 +27,7 @@ namespace Joestar {
 		{
 			return mStageMask;
 		}
-		U32 GetNumDescriptorSets() const
+		U32 GetNumDescriptorSetLayouts() const
 		{
 			return mDescriptorLayouts.Size();
 		}
@@ -38,6 +38,10 @@ namespace Joestar {
 		DescriptorSetLayoutBinding& GetDescriptorBinding(U32 set, U32 idx)
 		{
 			return mDescriptorLayouts[set].GetLayoutBinding(idx);
+		}
+		DescriptorSetLayout& GetDescriptorSetLayout(U32 set)
+		{
+			return mDescriptorLayouts[set];
 		}
 		PODVector<InputAttribute>& GetInputAttributes()
 		{

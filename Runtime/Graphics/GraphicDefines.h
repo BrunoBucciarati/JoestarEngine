@@ -197,9 +197,7 @@ namespace Joestar {
 		COUNT
 	};
 
-	const UniformDataType PerObjectUniformTypes[] = {
-		UniformDataType::Mat4,
-	};
+	UniformDataType GetPerObjectUniformDataType(PerObjectUniforms);
 
 	struct UniformType
 	{

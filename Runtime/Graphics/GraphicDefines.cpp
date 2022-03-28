@@ -37,4 +37,12 @@ namespace Joestar
 		if (strcmp(name, "aTexCoord4") == 0)
 			return VertexSemantic::TEXCOORD4;
 	}
+
+	const UniformDataType PerObjectUniformTypes[] = {
+		UniformDataType::Mat4,
+	};
+	UniformDataType GetPerObjectUniformDataType(PerObjectUniforms uniform)
+	{
+		return PerObjectUniformTypes[(U32)uniform - (U32)PerObjectUniforms::MODEL_MATRIX];
+	}
 }
