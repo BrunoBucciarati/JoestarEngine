@@ -12,7 +12,7 @@ namespace Joestar {
 		Vector3f& GetScale() { return scale; }
 		Vector3f GetLocalEulerAngles() { return QuaternionToEuler(rotation); }
 		Quaternionf& GetRotation() { return rotation; }
-		Matrix4x4f& GetAfflineTransform();
+		Matrix4x4f* GetAfflineTransform();
 		void SetPosition(Vector3f& v) {
 			translate = v;
 			dirty = true;

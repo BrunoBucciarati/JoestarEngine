@@ -29,6 +29,10 @@ namespace Joestar
 		{
 			return handle;
 		}
+		void SetHandle(GPUResourceHandle h)
+		{
+			handle = h;
+		}
 	protected:
 		template<typename T>
 		void HashInsert(T val)

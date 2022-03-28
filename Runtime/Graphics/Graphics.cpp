@@ -71,7 +71,7 @@ namespace Joestar {
 		CreateFrameBuffer();
 		CreateDescriptorPool();
 		//创建内建的Uniform
-		CreateBuiltinUniforms();
+		CreatePerPassUniforms();
 		//创建主RenderPass
 		CreateMainRenderPass();
 		//创建一些default的状态
@@ -107,13 +107,62 @@ namespace Joestar {
 		CreateRenderPass(rp);
 	}
 
-	void Graphics::CreateBuiltinUniforms()
+	//void Graphics::SetPerPassUniform(PerPassUniforms type, float* data)
+	//{
+	//	if ((U32)type >= (U32)PerPassUniforms::COUNT)
+	//	{
+	//		SetUniformBuffer(mPerPassUniformBuffers[(U32)type], data);
+	//	}
+	//}
+
+	//void Graphics::SetPerObjectUniform(PerPassUniforms type, float* data)
+	//{
+
+	//}
+
+	void Graphics::SetUniformBuffer(PerPassUniforms uniform, float* data)
 	{
-		for (U32 i = 0; i < (U32)BulitinUniforms::COUNT; ++i)
+		UniformBuffer* ub = mPerPassUniformBuffers[(U32)uniform];
+		SetUniformBuffer(ub, data);
+	}
+
+	void Graphics::SetUniformBuffer(PerObjectUniforms uniform, float* data)
+	{
+		UniformBuffer* ub = mPerPassUniformBuffers[(U32)uniform];
+		SetUniformBuffer(ub, data);
+	}
+
+	void Graphics::SetUniformBuffer(UniformBuffer* uniform, float* data)
+	{
+		GetMainCmdList()->WriteCommand(GFXCommand::SetUniformBuffer);
+		GetMainCmdList()->WriteBuffer(uniform->handle);
+		GetMainCmdList()->WriteBuffer(uniform->GetDataSize());
+		GetMainCmdList()->WriteBufferPtr((U8*)data, uniform->GetDataSize());
+	}
+
+	void Graphics::SetDescriptorSetLayout(DescriptorSetLayout* setLayout)
+	{
+		U32 hash = setLayout->Hash();
+		if (mDescriptorSetLayouts.Contains(hash))
 		{
-			CreateGPUUniformBuffer(i, BuiltinUniformTypes[i]);
+			setLayout->SetHandle(mDescriptorSetLayouts[hash]->GetHandle());
+		}
+		else
+		{
+			U32 handle = mDescriptorSetLayouts.Size();
+			setLayout->SetHandle(handle);
+			mDescriptorSetLayouts.Insert(hash, setLayout);
+			GetMainCmdList()->WriteCommand(GFXCommand::CreateDescriptorSetLayout);
+			GetMainCmdList()->WriteBuffer(handle);
+			GetMainCmdList()->WriteBuffer(setLayout->GetNumBindings());
+			for (U32 i = 0; i < setLayout->GetNumBindings(); ++i)
+			{
+				DescriptorSetLayoutBinding& binding = setLayout->GetLayoutBinding(i);
+				GetMainCmdList()->WriteBuffer(binding);
+			}
 		}
 	}
+
 
 	GFXCommandList* Graphics::GetMainCmdList()
 	{
@@ -128,24 +177,6 @@ namespace Joestar {
 		GetMainCmdList()->Flush();
 		++frameIdx;
 		return;
-		//Flush cmd buffer from last frame
-		//while (computeCmdBuffer->ready || cmdBuffer->ready) {
-		//	//busy wait, must be both in unready state
-		//}
-		//if (!computeCmdBuffer->Empty() || !cmdBuffer->Empty()) {
-		//	computeCmdBuffer->Flush();
-		//	cmdBuffer->Flush();
-		//}
-		////renderThread->DrawFrame(cmdBuffer);
-		////cmdBuffer->Clear();
-		//U32 idx = ++frameIdx % MAX_CMDLISTS_IN_FLIGHT;
-		//cmdBuffer = cmdBuffers[idx];
-		//computeCmdBuffer = computeCmdBuffers[idx];
-		//while (computeCmdBuffer->ready || cmdBuffer->ready) {
-		//	//busy wait, must be both in unready state
-		//}
-		//cmdBuffer->Clear();
-		//computeCmdBuffer->Clear();
 	}
 
 	void Graphics::Clear() {
@@ -222,34 +253,6 @@ namespace Joestar {
 		cmdBuffer->WriteBuffer<Texture*>(t);
 		cmdBuffer->WriteBuffer<U8>(binding);
 	}
-
-	void Graphics::UpdateProgram(ProgramCPU* p) {
-
-	}
-
-	//void Graphics::DrawMesh(Mesh* mesh, Material* mat) {
-	//	//UpdateMaterial(mat);
-	//	UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
-	//	if (mesh->GetIB()->GetSize() > 0) {
-	//		UpdateIndexBuffer(mesh->GetIB());
-	//		DrawIndexed(mesh);
-	//	} else {
-	//		DrawArray(mesh);
-	//	}
-	//}
-
-	//void Graphics::DrawMeshInstanced(Mesh* mesh, Material* mat, InstanceBuffer* ib) {
-	//	//UpdateMaterial(mat);
-	//	UpdateVertexBuffer(mesh->GetVB(mat->GetShader()->GetVertexAttributeFlag()));
-	//	UpdateInstanceBuffer(ib);
-	//	if (mesh->GetIB()->GetSize() > 0) {
-	//		UpdateIndexBuffer(mesh->GetIB());
-	//		DrawIndexed(mesh, ib->GetCount());
-	//	}
-	//	else {
-	//		DrawArray(mesh, ib->GetCount());
-	//	}
-	//}
 
 	void Graphics::BeginRenderPass(String name) {
 		cmdBuffer->WriteCommandType(RenderCMD_BeginRenderPass);
@@ -429,19 +432,33 @@ namespace Joestar {
 		return ib;
 	}
 
-	GPUUniformBuffer* Graphics::CreateGPUUniformBuffer(const String& name, const UniformType& type)
+	void Graphics::CreatePerPassUniforms()
 	{
-		return CreateGPUUniformBuffer(name.Hash(), type);
+		mPerPassUniformBuffers.Resize((U32)PerPassUniforms::COUNT);
+		for (U32 i = 0; i < (U32)PerPassUniforms::COUNT; ++i)
+		{
+			UniformBuffer* uniform = CreateUniformBuffer(i, { PerPassUniformTypes[i], UniformFrequency::PASS });
+			uniform->SetID(i);
+			mPerPassUniformBuffers[i] = uniform;
+		}
 	}
 
-	GPUUniformBuffer* Graphics::CreateGPUUniformBuffer(U32 hash, const UniformType& type)
+	UniformBuffer* Graphics::CreateUniformBuffer(const String& name, const UniformType& type)
 	{
-		CREATE_NEW_HANDLE(ub, GPUUniformBuffer);
+		return CreateUniformBuffer(name.Hash(), type);
+	}
+
+	UniformBuffer* Graphics::CreateUniformBuffer(U32 hash, const UniformType& type)
+	{
+		Vector<SharedPtr<UniformBuffer>>& buffers = type.frequency == UniformFrequency::PASS ? mPerPassUniformBuffers : mPerObjectUniformBuffers;
+		CREATE_NEW_HANDLE_VEC(ub, UniformBuffer, buffers);
+		ub->SetID(hash);
+
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateUniformBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 
 		GPUUniformBufferCreateInfo createInfo{
-			type
+			type, hash
 		};
 		GetMainCmdList()->WriteBuffer<GPUUniformBufferCreateInfo>(createInfo);
 
@@ -709,7 +726,7 @@ namespace Joestar {
 
 			for (U32 j = 0; j < numBindings; ++j)
 			{
-				allBindings.Push(&program->GetDescriptorBindings(i, j));
+				allBindings.Push(&program->GetDescriptorBinding(i, j));
 			}
 		}
 

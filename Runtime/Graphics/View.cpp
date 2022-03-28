@@ -1,6 +1,7 @@
 #include "View.h"
 #include "../Base/Camera.h"
 #include "../Scene/Scene.h"
+#include "GraphicDefines.h"
 
 namespace Joestar
 {
@@ -24,6 +25,8 @@ namespace Joestar
 
 	void View::Render()
 	{
+		mGraphics->SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (float*)mCamera->GetViewMatrix());
+		mGraphics->SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (float*)mCamera->GetProjectionMatrix());
 		CommandBuffer* cb = mGraphics->GetMainCommandBuffer();
 		cb->SetViewport(&mViewport);
 		cb->BeginRenderPass(mGraphics->GetMainRenderPass());

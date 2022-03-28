@@ -35,9 +35,9 @@ namespace Joestar {
 		{
 			return mDescriptorLayouts[set].GetNumBindings();
 		}
-		DescriptorSetLayoutBinding& GetDescriptorBindings(U32 set, U32 idx)
+		DescriptorSetLayoutBinding& GetDescriptorBinding(U32 set, U32 idx)
 		{
-			return mDescriptorLayouts[set].GetLayoutBindings(idx);
+			return mDescriptorLayouts[set].GetLayoutBinding(idx);
 		}
 		PODVector<InputAttribute>& GetInputAttributes()
 		{

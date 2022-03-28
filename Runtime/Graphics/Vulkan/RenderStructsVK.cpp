@@ -97,7 +97,7 @@ namespace Joestar {
             Vector<VkDescriptorSetLayoutBinding> bindings;
             for (U32 i = 0; i < inSetLayouts[setIdx].GetNumBindings(); ++i)
             {
-                DescriptorSetLayoutBinding& binding = inSetLayouts[setIdx].GetLayoutBindings(i);
+                DescriptorSetLayoutBinding& binding = inSetLayouts[setIdx].GetLayoutBinding(i);
                 VkDescriptorSetLayoutBinding layoutBinding{};
                 layoutBinding.binding = binding.binding;
                 layoutBinding.descriptorType = VkDescriptorType(binding.type);
@@ -286,4 +286,29 @@ namespace Joestar {
         createInfo.pVertexBindingDescriptions = &bindingDescription;
         createInfo.pVertexAttributeDescriptions = attributeDescriptions.Buffer();
     }
+
+
+    void DescriptorSetLayoutVK::Create(VkDevice& device, PODVector<DescriptorSetLayoutBinding>& bindings)
+    {
+        Vector<VkDescriptorSetLayoutBinding> layoutBindings;
+        bindings.Reserve(bindings.Size());
+        for (U32 i = 0; i < bindings.Size(); ++i) {
+            VkDescriptorSetLayoutBinding layoutBinding{};
+            layoutBinding.binding = bindings[i].binding;            
+            layoutBinding.descriptorType = GetDescriptorTypeVK(bindings[i].type);
+            layoutBinding.stageFlags = GetShaderStageFlagsVK(bindings[i].stage);
+            layoutBinding.descriptorCount = 1;
+            layoutBinding.pImmutableSamplers = nullptr;
+
+            layoutBindings.Push(layoutBinding);
+        }
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = layoutBindings.Size();
+        layoutInfo.pBindings = layoutBindings.Buffer();
+
+        VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &setLayout));
+    }
+
 }

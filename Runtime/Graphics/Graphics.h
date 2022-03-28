@@ -17,6 +17,7 @@
 #include "PipelineState.h"
 #include "GPUResource.h"
 #include "FrameBuffer.h"
+#include "UniformBuffer.h"
 namespace Joestar {
 	class VertexBuffer;
 	class IndexBuffer;
@@ -86,8 +87,8 @@ namespace Joestar {
 		void RemoveGPUVertexBuffer(GPUVertexBuffer* vb);
 		GPUIndexBuffer* CreateGPUIndexBuffer(IndexBuffer*);
 		void RemoveGPUIndexBuffer(GPUIndexBuffer* vb);
-		GPUUniformBuffer* CreateGPUUniformBuffer(U32 hash, const UniformType& type);
-		GPUUniformBuffer* CreateGPUUniformBuffer(const String& name,const UniformType& type);
+		UniformBuffer* CreateUniformBuffer(U32 hash, const UniformType& type);
+		UniformBuffer* CreateUniformBuffer(const String& name, const UniformType& type);
 		void CreateRenderPass(RenderPass*);
 		void CreateGraphicsPipelineState(GraphicsPipelineState*);
 		RenderPass* GetMainRenderPass();
@@ -119,8 +120,12 @@ namespace Joestar {
 		void CreateDepthStencilState(DepthStencilState*);
 		void CreateColorBlendState(ColorBlendState*);
 
+		void SetUniformBuffer(UniformBuffer*, float* data);
+		void SetUniformBuffer(PerPassUniforms, float* data);
+		void SetUniformBuffer(PerObjectUniforms, float* data);
+		void SetDescriptorSetLayout(DescriptorSetLayout* setLayout);
 	private:
-		void CreateBuiltinUniforms();
+		void CreatePerPassUniforms();
 		void CreateMainRenderPass();
 		void CreateDefaultStates();
 		RenderThread* renderThread;
@@ -139,7 +144,8 @@ namespace Joestar {
 		Vector<SharedPtr<GPUMemory>> mGPUMemories;
 		Vector<SharedPtr<GPUVertexBuffer>> mGPUVertexBuffers;
 		Vector<SharedPtr<GPUIndexBuffer>> mGPUIndexBuffers;
-		Vector<SharedPtr<GPUUniformBuffer>> mGPUUniformBuffers;
+		Vector<SharedPtr<UniformBuffer>> mPerPassUniformBuffers;
+		Vector<SharedPtr<UniformBuffer>> mPerObjectUniformBuffers;
 		Vector<SharedPtr<RenderPass>> mRenderPasses;
 		Vector<SharedPtr<RasterizationState>> mRasterizationStates;
 		Vector<SharedPtr<MultiSampleState>> mMultiSampleStates;
@@ -149,6 +155,7 @@ namespace Joestar {
 		Vector<SharedPtr<ComputePipelineState>> mComputePSOs;
 		Vector<SharedPtr<Shader>> mShaders;
 		Vector<SharedPtr<ShaderProgram>> mShaderPrograms;
+		HashMap<U32, SharedPtr<DescriptorSetLayout>> mDescriptorSetLayouts;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

@@ -32,6 +32,11 @@ namespace Joestar {
         U32 count{ 1 };
         U32 index{ 0 };
 
+        void SetFrame(U32 idx)
+        {
+            index = idx;
+        }
+
         void CreateBuffer()
         {
             buffers.Resize(count);
@@ -124,6 +129,11 @@ namespace Joestar {
         UniformBufferVK()
         {
             usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        }
+        void Create(U32 sz)
+        {
+            size = sz;
+            CreateBuffer();
         }
         
         Vector<VkDescriptorBufferInfo> bufferInfos{};
@@ -532,5 +542,12 @@ namespace Joestar {
         {
 
         }
+    };
+
+    class DescriptorSetLayoutVK
+    {
+    public:
+        void Create(VkDevice&, PODVector<DescriptorSetLayoutBinding>& bindings);
+        VkDescriptorSetLayout setLayout;
     };
 }

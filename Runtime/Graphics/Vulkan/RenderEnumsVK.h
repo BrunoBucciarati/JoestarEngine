@@ -18,4 +18,5 @@ namespace Joestar
 
 	VkShaderStageFlagBits GetShaderStageFlagBitsVK(ShaderStage stage);
 	VkShaderStageFlags GetShaderStageFlagsVK(U32 stage);
+	VkDescriptorType GetDescriptorTypeVK(DescriptorType type);
 }

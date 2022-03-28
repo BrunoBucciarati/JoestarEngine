@@ -156,6 +156,7 @@ namespace Joestar
 	struct GPUUniformBufferCreateInfo
 	{
 		UniformType type;
+		U32 hash;
 	};
 
 

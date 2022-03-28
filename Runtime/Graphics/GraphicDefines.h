@@ -181,23 +181,30 @@ namespace Joestar {
 		OBJECT
 	};
 
-	enum class BulitinUniforms {
-		MODEL_MATRIX = 0,
-		VIEW_MATRIX,
+	enum class PerPassUniforms {
+		VIEW_MATRIX = 0,
 		PROJECTION_MATRIX,
 		COUNT
+	};
+
+	const UniformDataType PerPassUniformTypes[] = {
+		UniformDataType::Mat4,
+		UniformDataType::Mat4
+	};
+
+	enum class PerObjectUniforms {
+		MODEL_MATRIX = (int)PerPassUniforms::COUNT,
+		COUNT
+	};
+
+	const UniformDataType PerObjectUniformTypes[] = {
+		UniformDataType::Mat4,
 	};
 
 	struct UniformType
 	{
 		UniformDataType dataType;
 		UniformFrequency frequency{ UniformFrequency::OBJECT };
-	};
-
-	const UniformType BuiltinUniformTypes[] = {
-		{ UniformDataType::Mat4, UniformFrequency::OBJECT },
-		{ UniformDataType::Mat4, UniformFrequency::PASS },
-		{ UniformDataType::Mat4, UniformFrequency::PASS }
 	};
 
 	enum class AttachmentLoadOp
@@ -282,5 +289,7 @@ namespace Joestar {
 	const U32 MAX_DESCRIPTOR_SETS = 4;
 
 	VertexSemantic GetMatchingSemantic(const char* name);
+
+	
 }
 #endif

@@ -37,6 +37,8 @@ namespace Joestar {
 		void CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo) override;
 		void CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo) override;
 		void CreateShader(GPUResourceHandle handle, GPUShaderCreateInfo& createInfo) override;
+		void SetUniformBuffer(GPUResourceHandle handle, U8* data, U32 size) override;
+		void CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<DescriptorSetLayoutBinding>& bindings) override;
 	private:
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CreateRenderPass(RenderPassVK* rp, GPURenderPassCreateInfo& createInfo);
@@ -83,6 +85,7 @@ namespace Joestar {
 		Vector<GraphicsPipelineStateVK> mGraphicsPipelineStates;
 		Vector<ComputePipelineStateVK> mComputePipelineStates;
 		Vector<ShaderVK> mShaders;
+		Vector<DescriptorSetLayoutVK> mDescriptorSetLayouts;
 		VkDescriptorPool mDescriptorPool;
 
 		SwapChainVK mSwapChain;

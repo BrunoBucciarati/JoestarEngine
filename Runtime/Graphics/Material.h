@@ -6,6 +6,7 @@
 #include "Texture2D.h"
 
 namespace Joestar {
+	class Graphics;
 	class Material : public Object {
 		REGISTER_OBJECT(Material, Object);
 	public:
@@ -42,8 +43,16 @@ namespace Joestar {
 		{
 			return mShaderProgram;
 		}
+
+		void SetUniformBuffer(PerObjectUniforms, float* data);
+		Vector<DescriptorSet>& GetDescriptorSets()
+		{
+			return mDescriptorSets;
+		}
 	private:
 		Vector<Texture*> mTextures;
 		SharedPtr<ShaderProgram> mShaderProgram;
+		Vector<DescriptorSet> mDescriptorSets;
+		WeakPtr<Graphics> mGraphics;
 	};
 }

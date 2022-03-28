@@ -1,8 +1,10 @@
 #include "Material.h"
+#include "Graphics.h"
 
 namespace Joestar {
 	Material::Material(EngineContext* ctx) : Super(ctx),
-		mShaderProgram(NEW_OBJECT(ShaderProgram))
+		mShaderProgram(NEW_OBJECT(ShaderProgram)),
+		mGraphics(GetSubsystem<Graphics>())
 	{}
 	Material::~Material()
 	{
@@ -52,4 +54,22 @@ namespace Joestar {
 		mTextures[0]->TextureFromImage(path);
 	}
 
+	void Material::SetUniformBuffer(PerObjectUniforms uniform, float* data)
+	{
+		bool bFound = false;
+		for (U32 i = 0; i < mDescriptorSets.Size(); ++i)
+		{
+			if (mDescriptorSets[i].ub->GetID() == (U32)uniform)
+			{
+				mGraphics->SetUniformBuffer(mDescriptorSets[i].ub, data);
+				bFound = true;
+				break;
+			}
+		}
+		//todo 这里要反射拿到binding
+		DescriptorSet set{};
+		set.binding = 0;
+		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { PerObjectUniformTypes[(U32)uniform], UniformFrequency::OBJECT });
+		mDescriptorSets.Push(set);
+	}
 }

@@ -71,6 +71,11 @@ namespace Joestar {
 		Iterator Insert(DataType& pair) {
 			return { set.Insert(pair) };
 		}
+
+		U32 Size()
+		{
+			return set.Size();
+		}
 	private:
 		HashSet<DataType> set;
 		SetIterator setTail;

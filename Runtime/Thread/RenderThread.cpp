@@ -47,7 +47,7 @@ namespace Joestar {
                 //wait for 0.01 sec
                 Sleep(10.F);
             }
-
+            mProtocol->SetFrame(idx);
             GFXCommand command;
             while (mCmdList[idx]->ReadCommand(command))
             {
@@ -325,6 +325,34 @@ namespace Joestar {
                 }
 
                 mProtocol->CreateShaderProgram(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::SetUniformBuffer)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                U32 size;
+                cmdList->ReadBuffer(size);
+                U8* data = JOJO_NEW_ARRAY(U8, size);
+                cmdList->ReadBufferPtr((U8*)data, size);
+                mProtocol->SetUniformBuffer(handle, data, size);
+                break;
+            }
+            CASECMD(GFXCommand::CreateDescriptorSetLayout)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+
+                U32 size;
+                cmdList->ReadBuffer(size);
+                PODVector<DescriptorSetLayoutBinding> bindings;
+                bindings.Resize(size);
+                for (U32 i = 0; i < size; ++i)
+                {
+                    cmdList->ReadBuffer(bindings[i]);
+                }
+                mProtocol->SetUniformBuffer(handle, data, size);
                 break;
             }
             default:

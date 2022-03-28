@@ -1,6 +1,8 @@
 #pragma once
 #include "../Container/Vector.h"
 #include "GraphicDefines.h"
+#include "GPUResource.h"
+#include "UniformBuffer.h"
 namespace Joestar
 {
 	enum class DescriptorType
@@ -40,10 +42,10 @@ namespace Joestar
 	};
 	bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs);
 
-	class DescriptorSetLayout
+	class DescriptorSetLayout : public GPUResource
 	{
 	public:
-		DescriptorSetLayoutBinding& GetLayoutBindings(U32 idx)
+		DescriptorSetLayoutBinding& GetLayoutBinding(U32 idx)
 		{
 			return mLayoutBindings[idx];
 		}
@@ -56,8 +58,17 @@ namespace Joestar
 			return mLayoutBindings.Size();
 		}
 		bool AddBinding(DescriptorSetLayoutBinding binding);
+
+		U32 Hash();
 	private:
 		Vector<DescriptorSetLayoutBinding> mLayoutBindings;
+	};
+
+	class DescriptorSet : GPUResource
+	{
+	public:
+		UniformBuffer* ub;
+		U32 binding;
 	};
 
 	struct InputAttribute {

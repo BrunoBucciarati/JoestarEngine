@@ -42,6 +42,15 @@ namespace Joestar
 		mEncoder.WriteCommand(CommandBufferCMD::BindIndexBuffer);
 		mEncoder.WriteBuffer(ib->GetGPUHandle());
 	}
+	void CommandBuffer::BindDescriptorSets(Vector<DescriptorSet>& sets)
+	{
+		mEncoder.WriteCommand(CommandBufferCMD::BindDescriptorSets);
+		mEncoder.WriteBuffer(sets.Size());
+		for (U32 i = 0; i < sets.Size(); ++i)
+		{
+			mEncoder.WriteBuffer(sets[i]);
+		}
+	}
 	void CommandBuffer::DrawIndexed(U32 count, U32 indexStart, U32 vertStart)
 	{
 		mEncoder.WriteCommand(CommandBufferCMD::DrawIndexed);

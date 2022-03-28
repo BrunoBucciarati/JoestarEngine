@@ -1,5 +1,7 @@
 #include "MeshRenderer.h"
 #include "../Graphics/Graphics.h"
+#include "../Base/GameObject.h"
+#include "Transform.h"
 
 namespace Joestar {
 	MeshRenderer::~MeshRenderer()
@@ -7,9 +9,12 @@ namespace Joestar {
 
 	void MeshRenderer::Render(CommandBuffer* cb)
 	{
+		//mGraphics->SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (float*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
+		mMaterial->SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (float*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
 		auto pso = GetPipelineState(cb);
 		cb->BindPipelineState(pso);
 		cb->BindVertexBuffer(mMesh->GetVertexBuffer());
+		cb->BindDescriptorSets(mMaterial->GetDescriptorSets());
 		cb->BindIndexBuffer(mMesh->GetIndexBuffer());
 		cb->DrawIndexed(mMesh->GetIndexCount());
 	}

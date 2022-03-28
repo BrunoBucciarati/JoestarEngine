@@ -65,7 +65,7 @@ namespace Joestar
             for (U32 binding = 0; binding < descriptorSet.binding_count; ++binding)
             {
                 SpvReflectDescriptorBinding& descriptorBinding = *descriptorSet.bindings[binding];
-                auto& layoutBinding = mDescriptorSetLayouts[i].GetLayoutBindings(binding);
+                auto& layoutBinding = mDescriptorSetLayouts[i].GetLayoutBinding(binding);
                 layoutBinding.binding = descriptorBinding.binding;
                 layoutBinding.type = DescriptorType(descriptorBinding.descriptor_type);
                 layoutBinding.count = descriptorBinding.count;

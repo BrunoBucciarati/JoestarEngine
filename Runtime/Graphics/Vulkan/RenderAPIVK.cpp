@@ -809,13 +809,31 @@ namespace Joestar {
         uniformBuffer.SetDevice(mDevice, mPhysicalDevice);
         uniformBuffer.count = mSwapChain.GetImageCount();
         uniformBuffer.size = UniformDataTypeSize[(U32)createInfo.type.dataType];
-        uniformBuffer.CreateBuffer();
+        uniformBuffer.Create(uniformBuffer.size);
+    }
+
+    void RenderAPIVK::SetUniformBuffer(GPUResourceHandle handle, U8* data, U32 size)
+    {
+        mUniformBuffers[handle].SetFrame(mFrameIndex);
+
+        StagingBufferVK stagingBuffer;
+        stagingBuffer.SetDevice(mDevice, mPhysicalDevice);
+        stagingBuffer.size = size;
+        stagingBuffer.Create(data);
+
+        CopyBuffer(stagingBuffer.GetBuffer(), mUniformBuffers[handle].GetBuffer(), size);
     }
 
     void RenderAPIVK::CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo)
     {
         GET_STRUCT_BY_HANDLE_FROM_VECTOR(renderPass, RenderPass, handle, mRenderPasses);
         CreateRenderPass(&renderPass, createInfo);
+    }
+
+    void RenderAPIVK::CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<DescriptorSetLayoutBinding>& bindings)
+    {
+        GET_STRUCT_BY_HANDLE_FROM_VECTOR(setLayout, DescriptorSetLayout, handle, mDescriptorSetLayouts);
+        setLayout.Create(mDevice, bindings);
     }
 
     void RenderAPIVK::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)

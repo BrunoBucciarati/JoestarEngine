@@ -28,6 +28,8 @@ namespace Joestar
 		virtual void CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo) = 0;
 		virtual void CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo) = 0;
 		virtual void CreateShader(GPUResourceHandle handle, GPUShaderCreateInfo& createInfo) = 0;
+		virtual void SetUniformBuffer(GPUResourceHandle handle, U8* data, U32 size) = 0;
+		virtual void CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<DescriptorSetLayoutBinding>& bindings) {};
 		///Uniform Functions
 		void CreateMemory(GPUResourceHandle handle, U32 size, U8* data);
 		void CreateColorBlendState(GPUResourceHandle handle, GPUColorBlendStateCreateInfo& createInfo);
@@ -37,10 +39,15 @@ namespace Joestar
 		void CreateShaderProgram(GPUResourceHandle handle, GPUShaderProgramCreateInfo& createInfo);
 
 		void SetWindow(Window* w);
+		void SetFrame(U32 frameIndex)
+		{
+			mFrameIndex = frameIndex;
+		}
 	protected:
 		U32 maxMsaaSamples;
 		U32 maxBindings{16};
 		U32 maxUniformBuffers{ 1024 };
+		U32 mFrameIndex{ 0 };
 		Window* window;
 		GPUResourceHandle gCommandBufferHandle{0};
 		GPUResourceHandle gPipelineStateHandle{0};

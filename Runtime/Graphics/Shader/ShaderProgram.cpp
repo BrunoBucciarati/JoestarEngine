@@ -77,7 +77,7 @@ namespace Joestar
 					DescriptorSetLayout& curSetLayout = mDescriptorLayouts[setIdx];
 					for (U32 bindingIdx = 0; bindingIdx < setLayouts[setIdx].GetNumBindings(); ++bindingIdx)
 					{
-						DescriptorSetLayoutBinding& binding = setLayouts[setIdx].GetLayoutBindings(bindingIdx);
+						DescriptorSetLayoutBinding& binding = setLayouts[setIdx].GetLayoutBinding(bindingIdx);
 						if (!curSetLayout.AddBinding(binding))
 						{
 							bValid = false;
@@ -114,7 +114,10 @@ namespace Joestar
 		if (bValid)
 		{
 			CollectInputAndDescriptors();
-			GetSubsystem<Graphics>()->CreateShaderProgram(this);
+			auto* graphics = GetSubsystem<Graphics>();
+			graphics->CreateShaderProgram(this);
+			for (U32 i = 0; i < mDescriptorLayouts.Size(); ++i)
+				graphics->CreateShaderProgram(this);
 		}
 	}
 	void ShaderProgram::SetShader(ShaderStage s, const String& name)

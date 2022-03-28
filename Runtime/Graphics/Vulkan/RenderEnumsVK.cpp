@@ -124,4 +124,9 @@ namespace Joestar {
 			return VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	}
 
+
+	VkDescriptorType GetDescriptorTypeVK(DescriptorType type)
+	{
+		return VkDescriptorType(type);
+	}
 }
