@@ -2,6 +2,7 @@
 #include "../Graphics.h"
 #include "../GraphicDefines.h"
 #include "ShaderReflection.h"
+#include "../PipelineState.h"
 
 namespace Joestar
 {
@@ -27,7 +28,8 @@ namespace Joestar
 
 	ShaderProgram::ShaderProgram(EngineContext* ctx) : Super(ctx)
 	{
-		mDescriptorLayouts.Reserve(MAX_DESCRIPTOR_SETS);
+		//Reserve(MAX_DESCRIPTOR_SETS);
+		mPipelineLayout = JOJO_NEW(PipelineLayout);
 	}
 	ShaderProgram::~ShaderProgram()
 	{}
@@ -35,6 +37,24 @@ namespace Joestar
 	void ShaderProgram::CheckValid()
 	{
 		bValid = IsValidProgram(mStageMask);
+	}
+
+	U32 ShaderProgram::GetNumDescriptorBindings(U32 set) const
+	{
+		return mPipelineLayout->GetSetLayout(set)->GetNumBindings();
+	}
+
+	DescriptorSetLayoutBinding* ShaderProgram::GetDescriptorBinding(U32 set, U32 idx)
+	{
+		return mPipelineLayout->GetSetLayout(set)->GetLayoutBinding(idx);
+	}
+	DescriptorSetLayout* ShaderProgram::GetDescriptorSetLayout(UniformFrequency freq)
+	{
+		return mPipelineLayout->GetSetLayout((U32)freq);
+	}
+	DescriptorSetLayout* ShaderProgram::GetDescriptorSetLayout(U32 set)
+	{
+		return mPipelineLayout->GetSetLayout(set);
 	}
 
 	void ShaderProgram::CollectInputAndDescriptors()
@@ -57,7 +77,6 @@ namespace Joestar
 			//todo
 		}
 		//从不同的stage收集合并描述符
-		mDescriptorLayouts.Clear();
 		if (mStageMask == (U32)ShaderStage::VS_PS)
 		{
 			U32 maxSets = 0;
@@ -66,7 +85,7 @@ namespace Joestar
 				auto* reflection = shader->GetReflection();
 				maxSets = Max(maxSets, reflection->GetNumDescriptorSetLayouts());
 			}
-			mDescriptorLayouts.Resize(maxSets);
+			mPipelineLayout->ResizeLayouts(maxSets);
 
 			for (auto& shader : mShaders)
 			{
@@ -74,11 +93,11 @@ namespace Joestar
 				Vector<DescriptorSetLayout>& setLayouts = reflection->GetDescriptorSetLayouts();
 				for (U32 setIdx = 0; setIdx < setLayouts.Size(); ++setIdx)
 				{
-					DescriptorSetLayout& curSetLayout = mDescriptorLayouts[setIdx];
+					DescriptorSetLayout* curSetLayout = mPipelineLayout->GetSetLayout(setIdx);
 					for (U32 bindingIdx = 0; bindingIdx < setLayouts[setIdx].GetNumBindings(); ++bindingIdx)
 					{
 						DescriptorSetLayoutBinding* binding = setLayouts[setIdx].GetLayoutBinding(bindingIdx);
-						if (!curSetLayout.AddBinding(binding))
+						if (!curSetLayout->AddBinding(binding))
 						{
 							bValid = false;
 							LOGERROR("PROGRAM DESCRIPTOR ERROR");
@@ -115,10 +134,16 @@ namespace Joestar
 		{
 			CollectInputAndDescriptors();
 			auto* graphics = GetSubsystem<Graphics>();
-			for (U32 i = 0; i < mDescriptorLayouts.Size(); ++i)
-				graphics->SetDescriptorSetLayout(&mDescriptorLayouts[i]);
+			for (U32 i = 0; i < mPipelineLayout->GetLayoutsSize(); ++i)
+				graphics->SetDescriptorSetLayout(mPipelineLayout->GetSetLayout(i));
 			graphics->CreateShaderProgram(this);
+			graphics->CreatePipelineLayout(mPipelineLayout);
 		}
+	}
+	U32 ShaderProgram::GetNumDescriptorSetLayouts()
+	{
+		if (mPipelineLayout)
+			return mPipelineLayout->GetLayoutsSize();
 	}
 	void ShaderProgram::SetShader(ShaderStage s, const String& name)
 	{
@@ -170,9 +195,9 @@ namespace Joestar
 
 	U32 ShaderProgram::GetUniformMemberAndBinding(U32 set, U32 ID, DescriptorSetLayoutBinding::Member& member)
 	{
-		if (mDescriptorLayouts.Size() > set)
+		if (mPipelineLayout->GetLayoutsSize() > set)
 		{
-			return mDescriptorLayouts[set].GetUniformMemberAndBinding(ID, member);
+			return mPipelineLayout->GetSetLayout(set)->GetUniformMemberAndBinding(ID, member);
 		}
 		return U32_MAX;
 	}

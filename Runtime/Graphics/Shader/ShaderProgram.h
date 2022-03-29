@@ -3,6 +3,7 @@
 #include "Shader.h"
 #include "../Descriptor.h"
 namespace Joestar {
+	class PipelineLayout;
 	class ShaderProgram : public Object
 	{
 		REGISTER_OBJECT_ROOT(ShaderProgram);
@@ -27,26 +28,13 @@ namespace Joestar {
 		{
 			return mStageMask;
 		}
-		U32 GetNumDescriptorSetLayouts() const
-		{
-			return mDescriptorLayouts.Size();
-		}
-		U32 GetNumDescriptorBindings(U32 set) const
-		{
-			return mDescriptorLayouts[set].GetNumBindings();
-		}
-		DescriptorSetLayoutBinding* GetDescriptorBinding(U32 set, U32 idx)
-		{
-			return mDescriptorLayouts[set].GetLayoutBinding(idx);
-		}
-		DescriptorSetLayout* GetDescriptorSetLayout(UniformFrequency freq)
-		{
-			return &mDescriptorLayouts[(U32)freq];
-		}
-		DescriptorSetLayout& GetDescriptorSetLayout(U32 set)
-		{
-			return mDescriptorLayouts[set];
-		}
+		U32 GetNumDescriptorSetLayouts();
+
+		U32 GetNumDescriptorBindings(U32 set) const;
+		
+		DescriptorSetLayoutBinding* GetDescriptorBinding(U32 set, U32 idx);
+		DescriptorSetLayout* GetDescriptorSetLayout(UniformFrequency freq);
+		DescriptorSetLayout* GetDescriptorSetLayout(U32 set);
 		PODVector<InputAttribute>& GetInputAttributes()
 		{
 			return mInputAttributes;
@@ -60,14 +48,18 @@ namespace Joestar {
 		{
 			return bValid;
 		}
+		PipelineLayout* GetPipelineLayout()
+		{
+			return mPipelineLayout;
+		}
 	private:
 		void CheckValid();
 		void CollectInputAndDescriptors();
 		Vector<SharedPtr<Shader>> mShaders;
-		Vector<DescriptorSetLayout> mDescriptorLayouts;
 		PODVector<InputAttribute> mInputAttributes;
 		U32 mStageMask{ 0 };
 		bool bValid{ false };
 		GPUResourceHandle mGPUHandle;
+		SharedPtr<PipelineLayout> mPipelineLayout;
 	};
 }

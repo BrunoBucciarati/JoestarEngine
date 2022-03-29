@@ -88,7 +88,7 @@ namespace Joestar {
         depthStencil.stencilTestEnable = createInfo.stencilTest;
     }
 
-    void GraphicsPipelineStateVK::CreatePipelineLayout(VkDevice& device, PODVector<VkDescriptorSetLayout>& setLayouts)
+    void PipelineLayoutVK::Create(VkDevice& device, PODVector<VkDescriptorSetLayout>& setLayouts)
     {
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -105,9 +105,15 @@ namespace Joestar {
             //pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
             //pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
             //VK_CHECK(vkCreatePipelineLayout(vkCtxPtr->device, &pipelineLayoutInfo, nullptr, &(call->pipelineLayout)))
-        } else {
-            VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
         }
+        else {
+            VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &layout));
+        }
+    }
+
+    void GraphicsPipelineStateVK::SetPipelineLayout(VkPipelineLayout layout)
+    {
+        pipelineLayout = layout;
     }
 
     void GraphicsPipelineStateVK::CreateShaderStages(PODVector<ShaderVK*>& shaders)

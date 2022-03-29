@@ -479,6 +479,13 @@ namespace Joestar {
         String entryName = "main";
     };
 
+    class PipelineLayoutVK
+    {
+    public:
+        void Create(VkDevice& device, PODVector<VkDescriptorSetLayout>& setLayouts);
+        VkPipelineLayout layout;
+    };
+
     class GraphicsPipelineStateVK
     {
     public:
@@ -496,7 +503,7 @@ namespace Joestar {
 
         void CreateColorBlendState(GPUColorBlendStateCreateInfo& createInfo);
 
-        void CreatePipelineLayout(VkDevice& device, PODVector<VkDescriptorSetLayout>& inSetLayouts);
+        void SetPipelineLayout(VkPipelineLayout layout);
 
         void CreateShaderStages(PODVector<ShaderVK*>& shaders);
 

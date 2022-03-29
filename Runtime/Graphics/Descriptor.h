@@ -92,7 +92,7 @@ namespace Joestar
 	{
 	public:
 		void AllocFromLayout(DescriptorSetLayout* layout);
-		U32 GetDescriptorSetBinding(U32 ID);
+		DescriptorSet& GetDescriptorSetByBinding(U32 binding);
 		void SetLayoutData(U32 ID, float* data);
 		SharedPtr<DescriptorSetLayout>& GetLayout()
 		{

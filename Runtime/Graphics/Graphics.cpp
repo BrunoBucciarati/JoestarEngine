@@ -163,27 +163,39 @@ namespace Joestar {
 		}
 	}
 
+	void Graphics::CreatePipelineLayout(PipelineLayout* layout)
+	{
+		U32 handle = mPipelineLayouts.Size();
+		layout->SetHandle(handle);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreatePipelineLayout);
+		GetMainCmdList()->WriteBuffer(handle);
+		GPUPipelineLayoutCreateInfo createInfo{
+			layout->GetLayoutsSize(),
+			layout->GetPushConstantSize(),
+		};
+		GetMainCmdList()->WriteBuffer(createInfo);
+		for (U32 i = 0; i < layout->GetLayoutsSize(); ++i)
+		{
+			GetMainCmdList()->WriteBuffer(layout->GetSetLayout(i)->GetHandle());
+		}
+	}
+
 	void Graphics::CreateDescriptorSets(DescriptorSets* sets)
 	{
 		U32 handle = mDescriptorSets.Size();
 		sets->SetHandle(handle);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateDescriptorSets);
+		GetMainCmdList()->WriteBuffer(handle);
 		GPUDescriptorSetsCreateInfo createInfo{
 			sets->GetLayout()->GetHandle(),
 		};
 		GetMainCmdList()->WriteBuffer(createInfo);
-		//for (U32 i = 0; i < sets->Size(); ++i)
-		//{
-		//	GPUDescriptorSetsCreateInfo createInfo{
-		//	};
-		//	GetMainCmdList()->WriteBuffer(createInfo);
-		//}
-
 	}
 
 	void Graphics::UpdateDescriptorSets(DescriptorSets* sets)
 	{
 		GetMainCmdList()->WriteCommand(GFXCommand::UpdateDescriptorSets);
+		GetMainCmdList()->WriteBuffer(sets->GetHandle());
 		GPUDescriptorSetsUpdateInfo updateInfo{
 			sets->Size()
 		};
@@ -523,6 +535,7 @@ namespace Joestar {
 		createInfo.depthStencilStateHandle = pso->GetDepthStencilState()->GetHandle();
 		createInfo.rasterizationStateHandle = pso->GetRasterizationState()->GetHandle();
 		createInfo.multiSampleStateHandle = pso->GetMultiSampleState()->GetHandle();
+		createInfo.pipelineLayoutHandle = pso->GetPipelineLayout()->GetHandle();
 		//其实只要Elements定义应该就行了，这样复用率可以很高 --todo
 		createInfo.numInputAttributes = pso->GetNumInputAttributes();
 		createInfo.numInputBindings = pso->GetNumInputBindings();
@@ -762,7 +775,7 @@ namespace Joestar {
 
 		for (U32 i = 0; i < numSetLayouts; ++i)
 		{
-			GetMainCmdList()->WriteBuffer<GPUResourceHandle>(program->GetDescriptorSetLayout(i).GetHandle());
+			GetMainCmdList()->WriteBuffer<GPUResourceHandle>(program->GetPipelineLayout()->GetSetLayout(i)->GetHandle());
 		}
 	}
 }

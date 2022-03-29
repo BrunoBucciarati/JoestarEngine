@@ -5,9 +5,37 @@
 #include "Viewport.h"
 #include "Shader/ShaderProgram.h"
 #include "VertexBuffer.h"
+#include "Descriptor.h"
 namespace Joestar {
     class PipelineLayout : public GPUResource
     {
+    public:
+        void ResizeLayouts(U32 sz)
+        {
+            mSetLayouts.Resize(sz);
+            for (U32 i = 0; i < sz; ++i)
+            {
+                mSetLayouts[i] = JOJO_NEW(DescriptorSetLayout, MEMORY_GFX_STRUCT);
+            }
+        }
+        SharedPtr<DescriptorSetLayout> GetSetLayout(U32 idx)
+        {
+            return mSetLayouts[idx];
+        }
+        Vector<SharedPtr<DescriptorSetLayout>>& GetSetLayouts()
+        {
+            return mSetLayouts;
+        }
+        U32 GetLayoutsSize()
+        {
+            return mSetLayouts.Size();
+        }
+        U32 GetPushConstantSize()
+        {
+            return 0;
+        }
+    private:
+        Vector<SharedPtr<DescriptorSetLayout>> mSetLayouts;
     };
 
 	class PipelineState : public GPUResource
@@ -216,6 +244,7 @@ namespace Joestar {
         GET_SET_STATEMENT(MultiSampleState*, MultiSampleState);
         GET_SET_STATEMENT(DepthStencilState*, DepthStencilState);
         GET_SET_STATEMENT(Viewport*, Viewport);
+        GET_SET_STATEMENT(SharedPtr<PipelineLayout>, PipelineLayout);
         GET_SET_STATEMENT_REF(PODVector<InputBinding>, InputBindings);
         GET_SET_STATEMENT_REF(PODVector<InputAttribute>, InputAttributes);
 

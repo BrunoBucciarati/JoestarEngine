@@ -345,15 +345,37 @@ namespace Joestar {
                 mProtocol->CreateDescriptorSetLayout(handle, bindings);
                 break;
             }
+            CASECMD(GFXCommand::CreatePipelineLayout)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+                GPUPipelineLayoutCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                createInfo.setLayoutHandles.Resize(createInfo.numLayouts);
+                for (U32 i = 0; i < createInfo.numLayouts; ++i)
+                {
+                    cmdList->ReadBuffer(createInfo.setLayoutHandles[i]);
+                }
+                mProtocol->CreatePipelineLayout(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateDescriptorSets)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+                GPUDescriptorSetsCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateDescriptorSets(handle, createInfo);
+                break;
+            }
             CASECMD(GFXCommand::UpdateDescriptorSets)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
-                U32 size;
-                cmdList->ReadBuffer(size);
                 GPUDescriptorSetsUpdateInfo updateInfo;
-                updateInfo.updateSets.Resize(size);
-                for (U32 i = 0; i < size; ++i)
+                cmdList->ReadBuffer(updateInfo);
+                updateInfo.updateSets.Resize(updateInfo.num);
+                for (U32 i = 0; i < updateInfo.num; ++i)
                 {
                     cmdList->ReadBuffer(updateInfo.updateSets[i]);
                 }

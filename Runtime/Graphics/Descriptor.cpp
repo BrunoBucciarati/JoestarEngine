@@ -80,21 +80,17 @@ namespace Joestar {
 		mLayout = layout;
 	}
 
-	U32 DescriptorSets::GetDescriptorSetBinding(U32 ID)
+	DescriptorSet& DescriptorSets::GetDescriptorSetByBinding(U32 binding)
 	{
 		for (U32 i = 0; i < mLayout->GetNumBindings(); ++i)
 		{
-			auto* binding = mLayout->GetLayoutBinding(i);
-			auto& set = mSets[i];
-			for (U32 j = 0; j < binding->members.Size(); ++j)
+			auto* layoutBinding = mLayout->GetLayoutBinding(i);
+			if (layoutBinding->binding == binding)
 			{
-				if (ID == binding->members[j].ID)
-				{
-					return i;
-				}
+				return mSets[i];
 			}
 		}
-		return U32_MAX;
+		return mSets[0];
 	}
 
 	void DescriptorSets::SetLayoutData(U32 ID, float* data)

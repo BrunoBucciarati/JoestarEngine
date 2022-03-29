@@ -118,6 +118,7 @@ namespace Joestar {
 		void SetDescriptorSetLayout(DescriptorSetLayout* setLayout);
 		void UpdateDescriptorSets(DescriptorSets* sets);
 		void CreateDescriptorSets(DescriptorSets* sets);
+		void CreatePipelineLayout(PipelineLayout*);
 	private:
 		void CreatePerPassUniforms();
 		void CreateMainRenderPass();
@@ -145,6 +146,7 @@ namespace Joestar {
 		Vector<SharedPtr<MultiSampleState>> mMultiSampleStates;
 		Vector<SharedPtr<DepthStencilState>> mDepthStencilStates;
 		Vector<SharedPtr<ColorBlendState>> mColorBlendStates;
+		Vector<SharedPtr<PipelineLayout>> mPipelineLayouts;
 		Vector<SharedPtr<GraphicsPipelineState>> mGraphicsPSOs;
 		Vector<SharedPtr<ComputePipelineState>> mComputePSOs;
 		Vector<SharedPtr<Shader>> mShaders;

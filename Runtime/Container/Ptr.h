@@ -33,6 +33,7 @@ namespace Joestar
 		SharedPtr& operator=(T* ptr)
 		{
 			mPtr = ptr;
+			AddRef();
 			return *this;
 		}
 		void AddRef() {

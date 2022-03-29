@@ -112,6 +112,7 @@ namespace Joestar
 	struct GPUPipelineStateCreateInfo
 	{
 		GPUResourceHandle shaderProramHandle;
+		GPUResourceHandle pipelineLayoutHandle;
 	};
 
 	struct GPUGraphicsPipelineStateCreateInfo : GPUPipelineStateCreateInfo
@@ -192,5 +193,20 @@ namespace Joestar
 		};
 		U32 num;
 		PODVector<Entry> updateSets;
+	};
+
+	//PushConstant
+	//VkPushConstantRange pushConstantRange{};
+	//pushConstantRange.stageFlags = pushConsts->GetStageFlags();
+	//pushConstantRange.offset = 0;
+	//pushConstantRange.size = pushConsts->size;
+	//pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
+	//pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
+	struct GPUPipelineLayoutCreateInfo
+	{
+		U32 numLayouts;
+		U32 numPushConstants;
+		PODVector<GPUResourceHandle> setLayoutHandles;
+		PODVector<GPUResourceHandle> pushConstantHandles;
 	};
 }

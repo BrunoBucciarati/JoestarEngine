@@ -11,7 +11,9 @@ namespace Joestar {
 	{
 		SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (float*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
 		//mGraphics->UpdateDescriptorSets(mMaterial->GetDescriptorSets());
-		mGraphics->UpdateDescriptorSets(GetDescriptorSets());
+		if (!mDescriptorSets->IsValid())
+			mGraphics->CreateDescriptorSets(mDescriptorSets);
+		mGraphics->UpdateDescriptorSets(mDescriptorSets);
 		auto pso = GetPipelineState(cb);
 		cb->BindPipelineState(pso);
 		cb->BindVertexBuffer(mMesh->GetVertexBuffer());
@@ -40,6 +42,7 @@ namespace Joestar {
 		pso->SetRenderPass(pass);
 		pso->SetShaderProgram(GetShaderProgram());
 		pso->SetViewport(cb->GetViewport());
+		pso->SetPipelineLayout(mShaderProgram->GetPipelineLayout());
 		//这些值先用default的，后面加了材质设置需要这里做些新的逻辑 --todo
 		pso->SetDepthStencilState(mGraphics->GetDefaultDepthStencilState());
 		pso->SetColorBlendState(mGraphics->GetDefaultColorBlendState());

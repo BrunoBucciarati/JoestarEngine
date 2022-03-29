@@ -37,8 +37,7 @@ namespace Joestar {
 		DescriptorSetLayoutBinding::Member member;
 		U32 binding = mShaderProgram->GetUniformMemberAndBinding((U32)UniformFrequency::OBJECT, (U32)uniform, member);
 
-		U32 idx = mDescriptorSets->GetDescriptorSetBinding((U32)uniform);
-		DescriptorSet& set = mDescriptorSets->GetDescriptorSet(idx);
+		DescriptorSet& set = mDescriptorSets->GetDescriptorSetByBinding(binding);
 		set.binding = binding;
 		set.set = (U32)UniformFrequency::OBJECT;
 		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });

@@ -830,6 +830,18 @@ namespace Joestar {
         CreateRenderPass(&renderPass, createInfo);
     }
 
+    void RenderAPIVK::CreatePipelineLayout(GPUResourceHandle handle, GPUPipelineLayoutCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE_FROM_VECTOR(layout, PipelineLayout, handle, mPipelineLayouts);
+        PODVector<VkDescriptorSetLayout> setLayouts;
+        setLayouts.Resize(createInfo.numLayouts);
+        for (U32 i = 0; i < createInfo.numLayouts; ++i)
+        {
+            setLayouts[i] = mDescriptorSetLayouts[createInfo.setLayoutHandles[i]].setLayout;
+        }
+        layout.Create(mDevice, setLayouts);
+    }
+
     void RenderAPIVK::CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<DescriptorSetLayoutBinding>& bindings)
     {
         GET_STRUCT_BY_HANDLE_FROM_VECTOR(setLayout, DescriptorSetLayout, handle, mDescriptorSetLayouts);
@@ -944,17 +956,17 @@ namespace Joestar {
 
         pso.CreateVertexInputInfo(createInfo.inputBindings, createInfo.inputAttributes);
 
-        PODVector<VkDescriptorSetLayout> setLayouts;
-        setLayouts.Reserve(program.setLayoutHandles.Size());
-        for (U32 i = 0; i < program.setLayoutHandles.Size(); ++i)
-        {
-            if (GPUResource::IsValid(program.setLayoutHandles[i]))
-            {
-                setLayouts.Push(mDescriptorSetLayouts[program.setLayoutHandles[i]].setLayout);
-            }
-        }
-        pso.CreatePipelineLayout(mDevice, setLayouts);
+        //PODVector<VkDescriptorSetLayout> setLayouts;
+        //setLayouts.Reserve(program.setLayoutHandles.Size());
+        //for (U32 i = 0; i < program.setLayoutHandles.Size(); ++i)
+        //{
+        //    if (GPUResource::IsValid(program.setLayoutHandles[i]))
+        //    {
+        //        setLayouts.Push(mDescriptorSetLayouts[program.setLayoutHandles[i]].setLayout);
+        //    }
+        //}
         pso.SetRenderPass(&mRenderPasses[createInfo.renderPassHandle]);
+        pso.SetPipelineLayout(mPipelineLayouts[createInfo.pipelineLayoutHandle].layout);
         pso.Create(mDevice);
     }
 
