@@ -982,4 +982,61 @@ namespace Joestar {
         GET_STRUCT_BY_HANDLE(shader, Shader, handle);
         shader.Create(mDevice, createInfo);
     }
+
+    ///CommandBuffer Commands
+    void RenderAPIVK::CBBegin(GPUResourceHandle handle)
+    {
+        mCommandBuffers[handle].Begin(mFrameIndex);
+    }
+    void RenderAPIVK::CBEnd(GPUResourceHandle handle)
+    {
+        mCommandBuffers[handle].End();
+    }
+    void RenderAPIVK::CBBeginRenderPass(GPUResourceHandle handle, GPUResourceHandle h)
+    {
+        //vkCmdBeginRenderPass(mCommandBuffers[handle].GetCommandBuffer(), &mRenderPasses[h].renderPass);
+    }
+    void RenderAPIVK::CBEndRenderPass(GPUResourceHandle handle, GPUResourceHandle)
+    {
+        vkCmdEndRenderPass(mCommandBuffers[handle].GetCommandBuffer());
+    }
+    void RenderAPIVK::CBBindGraphicsPipeline(GPUResourceHandle handle, GPUResourceHandle h)
+    {
+        vkCmdBindPipeline(mCommandBuffers[handle].GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipelineStates[h].GetPipeline());
+    }
+
+    void RenderAPIVK::CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle h)
+    {
+        vkCmdBindPipeline(mCommandBuffers[handle].GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, mComputePipelineStates[h].GetPipeline());
+
+    }
+    void RenderAPIVK::CBBindIndexBuffer(GPUResourceHandle handle, GPUResourceHandle h)
+    {
+        vkCmdBindIndexBuffer(mCommandBuffers[handle].GetCommandBuffer(), mIndexBuffers[h].GetBuffer(), 0, mIndexBuffers[h].GetIndexType());
+    }
+    void RenderAPIVK::CBBindVertexBuffer(GPUResourceHandle handle, GPUResourceHandle h, U32 binding)
+    {
+        VkBuffer buffer = mVertexBuffers[h].GetBuffer();
+        vkCmdBindVertexBuffers(mCommandBuffers[handle].GetCommandBuffer(), 0, 1, &buffer, { 0 });
+    }
+    void RenderAPIVK::CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle layoutHandle, GPUResourceHandle setsHandle)
+    {
+        DescriptorSetsVK& sets = mDescriptorSets[setsHandle];
+        PipelineLayoutVK& layout = mPipelineLayouts[layoutHandle];
+        auto& vksets = sets.GetDescriptorSets();
+        vkCmdBindDescriptorSets(mCommandBuffers[handle].GetCommandBuffer(), sets.GetBindPoint(), layout.layout, 0,
+            vksets.Size(), vksets.Buffer(), 0, nullptr);
+    }
+    void RenderAPIVK::CBPushConstants(GPUResourceHandle handle, GPUResourceHandle)
+    {
+        //todo
+    }
+    void RenderAPIVK::CBDraw(GPUResourceHandle handle, U32 count)
+    {
+        vkCmdDraw(mCommandBuffers[handle].GetCommandBuffer(), count, 1, 0, 0);
+    }
+    void RenderAPIVK::CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0)
+    {
+        vkCmdDrawIndexed(mCommandBuffers[handle].GetCommandBuffer(), 1, count, indexStart, vertStart, 0);
+    }
 }

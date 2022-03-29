@@ -42,6 +42,20 @@ namespace Joestar {
 		void CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<DescriptorSetLayoutBinding>& bindings) override;
 		void CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo) override;
 		void UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo) override;
+
+		//Command Buffer CMDs
+		void CBBegin(GPUResourceHandle handle) override;
+		void CBEnd(GPUResourceHandle handle) override;
+		void CBBeginRenderPass(GPUResourceHandle handle, GPUResourceHandle) override;
+		void CBEndRenderPass(GPUResourceHandle handle, GPUResourceHandle) override;
+		void CBBindGraphicsPipeline(GPUResourceHandle handle, GPUResourceHandle) override;
+		void CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle) override;
+		void CBBindIndexBuffer(GPUResourceHandle handle, GPUResourceHandle) override;
+		void CBBindVertexBuffer(GPUResourceHandle handle, GPUResourceHandle, U32 = 0) override;
+		void CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle, GPUResourceHandle) override;
+		void CBPushConstants(GPUResourceHandle handle, GPUResourceHandle) override;
+		void CBDraw(GPUResourceHandle handle, U32 count) override;
+		void CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0) override;
 	private:
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CreateRenderPass(RenderPassVK* rp, GPURenderPassCreateInfo& createInfo);

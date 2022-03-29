@@ -98,8 +98,16 @@ namespace Joestar {
 			HANDLE_COMMAND(BindGraphicsPipeline)
 			HANDLE_COMMAND(BindComputePipeline)
 			HANDLE_COMMAND(BindIndexBuffer)
-			HANDLE_COMMAND(BindDescriptorSets)
 			HANDLE_COMMAND(Draw)
+			CASECMD(CommandBufferCMD::BindDescriptorSets)
+			{
+				GPUResourceHandle handle;
+				encoder.ReadBuffer(handle);
+				GPUResourceHandle handle2;
+				encoder.ReadBuffer(handle2);
+				CBBindDescriptorSets(cbHandle, handle, handle2);
+				break;
+			}
 			CASECMD(CommandBufferCMD::BindVertexBuffer)
 			{
 				GPUResourceHandle handle;

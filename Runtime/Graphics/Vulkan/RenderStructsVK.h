@@ -118,11 +118,20 @@ namespace Joestar {
         void Create(U32 sz, U32 ct)
         {
             count = ct;
+            if (sz == 2)
+                type = VK_INDEX_TYPE_UINT16;
+            else
+                type = VK_INDEX_TYPE_UINT32;
             size = sz * ct;
             CreateBuffer();
         }
+        VkIndexType GetIndexType()
+        {
+            return type;
+        }
     private:
         U32 count;
+        VkIndexType type;
     };
 
     class UniformBufferVK : public BufferVK
@@ -190,6 +199,7 @@ namespace Joestar {
 			if (vkBeginCommandBuffer(commandBuffers[idx], &beginInfo) != VK_SUCCESS) {
 				LOGERROR("failed to begin recording command buffer!");
 			}
+            SetIndex(idx); 
 		}
 
 		void End(U32 idx = 0)
@@ -515,6 +525,11 @@ namespace Joestar {
         }
 
         void Create(VkDevice&);
+
+        VkPipeline GetPipeline()
+        {
+            return pipeline;
+        }
     private:
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         VkPipelineRasterizationStateCreateInfo rasterizer{};
@@ -546,6 +561,13 @@ namespace Joestar {
         {
 
         }
+
+        VkPipeline GetPipeline()
+        {
+            return pipeline;
+        }
+    private:
+        VkPipeline pipeline{};
     };
 
     class DescriptorSetLayoutVK
@@ -563,7 +585,20 @@ namespace Joestar {
         {
             return sets[idx];
         }
+        VkPipelineBindPoint GetBindPoint()
+        {
+            return bindPoint;
+        }
+        U32 Size()
+        {
+            return sets.Size();
+        }
+        Vector<VkDescriptorSet>& GetDescriptorSets()
+        {
+            return sets;
+        }
     private:
         Vector<VkDescriptorSet> sets;
+        VkPipelineBindPoint bindPoint{ VK_PIPELINE_BIND_POINT_GRAPHICS };
     };
 }
