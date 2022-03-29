@@ -5,15 +5,17 @@ namespace Joestar {
 		return lhs.binding == rhs.binding;
 	}
 
-	bool DescriptorSetLayout::AddBinding(DescriptorSetLayoutBinding binding)
+	bool DescriptorSetLayout::AddBinding(DescriptorSetLayoutBinding* rhs)
 	{
-		auto it = mLayoutBindings.Find(binding);
-		if (it == mLayoutBindings.End())
+		for (auto& binding : mLayoutBindings)
 		{
-			mLayoutBindings.Push(binding);
-			return true;
+			if (binding->binding == rhs->binding)
+			{
+				return binding->MergeBinding(rhs);
+			}
 		}
-		return it->MergeBinding(binding);
+		mLayoutBindings.Push(SharedPtr<DescriptorSetLayoutBinding>(rhs));
+		return true;
 	}
 
 	U32 DescriptorSetLayoutBinding::Hash()
@@ -38,12 +40,12 @@ namespace Joestar {
 		for (U32 i = 0; i < mLayoutBindings.Size(); ++i)
 		{
 			auto& layoutBinding = mLayoutBindings[i];
-			for (U32 memberIdx = 0; memberIdx < layoutBinding.members.Size(); ++memberIdx)
+			for (U32 memberIdx = 0; memberIdx < layoutBinding->members.Size(); ++memberIdx)
 			{
-				if (layoutBinding.members[memberIdx].ID == ID)
+				if (layoutBinding->members[memberIdx].ID == ID)
 				{
-					member = layoutBinding.members[memberIdx];
-					return layoutBinding.binding;
+					member = layoutBinding->members[memberIdx];
+					return layoutBinding->binding;
 				}
 			}
 		}
@@ -56,7 +58,7 @@ namespace Joestar {
 		for (auto binding : mLayoutBindings)
 		{
 			//随便哈希个，真要冲突了再改2333
-			hash += binding.Hash();
+			hash += binding->Hash();
 			hash = hash << 5;
 		}
 		return hash;
@@ -68,14 +70,31 @@ namespace Joestar {
 		mSets.Resize(layout->GetNumBindings());
 		for (U32 i = 0; i < layout->GetNumBindings(); ++i)
 		{
-			auto& binding = layout->GetLayoutBinding(i);
-			mSize += binding.size;
-			mSets[i].binding = binding.binding;
-			mSets[i].type = binding.type;
-			mSets[i].count = binding.count;
+			auto* binding = layout->GetLayoutBinding(i);
+			mSize += binding->size;
+			mSets[i].binding = binding->binding;
+			mSets[i].type = binding->type;
+			mSets[i].count = binding->count;
 		}
 		mBuffer = JOJO_NEW_ARRAY(U8, mSize);
 		mLayout = layout;
+	}
+
+	U32 DescriptorSets::GetDescriptorSetBinding(U32 ID)
+	{
+		for (U32 i = 0; i < mLayout->GetNumBindings(); ++i)
+		{
+			auto* binding = mLayout->GetLayoutBinding(i);
+			auto& set = mSets[i];
+			for (U32 j = 0; j < binding->members.Size(); ++j)
+			{
+				if (ID == binding->members[j].ID)
+				{
+					return i;
+				}
+			}
+		}
+		return U32_MAX;
 	}
 
 	void DescriptorSets::SetLayoutData(U32 ID, float* data)
@@ -83,16 +102,17 @@ namespace Joestar {
 		U32 offset = 0;
 		for (U32 i = 0; i < mLayout->GetNumBindings(); ++i)
 		{
-			auto& binding = mLayout->GetLayoutBinding(i);
-			for (U32 j = 0; j < binding.members.Size(); ++j)
+			auto* binding = mLayout->GetLayoutBinding(i);
+			auto& set = mSets[i];
+			for (U32 j = 0; j < binding->members.Size(); ++j)
 			{
-				if (ID == binding.members[j].ID)
+				if (ID == binding->members[j].ID)
 				{
-					offset += binding.members[j].offset;
-					memcpy(mBuffer + offset, data, binding.members[j].size);
+					offset += binding->members[j].offset;
+					memcpy(mBuffer + offset, data, binding->members[j].size);
 				}
 			}
-			offset += binding.size;
+			offset += binding->size;
 		}
 	}
 }

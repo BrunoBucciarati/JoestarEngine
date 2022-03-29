@@ -12,6 +12,7 @@ namespace Joestar {
 		//mRasterizationState = mGraphics->GetDefaultRasterizationState();
 		mShaderProgram = NEW_OBJECT(ShaderProgram);
 		mMaterial = NEW_OBJECT(Material);
+		mDescriptorSets = JOJO_NEW(DescriptorSets);
 	}
 	Renderer::~Renderer(){}
 
@@ -36,11 +37,11 @@ namespace Joestar {
 		DescriptorSetLayoutBinding::Member member;
 		U32 binding = mShaderProgram->GetUniformMemberAndBinding((U32)UniformFrequency::OBJECT, (U32)uniform, member);
 
-		DescriptorSet& set = mDescriptorSets->SetLayoutData((U32)uniform, data);
+		U32 idx = mDescriptorSets->GetDescriptorSetBinding((U32)uniform);
+		DescriptorSet& set = mDescriptorSets->GetDescriptorSet(idx);
 		set.binding = binding;
 		set.set = (U32)UniformFrequency::OBJECT;
 		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
-		mDescriptorSets.Push(set);
 	}
 
 	SharedPtr<GraphicsPipelineState> Renderer::GetPipelineState(CommandBuffer* cb)

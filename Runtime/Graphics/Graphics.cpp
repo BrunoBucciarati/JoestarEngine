@@ -157,8 +157,8 @@ namespace Joestar {
 			GetMainCmdList()->WriteBuffer(setLayout->GetNumBindings());
 			for (U32 i = 0; i < setLayout->GetNumBindings(); ++i)
 			{
-				DescriptorSetLayoutBinding& binding = setLayout->GetLayoutBinding(i);
-				GetMainCmdList()->WriteBuffer(binding);
+				DescriptorSetLayoutBinding* binding = setLayout->GetLayoutBinding(i);
+				GetMainCmdList()->WriteBuffer(*binding);
 			}
 		}
 	}

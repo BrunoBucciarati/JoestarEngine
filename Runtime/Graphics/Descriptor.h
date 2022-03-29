@@ -21,7 +21,7 @@ namespace Joestar
 		INPUT_ATTACHMENT = 10,
 	};
 
-	struct DescriptorSetLayoutBinding : Hashable
+	struct DescriptorSetLayoutBinding : public Hashable, public RefCount
 	{
 		U32 binding{ 0 };
 		DescriptorType type;
@@ -39,11 +39,11 @@ namespace Joestar
 		{
 			return binding == rhs.binding;
 		}
-		bool MergeBinding(const DescriptorSetLayoutBinding& rhs)
+		bool MergeBinding(const DescriptorSetLayoutBinding* rhs)
 		{
-			if (rhs.type != type)
+			if (rhs->type != type)
 				return false;
-			stage |= rhs.stage;
+			stage |= rhs->stage;
 			return true;
 		}
 		friend bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs);
@@ -54,24 +54,28 @@ namespace Joestar
 	class DescriptorSetLayout : public GPUResource
 	{
 	public:
-		DescriptorSetLayoutBinding& GetLayoutBinding(U32 idx)
+		DescriptorSetLayoutBinding* GetLayoutBinding(U32 idx)
 		{
 			return mLayoutBindings[idx];
 		}
 		void SetNumBindings(U32 num)
 		{
 			mLayoutBindings.Resize(num);
+			for (U32 i = 0; i < num; ++i)
+			{
+				mLayoutBindings[i] = JOJO_NEW(DescriptorSetLayoutBinding, MEMORY_GFX_STRUCT);
+			}
 		}
 		U32 GetNumBindings() const
 		{
 			return mLayoutBindings.Size();
 		}
-		bool AddBinding(DescriptorSetLayoutBinding binding);
+		bool AddBinding(DescriptorSetLayoutBinding* binding);
 		U32 GetUniformMemberAndBinding(U32 ID, DescriptorSetLayoutBinding::Member& member);
 
 		U32 Hash();
 	private:
-		Vector<DescriptorSetLayoutBinding> mLayoutBindings;
+		Vector<SharedPtr<DescriptorSetLayoutBinding>> mLayoutBindings;
 	};
 
 	struct DescriptorSet
@@ -88,6 +92,7 @@ namespace Joestar
 	{
 	public:
 		void AllocFromLayout(DescriptorSetLayout* layout);
+		U32 GetDescriptorSetBinding(U32 ID);
 		void SetLayoutData(U32 ID, float* data);
 		SharedPtr<DescriptorSetLayout>& GetLayout()
 		{
@@ -95,7 +100,7 @@ namespace Joestar
 		}
 		U32 Size()
 		{
-			return mSize;
+			return mSets.Size();
 		}
 		U8* GetBuffer()
 		{

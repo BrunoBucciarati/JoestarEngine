@@ -25,7 +25,7 @@ namespace Joestar {
 		mat = NEW_OBJECT(Material);
 		Shader* shader = NEW_OBJECT(Shader);
 		shader->SetShader("light");
-		mat->SetShader(shader);
+		//mat->SetShader(shader);
 
 		mesh = GetSubsystem<ProceduralMesh>()->GetUVSphere();
 

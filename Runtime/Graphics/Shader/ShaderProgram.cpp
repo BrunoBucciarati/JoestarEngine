@@ -77,7 +77,7 @@ namespace Joestar
 					DescriptorSetLayout& curSetLayout = mDescriptorLayouts[setIdx];
 					for (U32 bindingIdx = 0; bindingIdx < setLayouts[setIdx].GetNumBindings(); ++bindingIdx)
 					{
-						DescriptorSetLayoutBinding& binding = setLayouts[setIdx].GetLayoutBinding(bindingIdx);
+						DescriptorSetLayoutBinding* binding = setLayouts[setIdx].GetLayoutBinding(bindingIdx);
 						if (!curSetLayout.AddBinding(binding))
 						{
 							bValid = false;

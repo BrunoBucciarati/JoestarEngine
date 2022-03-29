@@ -58,24 +58,30 @@ namespace Joestar
 		result = spvReflectEnumerateDescriptorSets(&module, &count, sets.Buffer());
 		assert(result == SPV_REFLECT_RESULT_SUCCESS);
 
-        mDescriptorSetLayouts.Resize(sets.Size());
+        U32 maxSets = 0;
         for (U32 i = 0; i < sets.Size(); ++i) {
             SpvReflectDescriptorSet& descriptorSet = *sets[i];
-            mDescriptorSetLayouts[i].SetNumBindings(descriptorSet.binding_count);
+            maxSets = Max(maxSets, descriptorSet.set);
+        }
+        mDescriptorSetLayouts.Resize(maxSets + 1);
+        U32 curSet = 0;
+        for (U32 i = 0; i < sets.Size(); ++i) {
+            SpvReflectDescriptorSet& descriptorSet = *sets[i];
+            mDescriptorSetLayouts[descriptorSet.set].SetNumBindings(descriptorSet.binding_count);
             for (U32 binding = 0; binding < descriptorSet.binding_count; ++binding)
             {
                 SpvReflectDescriptorBinding& descriptorBinding = *descriptorSet.bindings[binding];
-                auto& layoutBinding = mDescriptorSetLayouts[i].GetLayoutBinding(binding);
-                layoutBinding.binding = descriptorBinding.binding;
-                layoutBinding.type = DescriptorType(descriptorBinding.descriptor_type);
-                layoutBinding.count = descriptorBinding.count;
-                layoutBinding.size = descriptorBinding.block.size;
-                layoutBinding.members.Resize(descriptorBinding.block.member_count);
-                for (U32 member = 0; member < layoutBinding.members.Size(); ++member)
+                auto* layoutBinding = mDescriptorSetLayouts[descriptorSet.set].GetLayoutBinding(binding);
+                layoutBinding->binding = descriptorBinding.binding;
+                layoutBinding->type = DescriptorType(descriptorBinding.descriptor_type);
+                layoutBinding->count = descriptorBinding.count;
+                layoutBinding->size = descriptorBinding.block.size;
+                layoutBinding->members.Resize(descriptorBinding.block.member_count);
+                for (U32 member = 0; member < layoutBinding->members.Size(); ++member)
                 {
-                    layoutBinding.members[i].ID = GetUniformID(descriptorBinding.block.members[member].name);
-                    layoutBinding.members[i].offset = descriptorBinding.block.members[member].offset;
-                    layoutBinding.members[i].size = descriptorBinding.block.members[member].size;
+                    layoutBinding->members[member].ID = GetUniformID(descriptorBinding.block.members[member].name);
+                    layoutBinding->members[member].offset = descriptorBinding.block.members[member].offset;
+                    layoutBinding->members[member].size = descriptorBinding.block.members[member].size;
                 }
             }
         }

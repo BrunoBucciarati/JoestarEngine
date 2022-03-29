@@ -26,19 +26,19 @@ namespace Joestar {
 		}
 
 		void SetUniformBuffer(PerBatchUniforms, float* data);
-		Vector<DescriptorSet>& GetDescriptorSets()
+		SharedPtr<DescriptorSets>& GetDescriptorSets()
 		{
 			return mDescriptorSets;
 		}
-		void SetDescriptorSetLayout(DescriptorSetLayout& setLayout)
+		void SetDescriptorSetLayout(DescriptorSetLayout* setLayout)
 		{
 			mDescriptorSetLayout = setLayout;
 		}
 
 	private:
 		Vector<Texture*> mTextures;
-		Vector<DescriptorSet> mDescriptorSets;
-		DescriptorSetLayout mDescriptorSetLayout;
+		SharedPtr<DescriptorSets> mDescriptorSets;
+		SharedPtr<DescriptorSetLayout> mDescriptorSetLayout;
 		WeakPtr<Graphics> mGraphics;
 	};
 }

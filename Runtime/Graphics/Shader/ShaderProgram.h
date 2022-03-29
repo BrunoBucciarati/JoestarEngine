@@ -35,13 +35,13 @@ namespace Joestar {
 		{
 			return mDescriptorLayouts[set].GetNumBindings();
 		}
-		DescriptorSetLayoutBinding& GetDescriptorBinding(U32 set, U32 idx)
+		DescriptorSetLayoutBinding* GetDescriptorBinding(U32 set, U32 idx)
 		{
 			return mDescriptorLayouts[set].GetLayoutBinding(idx);
 		}
-		DescriptorSetLayout& GetDescriptorSetLayout(UniformFrequency freq)
+		DescriptorSetLayout* GetDescriptorSetLayout(UniformFrequency freq)
 		{
-			return mDescriptorLayouts[(U32)freq];
+			return &mDescriptorLayouts[(U32)freq];
 		}
 		DescriptorSetLayout& GetDescriptorSetLayout(U32 set)
 		{
