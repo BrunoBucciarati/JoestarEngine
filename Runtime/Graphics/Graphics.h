@@ -119,6 +119,7 @@ namespace Joestar {
 		void UpdateDescriptorSets(DescriptorSets* sets);
 		void CreateDescriptorSets(DescriptorSets* sets);
 		void CreatePipelineLayout(PipelineLayout*);
+		void QueueSubmit(CommandBuffer* cb);
 	private:
 		void CreatePerPassUniforms();
 		void CreateMainRenderPass();

@@ -34,6 +34,7 @@ namespace Joestar
 		CreateDescriptorSetLayout,
 		CreateDescriptorSets,
 		UpdateDescriptorSets,
+		QueueSubmit,
 		CommandCount
 	};
 	class GFXCommandList : public MemoryReadWriter

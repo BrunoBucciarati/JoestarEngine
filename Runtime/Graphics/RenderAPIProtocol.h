@@ -3,6 +3,7 @@
 #include "GPUResource.h"
 #include "GPUCreateInfos.h"
 #include "../Container/Vector.h"
+#include "../Graphics/CommandBuffer.h"
 namespace Joestar
 {
 	class Window;
@@ -40,6 +41,22 @@ namespace Joestar
 		void CreateRasterizationState(GPUResourceHandle handle, GPURasterizationStateCreateInfo& createInfo);
 		void CreateMultiSampleState(GPUResourceHandle handle, GPUMultiSampleStateCreateInfo& createInfo);
 		void CreateShaderProgram(GPUResourceHandle handle, GPUShaderProgramCreateInfo& createInfo);
+		void QueueSubmit(GPUResourceHandle handle, U32 size, U8* data);
+
+		/// Command Buffer Protocols
+		void RecordCommand(CommandBufferCMD& cmd, CommandEncoder& encoder, GPUResourceHandle handle);
+		virtual void CBBegin(GPUResourceHandle handle) = 0;
+		virtual void CBEnd(GPUResourceHandle handle) = 0;
+		virtual void CBBeginRenderPass(GPUResourceHandle handle, GPUResourceHandle) = 0;
+		virtual void CBEndRenderPass(GPUResourceHandle handle, GPUResourceHandle) = 0;
+		virtual void CBBindGraphicsPipeline(GPUResourceHandle handle, GPUResourceHandle) = 0;
+		virtual void CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle) = 0;
+		virtual void CBBindIndexBuffer(GPUResourceHandle handle, GPUResourceHandle) = 0;
+		virtual void CBBindVertexBuffer(GPUResourceHandle handle, GPUResourceHandle,U32=0) = 0;
+		virtual void CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle) = 0;
+		virtual void CBPushConstants(GPUResourceHandle handle, GPUResourceHandle) = 0;
+		virtual void CBDraw(GPUResourceHandle handle, U32 count) = 0;
+		virtual void CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0) = 0;
 
 		void SetWindow(Window* w);
 		void SetFrame(U32 frameIndex)
@@ -60,5 +77,6 @@ namespace Joestar
 		Vector<GPURasterizationStateCreateInfo> mRasterizationStates;
 		Vector<GPUMultiSampleStateCreateInfo> mMultiSampleStates;
 		Vector<GPUShaderProgramCreateInfo> mShaderPrograms;
+		Vector<CommandEncoder> mCommandEncoders;
 	};
 }

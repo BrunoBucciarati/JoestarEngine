@@ -13,7 +13,7 @@ namespace Joestar {
 		BindIndexBuffer,
 		BindVertexBuffer,
 		BindDescriptorSets,
-		PushConstant,
+		PushConstants,
 		Draw,
 		DrawIndexed,
 		CommandCount
@@ -54,6 +54,10 @@ namespace Joestar {
 		RenderPass* GetRenderPass() const
 		{
 			return mPass;
+		}
+		CommandEncoder& GetEncoder()
+		{
+			return mEncoder;
 		}
 
 	private:

@@ -8,6 +8,16 @@
 #define GET_STRUCT_BY_HANDLE(_VAR, _TYP, _HANDLE) \
     GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, m##_TYP##s);
 
+#define DEBUG_CMD 1
+#if DEBUG_CMD
+#define CASECMD(CMD_TYPE) \
+    case CMD_TYPE: \
+    LOGWARN("Frame:%d CMD:%s\n",mFrameIndex, #CMD_TYPE);
+#else
+#define CASECMD(CMD_TYPE) \
+    case CMD_TYPE:
+#endif
+
 namespace Joestar {
 	void RenderAPIProtocol::SetWindow(Window* wd)
 	{
@@ -46,5 +56,75 @@ namespace Joestar {
 	{
 		GET_STRUCT_BY_HANDLE_FROM_VECTOR(state, GPUShaderProgramCreateInfo, handle, mShaderPrograms);
 		state = createInfo;
+	}
+	void RenderAPIProtocol::QueueSubmit(GPUResourceHandle handle, U32 size, U8* data)
+	{
+		GET_STRUCT_BY_HANDLE_FROM_VECTOR(encoder, CommandEncoder, handle, mCommandEncoders);
+		encoder.SetData(data, size);
+		CommandBufferCMD cmd;
+		//在这里循环，然后调抽象的接口，免得每个API中要写一遍循环
+		while (encoder.ReadBuffer(cmd))
+		{
+			switch (cmd)
+			{
+				RecordCommand(cmd, encoder, handle);
+			}
+		}
+	}
+
+	void RenderAPIProtocol::RecordCommand(CommandBufferCMD& cmd, CommandEncoder& encoder, GPUResourceHandle cbHandle)
+	{
+#define HANDLE_COMMAND(_TYP) \
+	CASECMD(CommandBufferCMD::##_TYP) \
+	{\
+		GPUResourceHandle handle; \
+		encoder.ReadBuffer(handle); \
+		CB##_TYP(cbHandle, handle); \
+	}
+		switch (cmd)
+		{
+			CASECMD(CommandBufferCMD::Begin)
+			{
+				CBBegin(cbHandle);
+				break;
+			}
+			CASECMD(CommandBufferCMD::End)
+			{
+				CBEnd(cbHandle);
+				break;
+			}
+			HANDLE_COMMAND(BeginRenderPass)
+			HANDLE_COMMAND(EndRenderPass)
+			HANDLE_COMMAND(BindGraphicsPipeline)
+			HANDLE_COMMAND(BindComputePipeline)
+			HANDLE_COMMAND(BindIndexBuffer)
+			HANDLE_COMMAND(BindDescriptorSets)
+			HANDLE_COMMAND(Draw)
+			CASECMD(CommandBufferCMD::BindVertexBuffer)
+			{
+				GPUResourceHandle handle;
+				encoder.ReadBuffer(handle);
+				U32 binding = 0;
+				encoder.ReadBuffer(binding);
+				CBBindVertexBuffer(cbHandle, handle, binding);
+				break;
+			}
+			CASECMD(CommandBufferCMD::DrawIndexed)
+			{
+				U32 count;
+				U32 indexStart;
+				U32 vertStart;
+				encoder.ReadBuffer(count);
+				encoder.ReadBuffer(indexStart);
+				encoder.ReadBuffer(vertStart);
+				CBDrawIndexed(cbHandle, count, indexStart, vertStart);
+				break;
+			}
+			default:
+			{
+				LOGERROR("Unknown CommandBuffer CMD: %d", cmd);
+				break;
+			}
+		}
 	}
 }

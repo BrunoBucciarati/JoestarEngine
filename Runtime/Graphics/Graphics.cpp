@@ -778,4 +778,13 @@ namespace Joestar {
 			GetMainCmdList()->WriteBuffer<GPUResourceHandle>(program->GetPipelineLayout()->GetSetLayout(i)->GetHandle());
 		}
 	}
+
+	void Graphics::QueueSubmit(CommandBuffer* cb)
+	{
+		GetMainCmdList()->WriteCommand(GFXCommand::QueueSubmit);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(cb->GetHandle());
+		CommandEncoder& encoder = cb->GetEncoder();
+		GetMainCmdList()->WriteBuffer(encoder.GetSize());
+		GetMainCmdList()->WriteBufferPtr(encoder.Data(), encoder.GetSize());
+	}
 }

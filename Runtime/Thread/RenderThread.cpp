@@ -382,6 +382,17 @@ namespace Joestar {
                 mProtocol->UpdateDescriptorSets(handle, updateInfo);
                 break;
             }
+            CASECMD(GFXCommand::QueueSubmit)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+                U32 size;
+                cmdList->ReadBuffer(size);
+                U8* data = JOJO_NEW_ARRAY(U8, size);
+                cmdList->ReadBufferPtr(data, size);
+                mProtocol->QueueSubmit(handle, size, data);
+                break;
+            }
             default:
             {
                 LOGERROR("CMD NOT FOUND: %s\n", GFXCommand(command));
