@@ -25,7 +25,7 @@ namespace Joestar {
 		mShaderProgram->SetShader(stage, name);
 		if (mShaderProgram->IsValid())
 		{
-			//ÉèÖÃÖð²ÄÖÊµÄ²ÎÊýÃèÊöµ½²ÄÖÊÖÐ
+			//è®¾ç½®é€æè´¨çš„å‚æ•°æè¿°åˆ°æè´¨ä¸­
 			mMaterial->SetDescriptorSetLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::BATCH));
 			mDescriptorSets->AllocFromLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT));
 		}
@@ -33,14 +33,14 @@ namespace Joestar {
 
 	void Renderer::SetUniformBuffer(PerObjectUniforms uniform, float* data)
 	{
-		//¼ì²éLayoutÖÐÊÇ·ñÓÐÕâ¸öÃèÊö·û
-		DescriptorSetLayoutBinding::Member member;
-		U32 binding = mShaderProgram->GetUniformMemberAndBinding((U32)UniformFrequency::OBJECT, (U32)uniform, member);
+		//æ£€æŸ¥Layoutä¸­æ˜¯å¦æœ‰è¿™ä¸ªæè¿°ç¬¦
+		//DescriptorSetLayoutBinding::Member member;
+		//U32 binding = mShaderProgram->GetUniformMemberAndBinding((U32)UniformFrequency::OBJECT, (U32)uniform, member);
 
-		DescriptorSet& set = mDescriptorSets->GetDescriptorSetByBinding(binding);
-		set.binding = binding;
+		DescriptorSet& set = mDescriptorSets->GetDescriptorSetByID((U32)uniform);
 		set.set = (U32)UniformFrequency::OBJECT;
-		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
+		if (!set.ub)
+			set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
 	}
 
 	SharedPtr<GraphicsPipelineState> Renderer::GetPipelineState(CommandBuffer* cb)
@@ -55,13 +55,13 @@ namespace Joestar {
 		//	}
 		//}
 
-		////Ã»ÕÒµ½¶ÔÓ¦µÄ£¬´´½¨Ò»¸öÐÂµÄPSO
+		////æ²¡æ‰¾åˆ°å¯¹åº”çš„ï¼Œåˆ›å»ºä¸€ä¸ªæ–°çš„PSO
 		//SharedPtr<GraphicsPipelineState>& pso = mPSOs.EmplaceBack();
 		//pso = JOJO_NEW(GraphicsPipelineState, MEMORY_GFX_STRUCT);
 		//pso->SetRenderPass(pass);
 		//pso->SetShaderProgram(mMaterial->GetShaderProgram());
 		//pso->SetViewport(cb->GetViewport());
-		////ÕâÐ©ÖµÏÈÓÃdefaultµÄ£¬ºóÃæ¼ÓÁË²ÄÖÊÉèÖÃÐèÒªÕâÀï×öÐ©ÐÂµÄÂß¼­ --todo
+		////è¿™äº›å€¼å…ˆç”¨defaultçš„ï¼ŒåŽé¢åŠ äº†æè´¨è®¾ç½®éœ€è¦è¿™é‡Œåšäº›æ–°çš„é€»è¾‘ --todo
 		//pso->SetDepthStencilState(mDepthStencilState);
 		//pso->SetColorBlendState(mColorBlendState);
 		//pso->SetMultiSampleState(mMultiSampleState);

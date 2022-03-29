@@ -80,7 +80,7 @@ namespace Joestar
 
 	struct DescriptorSet
 	{
-		UniformBuffer* ub;
+		SharedPtr<UniformBuffer> ub;
 		U32 binding{ 0 };
 		U32 offset{ 0 };
 		U32 set{ 0 };
@@ -93,6 +93,7 @@ namespace Joestar
 	public:
 		void AllocFromLayout(DescriptorSetLayout* layout);
 		DescriptorSet& GetDescriptorSetByBinding(U32 binding);
+		DescriptorSet& GetDescriptorSetByID(U32 ID);
 		void SetLayoutData(U32 ID, float* data);
 		SharedPtr<DescriptorSetLayout>& GetLayout()
 		{
