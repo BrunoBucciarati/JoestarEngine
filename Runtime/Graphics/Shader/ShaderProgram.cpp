@@ -168,22 +168,11 @@ namespace Joestar
 		return 0;
 	}
 
-	DescriptorSetLayoutBinding::Member ShaderProgram::GetUniformMemberAndBinding(U32 set, U32 ID, U32& binding)
+	U32 ShaderProgram::GetUniformMemberAndBinding(U32 set, U32 ID, DescriptorSetLayoutBinding::Member& member)
 	{
 		if (mDescriptorLayouts.Size() > set)
 		{
-			for (U32 i = 0; i < mDescriptorLayouts[set].GetNumBindings(); ++i)
-			{
-				auto& layoutBinding = mDescriptorLayouts[set].GetLayoutBinding(i);
-				for (U32 memberIdx = 0; memberIdx < layoutBinding.members.Size(); ++memberIdx)
-				{
-					if (layoutBinding.members[memberIdx].ID == ID)
-					{
-						binding = layoutBinding.binding;
-						return layoutBinding.members[memberIdx];
-					}
-				}
-			}
+			return mDescriptorLayouts[set].GetUniformMemberAndBinding(ID, member);
 		}
 		return U32_MAX;
 	}

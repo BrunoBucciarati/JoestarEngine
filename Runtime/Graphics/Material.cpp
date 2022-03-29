@@ -3,16 +3,10 @@
 
 namespace Joestar {
 	Material::Material(EngineContext* ctx) : Super(ctx),
-		mShaderProgram(NEW_OBJECT(ShaderProgram)),
 		mGraphics(GetSubsystem<Graphics>())
 	{}
 	Material::~Material()
 	{
-	}
-
-	void Material::SetShader(const String& name, ShaderStage stage)
-	{
-		mShaderProgram->SetShader(stage, name);
 	}
 
 	void Material::SetTexture(Texture* tex, U8 slot)
@@ -54,7 +48,7 @@ namespace Joestar {
 		mTextures[0]->TextureFromImage(path);
 	}
 
-	void Material::SetUniformBuffer(PerObjectUniforms uniform, float* data)
+	void Material::SetUniformBuffer(PerBatchUniforms uniform, float* data)
 	{
 		bool bFound = false;
 		for (U32 i = 0; i < mDescriptorSets.Size(); ++i)
@@ -70,12 +64,18 @@ namespace Joestar {
 		if (bFound)
 			return;
 		//todo 这里要反射拿到binding
-		DescriptorSet set{};
-		U32 binding;
-		DescriptorSetLayoutBinding::Member binding = mShaderProgram->GetUniformMemberAndBinding(UniformFrequency::OBJECT, (U32)uniform, binding);
+		if (mDescriptorSets.Empty())
+		{
+			mDescriptorSets.Resize(mDescriptorSetLayout.GetNumBindings());
+		}
+		//检查Layout中是否有这个描述符
+		DescriptorSetLayoutBinding::Member member;
+		U32 binding = mDescriptorSetLayout.GetUniformMemberAndBinding((U32)uniform, member);
+
+		DescriptorSet& set = mDescriptorSets[binding];
 		set.binding = binding;
-		set.set = (U32)UniformFrequency::OBJECT;
-		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
+		set.set = (U32)UniformFrequency::BATCH;
+		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerBatchUniformDataType(uniform), UniformFrequency::BATCH });
 		mDescriptorSets.Push(set);
 	}
 }

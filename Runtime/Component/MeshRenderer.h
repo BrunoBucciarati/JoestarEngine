@@ -6,8 +6,8 @@ namespace Joestar
 {
 	class MeshRenderer : public Renderer
 	{
-	public:
 		REGISTER_COMPONENT(MeshRenderer, Renderer);
+	public:
 		void SetMesh(Mesh* mesh)
 		{
 			mMesh = mesh;

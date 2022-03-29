@@ -177,6 +177,7 @@ namespace Joestar {
 
 	enum class UniformFrequency {
 		PASS = 0,
+		BATCH, //Material
 		OBJECT
 	};
 
@@ -191,12 +192,18 @@ namespace Joestar {
 		UniformDataType::Mat4
 	};
 
+	enum class PerBatchUniforms {
+		TO_ADD = (int)PerPassUniforms::COUNT,
+		COUNT
+	};
+
 	enum class PerObjectUniforms {
-		MODEL_MATRIX = (int)PerPassUniforms::COUNT,
+		MODEL_MATRIX = (int)PerBatchUniforms::COUNT,
 		COUNT
 	};
 
 	UniformDataType GetPerObjectUniformDataType(PerObjectUniforms);
+	UniformDataType GetPerBatchUniformDataType(PerBatchUniforms uniform);
 
 	struct UniformType
 	{

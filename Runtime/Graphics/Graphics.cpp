@@ -163,6 +163,45 @@ namespace Joestar {
 		}
 	}
 
+	void Graphics::CreateDescriptorSets(DescriptorSets* sets)
+	{
+		U32 handle = mDescriptorSets.Size();
+		sets->SetHandle(handle);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateDescriptorSets);
+		GPUDescriptorSetsCreateInfo createInfo{
+			sets->GetLayout()->GetHandle(),
+		};
+		GetMainCmdList()->WriteBuffer(createInfo);
+		//for (U32 i = 0; i < sets->Size(); ++i)
+		//{
+		//	GPUDescriptorSetsCreateInfo createInfo{
+		//	};
+		//	GetMainCmdList()->WriteBuffer(createInfo);
+		//}
+
+	}
+
+	void Graphics::UpdateDescriptorSets(DescriptorSets* sets)
+	{
+		GetMainCmdList()->WriteCommand(GFXCommand::UpdateDescriptorSets);
+		GPUDescriptorSetsUpdateInfo updateInfo{
+			sets->Size()
+		};
+		GetMainCmdList()->WriteBuffer(updateInfo);
+		for (U32 i = 0; i < sets->Size(); ++i)
+		{
+			DescriptorSet& set = sets->GetDescriptorSet(i);
+			GPUDescriptorSetsUpdateInfo::Entry entry{
+				sets->GetHandle(),
+				set.binding,
+				set.type,
+				set.count,
+				set.ub->GetHandle()
+			};
+			GetMainCmdList()->WriteBuffer(entry);
+		}
+
+	}
 
 	GFXCommandList* Graphics::GetMainCmdList()
 	{

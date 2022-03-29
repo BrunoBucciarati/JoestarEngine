@@ -301,4 +301,16 @@ namespace Joestar {
         }
         bCreated = true;
     }
+
+    void DescriptorSetsVK::Create(VkDevice& device, VkDescriptorPool& pool, PODVector<VkDescriptorSetLayout> layout)
+    {
+        sets.Resize(layout.Size());
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = pool;
+        allocInfo.descriptorSetCount = layout.Size();
+        allocInfo.pSetLayouts = layout.Buffer();
+
+        VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, sets.Buffer()));
+    }
 }

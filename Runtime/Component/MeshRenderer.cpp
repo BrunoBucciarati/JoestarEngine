@@ -9,12 +9,15 @@ namespace Joestar {
 
 	void MeshRenderer::Render(CommandBuffer* cb)
 	{
-		//mGraphics->SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (float*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
-		mMaterial->SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (float*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
+		SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (float*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
+		mGraphics->UpdateDescriptorSets(mMaterial->GetDescriptorSets());
+		mGraphics->UpdateDescriptorSets(GetDescriptorSets());
 		auto pso = GetPipelineState(cb);
 		cb->BindPipelineState(pso);
 		cb->BindVertexBuffer(mMesh->GetVertexBuffer());
-		cb->BindDescriptorSets(mMaterial->GetDescriptorSets());
+		//后面外面要按材质排序，这个BATCH的应该放在外面--todo
+		cb->BindDescriptorSets((U32)UniformFrequency::BATCH, mMaterial->GetDescriptorSets());
+		cb->BindDescriptorSets((U32)UniformFrequency::OBJECT, GetDescriptorSets());
 		cb->BindIndexBuffer(mMesh->GetIndexBuffer());
 		cb->DrawIndexed(mMesh->GetIndexCount());
 	}

@@ -69,11 +69,13 @@ namespace Joestar
                 layoutBinding.binding = descriptorBinding.binding;
                 layoutBinding.type = DescriptorType(descriptorBinding.descriptor_type);
                 layoutBinding.count = descriptorBinding.count;
+                layoutBinding.size = descriptorBinding.block.size;
                 layoutBinding.members.Resize(descriptorBinding.block.member_count);
                 for (U32 member = 0; member < layoutBinding.members.Size(); ++member)
                 {
                     layoutBinding.members[i].ID = GetUniformID(descriptorBinding.block.members[member].name);
                     layoutBinding.members[i].offset = descriptorBinding.block.members[member].offset;
+                    layoutBinding.members[i].size = descriptorBinding.block.members[member].size;
                 }
             }
         }

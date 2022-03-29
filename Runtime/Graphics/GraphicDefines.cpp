@@ -57,4 +57,12 @@ namespace Joestar
 	{
 		return PerObjectUniformTypes[(U32)uniform - (U32)PerObjectUniforms::MODEL_MATRIX];
 	}
+
+	const UniformDataType PerBatchUniformTypes[] = {
+		UniformDataType::Vec4,
+	};
+	UniformDataType GetPerBatchUniformDataType(PerBatchUniforms uniform)
+	{
+		return PerBatchUniformTypes[(U32)uniform - (U32)PerBatchUniforms::TO_ADD];
+	}
 }

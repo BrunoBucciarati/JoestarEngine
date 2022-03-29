@@ -10,6 +10,8 @@ namespace Joestar {
 		//mColorBlendState = mGraphics->GetDefaultColorBlendState();
 		//mMultiSampleState = mGraphics->GetDefaultMultiSampleState();
 		//mRasterizationState = mGraphics->GetDefaultRasterizationState();
+		mShaderProgram = NEW_OBJECT(ShaderProgram);
+		mMaterial = NEW_OBJECT(Material);
 	}
 	Renderer::~Renderer(){}
 
@@ -17,6 +19,29 @@ namespace Joestar {
 	{
 	}
 
+	void Renderer::SetShader(const String& name, ShaderStage stage)
+	{
+		mShaderProgram->SetShader(stage, name);
+		if (mShaderProgram->IsValid())
+		{
+			//设置逐材质的参数描述到材质中
+			mMaterial->SetDescriptorSetLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::BATCH));
+			mDescriptorSets->AllocFromLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT));
+		}
+	}
+
+	void Renderer::SetUniformBuffer(PerObjectUniforms uniform, float* data)
+	{
+		//检查Layout中是否有这个描述符
+		DescriptorSetLayoutBinding::Member member;
+		U32 binding = mShaderProgram->GetUniformMemberAndBinding((U32)UniformFrequency::OBJECT, (U32)uniform, member);
+
+		DescriptorSet& set = mDescriptorSets->SetLayoutData((U32)uniform, data);
+		set.binding = binding;
+		set.set = (U32)UniformFrequency::OBJECT;
+		set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
+		mDescriptorSets.Push(set);
+	}
 
 	SharedPtr<GraphicsPipelineState> Renderer::GetPipelineState(CommandBuffer* cb)
 	{

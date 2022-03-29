@@ -174,4 +174,23 @@ namespace Joestar
 		PODVector<GPUResourceHandle> shaderHandles;
 		PODVector<GPUResourceHandle> setLayoutHandles;
 	};
+
+	struct GPUDescriptorSetsCreateInfo
+	{
+		GPUResourceHandle layoutHandle;
+	};
+
+	struct GPUDescriptorSetsUpdateInfo
+	{
+		struct Entry
+		{
+			GPUResourceHandle setHandle;
+			U32 binding;
+			DescriptorType type;
+			U32 count;
+			GPUResourceHandle uniformHandle;
+		};
+		U32 num;
+		PODVector<Entry> updateSets;
+	};
 }

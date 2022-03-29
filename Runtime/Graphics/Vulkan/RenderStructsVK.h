@@ -136,10 +136,21 @@ namespace Joestar {
         {
             size = sz;
             CreateBuffer();
+
+            bufferInfos.Resize(count);
+            for (U32 i = 0; i < count; ++i) {
+                bufferInfos[i].buffer = buffers[i];
+                bufferInfos[i].offset = 0;
+                bufferInfos[i].range = size;
+            }
+        }
+
+        VkDescriptorBufferInfo& GetDescriptorBufferInfo(U32 idx) {
+            return bufferInfos[idx];
         }
         
         Vector<VkDescriptorBufferInfo> bufferInfos{};
-        Vector<VkDescriptorImageInfo> imageInfos{};
+        //Vector<VkDescriptorImageInfo> imageInfos{};
     };
 
     class StagingBufferVK : public BufferVK
@@ -535,5 +546,17 @@ namespace Joestar {
     public:
         void Create(VkDevice&, PODVector<DescriptorSetLayoutBinding>& bindings);
         VkDescriptorSetLayout setLayout;
+    };
+
+    class DescriptorSetsVK
+    {
+    public:
+        void Create(VkDevice&, VkDescriptorPool&, PODVector<VkDescriptorSetLayout> layout);
+        VkDescriptorSet& GetDescriptorSet(U32 idx)
+        {
+            return sets[idx];
+        }
+    private:
+        Vector<VkDescriptorSet> sets;
     };
 }

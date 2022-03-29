@@ -345,6 +345,21 @@ namespace Joestar {
                 mProtocol->CreateDescriptorSetLayout(handle, bindings);
                 break;
             }
+            CASECMD(GFXCommand::UpdateDescriptorSets)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+                U32 size;
+                cmdList->ReadBuffer(size);
+                GPUDescriptorSetsUpdateInfo updateInfo;
+                updateInfo.updateSets.Resize(size);
+                for (U32 i = 0; i < size; ++i)
+                {
+                    cmdList->ReadBuffer(updateInfo.updateSets[i]);
+                }
+                mProtocol->UpdateDescriptorSets(handle, updateInfo);
+                break;
+            }
             default:
             {
                 LOGERROR("CMD NOT FOUND: %s\n", GFXCommand(command));

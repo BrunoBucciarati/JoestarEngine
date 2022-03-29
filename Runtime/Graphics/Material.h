@@ -15,22 +15,7 @@ namespace Joestar {
 		void SetPBR();
 		void SetPlaneMat();
 
-		void SetShader(const String& name, ShaderStage stage = ShaderStage::VS_PS);
-
-		void SetShader(Shader* shader, ShaderStage stage = ShaderStage::VS_PS)
-		{
-			mShaderProgram->SetShader(stage, shader);
-		}
-
 		void SetTexture(Texture* tex, U8 slot = 0);
-		Shader* GetShader(ShaderStage stage)
-		{ 
-			return mShaderProgram->GetShader(stage);
-		}
-		String GetShaderName(ShaderStage stage)
-		{
-			return GetShader(stage)->GetName();
-		}
 		Vector<Texture*>& GetTextures()
 		{
 			return mTextures;
@@ -39,20 +24,21 @@ namespace Joestar {
 		{
 			return mTextures[slot];
 		}
-		ShaderProgram* GetShaderProgram()
-		{
-			return mShaderProgram;
-		}
 
-		void SetUniformBuffer(PerObjectUniforms, float* data);
+		void SetUniformBuffer(PerBatchUniforms, float* data);
 		Vector<DescriptorSet>& GetDescriptorSets()
 		{
 			return mDescriptorSets;
 		}
+		void SetDescriptorSetLayout(DescriptorSetLayout& setLayout)
+		{
+			mDescriptorSetLayout = setLayout;
+		}
+
 	private:
 		Vector<Texture*> mTextures;
-		SharedPtr<ShaderProgram> mShaderProgram;
 		Vector<DescriptorSet> mDescriptorSets;
+		DescriptorSetLayout mDescriptorSetLayout;
 		WeakPtr<Graphics> mGraphics;
 	};
 }

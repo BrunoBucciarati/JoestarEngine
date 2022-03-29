@@ -26,15 +26,6 @@ namespace Joestar {
 	class FrameBuffer;
 	class SwapChain;
 	class Shader;
-	//class GPUImage;
-	//class GPUImageView;
-	//class GPUMemory;
-	//class GPUVertexBuffer;
-	//class GPUIndexBuffer;
-	//class RenderPass;
-	//class PipelineState;
-	//class ComputePipelineState;
-	//class GraphicsPipelineState;
 
 	class Graphics : public SubSystem {
 		REGISTER_SUBSYSTEM(Graphics)
@@ -125,6 +116,8 @@ namespace Joestar {
 		void SetUniformBuffer(PerPassUniforms, float* data);
 		void SetUniformBuffer(PerObjectUniforms, float* data);
 		void SetDescriptorSetLayout(DescriptorSetLayout* setLayout);
+		void UpdateDescriptorSets(DescriptorSets* sets);
+		void CreateDescriptorSets(DescriptorSets* sets);
 	private:
 		void CreatePerPassUniforms();
 		void CreateMainRenderPass();
@@ -157,6 +150,7 @@ namespace Joestar {
 		Vector<SharedPtr<Shader>> mShaders;
 		Vector<SharedPtr<ShaderProgram>> mShaderPrograms;
 		HashMap<U32, SharedPtr<DescriptorSetLayout>> mDescriptorSetLayouts;
+		Vector<SharedPtr<DescriptorSets>> mDescriptorSets;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

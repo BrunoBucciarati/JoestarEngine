@@ -48,7 +48,7 @@ namespace Joestar {
 		void BindPipelineState(GraphicsPipelineState* pass);
 		void BindVertexBuffer(VertexBuffer* vb, U32 binding = 0);
 		void BindIndexBuffer(IndexBuffer* ib);
-		void BindDescriptorSets(Vector<DescriptorSet>& sets);
+		void BindDescriptorSets(U32 set, Vector<DescriptorSet>& sets);
 		void DrawIndexed(U32 num, U32 indexStart = 0, U32 vertStart = 0);
 		void Draw(U32 num, U32 vertStart = 0);
 		RenderPass* GetRenderPass() const

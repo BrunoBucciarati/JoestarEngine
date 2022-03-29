@@ -1,5 +1,6 @@
 #pragma once
 #include "../Container/Vector.h"
+#include "../Container/Ptr.h"
 #include "GraphicDefines.h"
 #include "GPUResource.h"
 #include "UniformBuffer.h"
@@ -26,10 +27,12 @@ namespace Joestar
 		DescriptorType type;
 		U32 count{ 0 };
 		U32 stage{ 0 };
+		U32 size{ 0 };
 		struct Member
 		{
 			U32 ID;
 			U32 offset;
+			U32 size;
 		};
 		PODVector<Member> members;
 		bool operator==(const DescriptorSetLayoutBinding& rhs)
@@ -64,19 +67,49 @@ namespace Joestar
 			return mLayoutBindings.Size();
 		}
 		bool AddBinding(DescriptorSetLayoutBinding binding);
+		U32 GetUniformMemberAndBinding(U32 ID, DescriptorSetLayoutBinding::Member& member);
 
 		U32 Hash();
 	private:
 		Vector<DescriptorSetLayoutBinding> mLayoutBindings;
 	};
 
-	class DescriptorSet : GPUResource
+	struct DescriptorSet
+	{
+		UniformBuffer* ub;
+		U32 binding{ 0 };
+		U32 offset{ 0 };
+		U32 set{ 0 };
+		U32 count{ 0 };
+		DescriptorType type;
+	};
+
+	class DescriptorSets : public GPUResource
 	{
 	public:
-		UniformBuffer* ub;
-		U32 binding;
-		U32 offset;
-		U32 set;
+		void AllocFromLayout(DescriptorSetLayout* layout);
+		void SetLayoutData(U32 ID, float* data);
+		SharedPtr<DescriptorSetLayout>& GetLayout()
+		{
+			return mLayout;
+		}
+		U32 Size()
+		{
+			return mSize;
+		}
+		U8* GetBuffer()
+		{
+			return mBuffer;
+		}
+		DescriptorSet& GetDescriptorSet(U32 idx)
+		{
+			return mSets[idx];
+		}
+	private:
+		Vector<DescriptorSet> mSets;
+		SharedPtr<DescriptorSetLayout> mLayout;
+		U32 mSize;
+		U8* mBuffer;
 	};
 
 	struct InputAttribute {

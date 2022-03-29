@@ -836,6 +836,38 @@ namespace Joestar {
         setLayout.Create(mDevice, bindings);
     }
 
+    void RenderAPIVK::CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE_FROM_VECTOR(sets, DescriptorSets, handle, mDescriptorSets);
+        PODVector<VkDescriptorSetLayout> layouts;
+        layouts.Resize(mSwapChain.GetImageCount());
+        for (U32 i = 0; i < mSwapChain.GetImageCount(); ++i)
+        {
+            layouts[i] = mDescriptorSetLayouts[createInfo.layoutHandle].setLayout;
+        }
+        sets.Create(mDevice, mDescriptorPool, layouts);
+    }
+
+    void RenderAPIVK::UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo)
+    {
+        Vector<VkWriteDescriptorSet> descriptorWrites;
+        descriptorWrites.Resize(updateInfo.num);
+        U32 idx = mFrameIndex % 3;
+        for (U32 i = 0; i < updateInfo.num; ++i) {
+            descriptorWrites[i] = {};
+            auto& entry = updateInfo.updateSets[i];
+            descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[i].dstSet = mDescriptorSets[entry.setHandle].GetDescriptorSet(idx);
+            descriptorWrites[i].dstBinding = entry.binding;
+            descriptorWrites[i].dstArrayElement = 0;
+            descriptorWrites[i].descriptorType = GetDescriptorTypeVK(entry.type);
+            descriptorWrites[i].descriptorCount = 1;
+            descriptorWrites[i].pBufferInfo = &mUniformBuffers[entry.uniformHandle].GetDescriptorBufferInfo(idx);
+            
+            vkUpdateDescriptorSets(mDevice, descriptorWrites.Size(), descriptorWrites.Buffer(), 0, nullptr);
+        }
+    }
+
     void RenderAPIVK::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     {
         CommandBufferVK cb = GetTempCommandBuffer();

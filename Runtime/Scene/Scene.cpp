@@ -52,9 +52,8 @@ namespace Joestar {
         gameObjects.Push(plane);
         MeshRenderer* pr = plane->GetComponent<MeshRenderer>();
         pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
-        pr->SetMaterial(NEW_OBJECT(Material));
-        pr->GetMaterial()->SetShader("vertex", ShaderStage::VS);
-        pr->GetMaterial()->SetShader("fragment", ShaderStage::PS);
+        pr->SetShader("vertex", ShaderStage::VS);
+        pr->SetShader("fragment", ShaderStage::PS);
 
         mMainRenderPass = JOJO_NEW(RenderPass, MEMORY_GFX_STRUCT);
         mMainRenderPass->SetLoadOp(AttachmentLoadOp::DONT_CARE);

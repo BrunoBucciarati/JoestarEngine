@@ -39,6 +39,10 @@ namespace Joestar {
 		{
 			return mDescriptorLayouts[set].GetLayoutBinding(idx);
 		}
+		DescriptorSetLayout& GetDescriptorSetLayout(UniformFrequency freq)
+		{
+			return mDescriptorLayouts[(U32)freq];
+		}
 		DescriptorSetLayout& GetDescriptorSetLayout(U32 set)
 		{
 			return mDescriptorLayouts[set];
@@ -47,11 +51,15 @@ namespace Joestar {
 		{
 			return mInputAttributes;
 		}
-		DescriptorSetLayoutBinding::Member GetUniformMemberAndBinding(UniformFrequency set, U32 ID, U32& binding)
+		U32 GetUniformMemberAndBinding(UniformFrequency set, U32 ID, DescriptorSetLayoutBinding::Member& binding)
 		{
 			return GetUniformMemberAndBinding(U32(set), ID, binding);
 		}
-		DescriptorSetLayoutBinding::Member GetUniformMemberAndBinding(U32 set, U32 ID, U32& binding);
+		U32 GetUniformMemberAndBinding(U32 set, U32 ID, DescriptorSetLayoutBinding::Member& binding);
+		bool IsValid() const
+		{
+			return bValid;
+		}
 	private:
 		void CheckValid();
 		void CollectInputAndDescriptors();
