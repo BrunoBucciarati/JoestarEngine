@@ -57,19 +57,18 @@ namespace Joestar {
 		GET_STRUCT_BY_HANDLE_FROM_VECTOR(state, GPUShaderProgramCreateInfo, handle, mShaderPrograms);
 		state = createInfo;
 	}
-	void RenderAPIProtocol::QueueSubmit(GPUResourceHandle handle, U32 size, U8* data)
+	void RenderAPIProtocol::QueueSubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data)
 	{
-		GET_STRUCT_BY_HANDLE_FROM_VECTOR(encoder, CommandEncoder, handle, mCommandEncoders);
+		//GET_STRUCT_BY_HANDLE_FROM_VECTOR(encoder, CommandEncoder, handle, mCommandEncoders);
+		CommandEncoder encoder;
 		encoder.SetData(data, size);
 		CommandBufferCMD cmd;
 		//在这里循环，然后调抽象的接口，免得每个API中要写一遍循环
 		while (encoder.ReadBuffer(cmd))
 		{
-			switch (cmd)
-			{
-				RecordCommand(cmd, encoder, handle);
-			}
+			RecordCommand(cmd, encoder, handle);
 		}
+		QueueSubmit(handle);
 	}
 
 	void RenderAPIProtocol::RecordCommand(CommandBufferCMD& cmd, CommandEncoder& encoder, GPUResourceHandle cbHandle)
@@ -93,7 +92,18 @@ namespace Joestar {
 				CBEnd(cbHandle);
 				break;
 			}
-			HANDLE_COMMAND(BeginRenderPass)
+			CASECMD(CommandBufferCMD::BeginRenderPass)
+			{
+				RenderPassBeginInfo beginInfo;
+				encoder.ReadBuffer(beginInfo);
+				beginInfo.clearValues.Resize(beginInfo.numClearValues);
+				for (U32 i = 0; i < beginInfo.numClearValues; ++i)
+				{
+					encoder.ReadBuffer(beginInfo.clearValues[i]);
+				}
+				CBBeginRenderPass(cbHandle, beginInfo);
+				break;
+			}
 			HANDLE_COMMAND(EndRenderPass)
 			HANDLE_COMMAND(BindGraphicsPipeline)
 			HANDLE_COMMAND(BindComputePipeline)

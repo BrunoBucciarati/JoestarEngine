@@ -34,6 +34,8 @@ namespace Joestar
 		virtual void CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<DescriptorSetLayoutBinding>& bindings) {};
 		virtual void CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo) = 0;
 		virtual void UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo) = 0;
+		virtual void QueueSubmit(GPUResourceHandle handle) = 0;
+		virtual void Present() = 0;
 		///Uniform Functions
 		void CreateMemory(GPUResourceHandle handle, U32 size, U8* data);
 		void CreateColorBlendState(GPUResourceHandle handle, GPUColorBlendStateCreateInfo& createInfo);
@@ -41,13 +43,13 @@ namespace Joestar
 		void CreateRasterizationState(GPUResourceHandle handle, GPURasterizationStateCreateInfo& createInfo);
 		void CreateMultiSampleState(GPUResourceHandle handle, GPUMultiSampleStateCreateInfo& createInfo);
 		void CreateShaderProgram(GPUResourceHandle handle, GPUShaderProgramCreateInfo& createInfo);
-		void QueueSubmit(GPUResourceHandle handle, U32 size, U8* data);
+		void QueueSubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data);
 
 		/// Command Buffer Protocols
 		void RecordCommand(CommandBufferCMD& cmd, CommandEncoder& encoder, GPUResourceHandle handle);
 		virtual void CBBegin(GPUResourceHandle handle) = 0;
 		virtual void CBEnd(GPUResourceHandle handle) = 0;
-		virtual void CBBeginRenderPass(GPUResourceHandle handle, GPUResourceHandle) = 0;
+		virtual void CBBeginRenderPass(GPUResourceHandle handle, RenderPassBeginInfo&) = 0;
 		virtual void CBEndRenderPass(GPUResourceHandle handle, GPUResourceHandle) = 0;
 		virtual void CBBindGraphicsPipeline(GPUResourceHandle handle, GPUResourceHandle) = 0;
 		virtual void CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle) = 0;
@@ -57,6 +59,12 @@ namespace Joestar
 		virtual void CBPushConstants(GPUResourceHandle handle, GPUResourceHandle) = 0;
 		virtual void CBDraw(GPUResourceHandle handle, U32 count) = 0;
 		virtual void CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0) = 0;
+		virtual void BeginFrame(U32 frameIndex)
+		{
+			SetFrame(frameIndex);
+		}
+		virtual void EndFrame(U32 frameIndex)
+		{}
 
 		void SetWindow(Window* w);
 		void SetFrame(U32 frameIndex)
@@ -78,5 +86,6 @@ namespace Joestar
 		Vector<GPUMultiSampleStateCreateInfo> mMultiSampleStates;
 		Vector<GPUShaderProgramCreateInfo> mShaderPrograms;
 		Vector<CommandEncoder> mCommandEncoders;
+		bool bResized{ false };
 	};
 }

@@ -209,4 +209,28 @@ namespace Joestar
 		PODVector<GPUResourceHandle> setLayoutHandles;
 		PODVector<GPUResourceHandle> pushConstantHandles;
 	};
+
+	union ClearColorValue {
+		F32	   f32[4];
+		U32    u32[4];
+		I32    i32[4];
+	};
+	struct ClearDepthStencilValue {
+		F32    depth;
+		U32    stencil;
+	};
+
+	union ClearValue {
+		ClearColorValue           color;
+		ClearDepthStencilValue    depthStencil;
+	};
+
+	struct RenderPassBeginInfo
+	{
+		GPUResourceHandle passHandle;
+		GPUResourceHandle fbHandle;
+		Rect renderArea;
+		U32 numClearValues;
+		PODVector<ClearValue> clearValues;
+	};
 }

@@ -159,6 +159,7 @@ namespace Joestar
 		{
 			data = d;
 			size = sz;
+			last = sz;
 			cursor = 0;
 		}
 		template<typename T>

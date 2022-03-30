@@ -58,7 +58,7 @@ namespace Joestar {
 		//Render Update
 		GetSubSystem<Graphics>()->WaitForRender();
 		mMainView->Render();
-		GetSubSystem<Graphics>()->DoRender();
+		GetSubSystem<Graphics>()->Present();
 
 		GetSubSystem<TimeManager>()->EndFrame();
 		if (dt < TARGET_FPS)

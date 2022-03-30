@@ -1,5 +1,6 @@
 #pragma once
 #include "PipelineState.h"
+#include "FrameBuffer.h"
 #include "../IO/MemoryWriter.h"
 namespace Joestar {
 	enum class CommandBufferCMD
@@ -43,7 +44,7 @@ namespace Joestar {
 	public:
 		void Begin();
 		void End();
-		void BeginRenderPass(RenderPass* pass);
+		void BeginRenderPass(RenderPass* pass, FrameBuffer* fb);
 		void EndRenderPass(RenderPass* pass);
 		void BindPipelineState(GraphicsPipelineState* pass);
 		void BindVertexBuffer(VertexBuffer* vb, U32 binding = 0);

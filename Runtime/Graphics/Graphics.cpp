@@ -70,6 +70,7 @@ namespace Joestar {
 		//创建BackBuffer
 		CreateFrameBuffer();
 		CreateDescriptorPool();
+		CreateSyncObjects();
 		//创建内建的Uniform
 		CreatePerPassUniforms();
 		//创建主RenderPass
@@ -229,8 +230,9 @@ namespace Joestar {
 		}
 	}
 
-	void Graphics::DoRender() {
+	void Graphics::Present() {
 		WaitForRender();
+		GetMainCmdList()->WriteCommand(GFXCommand::Present);
 		GetMainCmdList()->Flush();
 		++frameIdx;
 		return;
@@ -798,7 +800,7 @@ namespace Joestar {
 
 	void Graphics::QueueSubmit(CommandBuffer* cb)
 	{
-		GetMainCmdList()->WriteCommand(GFXCommand::QueueSubmit);
+		GetMainCmdList()->WriteCommand(GFXCommand::QueueSubmitCommandBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(cb->GetHandle());
 		CommandEncoder& encoder = cb->GetEncoder();
 		GetMainCmdList()->WriteBuffer(encoder.GetSize());

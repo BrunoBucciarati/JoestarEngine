@@ -1,6 +1,7 @@
 #include "CommandBuffer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "GPUCreateInfos.h"
 namespace Joestar
 {
 	void CommandBuffer::Begin()
@@ -13,11 +14,24 @@ namespace Joestar
 		mPass = nullptr;
 		mEncoder.WriteCommand(CommandBufferCMD::End);
 	}
-	void CommandBuffer::BeginRenderPass(RenderPass* pass)
+	void CommandBuffer::BeginRenderPass(RenderPass* pass, FrameBuffer* fb)
 	{
 		mPass = pass;
 		mEncoder.WriteCommand(CommandBufferCMD::BeginRenderPass);
-		mEncoder.WriteBuffer(pass->handle);
+		
+		RenderPassBeginInfo beginInfo{
+			pass->GetHandle(),
+			fb->GetHandle(),
+			mViewport->rect,
+			2
+		};
+		mEncoder.WriteBuffer(beginInfo);
+		ClearValue clearColorValue;
+		clearColorValue.color = { 0, 0, 0, 0 };
+		mEncoder.WriteBuffer(clearColorValue);
+		ClearValue clearDSValue;
+		clearDSValue.depthStencil = { 1.0F, 0 };
+		mEncoder.WriteBuffer(clearDSValue);
 	}
 	void CommandBuffer::EndRenderPass(RenderPass* pass)
 	{

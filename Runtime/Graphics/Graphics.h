@@ -33,7 +33,7 @@ namespace Joestar {
 		explicit Graphics(EngineContext* context);
 		void Init();
 		virtual void DrawTriangle() {}
-		void DoRender();
+		void Present();
 		void WaitForRender();
 		//void DrawM esh(Mesh* mesh, Material* mat);
 		void Clear();

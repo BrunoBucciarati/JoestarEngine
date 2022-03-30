@@ -461,6 +461,10 @@ namespace Joestar {
 		{
 			colorAttachments[idx]->SetRawImageViews(imageViews);
 		}
+        VkFramebuffer GetFrameBuffer(U32 idx = 0)
+        {
+            return frameBuffers[idx];
+        }
 		RenderPassVK* renderPass;
 	};
 

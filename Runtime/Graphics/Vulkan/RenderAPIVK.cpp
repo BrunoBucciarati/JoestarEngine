@@ -992,9 +992,35 @@ namespace Joestar {
     {
         mCommandBuffers[handle].End();
     }
-    void RenderAPIVK::CBBeginRenderPass(GPUResourceHandle handle, GPUResourceHandle h)
+    void RenderAPIVK::CBBeginRenderPass(GPUResourceHandle handle, RenderPassBeginInfo& beginInfo)
     {
-        //vkCmdBeginRenderPass(mCommandBuffers[handle].GetCommandBuffer(), &mRenderPasses[h].renderPass);
+        RenderPassVK& pass = mRenderPasses[beginInfo.passHandle];
+        FrameBufferVK& fb = mFrameBuffers[beginInfo.fbHandle];
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = pass.renderPass;
+        renderPassInfo.framebuffer = fb.GetFrameBuffer(mFrameIndex);
+        renderPassInfo.renderArea.offset = { (I32)beginInfo.renderArea.x, (I32)beginInfo.renderArea.y };
+        renderPassInfo.renderArea.extent = { (U32)beginInfo.renderArea.width, (U32)beginInfo.renderArea.height };
+        if (beginInfo.numClearValues > 0) {
+            Vector<VkClearValue> clearValues;
+            clearValues.Resize(beginInfo.numClearValues);
+            for (U32 i = 0; i < beginInfo.numClearValues; ++i)
+            {
+                //深度默认放最后
+                if (i == beginInfo.numClearValues - 1)
+                {
+                    clearValues[i].depthStencil = { beginInfo.clearValues[i].depthStencil.depth, beginInfo.clearValues[i].depthStencil.stencil };
+                }
+                else
+                {
+                    clearValues[i].color = { beginInfo.clearValues[i].color.f32[0], beginInfo.clearValues[i].color.f32[1], beginInfo.clearValues[i].color.f32[2], beginInfo.clearValues[i].color.f32[3] };
+                }
+            }
+            renderPassInfo.clearValueCount = clearValues.Size();
+            renderPassInfo.pClearValues = clearValues.Buffer();
+        }
+        vkCmdBeginRenderPass(mCommandBuffers[handle].GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
     void RenderAPIVK::CBEndRenderPass(GPUResourceHandle handle, GPUResourceHandle)
     {
@@ -1038,5 +1064,66 @@ namespace Joestar {
     void RenderAPIVK::CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart, U32 vertStart)
     {
         vkCmdDrawIndexed(mCommandBuffers[handle].GetCommandBuffer(), 1, count, indexStart, vertStart, 0);
+    }
+
+    void RenderAPIVK::BeginFrame(U32 frameIndex)
+    {
+        RenderAPIProtocol::BeginFrame(frameIndex);
+        //第一帧还没创建，先跳过
+        if (mInFlightFences.Empty())
+            return;
+        vkWaitForFences(mDevice, 1, &mInFlightFences[frameIndex], VK_TRUE, U64_MAX);
+        vkResetFences(mDevice, 1, &mInFlightFences[frameIndex]);
+        VkResult result = vkAcquireNextImageKHR(mDevice, mSwapChain.swapChain, UINT64_MAX, mImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &mImageIndex);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || bResized) {
+            bResized = false;
+            //todo 暂时不搞这个
+            //RecreateSwapChain();
+            return;
+        }
+        else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+            LOGERROR("Failed to acquire swap chain image!");
+        }
+    }
+    void RenderAPIVK::EndFrame(U32 frameIndex)
+    {
+        RenderAPIProtocol::EndFrame(frameIndex);
+    }
+
+    void RenderAPIVK::QueueSubmit(GPUResourceHandle handle)
+    {
+        VkCommandBuffer& cb = mCommandBuffers[handle].GetCommandBuffer(mFrameIndex);
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+        VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[mFrameIndex] };
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cb;
+
+        VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[mFrameIndex] };
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+
+        VK_CHECK(vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, mInFlightFences[mFrameIndex]));
+    }
+
+    void RenderAPIVK::Present()
+    {
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+        VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[mFrameIndex] };
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+        VkSwapchainKHR swapChains[] = { mSwapChain.swapChain };
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &mImageIndex;
+        presentInfo.pResults = nullptr; // Optional
+        VK_CHECK(vkQueuePresentKHR(mPresentQueue, &presentInfo));
     }
 }

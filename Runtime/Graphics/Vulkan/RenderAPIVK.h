@@ -42,11 +42,15 @@ namespace Joestar {
 		void CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<DescriptorSetLayoutBinding>& bindings) override;
 		void CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo) override;
 		void UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo) override;
+		void QueueSubmit(GPUResourceHandle handle) override;
+		void BeginFrame(U32 frameIndex);
+		void EndFrame(U32 frameIndex);
+		void Present() override;
 
 		//Command Buffer CMDs
 		void CBBegin(GPUResourceHandle handle) override;
 		void CBEnd(GPUResourceHandle handle) override;
-		void CBBeginRenderPass(GPUResourceHandle handle, GPUResourceHandle) override;
+		void CBBeginRenderPass(GPUResourceHandle handle, RenderPassBeginInfo&) override;
 		void CBEndRenderPass(GPUResourceHandle handle, GPUResourceHandle) override;
 		void CBBindGraphicsPipeline(GPUResourceHandle handle, GPUResourceHandle) override;
 		void CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle) override;
@@ -109,5 +113,6 @@ namespace Joestar {
 
 		SwapChainVK mSwapChain;
 		U32 mDeviceLocalMemoryTypeIdx{ 0 };
+		U32 mImageIndex{ 0 };
 	};
 }

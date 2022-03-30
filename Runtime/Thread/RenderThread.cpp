@@ -47,12 +47,13 @@ namespace Joestar {
                 //wait for 0.01 sec
                 Sleep(10.F);
             }
-            mProtocol->SetFrame(idx);
+            mProtocol->BeginFrame(idx);
             GFXCommand command;
             while (mCmdList[idx]->ReadCommand(command))
             {
                 ExecuteGFXCommand((U32)command, mCmdList[idx]);
             }
+            mProtocol->EndFrame(idx);
             //已经处理完这波指令了，清掉
             mCmdList[idx]->Clear();
             mCmdList[idx]->readFlag = false;
@@ -382,7 +383,7 @@ namespace Joestar {
                 mProtocol->UpdateDescriptorSets(handle, updateInfo);
                 break;
             }
-            CASECMD(GFXCommand::QueueSubmit)
+            CASECMD(GFXCommand::QueueSubmitCommandBuffer)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
@@ -390,7 +391,12 @@ namespace Joestar {
                 cmdList->ReadBuffer(size);
                 U8* data = JOJO_NEW_ARRAY(U8, size);
                 cmdList->ReadBufferPtr(data, size);
-                mProtocol->QueueSubmit(handle, size, data);
+                mProtocol->QueueSubmitCommandBuffer(handle, size, data);
+                break;
+            }
+            CASECMD(GFXCommand::Present)
+            {
+                mProtocol->Present();
                 break;
             }
             default:

@@ -28,12 +28,15 @@ namespace Joestar
 		//mGraphics->SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (float*)mCamera->GetViewMatrix());
 		//mGraphics->SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (float*)mCamera->GetProjectionMatrix());
 		CommandBuffer* cb = mGraphics->GetMainCommandBuffer();
+		cb->Begin();
 		cb->SetViewport(&mViewport);
-		cb->BeginRenderPass(mGraphics->GetMainRenderPass());
+		cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());
 		if (mScene)
 		{
 			mScene->RenderScene(cb);
 		}
 		cb->EndRenderPass(mGraphics->GetMainRenderPass());
+		cb->End();
+		mGraphics->QueueSubmit(cb);
 	}
 }
