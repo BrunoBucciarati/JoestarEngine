@@ -9,10 +9,14 @@
 
 #define GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, _VEC) \
     if (_HANDLE + 1 > _VEC.Size()) _VEC.Resize(_HANDLE + 1); \
-    _TYP##VK& _VAR =  _VEC[_HANDLE];
+    _VEC[_HANDLE] = JOJO_NEW(_TYP##VK, MEMORY_GFX_STRUCT); \
+    _TYP##VK& _VAR =  *(_VEC[_HANDLE]);
 
 #define GET_STRUCT_BY_HANDLE(_VAR, _TYP, _HANDLE) \
     GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, m##_TYP##s);
+
+#define GetFrameCommandBuffer(handle) \
+    mCommandBuffers[handle]->GetCommandBuffer(mFrameIndex)
 
 namespace Joestar {
     VkResult globalResult;
@@ -488,7 +492,7 @@ namespace Joestar {
     {
         if (handle + 1 > mImages.Size())
             mImages.Resize(handle + 1);
-        ImageVK& image = mImages[handle];
+        ImageVK& image = *mImages[handle];
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = GetImageTypeVK(createInfo.type);
@@ -523,8 +527,8 @@ namespace Joestar {
     {
         if (handle + 1 > mImageViews.Size())
             mImageViews.Resize(handle + 1);
-        ImageViewVK& imageView = mImageViews[handle];
-        ImageVK image = mImages[createInfo.imageHandle];
+        ImageViewVK& imageView = *mImageViews[handle];
+        ImageVK& image = *mImages[createInfo.imageHandle];
         imageView.image = &image;
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -654,9 +658,9 @@ namespace Joestar {
         mSwapChain.frameBuffer = JOJO_NEW(FrameBufferVK);
         if (mFrameBuffers.Empty())
             mFrameBuffers.Resize(1);
-        mFrameBuffers[0] = *mSwapChain.frameBuffer;
+        mFrameBuffers[0] = mSwapChain.frameBuffer;
 
-        mSwapChain.frameBuffer->frameBuffers.Resize(mSwapChain.imageViews.Size());
+        mSwapChain.frameBuffer->frameBuffers.Resize(mSwapChain.GetImageCount());
         VkFormat depthFormat = FindSupportedFormat(
             { VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT },
             VK_IMAGE_TILING_OPTIMAL,
@@ -814,14 +818,14 @@ namespace Joestar {
 
     void RenderAPIVK::SetUniformBuffer(GPUResourceHandle handle, U8* data, U32 size)
     {
-        mUniformBuffers[handle].SetFrame(mFrameIndex);
+        mUniformBuffers[handle]->SetFrame(mFrameIndex);
 
         StagingBufferVK stagingBuffer;
         stagingBuffer.SetDevice(mDevice, mPhysicalDevice);
         stagingBuffer.size = size;
         stagingBuffer.Create(data);
 
-        CopyBuffer(stagingBuffer.GetBuffer(), mUniformBuffers[handle].GetBuffer(), size);
+        CopyBuffer(stagingBuffer.GetBuffer(), mUniformBuffers[handle]->GetBuffer(), size);
     }
 
     void RenderAPIVK::CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo)
@@ -837,7 +841,7 @@ namespace Joestar {
         setLayouts.Resize(createInfo.numLayouts);
         for (U32 i = 0; i < createInfo.numLayouts; ++i)
         {
-            setLayouts[i] = mDescriptorSetLayouts[createInfo.setLayoutHandles[i]].setLayout;
+            setLayouts[i] = mDescriptorSetLayouts[createInfo.setLayoutHandles[i]]->setLayout;
         }
         layout.Create(mDevice, setLayouts);
     }
@@ -855,7 +859,7 @@ namespace Joestar {
         layouts.Resize(mSwapChain.GetImageCount());
         for (U32 i = 0; i < mSwapChain.GetImageCount(); ++i)
         {
-            layouts[i] = mDescriptorSetLayouts[createInfo.layoutHandle].setLayout;
+            layouts[i] = mDescriptorSetLayouts[createInfo.layoutHandle]->setLayout;
         }
         sets.Create(mDevice, mDescriptorPool, layouts);
     }
@@ -869,12 +873,12 @@ namespace Joestar {
             descriptorWrites[i] = {};
             auto& entry = updateInfo.updateSets[i];
             descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[i].dstSet = mDescriptorSets[entry.setHandle].GetDescriptorSet(idx);
+            descriptorWrites[i].dstSet = mDescriptorSets[entry.setHandle]->GetDescriptorSet(idx);
             descriptorWrites[i].dstBinding = entry.binding;
             descriptorWrites[i].dstArrayElement = 0;
             descriptorWrites[i].descriptorType = GetDescriptorTypeVK(entry.type);
             descriptorWrites[i].descriptorCount = 1;
-            descriptorWrites[i].pBufferInfo = &mUniformBuffers[entry.uniformHandle].GetDescriptorBufferInfo(idx);
+            descriptorWrites[i].pBufferInfo = &mUniformBuffers[entry.uniformHandle]->GetDescriptorBufferInfo(idx);
             
             vkUpdateDescriptorSets(mDevice, descriptorWrites.Size(), descriptorWrites.Buffer(), 0, nullptr);
         }
@@ -950,7 +954,7 @@ namespace Joestar {
         PODVector<ShaderVK*> shaders;
         for (U32 i = 0; i < program.numStages; ++i)
         {
-            shaders.Push(&mShaders[program.shaderHandles[i]]);
+            shaders.Push(mShaders[program.shaderHandles[i]]);
         }
         pso.CreateShaderStages(shaders);
 
@@ -965,8 +969,8 @@ namespace Joestar {
         //        setLayouts.Push(mDescriptorSetLayouts[program.setLayoutHandles[i]].setLayout);
         //    }
         //}
-        pso.SetRenderPass(&mRenderPasses[createInfo.renderPassHandle]);
-        pso.SetPipelineLayout(mPipelineLayouts[createInfo.pipelineLayoutHandle].layout);
+        pso.SetRenderPass(mRenderPasses[createInfo.renderPassHandle]);
+        pso.SetPipelineLayout(mPipelineLayouts[createInfo.pipelineLayoutHandle]->layout);
         pso.Create(mDevice);
     }
 
@@ -986,20 +990,20 @@ namespace Joestar {
     ///CommandBuffer Commands
     void RenderAPIVK::CBBegin(GPUResourceHandle handle)
     {
-        mCommandBuffers[handle].Begin(mFrameIndex);
+        mCommandBuffers[handle]->Begin(mFrameIndex);
     }
     void RenderAPIVK::CBEnd(GPUResourceHandle handle)
     {
-        mCommandBuffers[handle].End();
+        mCommandBuffers[handle]->End();
     }
     void RenderAPIVK::CBBeginRenderPass(GPUResourceHandle handle, RenderPassBeginInfo& beginInfo)
     {
-        RenderPassVK& pass = mRenderPasses[beginInfo.passHandle];
-        FrameBufferVK& fb = mFrameBuffers[beginInfo.fbHandle];
+        RenderPassVK* pass = mRenderPasses[beginInfo.passHandle];
+        FrameBufferVK* fb = mFrameBuffers[beginInfo.fbHandle];
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = pass.renderPass;
-        renderPassInfo.framebuffer = fb.GetFrameBuffer(mFrameIndex);
+        renderPassInfo.renderPass = pass->renderPass;
+        renderPassInfo.framebuffer = fb->GetFrameBuffer(mFrameIndex);
         renderPassInfo.renderArea.offset = { (I32)beginInfo.renderArea.x, (I32)beginInfo.renderArea.y };
         renderPassInfo.renderArea.extent = { (U32)beginInfo.renderArea.width, (U32)beginInfo.renderArea.height };
         if (beginInfo.numClearValues > 0) {
@@ -1020,37 +1024,37 @@ namespace Joestar {
             renderPassInfo.clearValueCount = clearValues.Size();
             renderPassInfo.pClearValues = clearValues.Buffer();
         }
-        vkCmdBeginRenderPass(mCommandBuffers[handle].GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(GetFrameCommandBuffer(handle), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
     void RenderAPIVK::CBEndRenderPass(GPUResourceHandle handle, GPUResourceHandle)
     {
-        vkCmdEndRenderPass(mCommandBuffers[handle].GetCommandBuffer());
+        vkCmdEndRenderPass(GetFrameCommandBuffer(handle));
     }
     void RenderAPIVK::CBBindGraphicsPipeline(GPUResourceHandle handle, GPUResourceHandle h)
     {
-        vkCmdBindPipeline(mCommandBuffers[handle].GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipelineStates[h].GetPipeline());
+        vkCmdBindPipeline(GetFrameCommandBuffer(handle), VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipelineStates[h]->GetPipeline());
     }
 
     void RenderAPIVK::CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle h)
     {
-        vkCmdBindPipeline(mCommandBuffers[handle].GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, mComputePipelineStates[h].GetPipeline());
+        vkCmdBindPipeline(GetFrameCommandBuffer(handle), VK_PIPELINE_BIND_POINT_COMPUTE, mComputePipelineStates[h]->GetPipeline());
 
     }
     void RenderAPIVK::CBBindIndexBuffer(GPUResourceHandle handle, GPUResourceHandle h)
     {
-        vkCmdBindIndexBuffer(mCommandBuffers[handle].GetCommandBuffer(), mIndexBuffers[h].GetBuffer(), 0, mIndexBuffers[h].GetIndexType());
+        vkCmdBindIndexBuffer(GetFrameCommandBuffer(handle), mIndexBuffers[h]->GetBuffer(), 0, mIndexBuffers[h]->GetIndexType());
     }
     void RenderAPIVK::CBBindVertexBuffer(GPUResourceHandle handle, GPUResourceHandle h, U32 binding)
     {
-        VkBuffer buffer = mVertexBuffers[h].GetBuffer();
-        vkCmdBindVertexBuffers(mCommandBuffers[handle].GetCommandBuffer(), 0, 1, &buffer, { 0 });
+        VkBuffer buffer = mVertexBuffers[h]->GetBuffer();
+        vkCmdBindVertexBuffers(GetFrameCommandBuffer(handle), 0, 1, &buffer, { 0 });
     }
     void RenderAPIVK::CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle layoutHandle, GPUResourceHandle setsHandle)
     {
-        DescriptorSetsVK& sets = mDescriptorSets[setsHandle];
-        PipelineLayoutVK& layout = mPipelineLayouts[layoutHandle];
+        DescriptorSetsVK& sets = *mDescriptorSets[setsHandle];
+        PipelineLayoutVK& layout = *mPipelineLayouts[layoutHandle];
         auto& vksets = sets.GetDescriptorSets();
-        vkCmdBindDescriptorSets(mCommandBuffers[handle].GetCommandBuffer(), sets.GetBindPoint(), layout.layout, 0,
+        vkCmdBindDescriptorSets(GetFrameCommandBuffer(handle), sets.GetBindPoint(), layout.layout, 0,
             vksets.Size(), vksets.Buffer(), 0, nullptr);
     }
     void RenderAPIVK::CBPushConstants(GPUResourceHandle handle, GPUResourceHandle)
@@ -1059,11 +1063,11 @@ namespace Joestar {
     }
     void RenderAPIVK::CBDraw(GPUResourceHandle handle, U32 count)
     {
-        vkCmdDraw(mCommandBuffers[handle].GetCommandBuffer(), count, 1, 0, 0);
+        vkCmdDraw(GetFrameCommandBuffer(handle), count, 1, 0, 0);
     }
     void RenderAPIVK::CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart, U32 vertStart)
     {
-        vkCmdDrawIndexed(mCommandBuffers[handle].GetCommandBuffer(), 1, count, indexStart, vertStart, 0);
+        vkCmdDrawIndexed(GetFrameCommandBuffer(handle), 1, count, indexStart, vertStart, 0);
     }
 
     void RenderAPIVK::BeginFrame(U32 frameIndex)
@@ -1092,7 +1096,7 @@ namespace Joestar {
 
     void RenderAPIVK::QueueSubmit(GPUResourceHandle handle)
     {
-        VkCommandBuffer& cb = mCommandBuffers[handle].GetCommandBuffer(mFrameIndex);
+        VkCommandBuffer& cb = GetFrameCommandBuffer(handle);
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 

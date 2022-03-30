@@ -79,6 +79,7 @@ namespace Joestar {
 		GPUResourceHandle handle; \
 		encoder.ReadBuffer(handle); \
 		CB##_TYP(cbHandle, handle); \
+		break; \
 	}
 		switch (cmd)
 		{

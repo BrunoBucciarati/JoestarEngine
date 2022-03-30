@@ -95,20 +95,20 @@ namespace Joestar {
 		Vector<VkSemaphore> mRenderFinishedSemaphores;
 		Vector<VkFence> mInFlightFences;
 
-		Vector<CommandBufferVK> mCommandBuffers;
-		Vector<FrameBufferVK> mFrameBuffers;
-		Vector<ImageVK> mImages;
-		Vector<ImageViewVK> mImageViews;
-		Vector<VertexBufferVK> mVertexBuffers;
-		Vector<IndexBufferVK> mIndexBuffers;
-		Vector<UniformBufferVK> mUniformBuffers;
-		Vector<RenderPassVK> mRenderPasses;
-		Vector<PipelineLayoutVK> mPipelineLayouts;
-		Vector<GraphicsPipelineStateVK> mGraphicsPipelineStates;
-		Vector<ComputePipelineStateVK> mComputePipelineStates;
-		Vector<ShaderVK> mShaders;
-		Vector<DescriptorSetLayoutVK> mDescriptorSetLayouts;
-		Vector<DescriptorSetsVK> mDescriptorSets;
+		Vector<CommandBufferVK*> mCommandBuffers;
+		Vector<FrameBufferVK*> mFrameBuffers;
+		Vector<ImageVK*> mImages;
+		Vector<ImageViewVK*> mImageViews;
+		Vector<VertexBufferVK*> mVertexBuffers;
+		Vector<IndexBufferVK*> mIndexBuffers;
+		Vector<UniformBufferVK*> mUniformBuffers;
+		Vector<RenderPassVK*> mRenderPasses;
+		Vector<PipelineLayoutVK*> mPipelineLayouts;
+		Vector<GraphicsPipelineStateVK*> mGraphicsPipelineStates;
+		Vector<ComputePipelineStateVK*> mComputePipelineStates;
+		Vector<ShaderVK*> mShaders;
+		Vector<DescriptorSetLayoutVK*> mDescriptorSetLayouts;
+		Vector<DescriptorSetsVK*> mDescriptorSets;
 		VkDescriptorPool mDescriptorPool;
 
 		SwapChainVK mSwapChain;
