@@ -75,6 +75,7 @@ namespace Joestar {
 			mSets[i].binding = binding->binding;
 			mSets[i].type = binding->type;
 			mSets[i].count = binding->count;
+			mSets[i].size = binding->size;
 		}
 		mBuffer = JOJO_NEW_ARRAY(U8, mSize);
 		mLayout = layout;

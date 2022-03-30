@@ -27,20 +27,39 @@ namespace Joestar {
 		{
 			//设置逐材质的参数描述到材质中
 			mMaterial->SetDescriptorSetLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::BATCH));
-			mDescriptorSets->AllocFromLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT));
+			auto layout = mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT);
+			mDescriptorSets->AllocFromLayout(layout);
+
+			//对描述符分配对应的UB
+			mUniformBuffers.Clear();
+			mUniformBuffers.Resize(mDescriptorSets->Size());
+			for (U32 i = 0; i < layout->GetNumBindings(); ++i)
+			{
+				DescriptorSetLayoutBinding* binding = layout->GetLayoutBinding(i);
+				U32 hash = binding->Hash();
+				UniformType type = { UniformFrequency::OBJECT };
+				mUniformBuffers[i] = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
+				mUniformBuffers[i]->SetSet((U32)UniformFrequency::OBJECT);
+				mUniformBuffers[i]->SetBinding(binding->binding);
+				mUniformBuffers[i]->SetSize(binding->size);
+				mGraphics->CreateUniformBuffer(mUniformBuffers[i]);
+				mDescriptorSets->GetDescriptorSetByBinding(binding->binding).ub = mUniformBuffers[i];
+			}
 		}
 	}
 
-	void Renderer::SetUniformBuffer(PerObjectUniforms uniform, float* data)
+	void Renderer::SetUniformBuffer(PerObjectUniforms uniform, U8* data)
 	{
 		//检查Layout中是否有这个描述符
 		//DescriptorSetLayoutBinding::Member member;
 		//U32 binding = mShaderProgram->GetUniformMemberAndBinding((U32)UniformFrequency::OBJECT, (U32)uniform, member);
 
+		auto layout = mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT);
 		DescriptorSet& set = mDescriptorSets->GetDescriptorSetByID((U32)uniform);
-		set.set = (U32)UniformFrequency::OBJECT;
-		if (!set.ub)
-			set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
+
+		mUniformBuffers[set.binding]->SetData(set.offset, set.size, data);
+		//if (!set.ub)
+		//	set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
 	}
 
 	SharedPtr<GraphicsPipelineState> Renderer::GetPipelineState(CommandBuffer* cb)

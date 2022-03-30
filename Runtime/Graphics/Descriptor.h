@@ -85,6 +85,7 @@ namespace Joestar
 		U32 offset{ 0 };
 		U32 set{ 0 };
 		U32 count{ 0 };
+		U32 size{ 0 };
 		DescriptorType type;
 	};
 

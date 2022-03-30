@@ -9,7 +9,7 @@ namespace Joestar {
 
 	void MeshRenderer::Render(CommandBuffer* cb)
 	{
-		SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (float*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
+		SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (U8*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
 		//mGraphics->UpdateDescriptorSets(mMaterial->GetDescriptorSets());
 		if (!mDescriptorSets->IsValid())
 			mGraphics->CreateDescriptorSets(mDescriptorSets);

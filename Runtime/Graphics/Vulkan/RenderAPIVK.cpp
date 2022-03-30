@@ -808,7 +808,7 @@ namespace Joestar {
         GET_STRUCT_BY_HANDLE(uniformBuffer, UniformBuffer, handle);
         uniformBuffer.SetDevice(mDevice, mPhysicalDevice);
         uniformBuffer.count = mSwapChain.GetImageCount();
-        uniformBuffer.size = UniformDataTypeSize[(U32)createInfo.type.dataType];
+        uniformBuffer.size = createInfo.size;
         uniformBuffer.Create(uniformBuffer.size);
     }
 
@@ -1035,7 +1035,7 @@ namespace Joestar {
     {
         vkCmdDraw(mCommandBuffers[handle].GetCommandBuffer(), count, 1, 0, 0);
     }
-    void RenderAPIVK::CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0)
+    void RenderAPIVK::CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart, U32 vertStart)
     {
         vkCmdDrawIndexed(mCommandBuffers[handle].GetCommandBuffer(), 1, count, indexStart, vertStart, 0);
     }

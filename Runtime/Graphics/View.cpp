@@ -25,8 +25,8 @@ namespace Joestar
 
 	void View::Render()
 	{
-		mGraphics->SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (float*)mCamera->GetViewMatrix());
-		mGraphics->SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (float*)mCamera->GetProjectionMatrix());
+		//mGraphics->SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (float*)mCamera->GetViewMatrix());
+		//mGraphics->SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (float*)mCamera->GetProjectionMatrix());
 		CommandBuffer* cb = mGraphics->GetMainCommandBuffer();
 		cb->SetViewport(&mViewport);
 		cb->BeginRenderPass(mGraphics->GetMainRenderPass());

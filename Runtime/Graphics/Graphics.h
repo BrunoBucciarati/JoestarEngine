@@ -79,8 +79,9 @@ namespace Joestar {
 		void RemoveGPUVertexBuffer(GPUVertexBuffer* vb);
 		GPUIndexBuffer* CreateGPUIndexBuffer(IndexBuffer*);
 		void RemoveGPUIndexBuffer(GPUIndexBuffer* vb);
-		UniformBuffer* CreateUniformBuffer(U32 hash, const UniformType& type);
-		UniformBuffer* CreateUniformBuffer(const String& name, const UniformType& type);
+		UniformBuffer* CreateUniformBuffer(U32 hash, const UniformType& type, U32 size);
+		UniformBuffer* CreateUniformBuffer(const String& name, const UniformType& type, U32 size);
+		void CreateUniformBuffer(UniformBuffer*);
 		void CreateRenderPass(RenderPass*);
 		void CreateGraphicsPipelineState(GraphicsPipelineState*);
 		RenderPass* GetMainRenderPass();
@@ -154,6 +155,7 @@ namespace Joestar {
 		Vector<SharedPtr<ShaderProgram>> mShaderPrograms;
 		HashMap<U32, SharedPtr<DescriptorSetLayout>> mDescriptorSetLayouts;
 		Vector<SharedPtr<DescriptorSets>> mDescriptorSets;
+		HashMap<U32, SharedPtr<UniformBuffer>> mUniformBufferTbl;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

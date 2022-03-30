@@ -178,6 +178,7 @@
     <ClCompile Include="Graphics\Texture.cpp" />
     <ClCompile Include="Graphics\Texture2D.cpp" />
     <ClCompile Include="Graphics\TextureCube.cpp" />
+    <ClCompile Include="Graphics\UniformBuffer.cpp" />
     <ClCompile Include="Graphics\UniformData.cpp" />
     <ClCompile Include="Graphics\VertexBuffer.cpp" />
     <ClCompile Include="Graphics\VertexData.cpp" />

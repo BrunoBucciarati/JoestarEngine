@@ -41,7 +41,7 @@ namespace Joestar {
 		{
 			return mShaderProgram;
 		}
-		void SetUniformBuffer(PerObjectUniforms,float*);
+		void SetUniformBuffer(PerObjectUniforms,U8*);
 		SharedPtr<DescriptorSets>& GetDescriptorSets()
 		{
 			return mDescriptorSets;
@@ -52,5 +52,6 @@ namespace Joestar {
 		SharedPtr<Material> mMaterial;
 		SharedPtr<ShaderProgram> mShaderProgram;
 		SharedPtr<DescriptorSets> mDescriptorSets;
+		Vector<SharedPtr<UniformBuffer>> mUniformBuffers;
 	};
 }

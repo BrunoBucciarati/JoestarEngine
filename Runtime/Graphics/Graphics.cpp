@@ -136,8 +136,9 @@ namespace Joestar {
 	{
 		GetMainCmdList()->WriteCommand(GFXCommand::SetUniformBuffer);
 		GetMainCmdList()->WriteBuffer(uniform->handle);
-		GetMainCmdList()->WriteBuffer(uniform->GetDataSize());
-		GetMainCmdList()->WriteBufferPtr((U8*)data, uniform->GetDataSize());
+		U32 sz = uniform->GetSize();
+		GetMainCmdList()->WriteBuffer(sz);
+		GetMainCmdList()->WriteBufferPtr((U8*)data, sz);
 	}
 
 	void Graphics::SetDescriptorSetLayout(DescriptorSetLayout* setLayout)
@@ -491,34 +492,50 @@ namespace Joestar {
 	void Graphics::CreatePerPassUniforms()
 	{
 		mPerPassUniformBuffers.Resize((U32)PerPassUniforms::COUNT);
-		for (U32 i = 0; i < (U32)PerPassUniforms::COUNT; ++i)
-		{
-			UniformBuffer* uniform = CreateUniformBuffer(i, { PerPassUniformTypes[i], UniformFrequency::PASS });
-			uniform->SetID(i);
-			mPerPassUniformBuffers[i] = uniform;
-		}
+		//for (U32 i = 0; i < (U32)PerPassUniforms::COUNT; ++i)
+		//{
+		//	UniformBuffer* uniform = CreateUniformBuffer(i, { PerPassUniformTypes[i], UniformFrequency::PASS });
+		//	uniform->SetHash(i);
+		//	mPerPassUniformBuffers[i] = uniform;
+		//}
 	}
 
-	UniformBuffer* Graphics::CreateUniformBuffer(const String& name, const UniformType& type)
-	{
-		return CreateUniformBuffer(name.Hash(), type);
-	}
+	//UniformBuffer* Graphics::CreateUniformBuffer(const String& name, const UniformType& type, U32 size)
+	//{
+	//	return CreateUniformBuffer(name.Hash(), type, size);
+	//}
 
-	UniformBuffer* Graphics::CreateUniformBuffer(U32 hash, const UniformType& type)
+	//UniformBuffer* Graphics::CreateUniformBuffer(U32 hash, const UniformType& type, U32 size)
+	//{
+	//	Vector<SharedPtr<UniformBuffer>>& buffers = type.frequency == UniformFrequency::PASS ? mPerPassUniformBuffers : mPerObjectUniformBuffers;
+	//	CREATE_NEW_HANDLE_VEC(ub, UniformBuffer, buffers);
+	//	ub->SetHash(hash);
+
+	//	GetMainCmdList()->WriteCommand(GFXCommand::CreateUniformBuffer);
+	//	GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+
+	//	GPUUniformBufferCreateInfo createInfo{
+	//		type, hash, ub->GetSize()
+	//	};
+	//	GetMainCmdList()->WriteBuffer<GPUUniformBufferCreateInfo>(createInfo);
+
+	//	return ub;
+	//}
+
+	void Graphics::CreateUniformBuffer(UniformBuffer* ub)
 	{
-		Vector<SharedPtr<UniformBuffer>>& buffers = type.frequency == UniformFrequency::PASS ? mPerPassUniformBuffers : mPerObjectUniformBuffers;
-		CREATE_NEW_HANDLE_VEC(ub, UniformBuffer, buffers);
-		ub->SetID(hash);
+		Vector<SharedPtr<UniformBuffer>>& buffers = ub->GetFrequency() == UniformFrequency::PASS ? mPerPassUniformBuffers : mPerObjectUniformBuffers;
+		U32 handle = buffers.Size();
+		ub->SetHandle(handle);
 
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateUniformBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 
 		GPUUniformBufferCreateInfo createInfo{
-			type, hash
+			ub->Hash(),
+			ub->GetSize()
 		};
 		GetMainCmdList()->WriteBuffer<GPUUniformBufferCreateInfo>(createInfo);
-
-		return ub;
 	}
 
 	void Graphics::CreateGraphicsPipelineState(GraphicsPipelineState* pso)

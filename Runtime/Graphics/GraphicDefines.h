@@ -207,8 +207,8 @@ namespace Joestar {
 
 	struct UniformType
 	{
-		UniformDataType dataType;
 		UniformFrequency frequency{ UniformFrequency::OBJECT };
+		//U32 size{ 0 };
 	};
 
 	enum class AttachmentLoadOp
