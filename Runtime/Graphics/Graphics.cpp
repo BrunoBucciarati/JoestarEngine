@@ -41,21 +41,6 @@ namespace Joestar {
 	}
 
 	void Graphics::Init() {
-		//GlobalConfig* cfg = GetSubsystem<GlobalConfig>();
-		//GFX_API gfxAPI = (GFX_API)cfg->GetConfig<int>(CONFIG_GFX_API);
-		/*switch (gfxAPI) {
-
-		}*/
-			//auto* a1 = new RenderThreadVulkan(mContext, cmdBuffers, computeCmdBuffers);
-		//if (gfxAPI == GFX_API_VULKAN) {
-		//}
-		//else if (gfxAPI == GFX_API_OPENGL) {
-		//	//renderThread = new RenderThreadGL(cmdBuffers, computeCmdBuffers);
-		//}
-		//else if (gfxAPI == GFX_API_D3D11) {
-		//	renderThread = new RenderThreadD3D11(cmdBuffers, computeCmdBuffers);
-		//}
-
 		//´´½¨MainCmdList
 		ThreadCommandList cmdLists;
 		for (int i = 0; i < MAX_CMDLISTS_IN_FLIGHT; ++i)
@@ -233,6 +218,11 @@ namespace Joestar {
 	void Graphics::Present() {
 		WaitForRender();
 		GetMainCmdList()->WriteCommand(GFXCommand::Present);
+		return;
+	}
+
+	void Graphics::Flush() {
+		WaitForRender();
 		GetMainCmdList()->Flush();
 		++frameIdx;
 		return;
@@ -241,136 +231,6 @@ namespace Joestar {
 	void Graphics::Clear() {
 		cmdBuffer->WriteCommandType(RenderCMD_Clear);
 		cmdBuffer->WriteBuffer<Vector4f>(defaultClearColor);
-	}
-
-	void Graphics::UpdateBuiltinMatrix(BUILTIN_VALUE typ, Matrix4x4f& mat) {
-		RenderCommandType t = typ == BUILTIN_MATRIX_MODEL ? RenderCMD_UpdateUniformBuffer : RenderCMD_UpdateUniformBufferObject;
-		cmdBuffer->WriteBuffer<RenderCommandType>(t);
-		cmdBuffer->WriteBuffer<BUILTIN_VALUE>(typ);
-		cmdBuffer->WriteBuffer<Matrix4x4f>(mat);
-	}
-	void Graphics::FlushUniformBuffer(const char* s) {
-		FlushUniformBuffer(hashString(s));
-	}
-
-	void Graphics::FlushUniformBuffer(U32 hash) {
-		if (isCompute) {
-			//computeCmdBuffer->WriteCommandType
-			return;
-		}
-		cmdBuffer->WriteCommandType(RenderCMD_FlushUniformBufferObject);
-		cmdBuffer->WriteBuffer<U32>(hash);
-	}
-
-	void Graphics::SetFrameBuffer(FrameBufferDef* def) {
-		cmdBuffer->WriteCommandType(RenderCMD_SetFrameBuffer);
-		cmdBuffer->WriteBuffer<FrameBufferDef*>(def);
-	}
-
-	void Graphics::UpdateBuiltinVec3(BUILTIN_VALUE typ, Vector3f& v3) {
-		cmdBuffer->WriteCommandType(RenderCMD_UpdateUniformBufferObject);
-		cmdBuffer->WriteBuffer<BUILTIN_VALUE>(typ);
-		cmdBuffer->WriteBuffer<Vector3f>(v3);
-	}
-
-	void Graphics::UpdateLightBlock(LightBlocks& lb) {
-		cmdBuffer->WriteCommandType(RenderCMD_UpdateUniformBufferObject);
-		BUILTIN_VALUE bv = BUILTIN_STRUCT_LIGHTBLOCK;
-		cmdBuffer->WriteBuffer<BUILTIN_VALUE>(bv);
-		cmdBuffer->WriteBuffer<LightBlocks>(lb);
-	}
-
-
-	void Graphics::UseShader(Shader* shader) {
-		if (isCompute) {
-			computeCmdBuffer->WriteCommandType(ComputeCMD_UseShader);
-			computeCmdBuffer->WriteBuffer<Shader*>(shader);
-		} else {
-			cmdBuffer->WriteCommandType(RenderCMD_UseShader);
-			cmdBuffer->WriteBuffer<Shader*>(shader);
-		}
-
-	}
-
-	//update material
-	void Graphics::UpdateMaterial(Material* mat) {
-		//UseShader(mat->GetShader());
-		//Vector<Texture*>& textures = mat->GetTextures();
-		//for (int i = 0; i < textures.Size(); i++) {
-		//	UpdateTexture(textures[i], mat->GetShader()->GetSamplerBinding(i));
-		//}
-	}
-
-	void Graphics::UpdateTexture(Texture* t, U8 binding) {
-		if (isCompute) {
-			computeCmdBuffer->WriteCommandType(ComputeCMD_UpdateTexture);
-			computeCmdBuffer->WriteBuffer<Texture*>(t);
-			computeCmdBuffer->WriteBuffer<U8>(binding);
-			return;
-		}
-		cmdBuffer->WriteCommandType(RenderCMD_UpdateTexture);
-		cmdBuffer->WriteBuffer<Texture*>(t);
-		cmdBuffer->WriteBuffer<U8>(binding);
-	}
-
-	void Graphics::BeginRenderPass(String name) {
-		cmdBuffer->WriteCommandType(RenderCMD_BeginRenderPass);
-		cmdBuffer->WriteBuffer<String>(name);
-	}
-
-	void Graphics::EndRenderPass(String name) {
-		cmdBuffer->WriteCommandType(RenderCMD_EndRenderPass);
-		cmdBuffer->WriteBuffer<String>(name);
-	}
-
-	void Graphics::SetDepthCompare(DepthCompareFunc func) {
-		cmdBuffer->WriteCommandType(RenderCMD_SetDepthCompare);
-		cmdBuffer->WriteBuffer<DepthCompareFunc>(func);
-	}
-
-	void Graphics::SetPolygonMode(PolygonMode mode) {
-		cmdBuffer->WriteCommandType(RenderCMD_SetPolygonMode);
-		cmdBuffer->WriteBuffer<PolygonMode>(mode);
-	}
-
-
-	void Graphics::BeginCompute(const char* name) {
-		if (!computeCmdBuffer) {
-			computeCmdBuffer = new GFXCommandBuffer(100);
-		}
-		computeCmdBuffer->WriteCommandType(ComputeCMD_BeginCompute);
-		computeCmdBuffer->WriteBuffer<const char*>(name);
-		isCompute = true;
-	}
-
-	void Graphics::DispatchCompute(U32 group[3]) {
-		computeCmdBuffer->WriteCommandType(ComputeCMD_DispatchCompute);
-		U32 sz = sizeof(U32) * 3;
-		computeCmdBuffer->WriteBufferPtr((U8*)group, sz);
-	}
-
-	void Graphics::WriteBackComputeBuffer() {
-		computeCmdBuffer->WriteCommandType(ComputeCMD_WriteBackComputeBuffer);
-	}
-
-	void Graphics::EndCompute(const char* name) {
-		computeCmdBuffer->WriteCommandType(ComputeCMD_EndCompute);
-		computeCmdBuffer->WriteBuffer<const char*>(name);
-		//renderThread->DispatchCompute(computeCmdBuffer);
-		isCompute = false;
-	}
-
-	//void Graphics::UpdateComputeBuffer(ComputeBuffer* cb, U8 binding) {
-	//	computeCmdBuffer->WriteCommandType(ComputeCMD_UpdateComputeBuffer);
-	//	computeCmdBuffer->WriteBuffer<ComputeBuffer*>(cb);
-	//	computeCmdBuffer->WriteBuffer<U8>(binding);
-	//}
-
-
-	void Graphics::UpdatePushConstant(void* data, U32 size) {
-		computeCmdBuffer->WriteCommandType(ComputeCMD_UpdatePushConstant);
-		computeCmdBuffer->WriteBuffer<U32>(size);
-		computeCmdBuffer->WriteBufferPtr((U8*)data, size);
 	}
 
 	CommandBuffer* Graphics::GetMainCommandBuffer()
@@ -741,9 +601,14 @@ namespace Joestar {
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateSwapChain);
 
 		GPUSwapChainCreateInfo createInfo{
-			//mSwapChain->imageView->handle
+			mSwapChain
 		};
 		GetMainCmdList()->WriteBuffer<GPUSwapChainCreateInfo>(createInfo);
+	}
+
+	SwapChain* Graphics::GetSwapChain()
+	{
+		return mSwapChain;
 	}
 
 	void Graphics::CreateSyncObjects()

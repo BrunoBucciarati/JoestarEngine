@@ -2,6 +2,7 @@
 #include "../Base/Camera.h"
 #include "../Scene/Scene.h"
 #include "GraphicDefines.h"
+#include "SwapChain.h"
 
 namespace Joestar
 {
@@ -23,8 +24,20 @@ namespace Joestar
 		}
 	}
 
-	void View::Render()
+	bool View::Render()
 	{
+		//持有交换链的就是mainView
+		if (mSwapChain)
+		{
+			if (!mSwapChain->IsReady())
+			{
+				return false;
+			}
+			else
+			{
+				mViewport.SetSize(mSwapChain->width, mSwapChain->height);
+			}
+		}
 		//mGraphics->SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (float*)mCamera->GetViewMatrix());
 		//mGraphics->SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (float*)mCamera->GetProjectionMatrix());
 		CommandBuffer* cb = mGraphics->GetMainCommandBuffer();
@@ -38,5 +51,6 @@ namespace Joestar
 		cb->EndRenderPass(mGraphics->GetMainRenderPass());
 		cb->End();
 		mGraphics->QueueSubmit(cb);
+		return true;
 	}
 }

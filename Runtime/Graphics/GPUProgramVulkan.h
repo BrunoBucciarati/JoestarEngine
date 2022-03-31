@@ -247,7 +247,7 @@ namespace Joestar {
             if (!shaderModules.Empty()) return;
             Application* app = Application::GetApplication();
             //ShaderParser* sp = app->GetSubSystem<ShaderParser>();
-            FileSystem* fs = app->GetSubSystem<FileSystem>();
+            FileSystem* fs = app->GetSubsystem<FileSystem>();
             //String& path = sp->GetShaderOutputDir();
 
             //CHECK_ADD_SHADER_STAGE(kVertexShader, "vert", VK_SHADER_STAGE_VERTEX_BIT)

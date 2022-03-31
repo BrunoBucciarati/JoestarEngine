@@ -9,7 +9,7 @@
 namespace Joestar {
     File* GPUProgram::ShaderCodeFile(const char* file) {
         Application* app = Application::GetApplication();
-        FileSystem* fs = app->GetSubSystem<FileSystem>();
+        FileSystem* fs = app->GetSubsystem<FileSystem>();
         String path = fs->GetResourceDir();
         path += "Shaders/";
         path += file;
@@ -19,7 +19,7 @@ namespace Joestar {
 
     GPUProgram* GPUProgram::CreateProgram() {
         Application* app = Application::GetApplication();
-        GFX_API gfxAPI = (GFX_API)(app->GetSubSystem<GlobalConfig>()->GetConfig<int>(CONFIG_GFX_API));
+        GFX_API gfxAPI = (GFX_API)(app->GetSubsystem<GlobalConfig>()->GetConfig<int>(CONFIG_GFX_API));
 
         if (gfxAPI == GFX_API_VULKAN) {
             return new GPUProgramVulkan;

@@ -2,6 +2,7 @@
 #include "GPUTexture.h"
 #include "Viewport.h"
 #include "Descriptor.h"
+#include "SwapChain.h"
 #include "../Container/Vector.h"
 namespace Joestar
 {
@@ -34,7 +35,7 @@ namespace Joestar
 
 	struct GPUSwapChainCreateInfo
 	{
-		GPUResourceHandle imageViewHandle;
+		SwapChain* swapChain;
 	};
 
 	struct GPUFrameBufferCreateInfo

@@ -612,8 +612,8 @@ void RenderThreadVulkan::ProcessInputVulkan() {
         GetGLKey(KEY_DOWN)
         GetGLKey(KEY_LEFT)
         GetGLKey(KEY_RIGHT)
-    Application::GetApplication()->GetSubSystem<HID>()->SetKeyboardInputs(inputFlag);
-    Application::GetApplication()->GetSubSystem<HID>()->SetMouseInputs(xoffset, yoffset, scrollX, scrollY);
+    Application::GetApplication()->GetSubsystem<HID>()->SetKeyboardInputs(inputFlag);
+    Application::GetApplication()->GetSubsystem<HID>()->SetMouseInputs(xoffset, yoffset, scrollX, scrollY);
     //reset
     xoffset = yoffset = scrollX = scrollY = 0.f;
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "../Core/SubSystem.h"
 #include <windows.h>
+#include "Viewport.h"
 namespace Joestar {
 	class Window : public SubSystem {
 	public:

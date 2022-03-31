@@ -146,4 +146,10 @@ namespace Joestar {
 			}
 		}
 	}
+
+
+	void RenderAPIProtocol::CreateSwapChain(GPUSwapChainCreateInfo& createInfo, U32 num)
+	{
+		swapChain = createInfo.swapChain;
+	}
 }

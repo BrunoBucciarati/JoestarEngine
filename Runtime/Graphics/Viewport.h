@@ -14,5 +14,18 @@ namespace Joestar
 			return rect.x + rect.y + rect.width + rect.height +
 				scissor.x + scissor.y + scissor.width + scissor.height + minDepth + maxDepth;
 		}
+
+		void SetSize(U32 w, U32 h)
+		{
+			rect.width = w;
+			rect.height = h;
+			scissor.width = w;
+			scissor.height = h;
+		}
+
+		void SetScissor(Rect& sc)
+		{
+			scissor = sc;
+		}
 	};
 }

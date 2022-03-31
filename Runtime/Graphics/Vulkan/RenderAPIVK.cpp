@@ -2,6 +2,7 @@
 #include "../../Container/Vector.h"
 #include "../../Container/HashSet.h"
 #include "../../Graphics/Descriptor.h"
+#include "../../Graphics/SwapChain.h"
 #include "../../Graphics/Shader/ShaderReflection.h"
 #include "../../Math/MathDefs.h"
 #include "../Window.h"
@@ -377,11 +378,14 @@ namespace Joestar {
 
 	void RenderAPIVK::CreateSwapChain(GPUSwapChainCreateInfo& ci, U32 num)
 	{
+        RenderAPIProtocol::CreateSwapChain(ci, num);
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(mPhysicalDevice);
 
         VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
         VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities, window);
+        swapChain->width = extent.width;
+        swapChain->height = extent.height;
 
         U32 imageCount = swapChainSupport.capabilities.minImageCount + 1;
         if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {

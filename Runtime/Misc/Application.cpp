@@ -22,45 +22,46 @@ namespace Joestar {
 		InitSubSystem(FileSystem, gContext)
 		InitSubSystem(GlobalConfig, gContext)
 		U32 GFX_API = GFX_API_VULKAN;
-		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_GFX_API, GFX_API);
+		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_GFX_API, GFX_API);
 		U32 width = 800, height = 600;
-		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_WIDTH, width);
-		GetSubSystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_HEIGHT, height);
+		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_WIDTH, width);
+		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_HEIGHT, height);
 		InitSubSystem(Window, gContext)
 
 		InitSubSystem(Graphics, gContext)
-		GetSubSystem<Graphics>()->Init();
+		GetSubsystem<Graphics>()->Init();
 
 		InitSubSystem(HID, gContext)
 		//InitSubSystem(ShaderParser, gContext)
 		InitSubSystem(ProceduralMesh, gContext)
 
 		mMainView = JOJO_NEW(View(gContext));
-		Rect r = { 0.F, 0.F, (float)width, (float)height };
-		mMainView->SetRect(r);
+		mMainView->SetSwapChain(GetSubsystem<Graphics>()->GetSwapChain());
 	}
 
 	void Application::Run()
 	{
 		Start();
-		GetSubSystem<Window>()->Show();
+		GetSubsystem<Window>()->Show();
 		while (true) {
 			Update();
 		}
 	}
 
 	void Application::Update() {
-		float dt = GetSubSystem<TimeManager>()->GetElapseTime();
-		GetSubSystem<TimeManager>()->BeginFrame();
+		float dt = GetSubsystem<TimeManager>()->GetElapseTime();
+		GetSubsystem<TimeManager>()->BeginFrame();
 		//Logic Update
 		mMainView->Update(dt);
 
 		//Render Update
-		GetSubSystem<Graphics>()->WaitForRender();
-		mMainView->Render();
-		GetSubSystem<Graphics>()->Present();
+		Graphics* graphics = GetSubsystem<Graphics>();
+		graphics->WaitForRender();
+		if (mMainView->Render())
+			graphics->Present();
+		graphics->Flush();
 
-		GetSubSystem<TimeManager>()->EndFrame();
+		GetSubsystem<TimeManager>()->EndFrame();
 		if (dt < TARGET_FPS)
 		{
 			Sleep(1000.F*(TARGET_FPS - dt));

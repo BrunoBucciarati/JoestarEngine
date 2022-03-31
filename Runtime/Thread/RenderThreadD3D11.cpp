@@ -213,7 +213,7 @@ namespace Joestar {
         shaderFlags |= D3D10_SHADER_SKIP_OPTIMIZATION;
 #endif
 
-        FileSystem* fs = app->GetSubSystem<FileSystem>();
+        FileSystem* fs = app->GetSubsystem<FileSystem>();
         String path = fs->GetResourceDir();
         path += "Shaders/hlsl/test.fx";
         File* file = fs->ReadFile(path.CString());
@@ -431,7 +431,7 @@ namespace Joestar {
         flags |= D3DCOMPILE_DEBUG;
 #endif
         Application* app = Application::GetApplication();
-        FileSystem* fs = app->GetSubSystem<FileSystem>();
+        FileSystem* fs = app->GetSubsystem<FileSystem>();
         String path = fs->GetResourceDir();
         path += "Shaders/hlsl/cstest.fx";
         File* file = fs->ReadFile(path.CString());
