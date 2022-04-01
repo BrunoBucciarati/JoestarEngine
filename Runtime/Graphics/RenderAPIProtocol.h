@@ -57,7 +57,7 @@ namespace Joestar
 		virtual void CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle) = 0;
 		virtual void CBBindIndexBuffer(GPUResourceHandle handle, GPUResourceHandle) = 0;
 		virtual void CBBindVertexBuffer(GPUResourceHandle handle, GPUResourceHandle,U32=0) = 0;
-		virtual void CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle, GPUResourceHandle) = 0;
+		virtual void CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle, GPUResourceHandle, U32 = 0) = 0;
 		virtual void CBPushConstants(GPUResourceHandle handle, GPUResourceHandle) = 0;
 		virtual void CBDraw(GPUResourceHandle handle, U32 count) = 0;
 		virtual void CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0) = 0;

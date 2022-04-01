@@ -26,9 +26,13 @@ namespace Joestar {
 		if (mShaderProgram->IsValid())
 		{
 			//设置逐材质的参数描述到材质中
-			mMaterial->SetDescriptorSetLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::BATCH));
+			//mMaterial->SetDescriptorSetLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::BATCH));
+			//mGraphics->SetDescriptorSetLayout(layout);
+			//mDescriptorSets->AllocFromLayout(layout);
+			//mShaderProgram->AllocDescriptorSets(mDescriptorSets);
 			auto layout = mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT);
 			mDescriptorSets->AllocFromLayout(layout);
+			mGraphics->CreateDescriptorSets(mDescriptorSets);
 
 			//对描述符分配对应的UB
 			mUniformBuffers.Clear();
@@ -37,7 +41,6 @@ namespace Joestar {
 			{
 				DescriptorSetLayoutBinding* binding = layout->GetLayoutBinding(i);
 				U32 hash = binding->Hash();
-				UniformType type = { UniformFrequency::OBJECT };
 				mUniformBuffers[i] = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
 				mUniformBuffers[i]->SetSet((U32)UniformFrequency::OBJECT);
 				mUniformBuffers[i]->SetBinding(binding->binding);

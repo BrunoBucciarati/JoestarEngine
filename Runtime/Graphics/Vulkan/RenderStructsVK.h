@@ -502,6 +502,12 @@ namespace Joestar {
     public:
         void Create(VkDevice& device, PODVector<VkDescriptorSetLayout>& setLayouts);
         VkPipelineLayout layout;
+        VkPipelineBindPoint GetBindPoint()
+        {
+            return bindPoint;
+        }
+    private:
+        VkPipelineBindPoint bindPoint{ VK_PIPELINE_BIND_POINT_GRAPHICS };
     };
 
     class GraphicsPipelineStateVK
@@ -589,24 +595,15 @@ namespace Joestar {
     {
     public:
         void Create(VkDevice&, VkDescriptorPool&, PODVector<VkDescriptorSetLayout> layout);
-        VkDescriptorSet& GetDescriptorSet(U32 idx)
+        VkDescriptorSet& GetDescriptorSets(U32 idx)
         {
             return sets[idx];
-        }
-        VkPipelineBindPoint GetBindPoint()
-        {
-            return bindPoint;
         }
         U32 Size()
         {
             return sets.Size();
         }
-        Vector<VkDescriptorSet>& GetDescriptorSets()
-        {
-            return sets;
-        }
     private:
         Vector<VkDescriptorSet> sets;
-        VkPipelineBindPoint bindPoint{ VK_PIPELINE_BIND_POINT_GRAPHICS };
     };
 }

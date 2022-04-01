@@ -60,6 +60,7 @@ namespace Joestar
 	{
 		mEncoder.WriteCommand(CommandBufferCMD::BindDescriptorSets);
 		mEncoder.WriteBuffer(pipelineLayout->GetHandle());
+		mEncoder.WriteBuffer(set);
 		mEncoder.WriteBuffer(sets->GetHandle());
 	}
 	void CommandBuffer::DrawIndexed(U32 count, U32 indexStart, U32 vertStart)

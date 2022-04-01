@@ -4,6 +4,7 @@
 #include "../Descriptor.h"
 namespace Joestar {
 	class PipelineLayout;
+	class Graphics;
 	class ShaderProgram : public Object
 	{
 		REGISTER_OBJECT_ROOT(ShaderProgram);
@@ -52,14 +53,25 @@ namespace Joestar {
 		{
 			return mPipelineLayout;
 		}
+		SharedPtr<DescriptorSets> GetDescriptorSets(UniformFrequency freq)
+		{
+			return mAllDescriptorSets[(U32)freq];
+		}
+		Vector<SharedPtr<DescriptorSets>>& GetAllDescriptorSets()
+		{
+			return mAllDescriptorSets;
+		}
 	private:
 		void CheckValid();
 		void CollectInputAndDescriptors();
+		void AllocDescriptorSets();
 		Vector<SharedPtr<Shader>> mShaders;
 		PODVector<InputAttribute> mInputAttributes;
 		U32 mStageMask{ 0 };
 		bool bValid{ false };
 		GPUResourceHandle mGPUHandle;
 		SharedPtr<PipelineLayout> mPipelineLayout;
+		Vector<SharedPtr<DescriptorSets>> mAllDescriptorSets;
+		WeakPtr<Graphics> mGraphics;
 	};
 }

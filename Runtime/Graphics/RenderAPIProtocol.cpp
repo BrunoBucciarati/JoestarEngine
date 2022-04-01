@@ -114,9 +114,11 @@ namespace Joestar {
 			{
 				GPUResourceHandle handle;
 				encoder.ReadBuffer(handle);
-				GPUResourceHandle handle2;
-				encoder.ReadBuffer(handle2);
-				CBBindDescriptorSets(cbHandle, handle, handle2);
+				U32 set;
+				encoder.ReadBuffer(set);
+				GPUResourceHandle setHandle;
+				encoder.ReadBuffer(setHandle);
+				CBBindDescriptorSets(cbHandle, handle, setHandle, set);
 				break;
 			}
 			CASECMD(CommandBufferCMD::BindVertexBuffer)

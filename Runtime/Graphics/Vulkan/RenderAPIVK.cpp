@@ -885,7 +885,7 @@ namespace Joestar {
             descriptorWrites[i] = {};
             auto& entry = updateInfo.updateSets[i];
             descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[i].dstSet = mDescriptorSets[entry.setHandle]->GetDescriptorSet(idx);
+            descriptorWrites[i].dstSet = mDescriptorSets[entry.setHandle]->GetDescriptorSets(idx);
             descriptorWrites[i].dstBinding = entry.binding;
             descriptorWrites[i].dstArrayElement = 0;
             descriptorWrites[i].descriptorType = GetDescriptorTypeVK(entry.type);
@@ -1068,13 +1068,13 @@ namespace Joestar {
         VkDeviceSize offsets[] = { 0, 0 };
         vkCmdBindVertexBuffers(GetFrameCommandBuffer(handle), 0, 1, &buffer, offsets);
     }
-    void RenderAPIVK::CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle layoutHandle, GPUResourceHandle setsHandle)
+    void RenderAPIVK::CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle layoutHandle, GPUResourceHandle setsHandle, U32 set)
     {
-        DescriptorSetsVK& sets = *mDescriptorSets[setsHandle];
+        DescriptorSetsVK* sets = mDescriptorSets[setsHandle];
+        VkDescriptorSet vkSets = sets->GetDescriptorSets(mImageIndex);
         PipelineLayoutVK& layout = *mPipelineLayouts[layoutHandle];
-        auto& vksets = sets.GetDescriptorSets();
-        vkCmdBindDescriptorSets(GetFrameCommandBuffer(handle), sets.GetBindPoint(), layout.layout, 0,
-            vksets.Size(), vksets.Buffer(), 0, nullptr);
+        vkCmdBindDescriptorSets(GetFrameCommandBuffer(handle), layout.GetBindPoint(), layout.layout, set,
+            1, &vkSets, 0, nullptr);
     }
     void RenderAPIVK::CBPushConstants(GPUResourceHandle handle, GPUResourceHandle)
     {

@@ -62,7 +62,7 @@ namespace Joestar {
 		void CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle) override;
 		void CBBindIndexBuffer(GPUResourceHandle handle, GPUResourceHandle) override;
 		void CBBindVertexBuffer(GPUResourceHandle handle, GPUResourceHandle, U32 = 0) override;
-		void CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle, GPUResourceHandle) override;
+		void CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle, GPUResourceHandle, U32=0) override;
 		void CBPushConstants(GPUResourceHandle handle, GPUResourceHandle) override;
 		void CBDraw(GPUResourceHandle handle, U32 count) override;
 		void CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0) override;

@@ -23,4 +23,35 @@
       <Item Name="[buffer]">mBuffer</Item>
     </Expand>
   </Type>
+
+
+  <!-- Joestar::SharedPtr<> -->
+  <Type Name = "Joestar::SharedPtr&lt;*&gt;">
+    <DisplayString>{mPtr}</DisplayString>
+    <Expand>
+      <Synthetic Condition="!mPtr" Name="[empty]"/>
+      <Item Condition="mPtr" Name="[ref]">mPtr->mReference</Item>
+      <Item Condition="mPtr" Name="[ptr]">mPtr</Item>
+    </Expand>
+  </Type>
+
+  <!-- Joestar::WeakPtr<> -->
+  <Type Name = "Joestar::WeakPtr&lt;*&gt;">
+    <DisplayString>{mPtr}</DisplayString>
+    <Expand>
+      <Synthetic Condition="!mPtr" Name="[empty]"/>
+      <Item Condition="mPtr" Name="[ref]">mPtr->mReference</Item>
+      <Item Condition="mPtr" Name="[ptr]">mPtr</Item>
+    </Expand>
+  </Type>
+
+  <!-- Joestar::UniquePtr<> -->
+  <Type Name = "Joestar::UniquePtr&lt;*&gt;">
+    <DisplayString>{mPtr}</DisplayString>
+    <Expand>
+      <Synthetic Condition="!mPtr" Name="[empty]"/>
+      <Item Condition="mPtr" Name="[ref]">mPtr->mReference</Item>
+      <Item Condition="mPtr" Name="[ptr]">mPtr</Item>
+    </Expand>
+  </Type>
 </AutoVisualizer>

@@ -173,6 +173,7 @@ namespace Joestar {
 	{
 		U32 handle = mDescriptorSets.Size();
 		sets->SetHandle(handle);
+		mDescriptorSets.Push(sets);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateDescriptorSets);
 		GetMainCmdList()->WriteBuffer(handle);
 		GPUDescriptorSetsCreateInfo createInfo{
