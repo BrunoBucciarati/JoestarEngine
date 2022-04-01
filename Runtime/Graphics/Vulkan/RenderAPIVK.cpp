@@ -17,7 +17,7 @@
     GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, m##_TYP##s);
 
 #define GetFrameCommandBuffer(handle) \
-    mCommandBuffers[handle]->GetCommandBuffer(mFrameIndex)
+    mCommandBuffers[handle]->GetCommandBuffer(mImageIndex)
 
 namespace Joestar {
     VkResult globalResult;
@@ -333,9 +333,7 @@ namespace Joestar {
         else {
             createInfo.enabledLayerCount = 0;
         }
-        if (vkCreateDevice(mPhysicalDevice, &createInfo, nullptr, &mDevice) != VK_SUCCESS) {
-            LOGERROR("failed to create logical vkCtx.device!");
-        }
+        VK_CHECK(vkCreateDevice(mPhysicalDevice, &createInfo, nullptr, &mDevice));
 
         vkGetDeviceQueue(mDevice, mQueueFamilyIndices.graphicsFamily, 0, &mGraphicsQueue);
         vkGetDeviceQueue(mDevice, mQueueFamilyIndices.presentFamily, 0, &mPresentQueue);
@@ -376,16 +374,16 @@ namespace Joestar {
         }
     }
 
-	void RenderAPIVK::CreateSwapChain(GPUSwapChainCreateInfo& ci, U32 num)
+	void RenderAPIVK::CreateSwapChain()
 	{
-        RenderAPIProtocol::CreateSwapChain(ci, num);
+        //RenderAPIProtocol::CreateSwapChain(ci, num);
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(mPhysicalDevice);
 
         VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
         VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities, window);
-        swapChain->width = extent.width;
-        swapChain->height = extent.height;
+        //swapChain->width = extent.width;
+        //swapChain->height = extent.height;
 
         U32 imageCount = swapChainSupport.capabilities.minImageCount + 1;
         if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
@@ -710,22 +708,35 @@ namespace Joestar {
         mSwapChain.frameBuffer->SetRawImages(mSwapChain.images);
         mSwapChain.frameBuffer->SetRawImageViews(mSwapChain.imageViews);
 
-        VkImageCreateInfo imageInfo{};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = mSwapChain.extent.width;
-        imageInfo.extent.height = mSwapChain.extent.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = mSwapChain.format;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.samples = VkSampleCountFlagBits(mSwapChain.frameBuffer->msaaSamples);
-        imageInfo.flags = 0; // Optional  
-        CreateImage(*colorView->image, imageInfo, mSwapChain.GetImageCount());
+        //VkImageCreateInfo imageInfo{};
+        //imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        //imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        //imageInfo.extent.width = mSwapChain.extent.width;
+        //imageInfo.extent.height = mSwapChain.extent.height;
+        //imageInfo.extent.depth = 1;
+        //imageInfo.mipLevels = 1;
+        //imageInfo.arrayLayers = 1;
+        //imageInfo.format = mSwapChain.format;
+        //imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        //imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        //imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        //imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        //imageInfo.samples = VkSampleCountFlagBits(mSwapChain.frameBuffer->msaaSamples);
+        //imageInfo.flags = 0; // Optional  
+        //CreateImage(*colorView->image, imageInfo, mSwapChain.GetImageCount());
+
+        //VkImageViewCreateInfo colorViewCreateInfo{};
+        //colorViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        //colorViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        //colorViewCreateInfo.format = mSwapChain.format;
+        //colorViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        //colorViewCreateInfo.subresourceRange.baseMipLevel = 0;
+        //colorViewCreateInfo.subresourceRange.levelCount = 1;
+        //colorViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+        //colorViewCreateInfo.subresourceRange.layerCount = 1;
+        //colorView->Create(mDevice, colorViewCreateInfo, mSwapChain.GetImageCount());
+        //cb = GetTempCommandBuffer();
+        //colorView->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 
         RenderPassVK* renderPass = JOJO_NEW(RenderPassVK);
         GPURenderPassCreateInfo rpInfo;
@@ -772,12 +783,9 @@ namespace Joestar {
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         for (U32 i = 0; i < num; ++i) {
-            if (vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS ||
-                vkCreateFence(mDevice, &fenceInfo, nullptr, &mInFlightFences[i]) != VK_SUCCESS) {
-
-                LOGERROR("failed to create synchronization objects for a frame!");
-            }
+            VK_CHECK(vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]));
+            VK_CHECK(vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]));
+            VK_CHECK(vkCreateFence(mDevice, &fenceInfo, nullptr, &mInFlightFences[i]));
         }
     }
 
@@ -948,6 +956,11 @@ namespace Joestar {
         GET_STRUCT_BY_HANDLE(pso, GraphicsPipelineState, handle);
         
         pso.CreateIAState();
+        //这里可能实际创建出来的小于window设定的size。
+        if (createInfo.viewport.rect.width > mSwapChain.extent.width)
+        {
+            createInfo.viewport.SetSize(mSwapChain.extent.width, mSwapChain.extent.height);
+        }
         pso.CreateViewportState(createInfo.viewport);
         pso.CreateRasterizationState(mRasterizationStates[createInfo.rasterizationStateHandle]);
         pso.CreateMultiSampleState(mMultiSampleStates[createInfo.multiSampleStateHandle]);
@@ -994,11 +1007,11 @@ namespace Joestar {
     ///CommandBuffer Commands
     void RenderAPIVK::CBBegin(GPUResourceHandle handle)
     {
-        mCommandBuffers[handle]->Begin(mFrameIndex);
+        mCommandBuffers[handle]->Begin(mImageIndex);
     }
     void RenderAPIVK::CBEnd(GPUResourceHandle handle)
     {
-        mCommandBuffers[handle]->End();
+        mCommandBuffers[handle]->End(mImageIndex);
     }
     void RenderAPIVK::CBBeginRenderPass(GPUResourceHandle handle, RenderPassBeginInfo& beginInfo)
     {
@@ -1009,7 +1022,8 @@ namespace Joestar {
         renderPassInfo.renderPass = pass->renderPass;
         renderPassInfo.framebuffer = fb->GetFrameBuffer(mFrameIndex);
         renderPassInfo.renderArea.offset = { (I32)beginInfo.renderArea.x, (I32)beginInfo.renderArea.y };
-        renderPassInfo.renderArea.extent = { (U32)beginInfo.renderArea.width, (U32)beginInfo.renderArea.height };
+        renderPassInfo.renderArea.extent = { (U32)Min(beginInfo.renderArea.width, mSwapChain.extent.width), 
+            (U32)Min(beginInfo.renderArea.height, mSwapChain.extent.height) };
         if (beginInfo.numClearValues > 0) {
             Vector<VkClearValue> clearValues;
             clearValues.Resize(beginInfo.numClearValues);
@@ -1079,7 +1093,10 @@ namespace Joestar {
         RenderAPIProtocol::BeginFrame(frameIndex);
         //第一帧还没创建，先跳过
         if (mInFlightFences.Empty())
+        {
+            bSync = false;
             return;
+        }
         vkWaitForFences(mDevice, 1, &mInFlightFences[frameIndex], VK_TRUE, U64_MAX);
         vkResetFences(mDevice, 1, &mInFlightFences[frameIndex]);
         VkResult result = vkAcquireNextImageKHR(mDevice, mSwapChain.swapChain, UINT64_MAX, mImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &mImageIndex);
@@ -1092,6 +1109,7 @@ namespace Joestar {
         else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             LOGERROR("Failed to acquire swap chain image!");
         }
+        bSync = true;
     }
     void RenderAPIVK::EndFrame(U32 frameIndex)
     {
@@ -1104,11 +1122,15 @@ namespace Joestar {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[mFrameIndex] };
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
+        if (bSync)
+        {
+            VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[mFrameIndex] };
+            VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+            submitInfo.waitSemaphoreCount = 1;
+            submitInfo.pWaitSemaphores = waitSemaphores;
+            submitInfo.pWaitDstStageMask = waitStages;
+        }
+
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &cb;
 
@@ -1116,7 +1138,7 @@ namespace Joestar {
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        VK_CHECK(vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, mInFlightFences[mFrameIndex]));
+        VK_CHECK(vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, bSync ? mInFlightFences[mFrameIndex] : VK_NULL_HANDLE));
     }
 
     void RenderAPIVK::Present()
@@ -1127,6 +1149,7 @@ namespace Joestar {
         VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[mFrameIndex] };
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
+
         VkSwapchainKHR swapChains[] = { mSwapChain.swapChain };
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;

@@ -42,7 +42,7 @@ namespace Joestar
 			return data;
 		}
 	protected:
-		U32 size{ 64 };
+		U32 size{ 8 };
 		U8* data{ nullptr };
 		U32 cursor{ 0 };
 		U32 last{ 0 };

@@ -15,6 +15,7 @@ namespace Joestar
 		//Protocol Interfaces
 		virtual void CreateDevice() = 0;
 		virtual void CreateSwapChain(GPUSwapChainCreateInfo& createInfo, U32 num = 1);
+		virtual void CreateSwapChain() = 0;
 		virtual void CreateMainCommandBuffers(U32 num = 1) = 0;
 		virtual void CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo, U32 num = 1) = 0;
 		virtual void CreateSyncObjects(U32 num = 1) = 0;
@@ -89,5 +90,6 @@ namespace Joestar
 		Vector<GPUShaderProgramCreateInfo> mShaderPrograms;
 		Vector<CommandEncoder> mCommandEncoders;
 		bool bResized{ false };
+		bool bSync{ false };
 	};
 }

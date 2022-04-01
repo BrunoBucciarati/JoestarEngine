@@ -425,14 +425,18 @@ namespace Joestar {
 
             cb.Begin();
 
-            vkCmdPipelineBarrier(
-                cb.GetCommandBuffer(),
-                srcStageMask, dstStageMask,
-                0,
-                0, nullptr,
-                0, nullptr,
-                1, &barrier
-            );
+            for (U32 i = 0; i < imageViews.Size(); ++i)
+            {
+                barrier.image = image->GetImage(i);
+                vkCmdPipelineBarrier(
+                    cb.GetCommandBuffer(),
+                    srcStageMask, dstStageMask,
+                    0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &barrier
+                );
+            }
             cb.End();
             cb.Submit();
         }

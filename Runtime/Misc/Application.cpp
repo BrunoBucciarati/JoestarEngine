@@ -37,6 +37,8 @@ namespace Joestar {
 
 		mMainView = JOJO_NEW(View(gContext));
 		mMainView->SetSwapChain(GetSubsystem<Graphics>()->GetSwapChain());
+		Rect rect{ 0.0F, 0.0F, (F32)width, (F32)height };
+		mMainView->SetRect(rect);
 	}
 
 	void Application::Run()
@@ -57,8 +59,8 @@ namespace Joestar {
 		//Render Update
 		Graphics* graphics = GetSubsystem<Graphics>();
 		graphics->WaitForRender();
-		if (mMainView->Render())
-			graphics->Present();
+		mMainView->Render();
+		graphics->Present();
 		graphics->Flush();
 
 		GetSubsystem<TimeManager>()->EndFrame();

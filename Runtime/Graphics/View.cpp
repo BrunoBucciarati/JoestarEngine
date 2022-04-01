@@ -27,15 +27,17 @@ namespace Joestar
 	bool View::Render()
 	{
 		//持有交换链的就是mainView
+		bool bRecord = false;
 		if (mSwapChain)
 		{
 			if (!mSwapChain->IsReady())
 			{
-				return false;
+				bRecord = false;
 			}
 			else
 			{
 				mViewport.SetSize(mSwapChain->width, mSwapChain->height);
+				bRecord = true;
 			}
 		}
 		//mGraphics->SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (float*)mCamera->GetViewMatrix());
@@ -44,13 +46,16 @@ namespace Joestar
 		cb->Begin();
 		cb->SetViewport(&mViewport);
 		cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());
-		if (mScene)
+		//if (bRecord)
 		{
-			mScene->RenderScene(cb);
+			if (mScene)
+			{
+				mScene->RenderScene(cb);
+			}
 		}
 		cb->EndRenderPass(mGraphics->GetMainRenderPass());
 		cb->End();
 		mGraphics->QueueSubmit(cb);
-		return true;
+		return bRecord;
 	}
 }

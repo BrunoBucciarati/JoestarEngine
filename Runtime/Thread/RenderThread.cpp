@@ -417,5 +417,7 @@ namespace Joestar {
         Window* window = GetSubsystem<Window>();
         mProtocol->SetWindow(window);
         mProtocol->CreateDevice();
+        mProtocol->CreateSwapChain();
+        mProtocol->CreateSyncObjects();
 	}
 }

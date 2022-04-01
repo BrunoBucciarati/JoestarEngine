@@ -49,13 +49,13 @@ namespace Joestar {
 		}
 		mThreadCommandLists.Push(cmdLists);
 		//创建交换链
+		CreateSyncObjects();
 		CreateSwapChain();
 		//创建MainCommandBuffer
 		CreateCommandBuffer();
 		//创建BackBuffer
 		CreateFrameBuffer();
 		CreateDescriptorPool();
-		CreateSyncObjects();
 		//创建内建的Uniform
 		CreatePerPassUniforms();
 		//创建主RenderPass
@@ -670,5 +670,7 @@ namespace Joestar {
 		CommandEncoder& encoder = cb->GetEncoder();
 		GetMainCmdList()->WriteBuffer(encoder.GetSize());
 		GetMainCmdList()->WriteBufferPtr(encoder.Data(), encoder.GetSize());
+		//清空
+		encoder.Clear();
 	}
 }

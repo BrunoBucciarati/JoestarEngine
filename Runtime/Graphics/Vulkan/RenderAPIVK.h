@@ -21,7 +21,13 @@ namespace Joestar {
 	{
 	public:
 		void CreateDevice();
-		void CreateSwapChain(GPUSwapChainCreateInfo& createInfo, U32 num = 1);
+		void CreateSwapChain();
+		void CreateSwapChain(GPUSwapChainCreateInfo& createInfo, U32 num) override
+		{
+			swapChain = createInfo.swapChain;
+			swapChain->width = mSwapChain.extent.width;
+			swapChain->height = mSwapChain.extent.height;
+		}
 		void CreateMainCommandBuffers(U32 num = 1);
 		void CreateSyncObjects(U32 num = 1);
 		void CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo, U32 num = 1);
