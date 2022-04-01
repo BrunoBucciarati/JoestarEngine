@@ -213,7 +213,7 @@ namespace Joestar {
             SetStencilStoreOp(op);
         }
         GET_SET_STATEMENT_PREFIX_INITVALUE(bool, Clear, b, false);
-        GET_SET_STATEMENT_INITVALUE(ImageFormat, ColorFormat, ImageFormat::R8G8B8A8_SRGB);
+        GET_SET_STATEMENT_INITVALUE(ImageFormat, ColorFormat, ImageFormat::B8G8R8A8_SRGB);
         GET_SET_STATEMENT_INITVALUE(ImageFormat, DepthStencilFormat, ImageFormat::D32S8);
         GET_SET_STATEMENT_INITVALUE(AttachmentLoadOp, ColorLoadOp, AttachmentLoadOp::LOAD);
         GET_SET_STATEMENT_INITVALUE(AttachmentLoadOp, DepthLoadOp, AttachmentLoadOp::LOAD);

@@ -1065,7 +1065,8 @@ namespace Joestar {
     void RenderAPIVK::CBBindVertexBuffer(GPUResourceHandle handle, GPUResourceHandle h, U32 binding)
     {
         VkBuffer buffer = mVertexBuffers[h]->GetBuffer();
-        vkCmdBindVertexBuffers(GetFrameCommandBuffer(handle), 0, 1, &buffer, { 0 });
+        VkDeviceSize offsets[] = { 0, 0 };
+        vkCmdBindVertexBuffers(GetFrameCommandBuffer(handle), 0, 1, &buffer, offsets);
     }
     void RenderAPIVK::CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle layoutHandle, GPUResourceHandle setsHandle)
     {

@@ -37,30 +37,32 @@ namespace Joestar {
 		computeCmdBuffer = computeCmdBuffers[0];
 		defaultClearColor.Set(0.0f, 0.0f, 0.0f, 1.0f);
 	}
-	Graphics::~Graphics() {
+	Graphics::~Graphics()
+	{
 	}
 
-	void Graphics::Init() {
-		//´´½¨MainCmdList
+	void Graphics::Init()
+	{
+		//åˆ›å»ºMainCmdList
 		ThreadCommandList cmdLists;
 		for (int i = 0; i < MAX_CMDLISTS_IN_FLIGHT; ++i)
 		{
 			cmdLists.cmdList[i] = JOJO_NEW(GFXCommandList);
 		}
 		mThreadCommandLists.Push(cmdLists);
-		//´´½¨½»»»Á´
-		CreateSyncObjects();
+		//åˆ›å»ºäº¤æ¢é“¾
 		CreateSwapChain();
-		//´´½¨MainCommandBuffer
+		//CreateSyncObjects();
+		//åˆ›å»ºMainCommandBuffer
 		CreateCommandBuffer();
-		//´´½¨BackBuffer
+		//åˆ›å»ºBackBuffer
 		CreateFrameBuffer();
 		CreateDescriptorPool();
-		//´´½¨ÄÚ½¨µÄUniform
+		//åˆ›å»ºå†…å»ºçš„Uniform
 		CreatePerPassUniforms();
-		//´´½¨Ö÷RenderPass
+		//åˆ›å»ºä¸»RenderPass
 		CreateMainRenderPass();
-		//´´½¨Ò»Ð©defaultµÄ×´Ì¬
+		//åˆ›å»ºä¸€äº›defaultçš„çŠ¶æ€
 		CreateDefaultStates();
 
 		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
@@ -415,7 +417,7 @@ namespace Joestar {
 		createInfo.rasterizationStateHandle = pso->GetRasterizationState()->GetHandle();
 		createInfo.multiSampleStateHandle = pso->GetMultiSampleState()->GetHandle();
 		createInfo.pipelineLayoutHandle = pso->GetPipelineLayout()->GetHandle();
-		//ÆäÊµÖ»ÒªElements¶¨ÒåÓ¦¸Ã¾ÍÐÐÁË£¬ÕâÑù¸´ÓÃÂÊ¿ÉÒÔºÜ¸ß --todo
+		//å…¶å®žåªè¦Elementså®šä¹‰åº”è¯¥å°±è¡Œäº†ï¼Œè¿™æ ·å¤ç”¨çŽ‡å¯ä»¥å¾ˆé«˜ --todo
 		createInfo.numInputAttributes = pso->GetNumInputAttributes();
 		createInfo.numInputBindings = pso->GetNumInputBindings();
 		createInfo.viewport = *pso->GetViewport();
@@ -670,7 +672,7 @@ namespace Joestar {
 		CommandEncoder& encoder = cb->GetEncoder();
 		GetMainCmdList()->WriteBuffer(encoder.GetSize());
 		GetMainCmdList()->WriteBufferPtr(encoder.Data(), encoder.GetSize());
-		//Çå¿Õ
+		//æ¸…ç©º
 		encoder.Clear();
 	}
 }

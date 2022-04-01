@@ -24,7 +24,6 @@ namespace Joestar {
 		cb->DrawIndexed(mMesh->GetIndexCount());
 	}
 
-
 	SharedPtr<GraphicsPipelineState> MeshRenderer::GetPipelineState(CommandBuffer* cb)
 	{
 		RenderPass* pass = cb->GetRenderPass();
