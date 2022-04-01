@@ -3,6 +3,7 @@
 #include "../Scene/Scene.h"
 #include "GraphicDefines.h"
 #include "SwapChain.h"
+#include "Descriptor.h"
 
 namespace Joestar
 {
@@ -11,6 +12,7 @@ namespace Joestar
 		mCamera = NEW_OBJECT(Camera);
 		mScene = NEW_OBJECT(Scene);
 		mGraphics = GetSubsystem<Graphics>();
+		mDescriptorSets = mGraphics->GetGlobalDescriptorSets();
 	}
 
 	View::~View()

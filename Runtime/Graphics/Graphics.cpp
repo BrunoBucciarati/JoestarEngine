@@ -357,12 +357,28 @@ namespace Joestar {
 	void Graphics::CreatePerPassUniforms()
 	{
 		mPerPassUniformBuffers.Resize((U32)PerPassUniforms::COUNT);
-		//for (U32 i = 0; i < (U32)PerPassUniforms::COUNT; ++i)
-		//{
-		//	UniformBuffer* uniform = CreateUniformBuffer(i, { PerPassUniformTypes[i], UniformFrequency::PASS });
-		//	uniform->SetHash(i);
-		//	mPerPassUniformBuffers[i] = uniform;
-		//}
+
+		DescriptorSetLayout* setLayout = JOJO_NEW(DescriptorSetLayout, MEMORY_GFX_STRUCT);
+		setLayout->SetNumBindings(1);
+		//目前是View + Proj
+		auto* binding = setLayout->GetLayoutBinding(0);
+		binding->binding = 0;
+		binding->type = DescriptorType::UNIFORM_BUFFER;
+		binding->count = 1;
+		binding->stage = (U32)ShaderStage::VS;
+		binding->size = 128;
+		binding->members.Resize(2);
+		binding->members[0].ID = (U32)PerPassUniforms::VIEW_MATRIX;
+		binding->members[0].offset = 0;
+		binding->members[0].size = 64;
+		binding->members[1].ID = (U32)PerPassUniforms::PROJECTION_MATRIX;
+		binding->members[1].offset = 64;
+		binding->members[1].size = 64;
+		SetDescriptorSetLayout(setLayout);
+
+		DescriptorSets* globalSets = JOJO_NEW(DescriptorSets, MEMORY_GFX_STRUCT);
+		globalSets->AllocFromLayout(setLayout);
+		CreateDescriptorSets(globalSets);
 	}
 
 	//UniformBuffer* Graphics::CreateUniformBuffer(const String& name, const UniformType& type, U32 size)

@@ -9,6 +9,7 @@ namespace Joestar
 	class Scene;
 	class Graphics;
 	class SwapChain;
+	class DescriptorSets;
 	class View : public Object
 	{
 		REGISTER_OBJECT(View, Object);
@@ -31,5 +32,6 @@ namespace Joestar
 		WeakPtr<Graphics> mGraphics;
 		SwapChain* mSwapChain;
 		Viewport mViewport;
+		SharedPtr<DescriptorSets> mDescriptorSets;
 	};
 }

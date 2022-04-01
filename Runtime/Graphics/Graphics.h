@@ -95,6 +95,10 @@ namespace Joestar {
 		void CreateDescriptorSets(DescriptorSets* sets);
 		void CreatePipelineLayout(PipelineLayout*);
 		void QueueSubmit(CommandBuffer* cb);
+		SharedPtr<DescriptorSets>& GetGlobalDescriptorSets()
+		{
+			return mDescriptorSets[0];
+		}
 	private:
 		void CreatePerPassUniforms();
 		void CreateMainRenderPass();
