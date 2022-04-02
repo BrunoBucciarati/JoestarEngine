@@ -13,12 +13,14 @@ namespace Joestar {
 		//mGraphics->UpdateDescriptorSets(mMaterial->GetDescriptorSets());
 		//if (!mDescriptorSets->IsValid())
 		//	mGraphics->CreateDescriptorSets(mDescriptorSets);
+		mGraphics->SetUniformBuffer(mUniformBuffers[0]);
 		mGraphics->UpdateDescriptorSets(mDescriptorSets);
 		auto pso = GetPipelineState(cb);
 		cb->BindPipelineState(pso);
 		cb->BindVertexBuffer(mMesh->GetVertexBuffer());
 		//后面外面要按材质排序，这个BATCH的应该放在外面--todo
-		cb->BindDescriptorSets((U32)UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mDescriptorSets);
+		cb->BindDescriptorSets(UniformFrequency::PASS, mShaderProgram->GetPipelineLayout(), cb->GetPassDescriptorSets());
+		cb->BindDescriptorSets(UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mDescriptorSets);
 		cb->BindIndexBuffer(mMesh->GetIndexBuffer());
 		cb->DrawIndexed(mMesh->GetIndexCount());
 	}

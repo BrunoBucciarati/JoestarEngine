@@ -274,16 +274,15 @@ namespace Joestar {
     void DescriptorSetLayoutVK::Create(VkDevice& device, PODVector<DescriptorSetLayoutBinding>& bindings)
     {
         Vector<VkDescriptorSetLayoutBinding> layoutBindings;
-        bindings.Reserve(bindings.Size());
+        layoutBindings.Resize(bindings.Size());
         for (U32 i = 0; i < bindings.Size(); ++i) {
-            VkDescriptorSetLayoutBinding layoutBinding{};
+            VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings[i];
+            layoutBinding = {};
             layoutBinding.binding = bindings[i].binding;            
             layoutBinding.descriptorType = GetDescriptorTypeVK(bindings[i].type);
             layoutBinding.stageFlags = GetShaderStageFlagsVK(bindings[i].stage);
             layoutBinding.descriptorCount = 1;
             layoutBinding.pImmutableSamplers = nullptr;
-
-            layoutBindings.Push(layoutBinding);
         }
 
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -308,7 +307,7 @@ namespace Joestar {
         bCreated = true;
     }
 
-    void DescriptorSetsVK::Create(VkDevice& device, VkDescriptorPool& pool, PODVector<VkDescriptorSetLayout> layout)
+    void DescriptorSetsVK::Create(VkDevice& device, VkDescriptorPool& pool, PODVector<VkDescriptorSetLayout>& layout)
     {
         sets.Resize(layout.Size());
         VkDescriptorSetAllocateInfo allocInfo{};

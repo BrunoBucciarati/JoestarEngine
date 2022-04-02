@@ -8,7 +8,7 @@ namespace Joestar
 	class ShaderReflection
 	{
 	public:
-		bool ReflectSpirv(File* file);
+		bool ReflectSpirv(File* file, ShaderStage stage);
 		Vector<DescriptorSetLayout>& GetDescriptorSetLayouts()
 		{
 			return mDescriptorSetLayouts;

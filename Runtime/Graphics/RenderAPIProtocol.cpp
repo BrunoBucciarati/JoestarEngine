@@ -57,11 +57,11 @@ namespace Joestar {
 		GET_STRUCT_BY_HANDLE_FROM_VECTOR(state, GPUShaderProgramCreateInfo, handle, mShaderPrograms);
 		state = createInfo;
 	}
-	void RenderAPIProtocol::QueueSubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data)
+	void RenderAPIProtocol::QueueSubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data, U32 last)
 	{
 		//GET_STRUCT_BY_HANDLE_FROM_VECTOR(encoder, CommandEncoder, handle, mCommandEncoders);
 		CommandEncoder encoder;
-		encoder.SetData(data, size);
+		encoder.SetData(data, size, last);
 		CommandBufferCMD cmd;
 		//在这里循环，然后调抽象的接口，免得每个API中要写一遍循环
 		while (encoder.ReadBuffer(cmd))

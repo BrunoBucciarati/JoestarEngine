@@ -1,8 +1,8 @@
 #pragma once
-#include "../Core/Object.h"
-#include "../Container/Ptr.h"
+#include "../Core/Minimal.h"
 #include "../Math/Rect.h"
 #include "Viewport.h"
+#include "GraphicDefines.h"
 namespace Joestar
 {
 	class Camera;
@@ -10,6 +10,8 @@ namespace Joestar
 	class Graphics;
 	class SwapChain;
 	class DescriptorSets;
+	class DescriptorSetLayout;
+	class UniformBuffer;
 	class View : public Object
 	{
 		REGISTER_OBJECT(View, Object);
@@ -27,11 +29,15 @@ namespace Joestar
 			mSwapChain = ptr;
 		}
 	private:
+		void CreatePassDescriptor();
+		void SetUniformBuffer(PerPassUniforms, U8* data);
 		UniquePtr<Camera> mCamera;
 		UniquePtr<Scene> mScene;
 		WeakPtr<Graphics> mGraphics;
 		SwapChain* mSwapChain;
 		Viewport mViewport;
 		SharedPtr<DescriptorSets> mDescriptorSets;
+		SharedPtr<DescriptorSetLayout> mDescriptorSetLayout;
+		Vector<SharedPtr<UniformBuffer>> mUniformBuffers;
 	};
 }

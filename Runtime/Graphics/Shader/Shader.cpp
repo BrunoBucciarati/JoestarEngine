@@ -54,7 +54,7 @@ namespace Joestar {
 				LOGERROR("Compile Spirv Failed! : CMD = %s", compileSpvCmd.CString());
 			}
 			mReflection = JOJO_NEW(ShaderReflection, MEMORY_GFX_STRUCT);
-			mReflection->ReflectSpirv(mFile);
+			mReflection->ReflectSpirv(mFile, mStage);
 
 			GetSubsystem<Graphics>()->CreateShader(this);
 		}

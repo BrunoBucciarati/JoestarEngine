@@ -45,6 +45,7 @@ enum ClassIDType {
 	DefineClassID(Resource, 36)
 	DefineClassID(File, 37)
 	DefineClassID(ShaderProgram, 37)
+	DefineClassID(UniformBuffer, 37)
 
 	kClassIDCount
 };

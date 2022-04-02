@@ -594,7 +594,7 @@ namespace Joestar {
     class DescriptorSetsVK
     {
     public:
-        void Create(VkDevice&, VkDescriptorPool&, PODVector<VkDescriptorSetLayout> layout);
+        void Create(VkDevice&, VkDescriptorPool&, PODVector<VkDescriptorSetLayout>& layout);
         VkDescriptorSet& GetDescriptorSets(U32 idx)
         {
             return sets[idx];

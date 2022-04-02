@@ -929,7 +929,8 @@ namespace Joestar {
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.poolSizeCount = poolSizes.Size();
         poolInfo.pPoolSizes = poolSizes.Buffer();
-        poolInfo.maxSets = 4;
+        //先给大点？应该没啥问题？
+        poolInfo.maxSets = maxUniformBuffers * 2;
 
         VK_CHECK(vkCreateDescriptorPool(mDevice, &poolInfo, nullptr, &mDescriptorPool));
     }

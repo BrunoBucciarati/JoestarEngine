@@ -5,7 +5,7 @@
 
 namespace Joestar
 {
-	bool ShaderReflection::ReflectSpirv(File* file)
+	bool ShaderReflection::ReflectSpirv(File* file, ShaderStage stage)
 	{
 		SpvReflectShaderModule module;
 		SpvReflectResult result = spvReflectCreateShaderModule(file->Size(), file->GetBuffer(), &module);
@@ -76,6 +76,7 @@ namespace Joestar
                 layoutBinding->type = DescriptorType(descriptorBinding.descriptor_type);
                 layoutBinding->count = descriptorBinding.count;
                 layoutBinding->size = descriptorBinding.block.size;
+                layoutBinding->stage |= (U32)stage;
                 layoutBinding->members.Resize(descriptorBinding.block.member_count);
                 for (U32 member = 0; member < layoutBinding->members.Size(); ++member)
                 {

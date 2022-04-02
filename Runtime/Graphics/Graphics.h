@@ -87,9 +87,9 @@ namespace Joestar {
 		void CreateDepthStencilState(DepthStencilState*);
 		void CreateColorBlendState(ColorBlendState*);
 
-		void SetUniformBuffer(UniformBuffer*, float* data);
-		void SetUniformBuffer(PerPassUniforms, float* data);
-		void SetUniformBuffer(PerObjectUniforms, float* data);
+		void SetUniformBuffer(UniformBuffer*);
+		//void SetUniformBuffer(PerPassUniforms, U8* data);
+		//void SetUniformBuffer(PerObjectUniforms, float* data);
 		void SetDescriptorSetLayout(DescriptorSetLayout* setLayout);
 		void UpdateDescriptorSets(DescriptorSets* sets);
 		void CreateDescriptorSets(DescriptorSets* sets);
@@ -133,7 +133,6 @@ namespace Joestar {
 		Vector<SharedPtr<ShaderProgram>> mShaderPrograms;
 		HashMap<U32, SharedPtr<DescriptorSetLayout>> mDescriptorSetLayouts;
 		Vector<SharedPtr<DescriptorSets>> mDescriptorSets;
-		HashMap<U32, SharedPtr<UniformBuffer>> mUniformBufferTbl;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

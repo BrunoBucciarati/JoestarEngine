@@ -26,10 +26,6 @@ namespace Joestar {
 		if (mShaderProgram->IsValid())
 		{
 			//设置逐材质的参数描述到材质中
-			//mMaterial->SetDescriptorSetLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::BATCH));
-			//mGraphics->SetDescriptorSetLayout(layout);
-			//mDescriptorSets->AllocFromLayout(layout);
-			//mShaderProgram->AllocDescriptorSets(mDescriptorSets);
 			auto layout = mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT);
 			mDescriptorSets->AllocFromLayout(layout);
 			mGraphics->CreateDescriptorSets(mDescriptorSets);
@@ -40,13 +36,10 @@ namespace Joestar {
 			for (U32 i = 0; i < layout->GetNumBindings(); ++i)
 			{
 				DescriptorSetLayoutBinding* binding = layout->GetLayoutBinding(i);
-				U32 hash = binding->Hash();
 				mUniformBuffers[i] = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
-				mUniformBuffers[i]->SetSet((U32)UniformFrequency::OBJECT);
-				mUniformBuffers[i]->SetBinding(binding->binding);
-				mUniformBuffers[i]->SetSize(binding->size);
+				mUniformBuffers[i]->AllocFromBinding(binding);
 				mGraphics->CreateUniformBuffer(mUniformBuffers[i]);
-				mDescriptorSets->GetDescriptorSetByBinding(binding->binding).ub = mUniformBuffers[i];
+				mDescriptorSets->SetBindingUniformBuffer(binding->binding, mUniformBuffers[i]);
 			}
 		}
 	}
@@ -54,15 +47,8 @@ namespace Joestar {
 	void Renderer::SetUniformBuffer(PerObjectUniforms uniform, U8* data)
 	{
 		//检查Layout中是否有这个描述符
-		//DescriptorSetLayoutBinding::Member member;
-		//U32 binding = mShaderProgram->GetUniformMemberAndBinding((U32)UniformFrequency::OBJECT, (U32)uniform, member);
-
-		auto layout = mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT);
 		DescriptorSet& set = mDescriptorSets->GetDescriptorSetByID((U32)uniform);
-
 		mUniformBuffers[set.binding]->SetData(set.offset, set.size, data);
-		//if (!set.ub)
-		//	set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerObjectUniformDataType(uniform), UniformFrequency::OBJECT });
 	}
 
 	SharedPtr<GraphicsPipelineState> Renderer::GetPipelineState(CommandBuffer* cb)

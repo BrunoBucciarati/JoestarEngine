@@ -155,11 +155,11 @@ namespace Joestar
 			return true;
 		}
 
-		void SetData(U8* d, U32 sz)
+		void SetData(U8* d, U32 sz, U32 l)
 		{
 			data = d;
 			size = sz;
-			last = sz;
+			last = l;
 			cursor = 0;
 		}
 		template<typename T>

@@ -95,38 +95,27 @@ namespace Joestar {
 		CreateRenderPass(rp);
 	}
 
-	//void Graphics::SetPerPassUniform(PerPassUniforms type, float* data)
+	//void Graphics::SetUniformBuffer(PerPassUniforms uniform, U8* data)
 	//{
-	//	if ((U32)type >= (U32)PerPassUniforms::COUNT)
-	//	{
-	//		SetUniformBuffer(mPerPassUniformBuffers[(U32)type], data);
-	//	}
+	//	auto sets = GetGlobalDescriptorSets();
+	//	DescriptorSet& set = sets->GetDescriptorSetByID((U32)uniform);
+
+	//	mPerPassUniformBuffers[set.binding]->SetData(set.offset, set.size, data);
 	//}
 
-	//void Graphics::SetPerObjectUniform(PerPassUniforms type, float* data)
+	//void Graphics::SetUniformBuffer(PerObjectUniforms uniform, U8* data)
 	//{
-
+	//	UniformBuffer* ub = mPerPassUniformBuffers[(U32)uniform];
+	//	SetUniformBuffer(ub, data);
 	//}
 
-	void Graphics::SetUniformBuffer(PerPassUniforms uniform, float* data)
-	{
-		UniformBuffer* ub = mPerPassUniformBuffers[(U32)uniform];
-		SetUniformBuffer(ub, data);
-	}
-
-	void Graphics::SetUniformBuffer(PerObjectUniforms uniform, float* data)
-	{
-		UniformBuffer* ub = mPerPassUniformBuffers[(U32)uniform];
-		SetUniformBuffer(ub, data);
-	}
-
-	void Graphics::SetUniformBuffer(UniformBuffer* uniform, float* data)
+	void Graphics::SetUniformBuffer(UniformBuffer* uniform)
 	{
 		GetMainCmdList()->WriteCommand(GFXCommand::SetUniformBuffer);
 		GetMainCmdList()->WriteBuffer(uniform->handle);
 		U32 sz = uniform->GetSize();
 		GetMainCmdList()->WriteBuffer(sz);
-		GetMainCmdList()->WriteBufferPtr((U8*)data, sz);
+		GetMainCmdList()->WriteBufferPtr(uniform->GetBuffer(), sz);
 	}
 
 	void Graphics::SetDescriptorSetLayout(DescriptorSetLayout* setLayout)
@@ -357,51 +346,7 @@ namespace Joestar {
 	void Graphics::CreatePerPassUniforms()
 	{
 		mPerPassUniformBuffers.Resize((U32)PerPassUniforms::COUNT);
-
-		DescriptorSetLayout* setLayout = JOJO_NEW(DescriptorSetLayout, MEMORY_GFX_STRUCT);
-		setLayout->SetNumBindings(1);
-		//目前是View + Proj
-		auto* binding = setLayout->GetLayoutBinding(0);
-		binding->binding = 0;
-		binding->type = DescriptorType::UNIFORM_BUFFER;
-		binding->count = 1;
-		binding->stage = (U32)ShaderStage::VS;
-		binding->size = 128;
-		binding->members.Resize(2);
-		binding->members[0].ID = (U32)PerPassUniforms::VIEW_MATRIX;
-		binding->members[0].offset = 0;
-		binding->members[0].size = 64;
-		binding->members[1].ID = (U32)PerPassUniforms::PROJECTION_MATRIX;
-		binding->members[1].offset = 64;
-		binding->members[1].size = 64;
-		SetDescriptorSetLayout(setLayout);
-
-		DescriptorSets* globalSets = JOJO_NEW(DescriptorSets, MEMORY_GFX_STRUCT);
-		globalSets->AllocFromLayout(setLayout);
-		CreateDescriptorSets(globalSets);
 	}
-
-	//UniformBuffer* Graphics::CreateUniformBuffer(const String& name, const UniformType& type, U32 size)
-	//{
-	//	return CreateUniformBuffer(name.Hash(), type, size);
-	//}
-
-	//UniformBuffer* Graphics::CreateUniformBuffer(U32 hash, const UniformType& type, U32 size)
-	//{
-	//	Vector<SharedPtr<UniformBuffer>>& buffers = type.frequency == UniformFrequency::PASS ? mPerPassUniformBuffers : mPerObjectUniformBuffers;
-	//	CREATE_NEW_HANDLE_VEC(ub, UniformBuffer, buffers);
-	//	ub->SetHash(hash);
-
-	//	GetMainCmdList()->WriteCommand(GFXCommand::CreateUniformBuffer);
-	//	GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
-
-	//	GPUUniformBufferCreateInfo createInfo{
-	//		type, hash, ub->GetSize()
-	//	};
-	//	GetMainCmdList()->WriteBuffer<GPUUniformBufferCreateInfo>(createInfo);
-
-	//	return ub;
-	//}
 
 	void Graphics::CreateUniformBuffer(UniformBuffer* ub)
 	{
@@ -687,7 +632,9 @@ namespace Joestar {
 		GetMainCmdList()->WriteCommand(GFXCommand::QueueSubmitCommandBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(cb->GetHandle());
 		CommandEncoder& encoder = cb->GetEncoder();
+		encoder.Flush();
 		GetMainCmdList()->WriteBuffer(encoder.GetSize());
+		GetMainCmdList()->WriteBuffer(encoder.GetLast());
 		GetMainCmdList()->WriteBufferPtr(encoder.Data(), encoder.GetSize());
 		//清空
 		encoder.Clear();

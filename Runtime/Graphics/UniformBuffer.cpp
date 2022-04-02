@@ -1,5 +1,6 @@
 #include "UniformBuffer.h"
-#include "../Core/Minimal.h"
+#include "Descriptor.h"
+#include "Graphics.h"
 
 namespace Joestar {
 	void UniformBuffer::SetSize(U32 sz)
@@ -13,5 +14,14 @@ namespace Joestar {
 	void UniformBuffer::SetData(U32 offset, U32 sz, U8* data)
 	{
 		memcpy(mBuffer + offset, data, sz);
+	}
+
+	void UniformBuffer::AllocFromBinding(DescriptorSetLayoutBinding* binding)
+	{
+		U32 hash = binding->Hash();
+		SetHash(hash);
+		SetSet((U32)UniformFrequency::OBJECT);
+		SetBinding(binding->binding);
+		SetSize(binding->size);
 	}
 }

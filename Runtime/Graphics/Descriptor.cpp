@@ -110,6 +110,11 @@ namespace Joestar {
 		return mSets[0];
 	}
 
+	void DescriptorSets::SetBindingUniformBuffer(U32 binding, UniformBuffer* ub)
+	{
+		GetDescriptorSetByBinding(binding).ub = ub;
+	}
+
 	void DescriptorSets::SetLayoutData(U32 ID, float* data)
 	{
 		U32 offset = 0;

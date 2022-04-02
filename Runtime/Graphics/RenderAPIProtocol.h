@@ -45,7 +45,7 @@ namespace Joestar
 		void CreateRasterizationState(GPUResourceHandle handle, GPURasterizationStateCreateInfo& createInfo);
 		void CreateMultiSampleState(GPUResourceHandle handle, GPUMultiSampleStateCreateInfo& createInfo);
 		void CreateShaderProgram(GPUResourceHandle handle, GPUShaderProgramCreateInfo& createInfo);
-		void QueueSubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data);
+		void QueueSubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data, U32);
 
 		/// Command Buffer Protocols
 		void RecordCommand(CommandBufferCMD& cmd, CommandEncoder& encoder, GPUResourceHandle handle);

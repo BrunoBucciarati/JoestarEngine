@@ -389,9 +389,11 @@ namespace Joestar {
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
                 U32 size;
                 cmdList->ReadBuffer(size);
+                U32 last;
+                cmdList->ReadBuffer(last);
                 U8* data = JOJO_NEW_ARRAY(U8, size);
                 cmdList->ReadBufferPtr(data, size);
-                mProtocol->QueueSubmitCommandBuffer(handle, size, data);
+                mProtocol->QueueSubmitCommandBuffer(handle, size, data, last);
                 break;
             }
             CASECMD(GFXCommand::Present)
@@ -418,6 +420,6 @@ namespace Joestar {
         mProtocol->SetWindow(window);
         mProtocol->CreateDevice();
         mProtocol->CreateSwapChain();
-        mProtocol->CreateSyncObjects();
+        mProtocol->CreateSyncObjects(MAX_CMDLISTS_IN_FLIGHT);
 	}
 }

@@ -21,8 +21,9 @@ namespace Joestar
 		INPUT_ATTACHMENT = 10,
 	};
 
-	struct DescriptorSetLayoutBinding : public Hashable, public RefCount
+	class DescriptorSetLayoutBinding : public Hashable, public RefCount
 	{
+	public:
 		U32 binding{ 0 };
 		DescriptorType type;
 		U32 count{ 0 };
@@ -94,6 +95,7 @@ namespace Joestar
 	public:
 		void AllocFromLayout(DescriptorSetLayout* layout);
 		DescriptorSet& GetDescriptorSetByBinding(U32 binding);
+		void SetBindingUniformBuffer(U32 binding, UniformBuffer* ub);
 		DescriptorSet& GetDescriptorSetByID(U32 ID);
 		void SetLayoutData(U32 ID, float* data);
 		SharedPtr<DescriptorSetLayout>& GetLayout()
