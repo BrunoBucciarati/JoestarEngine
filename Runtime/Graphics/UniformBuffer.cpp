@@ -20,7 +20,6 @@ namespace Joestar {
 	{
 		U32 hash = binding->Hash();
 		SetHash(hash);
-		SetSet((U32)UniformFrequency::OBJECT);
 		SetBinding(binding->binding);
 		SetSize(binding->size);
 	}

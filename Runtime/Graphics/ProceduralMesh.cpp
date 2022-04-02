@@ -158,9 +158,42 @@ namespace Joestar {
         return mesh;
     }
 
+    Mesh* ProceduralMesh::GenTriangle() {
+        Mesh* mesh = NEW_OBJECT(Mesh);
+        //std::vector<float> attrs = {
+        //    0.f, 0.f, 0.f, 1.f, 1.f, 1.f,
+        //    0.f, 0.f, 10.f, 1.f, 1.f, 1.f
+        //};
+        //VertexBuffer* vb = mesh->GetVB();
+        //vb->SetSize(attrs.size() * sizeof(float));
+        //vb->CopyBuffer((uint8_t*)attrs.data(), attrs.size() * sizeof(float));
+        //vb->AppendVertexAttr(VERTEX_POS);
+        //vb->AppendVertexAttr(VERTEX_COLOR);
+        Vector<F32> vertices = {
+            -0.5F, 0.0F, 0.5F, 0.5F, 0.0F, 0.5F, 0.5F, -0.5F, 0.5F
+        };
+        Vector<U16> indices = {
+            0, 1, 2
+        };
+        PODVector<VertexElement> elements;
+        elements.Push({ VertexSemantic::POSITION, VertexType::VEC3 });
+
+        VertexBuffer* vb = NEW_OBJECT(VertexBuffer);
+        vb->SetSize(vertices.Size() / 3, elements);
+        vb->SetData((U8*)vertices.Buffer());
+        mesh->SetVertexBuffer(vb);
+
+        IndexBuffer* ib = NEW_OBJECT(IndexBuffer);
+        ib->SetSize(indices.Size());
+        ib->SetData((U8*)indices.Buffer());
+        mesh->SetIndexBuffer(ib);
+
+        return mesh;
+    }
 	ProceduralMesh::ProceduralMesh(EngineContext* ctx) : Super(ctx) {
         uvSphere = GenUVSphere();
         plane = GenPlane();
         line = GenLine();
+        mTriangle = GenTriangle();
 	}
 }

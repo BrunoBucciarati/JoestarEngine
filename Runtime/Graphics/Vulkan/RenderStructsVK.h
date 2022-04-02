@@ -587,7 +587,7 @@ namespace Joestar {
     class DescriptorSetLayoutVK
     {
     public:
-        void Create(VkDevice&, PODVector<DescriptorSetLayoutBinding>& bindings);
+        void Create(VkDevice&, PODVector<GPUDescriptorSetLayoutBinding>& bindings);
         VkDescriptorSetLayout setLayout;
     };
 

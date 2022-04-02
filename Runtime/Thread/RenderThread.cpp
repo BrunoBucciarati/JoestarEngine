@@ -337,11 +337,16 @@ namespace Joestar {
 
                 U32 size;
                 cmdList->ReadBuffer(size);
-                PODVector<DescriptorSetLayoutBinding> bindings;
+                PODVector<GPUDescriptorSetLayoutBinding> bindings;
                 bindings.Resize(size);
                 for (U32 i = 0; i < size; ++i)
                 {
                     cmdList->ReadBuffer(bindings[i]);
+                    bindings[i].members.Resize(bindings[i].numMembers);
+                    for (U32 j = 0; j < bindings[i].numMembers; ++j)
+                    {
+                        cmdList->ReadBuffer(bindings[i].members[j]);                        
+                    }
                 }
                 mProtocol->CreateDescriptorSetLayout(handle, bindings);
                 break;

@@ -79,8 +79,8 @@ namespace Joestar {
 		Get(0, 3) = -(right + left) / deltax;
 		Get(1, 1) = 2.0F / deltay;
 		Get(1, 3) = -(top + bottom) / deltay;
-		Get(2, 2) = -2.0F / deltaz;
-		Get(2, 3) = -(zFar + zNear) / deltaz;
+		Get(2, 2) = -1.0F / deltaz;
+		Get(2, 3) = -zNear / deltaz;
 		return *this;
 	}
 

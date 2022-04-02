@@ -9,7 +9,6 @@ namespace Joestar
 	class UniformBuffer : public GPUResource
 	{
 		GET_SET_STATEMENT_INITVALUE(U32, Binding, 0);
-		GET_SET_STATEMENT_INITVALUE(U32, Set, 0);
 	public:
 		void AllocFromBinding(DescriptorSetLayoutBinding* binding);
 		void SetHash(U32 hash)
@@ -19,6 +18,10 @@ namespace Joestar
 		UniformFrequency GetFrequency() const
 		{
 			return mFrequency;
+		}
+		U32 GetSet()
+		{
+			return (U32)mFrequency;
 		}
 		void SetFrequency(UniformFrequency freq)
 		{
@@ -37,7 +40,6 @@ namespace Joestar
 	private:
 		U32 mSize{ 0 };
 		U8* mBuffer{ nullptr };
-		UniformType mType;
 		UniformFrequency mFrequency;
 		WeakPtr<Graphics> mGraphics;
 	};

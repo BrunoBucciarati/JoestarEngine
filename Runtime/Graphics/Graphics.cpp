@@ -91,23 +91,9 @@ namespace Joestar {
 		RenderPass* rp = JOJO_NEW(RenderPass, MEMORY_GFX_STRUCT);
 		rp->SetClear(true);
 		rp->SetLoadOp(AttachmentLoadOp::DONT_CARE);
-		rp->SetStoreOp(AttachmentStoreOp::DONT_CARE);
+		rp->SetStoreOp(AttachmentStoreOp::STORE);
 		CreateRenderPass(rp);
 	}
-
-	//void Graphics::SetUniformBuffer(PerPassUniforms uniform, U8* data)
-	//{
-	//	auto sets = GetGlobalDescriptorSets();
-	//	DescriptorSet& set = sets->GetDescriptorSetByID((U32)uniform);
-
-	//	mPerPassUniformBuffers[set.binding]->SetData(set.offset, set.size, data);
-	//}
-
-	//void Graphics::SetUniformBuffer(PerObjectUniforms uniform, U8* data)
-	//{
-	//	UniformBuffer* ub = mPerPassUniformBuffers[(U32)uniform];
-	//	SetUniformBuffer(ub, data);
-	//}
 
 	void Graphics::SetUniformBuffer(UniformBuffer* uniform)
 	{
@@ -136,7 +122,24 @@ namespace Joestar {
 			for (U32 i = 0; i < setLayout->GetNumBindings(); ++i)
 			{
 				DescriptorSetLayoutBinding* binding = setLayout->GetLayoutBinding(i);
-				GetMainCmdList()->WriteBuffer(*binding);
+				GPUDescriptorSetLayoutBinding bindingInfo
+				{
+					binding->binding,
+					binding->type,
+					binding->count,
+					binding->stage,
+					binding->size,
+					binding->members.Size()
+				};
+				GetMainCmdList()->WriteBuffer(bindingInfo);
+				for (U32 j = 0; j < binding->members.Size(); ++j)
+				{ 
+					GPUDescriptorSetLayoutBindingMember memberInfo
+					{
+						binding->members[j].ID, binding->members[j].offset, binding->members[j].size
+					};
+					GetMainCmdList()->WriteBuffer(memberInfo);
+				}
 			}
 		}
 	}
@@ -345,13 +348,14 @@ namespace Joestar {
 
 	void Graphics::CreatePerPassUniforms()
 	{
-		mPerPassUniformBuffers.Resize((U32)PerPassUniforms::COUNT);
+		//mPerPassUniformBuffers.Resize((U32)PerPassUniforms::COUNT);
 	}
 
 	void Graphics::CreateUniformBuffer(UniformBuffer* ub)
 	{
-		Vector<SharedPtr<UniformBuffer>>& buffers = ub->GetFrequency() == UniformFrequency::PASS ? mPerPassUniformBuffers : mPerObjectUniformBuffers;
+		Vector<SharedPtr<UniformBuffer>>& buffers = mUniformBuffers;
 		U32 handle = buffers.Size();
+		buffers.Push(ub);
 		ub->SetHandle(handle);
 
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateUniformBuffer);

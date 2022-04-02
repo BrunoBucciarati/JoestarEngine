@@ -4,28 +4,34 @@ namespace Joestar {
     Camera::~Camera() {
 
     }
-	void Camera::ProcessHID(HID* hid, float deltaTime) {
+	void Camera::ProcessHID(HID* hid, float deltaTime)
+    {
         float velocity = mSpeed * deltaTime;
         bool dirty = false;
-        if (hid->CheckKeyboardInput(KEY_W)) {
+        if (hid->CheckKeyboardInput(KEY_W))
+        {
             mPosition += mFront * velocity;
             dirty = true;
         }
-        if (hid->CheckKeyboardInput(KEY_S)) {
+        if (hid->CheckKeyboardInput(KEY_S))
+        {
             mPosition -= mFront * velocity;
             dirty = true;
         }
-        if (hid->CheckKeyboardInput(KEY_A)) {
+        if (hid->CheckKeyboardInput(KEY_A))
+        {
             mPosition -= mRight * velocity;
             dirty = true;
         }
-        if (hid->CheckKeyboardInput(KEY_D)) {
+        if (hid->CheckKeyboardInput(KEY_D))
+        {
             mPosition += mRight * velocity;
             dirty = true;
         }
 
         float* offset = hid->GetMouseOffset();
-        if (offset[0] != 0.f || offset[1] != 0.f) {
+        if (offset[0] != 0.f || offset[1] != 0.f)
+        {
             mYaw += offset[0] * mSensitivity;
             //LOG("offsetY: %.2f\n", offset[1]);
             mPitch += offset[1] * mSensitivity;
@@ -37,7 +43,8 @@ namespace Joestar {
         }
 
         float* scroll = hid->GetMouseScroll();
-        if (scroll[1] != 0.f) {
+        if (scroll[1] != 0.f)
+        {
             mZoom -= scroll[1];
             if (mZoom < 1.0f)
                mZoom = 1.0f;
@@ -46,7 +53,8 @@ namespace Joestar {
             mProjection.SetPerspective(mZoom, 800.0f / 600.0f, 0.1f, 100.0f);
         }
 
-        if (dirty) {
+        if (dirty)
+        {
             UpdateCameraVectors();
         }
 	}

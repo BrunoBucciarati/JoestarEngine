@@ -49,6 +49,7 @@ namespace Joestar
 		}
 		friend bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs);
 		U32 Hash();
+		DescriptorSetLayoutBinding& operator=(const DescriptorSetLayoutBinding& rhs);
 	};
 	bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs);
 

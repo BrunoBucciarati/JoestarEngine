@@ -10,9 +10,6 @@ namespace Joestar {
 	void MeshRenderer::Render(CommandBuffer* cb)
 	{
 		SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (U8*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
-		//mGraphics->UpdateDescriptorSets(mMaterial->GetDescriptorSets());
-		//if (!mDescriptorSets->IsValid())
-		//	mGraphics->CreateDescriptorSets(mDescriptorSets);
 		mGraphics->SetUniformBuffer(mUniformBuffers[0]);
 		mGraphics->UpdateDescriptorSets(mDescriptorSets);
 		auto pso = GetPipelineState(cb);

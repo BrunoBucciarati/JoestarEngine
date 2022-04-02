@@ -271,7 +271,7 @@ namespace Joestar {
     }
 
 
-    void DescriptorSetLayoutVK::Create(VkDevice& device, PODVector<DescriptorSetLayoutBinding>& bindings)
+    void DescriptorSetLayoutVK::Create(VkDevice& device, PODVector<GPUDescriptorSetLayoutBinding>& bindings)
     {
         Vector<VkDescriptorSetLayoutBinding> layoutBindings;
         layoutBindings.Resize(bindings.Size());

@@ -82,6 +82,7 @@
     <LinkIncremental>true</LinkIncremental>
     <ExternalIncludePath>$(SolutionDir)ThirdParty\glfw-3.3.4\include;$(SolutionDir)ThirdParty\glm-master;D:\VulkanSDK\1.2.182.0\Include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\stb_image;$(SolutionDir)ThirdParty\tinyobj;$(SolutionDir)ThirdParty\SPIRV-Reflect;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>D:\VulkanSDK\1.2.182.0\Lib;$(SolutionDir)ThirdParty\glfw-3.3.4\build\src\Debug;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)$(ProjectName)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

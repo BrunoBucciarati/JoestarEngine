@@ -119,8 +119,7 @@ namespace Joestar {
 		Vector<SharedPtr<GPUMemory>> mGPUMemories;
 		Vector<SharedPtr<GPUVertexBuffer>> mGPUVertexBuffers;
 		Vector<SharedPtr<GPUIndexBuffer>> mGPUIndexBuffers;
-		Vector<SharedPtr<UniformBuffer>> mPerPassUniformBuffers;
-		Vector<SharedPtr<UniformBuffer>> mPerObjectUniformBuffers;
+		Vector<SharedPtr<UniformBuffer>> mUniformBuffers;
 		Vector<SharedPtr<RenderPass>> mRenderPasses;
 		Vector<SharedPtr<RasterizationState>> mRasterizationStates;
 		Vector<SharedPtr<MultiSampleState>> mMultiSampleStates;

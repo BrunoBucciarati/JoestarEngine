@@ -10,14 +10,7 @@ namespace Joestar {
     class PipelineLayout : public GPUResource
     {
     public:
-        void ResizeLayouts(U32 sz)
-        {
-            mSetLayouts.Resize(sz);
-            for (U32 i = 0; i < sz; ++i)
-            {
-                mSetLayouts[i] = JOJO_NEW(DescriptorSetLayout, MEMORY_GFX_STRUCT);
-            }
-        }
+        void ResizeLayouts(U32 sz);
         SharedPtr<DescriptorSetLayout> GetSetLayout(U32 idx)
         {
             return mSetLayouts[idx];

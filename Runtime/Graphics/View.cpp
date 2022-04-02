@@ -14,6 +14,7 @@ namespace Joestar
 		mScene = NEW_OBJECT(Scene);
 		mGraphics = GetSubsystem<Graphics>();
 		CreatePassDescriptor();
+		mCamera->SetOrthographic(10.0F);
 	}
 
 	View::~View()
@@ -101,7 +102,8 @@ namespace Joestar
 
 	void View::SetUniformBuffer(PerPassUniforms uniform, U8* data)
 	{
-		DescriptorSet& set = mDescriptorSets->GetDescriptorSetByID((U32)uniform);
-		mUniformBuffers[set.binding]->SetData(set.offset, set.size, data);
+		DescriptorSetLayoutBinding::Member member;
+		U32 binding = mDescriptorSetLayout->GetUniformMemberAndBinding((U32)uniform, member);
+		mUniformBuffers[binding]->SetData(member.offset, member.size, data);
 	}
 }

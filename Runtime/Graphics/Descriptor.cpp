@@ -5,6 +5,21 @@ namespace Joestar {
 		return lhs.binding == rhs.binding;
 	}
 
+	DescriptorSetLayoutBinding& DescriptorSetLayoutBinding::operator=(const DescriptorSetLayoutBinding& rhs)
+	{
+		binding = rhs.binding;
+		type = rhs.type;
+		count = rhs.count;
+		stage = rhs.stage;
+		size = rhs.size;
+		members.Resize(rhs.members.Size());
+		for (U32 i = 0; i < members.Size(); ++i)
+		{
+			members[i] = rhs.members[i];
+		}
+		return *this;
+	}
+
 	bool DescriptorSetLayout::AddBinding(DescriptorSetLayoutBinding* rhs)
 	{
 		for (auto& binding : mLayoutBindings)

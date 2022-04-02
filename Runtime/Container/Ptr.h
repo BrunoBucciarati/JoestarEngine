@@ -21,13 +21,16 @@ namespace Joestar
 		{
 			ReleaseRef();
 		}
-		T* operator ->() const {
+		T* operator ->() const
+		{
 			return mPtr;
 		}
-		T* operator *() const {
+		T* operator *() const
+		{
 			return *mPtr;
 		}
-		T* operator [](int index) {
+		T* operator [](int index)
+		{
 			return mPtr[index];
 		}
 		SharedPtr& operator=(T* ptr)
@@ -71,24 +74,27 @@ namespace Joestar
 
 		WeakPtr(T* ptr) : mPtr(ptr)
 		{
-			AddRef();
+			//AddRef();
 		}
 
 		WeakPtr(const WeakPtr<T>& rhs) : mPtr(rhs.mPtr)
 		{
-			AddRef();
+			//AddRef();
 		}
 		~WeakPtr()
 		{
 			ReleaseRef();
 		}
-		T* operator ->() const {
+		T* operator ->() const
+		{
 			return mPtr;
 		}
-		T* operator *() const {
+		T* operator *() const
+		{
 			return *mPtr;
 		}
-		T* operator [](int index) {
+		T* operator [](int index)
+		{
 			return mPtr[index];
 		}
 		WeakPtr& operator=(T* ptr)
@@ -96,15 +102,19 @@ namespace Joestar
 			mPtr = ptr;
 			return *this;
 		}
-		void AddRef() {
+		void AddRef()
+		{
 		}
-		void ReleaseRef() {
+		void ReleaseRef()
+		{
 			mPtr = nullptr;
 		}
-		bool Null() {
+		bool Null()
+		{
 			return !!mPtr;
 		}
-		T* Get() const {
+		T* Get() const
+		{
 			return mPtr;
 		}
 		operator bool()
@@ -126,11 +136,9 @@ namespace Joestar
 		UniquePtr() : mPtr(nullptr)
 		{}
 		UniquePtr(T* ptr) : mPtr(ptr)
-		{
-		}
+		{}
 		UniquePtr(const UniquePtr<T>& rhs) : mPtr(rhs.mPtr)
-		{
-		}
+		{}
 		UniquePtr& operator=(T* ptr)
 		{
 			mPtr = ptr;
@@ -142,13 +150,16 @@ namespace Joestar
 			if (mPtr)
 				delete mPtr;
 		}
-		T* operator ->() const {
+		T* operator ->() const
+		{
 			return mPtr;
 		}
-		T* operator *() const {
+		T* operator *() const
+		{
 			return *mPtr;
 		}
-		T* operator [](int index) {
+		T* operator [](int index)
+		{
 			return mPtr[index];
 		}
 		operator bool()
@@ -159,10 +170,12 @@ namespace Joestar
 		{
 			return mPtr;
 		}
-		bool Null() {
+		bool Null()
+		{
 			return !!mPtr;
 		}
-		T* Get() const {
+		T* Get() const
+		{
 			return mPtr;
 		}
 	private:

@@ -858,7 +858,7 @@ namespace Joestar {
         layout.Create(mDevice, setLayouts);
     }
 
-    void RenderAPIVK::CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<DescriptorSetLayoutBinding>& bindings)
+    void RenderAPIVK::CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<GPUDescriptorSetLayoutBinding>& bindings)
     {
         GET_STRUCT_BY_HANDLE_FROM_VECTOR(setLayout, DescriptorSetLayout, handle, mDescriptorSetLayouts);
         setLayout.Create(mDevice, bindings);
@@ -1021,12 +1021,12 @@ namespace Joestar {
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = pass->renderPass;
-        renderPassInfo.framebuffer = fb->GetFrameBuffer(mFrameIndex);
+        renderPassInfo.framebuffer = fb->GetFrameBuffer(mImageIndex);
         renderPassInfo.renderArea.offset = { (I32)beginInfo.renderArea.x, (I32)beginInfo.renderArea.y };
         renderPassInfo.renderArea.extent = { (U32)Min(beginInfo.renderArea.width, mSwapChain.extent.width), 
             (U32)Min(beginInfo.renderArea.height, mSwapChain.extent.height) };
+        Vector<VkClearValue> clearValues;
         if (beginInfo.numClearValues > 0) {
-            Vector<VkClearValue> clearValues;
             clearValues.Resize(beginInfo.numClearValues);
             for (U32 i = 0; i < beginInfo.numClearValues; ++i)
             {
@@ -1087,7 +1087,7 @@ namespace Joestar {
     }
     void RenderAPIVK::CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart, U32 vertStart)
     {
-        vkCmdDrawIndexed(GetFrameCommandBuffer(handle), 1, count, indexStart, vertStart, 0);
+        vkCmdDrawIndexed(GetFrameCommandBuffer(handle), count, 1, indexStart, vertStart, 0);
     }
 
     void RenderAPIVK::BeginFrame(U32 frameIndex)

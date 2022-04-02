@@ -234,4 +234,22 @@ namespace Joestar
 		U32 numClearValues;
 		PODVector<ClearValue> clearValues;
 	};
+
+	struct GPUDescriptorSetLayoutBindingMember
+	{
+		U32 ID;
+		U32 offset;
+		U32 size;
+	};
+
+	struct GPUDescriptorSetLayoutBinding
+	{
+		U32 binding{ 0 };
+		DescriptorType type;
+		U32 count{ 0 };
+		U32 stage{ 0 };
+		U32 size{ 0 };
+		U32 numMembers;
+		PODVector<GPUDescriptorSetLayoutBindingMember> members;
+	};
 }

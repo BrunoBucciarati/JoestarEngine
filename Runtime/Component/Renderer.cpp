@@ -38,6 +38,7 @@ namespace Joestar {
 				DescriptorSetLayoutBinding* binding = layout->GetLayoutBinding(i);
 				mUniformBuffers[i] = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
 				mUniformBuffers[i]->AllocFromBinding(binding);
+				mUniformBuffers[i]->SetFrequency(UniformFrequency::OBJECT);
 				mGraphics->CreateUniformBuffer(mUniformBuffers[i]);
 				mDescriptorSets->SetBindingUniformBuffer(binding->binding, mUniformBuffers[i]);
 			}
@@ -46,35 +47,14 @@ namespace Joestar {
 
 	void Renderer::SetUniformBuffer(PerObjectUniforms uniform, U8* data)
 	{
-		//检查Layout中是否有这个描述符
-		DescriptorSet& set = mDescriptorSets->GetDescriptorSetByID((U32)uniform);
-		mUniformBuffers[set.binding]->SetData(set.offset, set.size, data);
+		auto layout = mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT);
+		DescriptorSetLayoutBinding::Member member;
+		U32 binding = layout->GetUniformMemberAndBinding((U32)uniform, member);
+		mUniformBuffers[binding]->SetData(member.offset, member.size, data);
 	}
 
 	SharedPtr<GraphicsPipelineState> Renderer::GetPipelineState(CommandBuffer* cb)
 	{
 		return nullptr;
-		//RenderPass* pass = cb->GetRenderPass();
-		//for (auto& pso : mPSOs)
-		//{
-		//	if (pso->GetRenderPass() == pass && pso->GetViewport() == cb->GetViewport())
-		//	{
-		//		return pso;
-		//	}
-		//}
-
-		////没找到对应的，创建一个新的PSO
-		//SharedPtr<GraphicsPipelineState>& pso = mPSOs.EmplaceBack();
-		//pso = JOJO_NEW(GraphicsPipelineState, MEMORY_GFX_STRUCT);
-		//pso->SetRenderPass(pass);
-		//pso->SetShaderProgram(mMaterial->GetShaderProgram());
-		//pso->SetViewport(cb->GetViewport());
-		////这些值先用default的，后面加了材质设置需要这里做些新的逻辑 --todo
-		//pso->SetDepthStencilState(mDepthStencilState);
-		//pso->SetColorBlendState(mColorBlendState);
-		//pso->SetMultiSampleState(mMultiSampleState);
-		//pso->SetRasterizationState(mRasterizationState);
-		//mGraphics->CreateGraphicsPipelineState(pso);
-		//return pso;
 	}
 }

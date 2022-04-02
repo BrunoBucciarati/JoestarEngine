@@ -55,6 +55,14 @@ namespace Joestar {
         pr->SetShader("vertex", ShaderStage::VS);
         pr->SetShader("fragment", ShaderStage::PS);
 
+        //GameObject* tri = NEW_OBJECT(GameObject);
+        //gameObjects.Push(tri);
+        //MeshRenderer* tr = tri->GetComponent<MeshRenderer>();
+        //tr->SetMesh(GetSubsystem<ProceduralMesh>()->GetTriangle());
+        //tr->SetShader("triangle", ShaderStage::VS);
+        //tr->SetShader("triangle", ShaderStage::PS);
+
+
         mMainRenderPass = JOJO_NEW(RenderPass, MEMORY_GFX_STRUCT);
         mMainRenderPass->SetLoadOp(AttachmentLoadOp::DONT_CARE);
         mMainRenderPass->SetStoreOp(AttachmentStoreOp::DONT_CARE);
