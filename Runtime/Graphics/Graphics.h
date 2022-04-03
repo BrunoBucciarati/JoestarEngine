@@ -11,8 +11,6 @@
 #include "../Math/Matrix4x4.h"
 #include "Shader/Shader.h"
 #include "ProgramCPU.h"
-#include "UniformData.h"
-#include "FrameBufferDef.h"
 #include "CommandBuffer.h"
 #include "PipelineState.h"
 #include "GPUResource.h"

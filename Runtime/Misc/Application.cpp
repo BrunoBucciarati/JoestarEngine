@@ -24,6 +24,7 @@ namespace Joestar {
 		U32 GFX_API = GFX_API_VULKAN;
 		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_GFX_API, GFX_API);
 		U32 width = 800, height = 600;
+		InitSubSystem(HID, gContext)
 		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_WIDTH, width);
 		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_HEIGHT, height);
 		InitSubSystem(Window, gContext)
@@ -31,7 +32,6 @@ namespace Joestar {
 		InitSubSystem(Graphics, gContext)
 		GetSubsystem<Graphics>()->Init();
 
-		InitSubSystem(HID, gContext)
 		//InitSubSystem(ShaderParser, gContext)
 		InitSubSystem(ProceduralMesh, gContext)
 
@@ -53,6 +53,7 @@ namespace Joestar {
 	void Application::Update() {
 		float dt = GetSubsystem<TimeManager>()->GetElapseTime();
 		GetSubsystem<TimeManager>()->BeginFrame();
+		GetSubsystem<Window>()->Update(dt);
 		//Logic Update
 		mMainView->Update(dt);
 

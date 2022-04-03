@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "Viewport.h"
 namespace Joestar {
+	class HID;
 	class Window : public SubSystem {
 	public:
 		REGISTER_SUBSYSTEM(Window);
@@ -24,6 +25,7 @@ namespace Joestar {
 		{
 			return mHeight;
 		}
+		void Update(F32 dt);
 	private:
 		void InitWindow();
 		U32 mWidth{ 0 };

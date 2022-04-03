@@ -5,6 +5,7 @@
 #include "SwapChain.h"
 #include "Descriptor.h"
 #include "UniformBuffer.h"
+#include "../IO/HID.h"
 
 namespace Joestar
 {
@@ -15,6 +16,7 @@ namespace Joestar
 		mGraphics = GetSubsystem<Graphics>();
 		CreatePassDescriptor();
 		mCamera->SetOrthographic(10.0F);
+		mHID = GetSubsystem<HID>();
 	}
 
 	View::~View()
@@ -55,6 +57,10 @@ namespace Joestar
 
 	void View::Update(float dt)
 	{
+		if (mCamera)
+		{
+			mCamera->ProcessHID(mHID, dt);
+		}
 		if (mScene)
 		{
 			mScene->Update(dt);

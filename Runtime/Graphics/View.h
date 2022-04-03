@@ -12,6 +12,7 @@ namespace Joestar
 	class DescriptorSets;
 	class DescriptorSetLayout;
 	class UniformBuffer;
+	class HID;
 	class View : public Object
 	{
 		REGISTER_OBJECT(View, Object);
@@ -34,6 +35,7 @@ namespace Joestar
 		UniquePtr<Camera> mCamera;
 		UniquePtr<Scene> mScene;
 		WeakPtr<Graphics> mGraphics;
+		WeakPtr<HID> mHID;
 		SwapChain* mSwapChain;
 		Viewport mViewport;
 		SharedPtr<DescriptorSets> mDescriptorSets;
