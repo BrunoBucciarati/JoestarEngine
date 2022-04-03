@@ -18,7 +18,7 @@ namespace Joestar {
 		REGISTER_SUBSYSTEM(HID)
 	public:
 		explicit HID(EngineContext* context);
-		void SetKeyboardInputs(U32 flag) { inputFlag = flag; }
+		void SetKeyboardInputs(U32 flag) { mInputFlag = flag; }
 		void SetMouseInputs(float xOffset, float yOffset, float scrollX, float scrollY)
 		{
 			mouseOffset[0] = xOffset;
@@ -26,15 +26,23 @@ namespace Joestar {
 			mouseScroll[0] = scrollX;
 			mouseScroll[1] = scrollY;
 		}
-		U32  GetKeyboardInputs() { return inputFlag; }
+		U32  GetKeyboardInputs() { return mInputFlag; }
 		float* GetMouseOffset() { return mouseOffset;}
 		float* GetMouseScroll() { return mouseScroll;}
 		bool CheckKeyboardInput(InputType t)
 		{
-			return inputFlag & (1 << t);
+			return mInputFlag & (1 << t);
+		}
+		void SetKeyboardInputBit(InputType bit)
+		{
+			mInputFlag |= (1 << bit);
+		}
+		void Clear()
+		{
+			mInputFlag = 0;
 		}
 	private:
-		U32 inputFlag;
+		U32 mInputFlag;
 		float mouseOffset[2];
 		float mouseScroll[2];
 	};

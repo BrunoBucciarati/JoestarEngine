@@ -52,8 +52,11 @@ namespace Joestar {
 
 	void Application::Update() {
 		float dt = GetSubsystem<TimeManager>()->GetElapseTime();
+		//Input Update
 		GetSubsystem<TimeManager>()->BeginFrame();
+		GetSubsystem<HID>()->Clear();
 		GetSubsystem<Window>()->Update(dt);
+
 		//Logic Update
 		mMainView->Update(dt);
 

@@ -48,16 +48,16 @@ namespace Joestar {
             switch (wParam)
             {
             case(0x57):
-                HIDSystem->SetKeyboardInputs(KEY_W);
+                HIDSystem->SetKeyboardInputBit(KEY_W);
                 break;
             case(0x41):
-                HIDSystem->SetKeyboardInputs(KEY_A);
+                HIDSystem->SetKeyboardInputBit(KEY_A);
                 break;
             case(0x53):
-                HIDSystem->SetKeyboardInputs(KEY_S);
+                HIDSystem->SetKeyboardInputBit(KEY_S);
                 break;
             case(0x44):
-                HIDSystem->SetKeyboardInputs(KEY_D);
+                HIDSystem->SetKeyboardInputBit(KEY_D);
                 break;
             default:
                 break;
