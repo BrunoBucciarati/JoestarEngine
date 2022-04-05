@@ -289,6 +289,18 @@ namespace Joestar {
 		METAL
 	};
 
+	enum class Filter {
+		NEAREST = 0,
+		LINEAR,
+	};
+	enum class SamplerAddressMode {
+		REPEAT = 0,
+		MIRRORED_REPEAT = 1,
+		CLAMP_TO_EDGE = 2,
+		CLAMP_TO_BORDER = 3,
+		MIRROR_CLAMP_TO_EDGE = 4,
+	};
+
 	const char* GetShaderSuffix(ShaderLanguage lang, ShaderStage);
 
 	const U32 MAX_DESCRIPTOR_SETS = 4;

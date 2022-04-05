@@ -106,26 +106,17 @@ namespace Joestar {
             }
         }
 
-        bool oddRow = false;
-        for (unsigned int y = 0; y < Y_SEGMENTS - 1; ++y)
+        for (U32 y = 0; y < Y_SEGMENTS - 1; ++y)
         {
-            if (!oddRow)
+            for (U32 x = 0; x < X_SEGMENTS - 1; ++x)
             {
-                for (unsigned int x = 0; x < X_SEGMENTS; ++x)
-                {
-                    indices.Push(y * X_SEGMENTS + x);
-                    indices.Push((y + 1) * X_SEGMENTS + x);
-                }
+                indices.Push(y * X_SEGMENTS + x);
+                indices.Push((y + 1) * X_SEGMENTS + x);
+                indices.Push(y * X_SEGMENTS + x + 1);
+                indices.Push(y * X_SEGMENTS + x + 1);
+                indices.Push((y + 1) * X_SEGMENTS + x);
+                indices.Push((y + 1) * X_SEGMENTS + x + 1);
             }
-            else
-            {
-                for (int x = X_SEGMENTS - 1; x >= 0; --x)
-                {
-                    indices.Push((y + 1) * X_SEGMENTS + x);
-                    indices.Push(y * X_SEGMENTS + x);
-                }
-            }
-            oddRow = !oddRow;
         }
 
         VertexBuffer* vb = NEW_OBJECT(VertexBuffer);
@@ -143,32 +134,12 @@ namespace Joestar {
 
     Mesh* ProceduralMesh::GenLine() {
         Mesh* mesh = NEW_OBJECT(Mesh);
-        //std::vector<float> attrs = {
-        //    0.f, 0.f, 0.f, 1.f, 1.f, 1.f,
-        //    0.f, 0.f, 10.f, 1.f, 1.f, 1.f
-        //};
-        //VertexBuffer* vb = mesh->GetVB();
-        //vb->SetSize(attrs.size() * sizeof(float));
-        //vb->CopyBuffer((uint8_t*)attrs.data(), attrs.size() * sizeof(float));
-        //vb->AppendVertexAttr(VERTEX_POS);
-        //vb->AppendVertexAttr(VERTEX_COLOR);
-
-        //mesh->SetTopology(MESH_TOPOLOGY_LINE);
 
         return mesh;
     }
 
     Mesh* ProceduralMesh::GenTriangle() {
         Mesh* mesh = NEW_OBJECT(Mesh);
-        //std::vector<float> attrs = {
-        //    0.f, 0.f, 0.f, 1.f, 1.f, 1.f,
-        //    0.f, 0.f, 10.f, 1.f, 1.f, 1.f
-        //};
-        //VertexBuffer* vb = mesh->GetVB();
-        //vb->SetSize(attrs.size() * sizeof(float));
-        //vb->CopyBuffer((uint8_t*)attrs.data(), attrs.size() * sizeof(float));
-        //vb->AppendVertexAttr(VERTEX_POS);
-        //vb->AppendVertexAttr(VERTEX_COLOR);
         Vector<F32> vertices = {
             -0.5F, 0.0F, 0.5F, 0.5F, 0.0F, 0.5F, 0.5F, -0.5F, 0.5F
         };

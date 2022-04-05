@@ -1012,6 +1012,12 @@ namespace Joestar {
         shader.Create(mDevice, createInfo);
     }
 
+    void RenderAPIVK::CreateSampler(GPUResourceHandle handle, GPUSamplerCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(sampler, Sampler, handle);
+        sampler.Create(mDevice, createInfo);
+    }
+
     ///CommandBuffer Commands
     void RenderAPIVK::CBBegin(GPUResourceHandle handle)
     {

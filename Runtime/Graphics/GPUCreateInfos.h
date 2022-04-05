@@ -200,13 +200,6 @@ namespace Joestar
 		PODVector<Entry> updateSets;
 	};
 
-	//PushConstant
-	//VkPushConstantRange pushConstantRange{};
-	//pushConstantRange.stageFlags = pushConsts->GetStageFlags();
-	//pushConstantRange.offset = 0;
-	//pushConstantRange.size = pushConsts->size;
-	//pipelineLayoutInfo.pushConstantRangeCount = 1; // Optional
-	//pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; // Optional
 	struct GPUPipelineLayoutCreateInfo
 	{
 		U32 numLayouts;
@@ -255,5 +248,22 @@ namespace Joestar
 		U32 size{ 0 };
 		U32 numMembers;
 		PODVector<GPUDescriptorSetLayoutBindingMember> members;
+	};
+
+	struct GPUSamplerCreateInfo
+	{
+		Filter magFilter;
+		Filter minFilter;
+		Filter mipmapFilter;
+		SamplerAddressMode addressModeU;
+		SamplerAddressMode addressModeV;
+		SamplerAddressMode addressModeW;
+		bool bAnisotrophy;
+		U32 maxAnisotrophy;
+		bool bCompare;
+		CompareOp compareOp;
+		F32 minLod;
+		F32 maxLod;
+		F32 mipLodBias;
 	};
 }

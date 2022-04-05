@@ -1,7 +1,6 @@
 #include "Texture.h"
 
 namespace Joestar {
-	Texture::~Texture() {
-
-	}
+	Texture::~Texture()
+	{}
 }

@@ -15,6 +15,7 @@
 #include "GPUResource.h"
 #include "FrameBuffer.h"
 #include "UniformBuffer.h"
+#include "Sampler.h"
 namespace Joestar {
 	class VertexBuffer;
 	class IndexBuffer;
@@ -54,8 +55,6 @@ namespace Joestar {
 		void RemoveGPUVertexBuffer(GPUVertexBuffer* vb);
 		GPUIndexBuffer* CreateGPUIndexBuffer(IndexBuffer*);
 		void RemoveGPUIndexBuffer(GPUIndexBuffer* vb);
-		//UniformBuffer* CreateUniformBuffer(U32 hash, const UniformType& type, U32 size);
-		//UniformBuffer* CreateUniformBuffer(const String& name, const UniformType& type, U32 size);
 		void CreateUniformBuffer(UniformBuffer*);
 		void CreateRenderPass(RenderPass*);
 		void CreateGraphicsPipelineState(GraphicsPipelineState*);
@@ -89,12 +88,11 @@ namespace Joestar {
 		void CreateColorBlendState(ColorBlendState*);
 
 		void SetUniformBuffer(UniformBuffer*);
-		//void SetUniformBuffer(PerPassUniforms, U8* data);
-		//void SetUniformBuffer(PerObjectUniforms, float* data);
 		void SetDescriptorSetLayout(DescriptorSetLayout* setLayout);
 		void UpdateDescriptorSets(DescriptorSets* sets);
 		void CreateDescriptorSets(DescriptorSets* sets);
 		void CreatePipelineLayout(PipelineLayout*);
+		void SetSampler(Sampler*);
 		void QueueSubmit(CommandBuffer* cb);
 		void Submit(CommandBuffer* cb);
 		SharedPtr<DescriptorSets>& GetGlobalDescriptorSets()
@@ -135,6 +133,7 @@ namespace Joestar {
 		Vector<SharedPtr<ShaderProgram>> mShaderPrograms;
 		HashMap<U32, SharedPtr<DescriptorSetLayout>> mDescriptorSetLayouts;
 		Vector<SharedPtr<DescriptorSets>> mDescriptorSets;
+		HashMap<U32, SharedPtr<Sampler>> mSamplerTable;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

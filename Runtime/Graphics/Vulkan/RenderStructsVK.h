@@ -630,4 +630,12 @@ namespace Joestar {
     private:
         Vector<VkDescriptorSet> sets;
     };
+
+    class SamplerVK
+    {
+    public:
+        void Create(VkDevice&, GPUSamplerCreateInfo&);
+    private:
+        VkSampler sampler;
+    };
 }

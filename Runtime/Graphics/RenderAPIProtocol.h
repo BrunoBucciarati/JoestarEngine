@@ -36,6 +36,7 @@ namespace Joestar
 		virtual void CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<GPUDescriptorSetLayoutBinding>& bindings) {};
 		virtual void CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo) = 0;
 		virtual void UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo) = 0;
+		virtual void CreateSampler(GPUResourceHandle handle, GPUSamplerCreateInfo& createInfo) = 0;
 		virtual void QueueSubmit(GPUResourceHandle handle) = 0;
 		virtual void Present() = 0;
 		///Uniform Functions

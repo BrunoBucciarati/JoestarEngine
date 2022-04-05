@@ -172,6 +172,7 @@
     <ClCompile Include="Graphics\ProceduralMesh.cpp" />
     <ClCompile Include="Graphics\ProgramCPU.cpp" />
     <ClCompile Include="Graphics\RenderAPIProtocol.cpp" />
+    <ClCompile Include="Graphics\Sampler.cpp" />
     <ClCompile Include="Graphics\Shader\Shader.cpp" />
     <ClCompile Include="Graphics\Shader\ShaderParser.cpp" />
     <ClCompile Include="Graphics\Shader\ShaderProgram.cpp" />
@@ -182,7 +183,6 @@
     <ClCompile Include="Graphics\UniformBuffer.cpp" />
     <ClCompile Include="Graphics\UniformData.cpp" />
     <ClCompile Include="Graphics\VertexBuffer.cpp" />
-    <ClCompile Include="Graphics\VertexData.cpp" />
     <ClCompile Include="Graphics\View.cpp" />
     <ClCompile Include="Graphics\Vulkan\RenderAPIVK.cpp" />
     <ClCompile Include="Graphics\Vulkan\RenderEnumsVK.cpp" />
@@ -207,7 +207,6 @@
     <ClCompile Include="Graphics\glad.c" />
     <ClCompile Include="Graphics\GPUProgramGL.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
-    <ClCompile Include="Graphics\GraphicsGL.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Misc\Application.cpp" />
     <ClCompile Include="Graphics\GPUProgram.cpp" />
@@ -257,6 +256,7 @@
     <ClInclude Include="Graphics\ProgramCPU.h" />
     <ClInclude Include="Graphics\RenderAPIProtocol.h" />
     <ClInclude Include="Graphics\RenderTarget.h" />
+    <ClInclude Include="Graphics\Sampler.h" />
     <ClInclude Include="Graphics\Shader\Shader.h" />
     <ClInclude Include="Graphics\Shader\ShaderParser.h" />
     <ClInclude Include="Graphics\Shader\ShaderProgram.h" />
@@ -268,7 +268,6 @@
     <ClInclude Include="Graphics\UniformBuffer.h" />
     <ClInclude Include="Graphics\UniformData.h" />
     <ClInclude Include="Graphics\VertexBuffer.h" />
-    <ClInclude Include="Graphics\VertexData.h" />
     <ClInclude Include="Graphics\View.h" />
     <ClInclude Include="Graphics\Viewport.h" />
     <ClInclude Include="Graphics\VulkanHeader.h" />
@@ -304,7 +303,6 @@
     <ClInclude Include="Misc\GlobalConfig.h" />
     <ClInclude Include="Misc\Application.h" />
     <ClInclude Include="Graphics\Graphics.h" />
-    <ClInclude Include="Graphics\GraphicsGL.h" />
     <ClInclude Include="Graphics\Material.h" />
     <ClInclude Include="Graphics\Mesh.h" />
     <ClInclude Include="Graphics\GPUProgram.h" />

@@ -349,4 +349,29 @@ namespace Joestar {
 
         VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, sets.Buffer()));
     }
+
+    void SamplerVK::Create(VkDevice& device, GPUSamplerCreateInfo& createInfo)
+    {
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VkFilter(createInfo.magFilter);
+        samplerInfo.minFilter = VkFilter(createInfo.minFilter);
+        samplerInfo.mipmapMode = VkSamplerMipmapMode(createInfo.mipmapFilter);
+        samplerInfo.addressModeU = VkSamplerAddressMode(createInfo.addressModeU);
+        samplerInfo.addressModeV = VkSamplerAddressMode(createInfo.addressModeV);
+        samplerInfo.addressModeW = VkSamplerAddressMode(createInfo.addressModeW);
+        samplerInfo.anisotropyEnable = createInfo.bAnisotrophy;
+        samplerInfo.maxAnisotropy = createInfo.maxAnisotrophy;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = createInfo.bCompare;
+        samplerInfo.compareOp = VkCompareOp(createInfo.compareOp);
+        samplerInfo.minLod = createInfo.minLod;
+        samplerInfo.maxLod = createInfo.maxLod;
+        samplerInfo.mipLodBias = createInfo.mipLodBias;
+
+        if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
+            LOGERROR("failed to create texture sampler!");
+        }
+    }
 }

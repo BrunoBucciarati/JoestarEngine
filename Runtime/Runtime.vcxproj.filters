@@ -30,9 +30,6 @@
     <ClCompile Include="Graphics\Graphics.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\GraphicsGL.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Graphics\GPUProgramGL.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -73,9 +70,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\Mesh.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\VertexData.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Base\Camera.cpp">
@@ -213,6 +207,9 @@
     <ClCompile Include="Graphics\UniformBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Sampler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -231,9 +228,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Graphics.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\GraphicsGL.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\GPUProgramGL.h">
@@ -288,9 +282,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Math\Vector3.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\VertexData.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\VulkanHeader.h">
@@ -498,6 +489,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Shader\ShaderProgram.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Sampler.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

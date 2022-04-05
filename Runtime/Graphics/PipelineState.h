@@ -55,21 +55,10 @@ namespace Joestar {
         }
 	};
 
-    //typedef struct VkComputePipelineCreateInfo {
-    //    VkStructureType                    sType;
-    //    const void* pNext;
-    //    VkPipelineCreateFlags              flags;
-    //    VkPipelineShaderStageCreateInfo    stage;
-    //    VkPipelineLayout                   layout;
-    //    VkPipeline                         basePipelineHandle;
-    //    int32_t                            basePipelineIndex;
-    //} VkComputePipelineCreateInfo;
     class ComputePipelineState : public PipelineState
     {
 
     };
-
-
 
     class RasterizationState : public GPUResource
     {

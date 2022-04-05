@@ -35,6 +35,7 @@ namespace Joestar
 		CreateDescriptorSetLayout,
 		CreateDescriptorSets,
 		UpdateDescriptorSets,
+		CreateSampler,
 		SubmitCommandBuffer,
 		QueueSubmitCommandBuffer,
 		Present,

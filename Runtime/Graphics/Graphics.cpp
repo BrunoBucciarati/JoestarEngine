@@ -708,6 +708,41 @@ namespace Joestar {
 		}
 	}
 
+	void Graphics::SetSampler(Sampler* sampler)
+	{
+		sampler->Rehash();
+		U32 hash = sampler->Hash();
+		if (mSamplerTable.Contains(hash))
+		{
+			sampler->SetHandle(mSamplerTable[hash]->GetHandle());
+		}
+		else
+		{
+			U32 handle = mSamplerTable.Size();
+			sampler->SetHandle(handle);
+			mSamplerTable.Insert(hash, sampler);
+			GetMainCmdList()->WriteCommand(GFXCommand::CreateSampler);
+			GetMainCmdList()->WriteBuffer(handle);
+			GPUSamplerCreateInfo createInfo
+			{
+				sampler->GetMagFilter(),
+				sampler->GetMinFilter(),
+				sampler->GetMipMapFilter(),
+				sampler->GetAddressModeU(),
+				sampler->GetAddressModeV(),
+				sampler->GetAddressModeW(),
+				sampler->GetAnisotrophy(),
+				sampler->GetMaxAnisotrophy(),
+				sampler->GetCompare(),
+				sampler->GetCompareOp(),
+				sampler->GetMinLod(),
+				sampler->GetMaxLod(),
+				sampler->GetMipLodBias()
+			};
+			GetMainCmdList()->WriteBuffer(createInfo);
+		}
+	}
+
 	void Graphics::QueueSubmit(CommandBuffer* cb)
 	{
 		GetMainCmdList()->WriteCommand(GFXCommand::QueueSubmitCommandBuffer);
