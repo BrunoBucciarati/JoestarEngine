@@ -268,7 +268,7 @@ namespace Joestar {
 
         String texpath = "Textures/marble.jpg";
         Texture2D* tex2D = new Texture2D(app->GetEngineContext());
-        tex2D->TextureFromImage(texpath);
+        //tex2D->TextureFromImage(texpath);
 
         D3D11_TEXTURE2D_DESC tdesc;
         ZeroMemory(&tdesc, sizeof(tdesc));

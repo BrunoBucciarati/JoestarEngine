@@ -205,12 +205,6 @@ namespace Joestar {
 	UniformDataType GetPerObjectUniformDataType(PerObjectUniforms);
 	UniformDataType GetPerBatchUniformDataType(PerBatchUniforms uniform);
 
-	struct UniformType
-	{
-		UniformFrequency frequency{ UniformFrequency::OBJECT };
-		//U32 size{ 0 };
-	};
-
 	enum class AttachmentLoadOp
 	{
 		LOAD = 0,

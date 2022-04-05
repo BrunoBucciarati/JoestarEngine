@@ -8,8 +8,8 @@ namespace Joestar
 
 	class GPUResource : public RefCount, public Hashable
 	{
-		static const U32 INVALID_HANDLE = 0xFFFFFFFF;
 	public:
+		static const U32 INVALID_HANDLE = 0xFFFFFFFF;
 		GPUResourceHandle handle{ INVALID_HANDLE };
 		U32 Rehash()
 		{

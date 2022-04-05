@@ -3,17 +3,17 @@
 
 namespace Joestar {
 	Material::Material(EngineContext* ctx) : Super(ctx),
-		mGraphics(GetSubsystem<Graphics>())
+		mGraphics(GetSubsystem<Graphics>()),
+		mDescriptorSets(JOJO_NEW(DescriptorSets, MEMORY_GFX_STRUCT))
 	{}
 	Material::~Material()
-	{
-	}
+	{}
 
-	void Material::SetTexture(Texture* tex, U8 slot)
+	void Material::SetTexture(Texture* tex, U32 binding)
 	{
-		if (slot >= mTextures.Size())
-			mTextures.Resize(slot + 1);
-		mTextures[slot] = tex;
+		if (binding >= mTextures.Size())
+			mTextures.Resize(binding + 1);
+		mTextures[binding] = tex;
 	}
 
 	void Material::SetPBR()
@@ -30,7 +30,7 @@ namespace Joestar {
 		for (int i = 0; i < 4; ++i) {
 			mTextures.Push(NEW_OBJECT(Texture2D));
 			String pngFile = path + texNames[i];
-			mTextures[i]->TextureFromImage(pngFile);
+			//mTextures[i]->TextureFromImage(pngFile);
 		}
 	}
 
@@ -38,14 +38,47 @@ namespace Joestar {
 	{
 		mTextures.Push(NEW_OBJECT(Texture2D));
 		String path = "Models/viking_room/viking_room.png";
-		mTextures[0]->TextureFromImage(path);
+		//mTextures[0]->TextureFromImage(path);
 	}
 
 	void Material::SetPlaneMat()
 	{
-		mTextures.Push(NEW_OBJECT(Texture2D));
+		Texture2D* texture = NEW_OBJECT(Texture2D);
+		mTextures.Push(texture);
 		String path = "Textures/marble.jpg";
-		mTextures[0]->TextureFromImage(path);
+		Image image(mContext);
+		image.Load(path);
+		texture->SetImage(image);
+	}
+
+	void Material::AllocDescriptorSets()
+	{
+		mDescriptorSets->AllocFromLayout(mDescriptorSetLayout);
+		mGraphics->CreateDescriptorSets(mDescriptorSets);
+
+		//对描述符分配对应的UB
+		mUniformBuffers.Clear();
+		mUniformBuffers.Resize(mDescriptorSets->Size());
+		mTextures.Resize(mDescriptorSets->Size());
+		for (U32 i = 0; i < mDescriptorSetLayout->GetNumBindings(); ++i)
+		{
+			DescriptorSetLayoutBinding* binding = mDescriptorSetLayout->GetLayoutBinding(i);
+			if (binding->type == DescriptorType::UNIFORM_BUFFER)
+			{
+				mUniformBuffers[i] = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
+				mUniformBuffers[i]->AllocFromBinding(binding);
+				mUniformBuffers[i]->SetFrequency(UniformFrequency::BATCH);
+				mGraphics->CreateUniformBuffer(mUniformBuffers[i]);
+				mDescriptorSets->SetBindingUniformBuffer(binding->binding, mUniformBuffers[i]);
+			}
+			else if (binding->type == DescriptorType::COMBINED_IMAGE_SAMPLER)
+			{
+				mTextures[i] = JOJO_NEW(Texture(mContext), MEMORY_TEXTURE);
+				mTextures[i]->SetFrequency(UniformFrequency::BATCH);
+				mTextures[i]->CreateSampler();
+				mDescriptorSets->SetBindingTexture(binding->binding, mTextures[i]);
+			}
+		}
 	}
 
 	void Material::SetUniformBuffer(PerBatchUniforms uniform, float* data)

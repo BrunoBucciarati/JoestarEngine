@@ -31,6 +31,7 @@ namespace Joestar
 		U32 layer;
 		U32 baseLayer;
 		U32 num{1};
+		PODVector<GPUResourceHandle> imageHandle;
 	};
 
 	struct GPUSwapChainCreateInfo

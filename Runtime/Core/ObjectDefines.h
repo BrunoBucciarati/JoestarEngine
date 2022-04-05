@@ -44,7 +44,7 @@
 #define STR_STRUCT(S) #S
 
 #define GET_SET_STATEMENT_PREFIX_INITVALUE(_TYP, _VAR, _PREFIX, _INITVALUE) \
-    private: \
+    protected: \
         _TYP _PREFIX##_VAR{_INITVALUE}; \
     public: \
         _TYP Get##_VAR () const { return _PREFIX##_VAR; } \
@@ -60,7 +60,7 @@
     GET_SET_STATEMENT_PREFIX(_TYP, _VAR, m)
 
 #define GET_SET_STATEMENT_PREFIX_INITVALUE_REF(_TYP, _VAR, _PREFIX, _INITVALUE) \
-    private: \
+    protected: \
         _TYP _PREFIX##_VAR{_INITVALUE}; \
     public: \
         _TYP& Get##_VAR () { return _PREFIX##_VAR; } \

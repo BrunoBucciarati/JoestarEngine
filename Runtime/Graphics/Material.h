@@ -15,8 +15,8 @@ namespace Joestar {
 		void SetPBR();
 		void SetPlaneMat();
 
-		void SetTexture(Texture* tex, U8 slot = 0);
-		Vector<Texture*>& GetTextures()
+		void SetTexture(Texture* tex, U32 binding = 0);
+		Vector<SharedPtr<Texture>>& GetTextures()
 		{
 			return mTextures;
 		}
@@ -34,9 +34,11 @@ namespace Joestar {
 		{
 			mDescriptorSetLayout = setLayout;
 		}
+		void AllocDescriptorSets();
 
 	private:
-		Vector<Texture*> mTextures;
+		Vector<SharedPtr<Texture>> mTextures;
+		Vector<SharedPtr<UniformBuffer>> mUniformBuffers;
 		SharedPtr<DescriptorSets> mDescriptorSets;
 		SharedPtr<DescriptorSetLayout> mDescriptorSetLayout;
 		WeakPtr<Graphics> mGraphics;

@@ -38,6 +38,9 @@ namespace Joestar {
 				mGraphics->CreateUniformBuffer(mUniformBuffers[i]);
 				mDescriptorSets->SetBindingUniformBuffer(binding->binding, mUniformBuffers[i]);
 			}
+
+			mMaterial->SetDescriptorSetLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::BATCH));
+			mMaterial->AllocDescriptorSets();
 		}
 	}
 

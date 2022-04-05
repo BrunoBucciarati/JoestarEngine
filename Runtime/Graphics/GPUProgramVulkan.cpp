@@ -871,7 +871,7 @@ namespace Joestar {
 				U8 binding;
 				cmdBuffer->ReadBuffer<U8>(binding);
 				CmdUpdateTexture(tex, drawcall, binding);
-				drawcall->HashInsert(tex->id);
+				//drawcall->HashInsert(tex->id);
 				break;
 			}
 			case RenderCMD_SetDepthCompare: {
@@ -1058,7 +1058,7 @@ namespace Joestar {
 				U8 binding;
 				cmdBuffer->ReadBuffer<U8>(binding);
 				CmdUpdateTexture(tex, computePipeline, binding);
-				computePipeline->HashInsert(tex->id);
+				//computePipeline->HashInsert(tex->id);
 				break;
 			}
 			default: break;

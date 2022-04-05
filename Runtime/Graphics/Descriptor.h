@@ -6,6 +6,7 @@
 #include "UniformBuffer.h"
 namespace Joestar
 {
+	class Texture;
 	enum class DescriptorType
 	{
 		SAMPLER = 0,
@@ -82,13 +83,14 @@ namespace Joestar
 
 	struct DescriptorSet
 	{
-		SharedPtr<UniformBuffer> ub;
 		U32 binding{ 0 };
 		U32 offset{ 0 };
 		U32 set{ 0 };
 		U32 count{ 0 };
 		U32 size{ 0 };
 		DescriptorType type;
+		SharedPtr<UniformBuffer> ub;
+		SharedPtr<Texture> texture;
 	};
 
 	class DescriptorSets : public GPUResource
@@ -97,6 +99,7 @@ namespace Joestar
 		void AllocFromLayout(DescriptorSetLayout* layout);
 		DescriptorSet& GetDescriptorSetByBinding(U32 binding);
 		void SetBindingUniformBuffer(U32 binding, UniformBuffer* ub);
+		void SetBindingTexture(U32 binding, Texture* ub);
 		DescriptorSet& GetDescriptorSetByID(U32 ID);
 		void SetLayoutData(U32 ID, float* data);
 		SharedPtr<DescriptorSetLayout>& GetLayout()

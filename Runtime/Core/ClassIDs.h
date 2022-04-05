@@ -44,8 +44,10 @@ enum ClassIDType {
 	DefineClassID(IndexBuffer, 35)
 	DefineClassID(Resource, 36)
 	DefineClassID(File, 37)
-	DefineClassID(ShaderProgram, 37)
-	DefineClassID(UniformBuffer, 37)
+	DefineClassID(ShaderProgram, 38)
+	DefineClassID(UniformBuffer, 39)
+	DefineClassID(GPUImage, 40)
+	DefineClassID(GPUImageView, 41)
 
 	kClassIDCount
 };

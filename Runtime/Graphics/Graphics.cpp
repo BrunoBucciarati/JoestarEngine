@@ -594,11 +594,9 @@ namespace Joestar {
 		return mRenderPasses[0];
 	}
 
-	void Graphics::CreateImage(GPUImage* image, U32 num = 1)
+	void Graphics::CreateImage(GPUImage* image, U32 num)
 	{
-		GPUResourceHandle handle = mImages.Size();
-		image->handle = handle;
-		mImages.Push(image);
+		ASSIGN_NEW_HANDLE(image, mImages);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateImage);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 
@@ -617,16 +615,14 @@ namespace Joestar {
 		GetMainCmdList()->WriteBuffer<GPUImageCreateInfo>(createInfo);
 	}
 
-	void Graphics::CreateImageView(GPUImageView* imageView, U32 num = 1)
+	void Graphics::CreateImageView(GPUImageView* imageView, U32 num)
 	{
-		GPUResourceHandle handle = mImageViews.Size();
-		imageView->handle = handle;
-		mImageViews.Push(imageView);
+		ASSIGN_NEW_HANDLE(imageView, mImageViews);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateImageView);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 
 		GPUImageViewCreateInfo createInfo{
-			imageView->image->handle,
+			imageView->GetImage()->GetHandle(),
 			imageView->GetType(),
 			imageView->GetFormat(),
 			imageView->GetAspectBits(),
@@ -708,13 +704,14 @@ namespace Joestar {
 		}
 	}
 
-	void Graphics::SetSampler(Sampler* sampler)
+	void Graphics::SetSampler(SharedPtr<Sampler>& sampler)
 	{
 		sampler->Rehash();
 		U32 hash = sampler->Hash();
 		if (mSamplerTable.Contains(hash))
 		{
-			sampler->SetHandle(mSamplerTable[hash]->GetHandle());
+			sampler = mSamplerTable[hash];
+			//sampler->SetHandle(mSamplerTable[hash]->GetHandle());
 		}
 		else
 		{

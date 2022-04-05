@@ -1,5 +1,7 @@
 #pragma once
 #include "GPUResource.h"
+#include "../Container/Ptr.h"
+#include "../Core/Object.h"
 
 namespace Joestar {
 	enum class ImageType
@@ -18,7 +20,6 @@ namespace Joestar {
 		TYPE_1D_ARRAY = 4,
 		TYPE_2D_ARRAY = 5,
 		TYPE_CUBE_ARRAY = 6,
-		TYPE_MAX_ENUM = 0x7FFFFFFF
 	};
 
 	//How To Use Image, You may also check Vulkan's VkImageUsageFlagBits
@@ -39,7 +40,6 @@ namespace Joestar {
 		DEPTH_BIT = 0x00000002,
 		STENCIL_BIT = 0x00000004,
 		METADATA_BIT = 0x00000008,
-		VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 	};
 
 	enum class ImageFormat
@@ -51,78 +51,50 @@ namespace Joestar {
 		D32S8 = 4,
 		FormatCount
 	};
-	class GPUImage : public GPUResource
+	class Image;
+	class Graphics;
+	class GPUImage : public Object
 	{
+		REGISTER_OBJECT_ROOT(GPUImage);
+		GET_SET_STATEMENT_INITVALUE(GPUResourceHandle, Handle, GPUResource::INVALID_HANDLE);
+		GET_SET_STATEMENT_INITVALUE(ImageType, Type, ImageType::TYPE_2D);
+		GET_SET_STATEMENT_INITVALUE(ImageFormat, Format, ImageFormat::R8G8B8A8_SRGB);
+		GET_SET_STATEMENT_INITVALUE(U32, Width, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, Height, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, Depth, 1);
+		GET_SET_STATEMENT_INITVALUE(U32, Layer, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, Usage, (U32)ImageUsageBits::SAMPLED_BIT);
+		GET_SET_STATEMENT_INITVALUE(U32, Samples, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, MipLevels, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, Size, 0);
 	public:
-		GPUImage(ImageType typ) : mType(typ) {}
-		ImageType GetType() { return mType; }
-
-		ImageFormat GetFormat() { return mFormat; }
-		void SetFormat(ImageFormat f) { mFormat = f; }
-
-		void SetWidth(U32 width) { mWidth = width; }
-		U32 GetWidth() { return mWidth; }
-
-		void SetHeight(U32 height) { mHeight = height; }
-		U32 GetHeight() { return mHeight; }
-
-		void SetDepth(U32 depth) { mDepth = depth; }
-		U32 GetDepth() { return mDepth; }
-
-		void SetLayer(U32 layer) { mLayer = layer; }
-		U32 GetLayer() { return mLayer; }
-
-		void SetUsage(U32 usage) { mUsage = usage; }
-		U32 GetUsage() { return mUsage; }
-
-		void SetSamples(U32 value) { mSamples = value; }
-		U32 GetSamples() { return mSamples; }
-
-		void SetMipLevels(U32 value) { mMipLevels = value; }
-		U32 GetMipLevels() { return mMipLevels; }
+		explicit GPUImage(EngineContext*);
+		void SetImage(Image* image);
+		void SetData(U8* data);
 	private:
-		ImageFormat mFormat;
-		ImageType mType;
-		U32 mWidth{ 0 };
-		U32 mHeight{ 0 };
-		U32 mDepth{ 1 };
-		U32 mLayer{ 1 };
-		U32 mUsage{ (U32)ImageUsageBits::SAMPLED_BIT };
-		U32 mSamples{ 0 };
-		U32 mMipLevels{ 0 };
+		U8* mData{ nullptr };
+		WeakPtr<Graphics> mGraphics;
 	};
 
-	class GPUImageView : public GPUResource
+	class GPUImageView : public Object
 	{
+		REGISTER_OBJECT_ROOT(GPUImageView);
+		GET_SET_STATEMENT(SharedPtr<GPUImage>, Image);
+		GET_SET_STATEMENT_INITVALUE(GPUResourceHandle, Handle, GPUResource::INVALID_HANDLE);
+		GET_SET_STATEMENT_INITVALUE(ImageViewType, Type, ImageViewType::TYPE_2D);
+		GET_SET_STATEMENT_INITVALUE(ImageFormat, Format, ImageFormat::R8G8B8A8_SRGB);
+		GET_SET_STATEMENT_INITVALUE(U32, AspectBits, (U32)ImageAspectFlagBits::COLOR_BIT);
+		GET_SET_STATEMENT_INITVALUE(U32, BaseMipLevel, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, MipLevels, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, BaseLayer, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, Layer, 0);
 	public:
-		GPUImageView(ImageViewType typ) : mType(typ) {}
-		ImageViewType GetType() { return mType; }
-		GPUImage* image;
-		void SetBaseMipLevel(U32 value) { mBaseMipLevel = value; }
-		U32 GetBaseMipLevel() { return mBaseMipLevel; }
-		void SetAspectBits(U32 value) { mAspectBits = value; }
-		U32 GetAspectBits() { return mAspectBits; }
-		ImageFormat GetFormat()
-		{
-			return image->GetFormat();
-		}
-		U32 GetMipLevels()
-		{
-			return image->GetMipLevels();
-		}
-		U32 GetBaseLayer()
-		{
-			return mBaseLayer;
-		}
-		U32 GetLayer()
-		{
-			return image->GetLayer();
-		}
+		explicit GPUImageView(EngineContext*);
+		void SetImage(Image*);
 	private:
-		ImageViewType mType;
-		U32 mAspectBits{ (U32)ImageAspectFlagBits::COLOR_BIT };
 		U32 mBaseMipLevel{ 0 };
 		U32 mBaseLayer{ 0 };
+		WeakPtr<Graphics> mGraphics;
 	};
 
 	class GPUSampler : public GPUResource

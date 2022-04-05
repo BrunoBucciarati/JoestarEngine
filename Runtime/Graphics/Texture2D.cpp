@@ -2,20 +2,21 @@
 #include "../Base/StringHash.h"
 
 namespace Joestar {
-	void Texture2D::TextureFromImage(String& path) {
-		img = NEW_OBJECT(Image);
-		img->Load(path.CString());// "Models/viking_room/viking_room.png");
-		width = img->GetWidth();
-		height = img->GetHeight();
-		id = hashString(path.CString());
-		fmt = TEXTURE_FORMAT_RGBA8;
+	Texture2D::Texture2D(EngineContext* ctx): Super(ctx)
+	{
+		mType = ImageType::TYPE_2D;
+		mFormat = ImageFormat::R8G8B8A8_SRGB;
+		//mImageView = JOJO_NEW(GPUImageView(ImageViewType::TYPE_2D), MEMORY_GFX_STRUCT);
 	}
+	//void Texture2D::SetImage(Image& image)
+	//{
+	//	mWidth = image.GetWidth();
+	//	mHeight = image.GetHeight();
+	//	mSize = image.GetSize();
+	//	SetData(image.GetData());
+	//}
 
-	Texture2D::~Texture2D() {
-		DELETE_OBJECT(img);
-	}
-
-	U8* Texture2D::GetData() {
-		return (U8*)img->GetData();
+	Texture2D::~Texture2D()
+	{
 	}
 }

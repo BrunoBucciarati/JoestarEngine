@@ -1,17 +1,18 @@
 #pragma once
-#include "../Core/Object.h"
+#include "../Core/Minimal.h"
+#include "../Resource/Resource.h"
 namespace Joestar {
-	class Image : public Object {
-		REGISTER_OBJECT(Image, Object)
+	class Image : public Resource {
+		REGISTER_OBJECT(Image, Resource)
 	public:
-		explicit Image(EngineContext* ctx) : Super(ctx) {}
-		void Load(const char* path);
-		inline int GetWidth() { return width; }
-		inline int GetHeight() { return height; }
-		inline int GetSize() { return width * height; }
-		inline char* GetData() { return data; }
+		explicit Image(EngineContext* ctx);
+		void Load(String path);
+		U32 GetWidth() { return mWidth; }
+		U32 GetHeight() { return mHeight; }
+		U32 GetSize() { return mWidth * mHeight * mChannels; }
+		U8* GetData() { return mData; }
 	private:
-		int width, height, channels;
-		char* data;
+		U32 mWidth, mHeight, mChannels;
+		U8* mData;
 	};
 }

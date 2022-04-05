@@ -47,8 +47,8 @@ namespace Joestar {
 		void CreateDescriptorPool();
 		void CreateCommandPool(CommandPool* pool);
 		SwapChain* GetSwapChain();
-		void CreateImage(GPUImage*, U32);
-		void CreateImageView(GPUImageView*, U32);
+		void CreateImage(GPUImage*, U32=1);
+		void CreateImageView(GPUImageView*, U32=1);
 		GPUMemory* CreateGPUMemory();
 		void SetGPUMemory(GPUMemory*);
 		GPUVertexBuffer* CreateGPUVertexBuffer(VertexBuffer*);
@@ -92,7 +92,7 @@ namespace Joestar {
 		void UpdateDescriptorSets(DescriptorSets* sets);
 		void CreateDescriptorSets(DescriptorSets* sets);
 		void CreatePipelineLayout(PipelineLayout*);
-		void SetSampler(Sampler*);
+		void SetSampler(SharedPtr<Sampler>&);
 		void QueueSubmit(CommandBuffer* cb);
 		void Submit(CommandBuffer* cb);
 		SharedPtr<DescriptorSets>& GetGlobalDescriptorSets()

@@ -51,6 +51,12 @@ namespace Joestar {
         GameObject* plane = NEW_OBJECT(GameObject);
         gameObjects.Push(plane);
         MeshRenderer* pr = plane->GetComponent<MeshRenderer>();
+        Texture2D* texture = NEW_OBJECT(Texture2D);
+        String path = "Textures/marble.jpg";
+        Image image(mContext);
+        image.Load(path);
+        texture->SetImage(image);
+        pr->GetMaterial()->SetTexture(texture, 0);
         pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
         pr->SetShader("vertex", ShaderStage::VS);
         pr->SetShader("fragment", ShaderStage::PS);

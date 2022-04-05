@@ -611,13 +611,13 @@ namespace Joestar {
 
     struct TextureVK {
         TextureVK(Texture*);
-        U32 ID() { return texture->id; }
+        U32 ID() { return 0; }
         U32 GetSize() { return texture->GetSize(); }
         U32 GetWidth() { return texture->GetWidth(); }
         U32 GetHeight() { return texture->GetHeight(); }
         void* GetData() { return texture->GetData(); }
-        bool HasMipmap() { return texture->hasMipMap; }
-        TEXTURE_TYPE Type() { return texture->typ; }
+        bool HasMipmap() { return false; }
+        TEXTURE_TYPE Type() { return TEXTURE_TYPE::TEXTURE_2D; }
         ImageVK1* image;
         VkSampler sampler = VK_NULL_HANDLE;
         Texture* texture;

@@ -1,4 +1,5 @@
 #include "Descriptor.h"
+#include "Texture.h"
 namespace Joestar {
 	bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs)
 	{
@@ -128,6 +129,11 @@ namespace Joestar {
 	void DescriptorSets::SetBindingUniformBuffer(U32 binding, UniformBuffer* ub)
 	{
 		GetDescriptorSetByBinding(binding).ub = ub;
+	}
+
+	void DescriptorSets::SetBindingTexture(U32 binding, Texture* ub)
+	{
+		GetDescriptorSetByBinding(binding).texture = ub;
 	}
 
 	void DescriptorSets::SetLayoutData(U32 ID, float* data)
