@@ -6,7 +6,6 @@
 #include "RenderCommand.h"
 #include "../Math/Vector4.h"
 #include "GraphicDefines.h"
-#include "VertexData.h"
 #include "Material.h"
 #include "../Math/Matrix4x4.h"
 #include "Shader/Shader.h"
@@ -33,15 +32,19 @@ namespace Joestar {
 		void Present();
 		void Flush();
 		void WaitForRender();
+		void SubmitTransfer();
+		void SubmitRender();
 		void Clear();
 
 		//NEW GRAPHICS
 		CommandBuffer* GetMainCommandBuffer();
-		CommandBuffer* CreateCommandBuffer();
+		CommandBuffer* GetTransferCommandBuffer();
+		void CreateCommandBuffer(CommandBuffer* cb);
 
 		FrameBuffer* GetBackBuffer();
 		FrameBuffer* CreateFrameBuffer();
 		void CreateDescriptorPool();
+		void CreateCommandPool(CommandPool* pool);
 		SwapChain* GetSwapChain();
 		void CreateImage(GPUImage*, U32);
 		void CreateImageView(GPUImageView*, U32);
@@ -93,6 +96,7 @@ namespace Joestar {
 		void CreateDescriptorSets(DescriptorSets* sets);
 		void CreatePipelineLayout(PipelineLayout*);
 		void QueueSubmit(CommandBuffer* cb);
+		void Submit(CommandBuffer* cb);
 		SharedPtr<DescriptorSets>& GetGlobalDescriptorSets()
 		{
 			return mDescriptorSets[0];
@@ -110,6 +114,7 @@ namespace Joestar {
 		bool isCompute = false;
 		U32 frameIdx = 0;
 
+		Vector<SharedPtr<CommandPool>> mCommandPools;
 		Vector<SharedPtr<CommandBuffer>> mCommandBuffers;
 		Vector<SharedPtr<FrameBuffer>> mFrameBuffers;
 		Vector<SharedPtr<GPUImage>> mImages;
@@ -139,5 +144,6 @@ namespace Joestar {
 		Vector<ThreadCommandList> mThreadCommandLists;
 		U32 msaaSamples{ 0 };
 		bool bFloatingPointRT{ false };
+		bool bStagingBuffer{ true };
 	};
 }

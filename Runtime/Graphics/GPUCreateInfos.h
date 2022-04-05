@@ -137,6 +137,8 @@ namespace Joestar
 	struct GPUCommandBufferCreateInfo
 	{
 		GPUQueue queue;
+		GPUResourceHandle poolHandle;
+		U32 num;
 	};
 
 	struct GPUIndexBufferCreateInfo
@@ -144,6 +146,7 @@ namespace Joestar
 		U32 indexCount;
 		U32 indexSize;
 		GPUResourceHandle memoryHandle;
+		bool bStagingBuffer{ true };
 	};
 
 	struct GPUVertexBufferCreateInfo
@@ -152,6 +155,7 @@ namespace Joestar
 		U32 vertexSize;
 		U32 elementCount{ 0 };
 		GPUResourceHandle memoryHandle;
+		bool bStagingBuffer{ true };
 		PODVector<VertexElement> elements;
 	};
 

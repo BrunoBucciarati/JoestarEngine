@@ -2,7 +2,6 @@
 #include "../Core/Object.h"
 #include "../Math/Vector3.h"
 #include "../Math/Matrix4x4.h"
-#include "../Graphics/VertexData.h"
 #include "../Graphics/Material.h"
 #include "../Graphics/Mesh.h"
 namespace Joestar {

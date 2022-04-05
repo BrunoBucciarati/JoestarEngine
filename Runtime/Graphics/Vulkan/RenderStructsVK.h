@@ -13,6 +13,8 @@ namespace Joestar {
     U32 FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice& device);
 
     class DescriptorSetLayoutVK;
+    class StagingBufferVK;
+    class CommandBufferVK;
 
     class BufferVK
     {
@@ -34,10 +36,7 @@ namespace Joestar {
         U32 count{ 1 };
         U32 index{ 0 };
 
-        void SetFrame(U32 idx)
-        {
-            index = idx;
-        }
+        void SetFrame(U32 idx);
 
         void CreateBuffer()
         {
@@ -75,13 +74,24 @@ namespace Joestar {
             return buffers[index];
         }
 
+        void SetSize(U32 sz)
+        {
+            size = sz;
+        }
 
-        void SetData(U8* cpuData) {
+        void SetData(U8* cpuData)
+        {
             void* data;
             vkMapMemory(device, memorys[index], 0, size, 0, &data);
             memcpy(data, cpuData, size);
             vkUnmapMemory(device, memorys[index]);
         }
+
+        void CopyBuffer(VkCommandBuffer cb);
+        void CreateStagingBuffer(U32 size, U8* data);
+        void UpdateStagingBuffer(U32 size, U8* data);
+    private:
+        UniquePtr<StagingBufferVK> stagingBuffer;
     };
 
     class VertexBufferVK : public BufferVK
@@ -172,8 +182,15 @@ namespace Joestar {
         void Create(U8* data)
         {
             CreateBuffer();
-            SetData(data);
+            if (data)
+                SetData(data);
         }
+    };
+
+    class CommandPoolVK
+    {
+    public:
+        VkCommandPool pool;
     };
 
 	class CommandBufferVK
@@ -214,11 +231,12 @@ namespace Joestar {
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = 1;
             submitInfo.pWaitDstStageMask = &waitMask;
-            submitInfo.pCommandBuffers = &GetCommandBuffer();
+            submitInfo.pCommandBuffers = &GetCommandBuffer(index);
 
             vkQueueSubmit(queue, 1, &submitInfo, fence);
             vkQueueWaitIdle(queue);
-            vkFreeCommandBuffers(device, pool, 1, &GetCommandBuffer());
+            if (bTemp)
+                vkFreeCommandBuffers(device, pool, 1, &GetCommandBuffer(index));
         }
 
         VkCommandBuffer& GetCommandBuffer(U32 idx = 0)
@@ -236,6 +254,11 @@ namespace Joestar {
             index = idx;
         }
 
+        void SetTemp(bool temp)
+        {
+            bTemp = temp;
+        }
+
 	private:
 		Vector<VkCommandBuffer> commandBuffers;
 		bool bCreated{ false };
@@ -243,6 +266,7 @@ namespace Joestar {
         VkCommandPool pool;
         VkQueue queue;
         U32 index{ 0 };
+        bool bTemp{ false };
 	};
 
 	class ImageVK

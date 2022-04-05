@@ -21,6 +21,37 @@ namespace Joestar {
         LOGERROR("failed to find suitable memory type!");
     }
 
+    void BufferVK::CopyBuffer(VkCommandBuffer cb)
+    {
+        VkBufferCopy copyRegion{};
+        copyRegion.srcOffset = 0; // Optional
+        copyRegion.dstOffset = 0; // Optional
+        copyRegion.size = size;
+        vkCmdCopyBuffer(cb, stagingBuffer->GetBuffer(), GetBuffer(), 1, &copyRegion);
+    }
+
+    void BufferVK::CreateStagingBuffer(U32 size, U8* data)
+    {
+        stagingBuffer = JOJO_NEW(StagingBufferVK, MEMORY_GFX_STRUCT);
+        stagingBuffer->count = count;
+        stagingBuffer->SetDevice(device, physicalDevice);
+        stagingBuffer->SetSize(size);
+        stagingBuffer->Create(data);
+    }
+
+    void BufferVK::SetFrame(U32 idx)
+    {
+        index = idx;
+        if (stagingBuffer)
+        {
+            stagingBuffer->SetFrame(idx);
+        }
+    }
+
+    void BufferVK::UpdateStagingBuffer(U32 size, U8* data)
+    {
+        stagingBuffer->SetData(data);
+    }
 
     void GraphicsPipelineStateVK::CreateIAState()
     {

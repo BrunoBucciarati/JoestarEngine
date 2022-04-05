@@ -6,7 +6,6 @@
 #include "../IO/Log.h"
 #include <array>
 #include "GraphicDefines.h"
-#include "../Graphics/VertexData.h"
 #include "../Math/Matrix4x4.h"
 #include "Mesh.h"
 #include <vector>

@@ -143,7 +143,7 @@ namespace Joestar {
 		Iterator Insert(const SetElementType& element) {
 			U32 hash = MakeHash(element);
 			U32 bucketIdx = hash & (MIN_BUCKETS - 1);
-			buckets[bucketIdx].Add(hash, element);
+			buckets[bucketIdx].AddUnique(hash, element);
 			++numElements;
 			return { bucketIdx, buckets[bucketIdx].Size() - 1, &buckets };
 		}

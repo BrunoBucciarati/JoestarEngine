@@ -36,6 +36,17 @@ namespace Joestar {
 			numElements = sz;
 		}
 
+		bool AddUnique(U32 index, const T& element)
+		{
+			for (U32 i = 0; i < indices.Size(); ++i)
+			{
+				if (indices[i] == index)
+					return false;
+			}
+			Add(index, element);
+			return true;
+		}
+
 	private:
 		Vector<T> data;
 		Vector<U32> indices;

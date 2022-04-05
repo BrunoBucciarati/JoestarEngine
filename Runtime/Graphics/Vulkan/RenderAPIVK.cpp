@@ -185,6 +185,9 @@ namespace Joestar {
             if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) {
                 indices.computeFamily = i;
             }
+            if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+                indices.transferFamily = i;
+            }
             ++i;
         }
         mQueueFamilyIndices = indices;
@@ -295,7 +298,7 @@ namespace Joestar {
         PickPhysicalDevice();
         float queuePriority = 1.0f;
         Vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        HashSet<U32> uniqueQueueFamilies = { mQueueFamilyIndices.graphicsFamily, mQueueFamilyIndices.presentFamily };
+        HashSet<U32> uniqueQueueFamilies = { mQueueFamilyIndices.graphicsFamily, mQueueFamilyIndices.transferFamily, mQueueFamilyIndices.computeFamily, mQueueFamilyIndices.presentFamily };
         for (U32 queueFamily : uniqueQueueFamilies) {
             VkDeviceQueueCreateInfo queueCreateInfo{};
             queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -338,6 +341,7 @@ namespace Joestar {
         vkGetDeviceQueue(mDevice, mQueueFamilyIndices.graphicsFamily, 0, &mGraphicsQueue);
         vkGetDeviceQueue(mDevice, mQueueFamilyIndices.presentFamily, 0, &mPresentQueue);
         vkGetDeviceQueue(mDevice, mQueueFamilyIndices.computeFamily, 0, &mComputeQueue);
+        vkGetDeviceQueue(mDevice, mQueueFamilyIndices.transferFamily, 0, &mTransferQueue);
 
 	}
 
@@ -448,47 +452,61 @@ namespace Joestar {
         }
 	}
 
-    void RenderAPIVK::CreateCommandPool()
+    void RenderAPIVK::CreateCommandPool(GPUResourceHandle handle, GPUQueue queue)
     {
+        GET_STRUCT_BY_HANDLE(pool, CommandPool, handle);
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.queueFamilyIndex = mQueueFamilyIndices.graphicsFamily;
+        if (GPUQueue::GRAPHICS == queue)
+            poolInfo.queueFamilyIndex = mQueueFamilyIndices.graphicsFamily;
+        else if (GPUQueue::TRANSFER == queue)
+            poolInfo.queueFamilyIndex = mQueueFamilyIndices.transferFamily;
+        else if (GPUQueue::COMPUTE == queue)
+            poolInfo.queueFamilyIndex = mQueueFamilyIndices.computeFamily;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
 
-        VK_CHECK(vkCreateCommandPool(mDevice, &poolInfo, nullptr, &mCommandPool));
+        VK_CHECK(vkCreateCommandPool(mDevice, &poolInfo, nullptr, &pool.pool));
     }
 
-    void RenderAPIVK::CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo, U32 num)
+    void RenderAPIVK::CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo)
     {
         GET_STRUCT_BY_HANDLE(cb, CommandBuffer, handle);
 
         VkCommandBufferAllocateInfo allocInfo = cb.GetDefaultAllocInfo();
-        CreateCommandBuffers(cb, allocInfo, num);
+        allocInfo.commandPool = mCommandPools[createInfo.poolHandle]->pool;
+        CreateCommandBuffers(cb, allocInfo, createInfo.num);
+        if (GPUQueue::GRAPHICS == createInfo.queue)
+            cb.SetQueue(mGraphicsQueue);
+        else if (GPUQueue::TRANSFER == createInfo.queue)
+            cb.SetQueue(mTransferQueue);
+        else if (GPUQueue::COMPUTE == createInfo.queue)
+            cb.SetQueue(mComputeQueue);
     }
 
     void RenderAPIVK::CreateCommandBuffers(CommandBufferVK& cb, VkCommandBufferAllocateInfo& allocInfo, U32 num)
     {
-        allocInfo.commandPool = mCommandPool;
         allocInfo.commandBufferCount = num;
-        cb.Create(mDevice, allocInfo);
-        cb.SetQueue(mGraphicsQueue);
+        cb.Create(mDevice, allocInfo, num);
     }
 
     CommandBufferVK RenderAPIVK::GetTempCommandBuffer()
     {
         CommandBufferVK cb;
         VkCommandBufferAllocateInfo allocInfo = cb.GetDefaultAllocInfo();
+        allocInfo.commandPool = mCommandPools[0]->pool;
         CreateCommandBuffers(cb, allocInfo, 1);      
+        cb.SetTemp(true);
+        cb.SetQueue(mGraphicsQueue);
         return std::move(cb);
     }
 
-    void RenderAPIVK::CreateMainCommandBuffers(U32 num)
-    {
-        CreateCommandPool();
+    //void RenderAPIVK::CreateMainCommandBuffers(U32 num)
+    //{
+    //    CreateCommandPool();
 
-        GPUCommandBufferCreateInfo ci;
-        return CreateCommandBuffers(0, ci, num);
-    }
+    //    GPUCommandBufferCreateInfo ci;
+    //    return CreateCommandBuffers(0, ci, num);
+    //}
 
     void RenderAPIVK::CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo)
     {
@@ -795,13 +813,14 @@ namespace Joestar {
         indexBuffer.SetDevice(mDevice, mPhysicalDevice);
         GPUMemory& mem = mMemories[createInfo.memoryHandle];
 
-        StagingBufferVK stagingBuffer;
-        stagingBuffer.SetDevice(mDevice, mPhysicalDevice);
-        stagingBuffer.size = mem.size;
-        stagingBuffer.Create(mem.data);
+        //StagingBufferVK stagingBuffer;
+        //stagingBuffer.SetDevice(mDevice, mPhysicalDevice);
+        //stagingBuffer.size = mem.size;
+        //stagingBuffer.Create(mem.data);
 
         indexBuffer.Create(createInfo.indexSize, createInfo.indexCount);
-        CopyBuffer(stagingBuffer.GetBuffer(), indexBuffer.GetBuffer(), indexBuffer.size);
+        indexBuffer.CreateStagingBuffer(mem.size, mem.data);
+        //CopyBuffer(stagingBuffer.GetBuffer(), indexBuffer.GetBuffer(), indexBuffer.size);
     }
 
     void RenderAPIVK::CreateVertexBuffer(GPUResourceHandle handle, GPUVertexBufferCreateInfo& createInfo)
@@ -810,13 +829,8 @@ namespace Joestar {
         vertexBuffer.SetDevice(mDevice, mPhysicalDevice);
         GPUMemory& mem = mMemories[createInfo.memoryHandle];
 
-        StagingBufferVK stagingBuffer;
-        stagingBuffer.SetDevice(mDevice, mPhysicalDevice);
-        stagingBuffer.size = mem.size;
-        stagingBuffer.Create(mem.data);
-
         vertexBuffer.Create(createInfo.vertexSize, createInfo.vertexCount, createInfo.elements);
-        CopyBuffer(stagingBuffer.GetBuffer(), vertexBuffer.GetBuffer(), vertexBuffer.size);
+        vertexBuffer.CreateStagingBuffer(mem.size, mem.data);
     }
 
     void RenderAPIVK::CreateUniformBuffer(GPUResourceHandle handle, GPUUniformBufferCreateInfo& createInfo)
@@ -826,18 +840,20 @@ namespace Joestar {
         uniformBuffer.count = mSwapChain.GetImageCount();
         uniformBuffer.size = createInfo.size;
         uniformBuffer.Create(uniformBuffer.size);
+        uniformBuffer.CreateStagingBuffer(uniformBuffer.size, nullptr);
     }
 
     void RenderAPIVK::SetUniformBuffer(GPUResourceHandle handle, U8* data, U32 size)
     {
-        mUniformBuffers[handle]->SetFrame(mFrameIndex);
+        mUniformBuffers[handle]->SetFrame(mImageIndex);
+        mUniformBuffers[handle]->UpdateStagingBuffer(size, data);
 
-        StagingBufferVK stagingBuffer;
-        stagingBuffer.SetDevice(mDevice, mPhysicalDevice);
-        stagingBuffer.size = size;
-        stagingBuffer.Create(data);
+        //StagingBufferVK stagingBuffer;
+        //stagingBuffer.SetDevice(mDevice, mPhysicalDevice);
+        //stagingBuffer.size = size;
+        //stagingBuffer.Create(data);
 
-        CopyBuffer(stagingBuffer.GetBuffer(), mUniformBuffers[handle]->GetBuffer(), size);
+        //CopyBuffer(stagingBuffer.GetBuffer(), mUniformBuffers[handle]->GetBuffer(), size);
     }
 
     void RenderAPIVK::CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo)
@@ -906,7 +922,7 @@ namespace Joestar {
         copyRegion.dstOffset = 0; // Optional
         copyRegion.size = size;
         vkCmdCopyBuffer(cb.GetCommandBuffer(), srcBuffer, dstBuffer, 1, &copyRegion);
-
+        
         cb.End();
         cb.Submit();
     }
@@ -978,15 +994,6 @@ namespace Joestar {
 
         pso.CreateVertexInputInfo(createInfo.inputBindings, createInfo.inputAttributes);
 
-        //PODVector<VkDescriptorSetLayout> setLayouts;
-        //setLayouts.Reserve(program.setLayoutHandles.Size());
-        //for (U32 i = 0; i < program.setLayoutHandles.Size(); ++i)
-        //{
-        //    if (GPUResource::IsValid(program.setLayoutHandles[i]))
-        //    {
-        //        setLayouts.Push(mDescriptorSetLayouts[program.setLayoutHandles[i]].setLayout);
-        //    }
-        //}
         pso.SetRenderPass(mRenderPasses[createInfo.renderPassHandle]);
         pso.SetPipelineLayout(mPipelineLayouts[createInfo.pipelineLayoutHandle]->layout);
         pso.Create(mDevice);
@@ -1088,6 +1095,26 @@ namespace Joestar {
     void RenderAPIVK::CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart, U32 vertStart)
     {
         vkCmdDrawIndexed(GetFrameCommandBuffer(handle), count, 1, indexStart, vertStart, 0);
+    }
+    void RenderAPIVK::CBCopyBuffer(GPUResourceHandle handle, CopyBufferType type, GPUResourceHandle bufferHandle)
+    {
+        if (CopyBufferType::VB == type)
+        {
+            mVertexBuffers[bufferHandle]->CopyBuffer(GetFrameCommandBuffer(handle));
+        }
+        else if (CopyBufferType::IB == type)
+        {
+            mIndexBuffers[bufferHandle]->CopyBuffer(GetFrameCommandBuffer(handle));
+        }
+        else if (CopyBufferType::UB == type)
+        {
+            mUniformBuffers[bufferHandle]->CopyBuffer(GetFrameCommandBuffer(handle));
+        }
+    }
+    void RenderAPIVK::CBSubmit(GPUResourceHandle handle)
+    {
+        mCommandBuffers[handle]->SetIndex(mImageIndex);
+        mCommandBuffers[handle]->Submit();
     }
 
     void RenderAPIVK::BeginFrame(U32 frameIndex)

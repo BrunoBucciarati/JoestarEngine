@@ -23,6 +23,10 @@
 #define CREATE_NEW_HANDLE(_VAR, _TYP) \
 	CREATE_NEW_HANDLE_VEC(_VAR, _TYP, m##_TYP##s)
 
+#define ASSIGN_NEW_HANDLE(_VAR, _VEC) \
+	GPUResourceHandle handle = _VEC.Size(); \
+	_VAR->SetHandle(handle); \
+	_VEC.Push(_VAR);
 
 namespace Joestar {
 	Graphics::Graphics(EngineContext* context) : Super(context) {
@@ -53,8 +57,22 @@ namespace Joestar {
 		//创建交换链
 		CreateSwapChain();
 		//CreateSyncObjects();
-		//创建MainCommandBuffer
-		CreateCommandBuffer();
+		//创建RenderCommandBuffer
+		CommandPool* cp = JOJO_NEW(CommandPool, MEMORY_GFX_STRUCT);
+		cp->SetQueue(GPUQueue::GRAPHICS);
+		CreateCommandPool(cp);
+		CommandBuffer* cb = JOJO_NEW(CommandBuffer, MEMORY_GFX_STRUCT);
+		cb->SetQueue(GPUQueue::GRAPHICS);
+		cb->SetPool(cp);
+		CreateCommandBuffer(cb);
+		//创建TransferCommandBuffer
+		cp = JOJO_NEW(CommandPool, MEMORY_GFX_STRUCT);
+		cp->SetQueue(GPUQueue::TRANSFER);
+		CreateCommandPool(cp);
+		cb = JOJO_NEW(CommandBuffer, MEMORY_GFX_STRUCT);
+		cb->SetQueue(GPUQueue::TRANSFER);
+		cb->SetPool(cp);
+		CreateCommandBuffer(cb);
 		//创建BackBuffer
 		CreateFrameBuffer();
 		CreateDescriptorPool();
@@ -67,6 +85,9 @@ namespace Joestar {
 
 		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
 		renderThread->SetGFXCommandList(cmdLists.cmdList);
+
+		GFX_API gfxAPI = (GFX_API)GetSubsystem<GlobalConfig>()->GetConfig<U32>(CONFIG_GFX_API);
+		bStagingBuffer = gfxAPI == GFX_API_VULKAN;
 	}
 
 	void Graphics::CreateDefaultStates()
@@ -102,6 +123,11 @@ namespace Joestar {
 		U32 sz = uniform->GetSize();
 		GetMainCmdList()->WriteBuffer(sz);
 		GetMainCmdList()->WriteBufferPtr(uniform->GetBuffer(), sz);
+
+		if (bStagingBuffer)
+		{
+			GetTransferCommandBuffer()->CopyBuffer(CopyBufferType::UB, uniform->handle);
+		}
 	}
 
 	void Graphics::SetDescriptorSetLayout(DescriptorSetLayout* setLayout)
@@ -210,6 +236,28 @@ namespace Joestar {
 		}
 	}
 
+	void Graphics::SubmitTransfer()
+	{
+		WaitForRender();
+		CommandBuffer* cb = GetTransferCommandBuffer();
+		if (cb->IsRecording())
+		{
+			cb->End();
+		}
+		Submit(cb);
+	}
+
+	void Graphics::SubmitRender()
+	{
+		WaitForRender();
+		CommandBuffer* cb = GetMainCommandBuffer();
+		if (cb->IsRecording())
+		{
+			cb->End();
+		}
+		QueueSubmit(cb);
+	}
+
 	void Graphics::Present() {
 		WaitForRender();
 		GetMainCmdList()->WriteCommand(GFXCommand::Present);
@@ -233,15 +281,33 @@ namespace Joestar {
 		return mCommandBuffers[0];
 	}
 
-	CommandBuffer* Graphics::CreateCommandBuffer()
+	CommandBuffer* Graphics::GetTransferCommandBuffer()
+	{
+		return mCommandBuffers[1];
+	}
+
+	void Graphics::CreateCommandPool(CommandPool* pool)
+	{
+		ASSIGN_NEW_HANDLE(pool, mCommandPools);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateCommandPool);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+		GetMainCmdList()->WriteBuffer(pool->GetQueue());
+	}
+
+	void Graphics::CreateCommandBuffer(CommandBuffer* cb)
 	{
 		GPUResourceHandle handle = mCommandBuffers.Size();
-		CommandBuffer* cb = JOJO_NEW(CommandBuffer);
 		cb->handle = handle;
 		mCommandBuffers.Push(cb);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateCommandBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
-		return cb;
+		GPUCommandBufferCreateInfo createInfo
+		{
+			cb->GetQueue(),
+			cb->GetPool()->GetHandle(),
+			MAX_CMDLISTS_IN_FLIGHT
+		};
+		GetMainCmdList()->WriteBuffer(createInfo);
 	}
 
 	FrameBuffer* Graphics::GetBackBuffer()
@@ -300,7 +366,8 @@ namespace Joestar {
 			vertexBuffer->GetVertexCount(),
 			vertexBuffer->GetVertexSize(),
 			elements.Size(),
-			mem->handle
+			mem->handle,
+			bStagingBuffer
 		};
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateVertexBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
@@ -309,6 +376,11 @@ namespace Joestar {
 		for (auto& element : elements)
 		{
 			GetMainCmdList()->WriteBuffer<VertexElement>(element);
+		}
+
+		if (bStagingBuffer)
+		{
+			GetTransferCommandBuffer()->CopyBuffer(CopyBufferType::VB, handle);
 		}
 		
 		return vb;
@@ -342,6 +414,11 @@ namespace Joestar {
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateIndexBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 		GetMainCmdList()->WriteBuffer<GPUIndexBufferCreateInfo>(createInfo);
+
+		if (bStagingBuffer)
+		{
+			GetTransferCommandBuffer()->CopyBuffer(CopyBufferType::IB, handle);
+		}
 
 		return ib;
 	}
@@ -634,6 +711,19 @@ namespace Joestar {
 	void Graphics::QueueSubmit(CommandBuffer* cb)
 	{
 		GetMainCmdList()->WriteCommand(GFXCommand::QueueSubmitCommandBuffer);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(cb->GetHandle());
+		CommandEncoder& encoder = cb->GetEncoder();
+		encoder.Flush();
+		GetMainCmdList()->WriteBuffer(encoder.GetSize());
+		GetMainCmdList()->WriteBuffer(encoder.GetLast());
+		GetMainCmdList()->WriteBufferPtr(encoder.Data(), encoder.GetSize());
+		//清空
+		encoder.Clear();
+	}
+
+	void Graphics::Submit(CommandBuffer* cb)
+	{
+		GetMainCmdList()->WriteCommand(GFXCommand::SubmitCommandBuffer);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(cb->GetHandle());
 		CommandEncoder& encoder = cb->GetEncoder();
 		encoder.Flush();

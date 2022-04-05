@@ -65,15 +65,19 @@ namespace Joestar {
     {
         switch (GFXCommand(command))
         {
+            CASECMD(GFXCommand::CreateCommandPool)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+                GPUQueue queue;
+                cmdList->ReadBuffer(queue);
+                mProtocol->CreateCommandPool(handle, queue);
+                break;
+            }
             CASECMD(GFXCommand::CreateCommandBuffer)
             {
                 GPUResourceHandle handle;
                 cmdList->ReadBuffer<GPUResourceHandle>(handle);
-                if (0 == handle)
-                {
-                    mProtocol->CreateMainCommandBuffers(MAX_CMDLISTS_IN_FLIGHT);
-                    break;
-                }
                 GPUCommandBufferCreateInfo createInfo;
                 cmdList->ReadBuffer<GPUCommandBufferCreateInfo>(createInfo);
                 mProtocol->CreateCommandBuffers(handle, createInfo);
@@ -386,6 +390,19 @@ namespace Joestar {
                     cmdList->ReadBuffer(updateInfo.updateSets[i]);
                 }
                 mProtocol->UpdateDescriptorSets(handle, updateInfo);
+                break;
+            }
+            CASECMD(GFXCommand::SubmitCommandBuffer)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+                U32 size;
+                cmdList->ReadBuffer(size);
+                U32 last;
+                cmdList->ReadBuffer(last);
+                U8* data = JOJO_NEW_ARRAY(U8, size);
+                cmdList->ReadBufferPtr(data, size);
+                mProtocol->SubmitCommandBuffer(handle, size, data, last);
                 break;
             }
             CASECMD(GFXCommand::QueueSubmitCommandBuffer)

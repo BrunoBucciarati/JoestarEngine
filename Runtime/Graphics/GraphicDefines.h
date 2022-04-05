@@ -226,8 +226,9 @@ namespace Joestar {
 	enum class GPUQueue
 	{
 		GRAPHICS = 0,
-		PRESENT = 1,
-		COMPUTE = 2
+		COMPUTE = 1,
+		TRANSFER = 2,
+		PRESENT = 3	
 	};
 
 	enum class VertexSemantic

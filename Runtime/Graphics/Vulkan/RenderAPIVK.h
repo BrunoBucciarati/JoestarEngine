@@ -7,6 +7,7 @@
 namespace Joestar {
 	struct QueueFamilyIndices {
 		U32 graphicsFamily;
+		U32 transferFamily;
 		U32 presentFamily;
 		U32 computeFamily;
 	};
@@ -28,9 +29,9 @@ namespace Joestar {
 			swapChain->width = mSwapChain.extent.width;
 			swapChain->height = mSwapChain.extent.height;
 		}
-		void CreateMainCommandBuffers(U32 num = 1);
 		void CreateSyncObjects(U32 num = 1);
-		void CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo, U32 num = 1);
+		void CreateCommandPool(GPUResourceHandle handle, GPUQueue queue) override;
+		void CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo);
 		void CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo);
 		void CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo);
 		void CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo);
@@ -66,6 +67,8 @@ namespace Joestar {
 		void CBPushConstants(GPUResourceHandle handle, GPUResourceHandle) override;
 		void CBDraw(GPUResourceHandle handle, U32 count) override;
 		void CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0) override;
+		void CBCopyBuffer(GPUResourceHandle handle, CopyBufferType type, GPUResourceHandle) override;
+		void CBSubmit(GPUResourceHandle handle) override;
 	private:
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CreateRenderPass(RenderPassVK* rp, GPURenderPassCreateInfo& createInfo);
@@ -74,7 +77,6 @@ namespace Joestar {
 		CommandBufferVK GetTempCommandBuffer();
 		VkFormat FindSupportedFormat(const Vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-		void CreateCommandPool();
 		void CreateInstance();
 		void SetupDebugMessenger();
 		void CreateSurface();
@@ -92,15 +94,17 @@ namespace Joestar {
 		VkQueue mGraphicsQueue;
 		VkQueue mPresentQueue;
 		VkQueue mComputeQueue;
+		VkQueue mTransferQueue;
 		VkSurfaceKHR mSurface;
 		VkDebugUtilsMessengerEXT mDebugMessenger;
 
-		VkCommandPool mCommandPool;
+		//VkCommandPool mCommandPool;
 
 		Vector<VkSemaphore> mImageAvailableSemaphores;
 		Vector<VkSemaphore> mRenderFinishedSemaphores;
 		Vector<VkFence> mInFlightFences;
 
+		Vector<CommandPoolVK*> mCommandPools;
 		Vector<CommandBufferVK*> mCommandBuffers;
 		Vector<FrameBufferVK*> mFrameBuffers;
 		Vector<ImageVK*> mImages;

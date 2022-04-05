@@ -16,8 +16,8 @@ namespace Joestar
 		virtual void CreateDevice() = 0;
 		virtual void CreateSwapChain(GPUSwapChainCreateInfo& createInfo, U32 num = 1);
 		virtual void CreateSwapChain() = 0;
-		virtual void CreateMainCommandBuffers(U32 num = 1) = 0;
-		virtual void CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo, U32 num = 1) = 0;
+		virtual void CreateCommandPool(GPUResourceHandle handle, GPUQueue queue) = 0;
+		virtual void CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo) = 0;
 		virtual void CreateSyncObjects(U32 num = 1) = 0;
 		virtual void CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo) = 0;
 		virtual void CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo) = 0;
@@ -46,6 +46,7 @@ namespace Joestar
 		void CreateMultiSampleState(GPUResourceHandle handle, GPUMultiSampleStateCreateInfo& createInfo);
 		void CreateShaderProgram(GPUResourceHandle handle, GPUShaderProgramCreateInfo& createInfo);
 		void QueueSubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data, U32);
+		void SubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data, U32);
 
 		/// Command Buffer Protocols
 		void RecordCommand(CommandBufferCMD& cmd, CommandEncoder& encoder, GPUResourceHandle handle);
@@ -61,6 +62,8 @@ namespace Joestar
 		virtual void CBPushConstants(GPUResourceHandle handle, GPUResourceHandle) = 0;
 		virtual void CBDraw(GPUResourceHandle handle, U32 count) = 0;
 		virtual void CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0) = 0;
+		virtual void CBCopyBuffer(GPUResourceHandle handle, CopyBufferType type, GPUResourceHandle) = 0;
+		virtual void CBSubmit(GPUResourceHandle handle) = 0;
 		virtual void BeginFrame(U32 frameIndex)
 		{
 			SetFrame(frameIndex);

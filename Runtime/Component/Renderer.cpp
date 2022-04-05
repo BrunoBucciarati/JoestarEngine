@@ -6,10 +6,6 @@ namespace Joestar {
 	void Renderer::Init()
 	{
 		mGraphics = GetSubsystem<Graphics>();
-		//mDepthStencilState = mGraphics->GetDefaultDepthStencilState();
-		//mColorBlendState = mGraphics->GetDefaultColorBlendState();
-		//mMultiSampleState = mGraphics->GetDefaultMultiSampleState();
-		//mRasterizationState = mGraphics->GetDefaultRasterizationState();
 		mShaderProgram = NEW_OBJECT(ShaderProgram);
 		mMaterial = NEW_OBJECT(Material);
 		mDescriptorSets = JOJO_NEW(DescriptorSets);

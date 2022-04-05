@@ -37,7 +37,7 @@ namespace Joestar {
 		{
 			mInputFlag |= (1 << bit);
 		}
-		void Clear()
+		void ClearInput()
 		{
 			mInputFlag = 0;
 		}

@@ -17,7 +17,16 @@ namespace Joestar {
 		PushConstants,
 		Draw,
 		DrawIndexed,
+		CopyBuffer,
+		Submit,
 		CommandCount
+	};
+
+	enum class CopyBufferType
+	{
+		VB = 0,
+		IB,
+		UB
 	};
 
 	class CommandEncoder : public MemoryReadWriter
@@ -36,12 +45,18 @@ namespace Joestar {
 
 	class IndexBuffer;
 	class VertexBuffer;
+	
+	class CommandPool : public GPUResource
+	{
+		GET_SET_STATEMENT(GPUQueue, Queue);
+	};
 
 	class CommandBuffer : public GPUResource
 	{
 		GET_SET_STATEMENT(GPUQueue, Queue);
 		GET_SET_STATEMENT(Viewport*, Viewport);
 		GET_SET_STATEMENT(DescriptorSets*, PassDescriptorSets);
+		GET_SET_STATEMENT(CommandPool*, Pool);
 	public:
 		void Begin();
 		void End();
@@ -57,6 +72,8 @@ namespace Joestar {
 		}
 		void DrawIndexed(U32 num, U32 indexStart = 0, U32 vertStart = 0);
 		void Draw(U32 num, U32 vertStart = 0);
+		void CopyBuffer(CopyBufferType, GPUResourceHandle);
+		void Submit();
 		RenderPass* GetRenderPass() const
 		{
 			return mPass;
@@ -65,10 +82,15 @@ namespace Joestar {
 		{
 			return mEncoder;
 		}
+		bool IsRecording() const
+		{
+			return bRecording;
+		}
 
 	private:
 		RenderPass* mPass;
 		CommandEncoder mEncoder;
 		GraphicsPipelineState* mGraphicsPSO;
+		bool bRecording{ false };
 	};
 }

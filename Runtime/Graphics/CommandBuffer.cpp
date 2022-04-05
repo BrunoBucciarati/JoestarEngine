@@ -7,12 +7,14 @@ namespace Joestar
 	void CommandBuffer::Begin()
 	{
 		mEncoder.WriteCommand(CommandBufferCMD::Begin);
+		bRecording = true;
 	}
 	void CommandBuffer::End()
 	{
 		mGraphicsPSO = nullptr;
 		mPass = nullptr;
 		mEncoder.WriteCommand(CommandBufferCMD::End);
+		bRecording = false;
 	}
 	void CommandBuffer::BeginRenderPass(RenderPass* pass, FrameBuffer* fb)
 	{
@@ -69,5 +71,21 @@ namespace Joestar
 		mEncoder.WriteBuffer(count);
 		mEncoder.WriteBuffer(indexStart);
 		mEncoder.WriteBuffer(vertStart);
+	}
+
+	void CommandBuffer::CopyBuffer(CopyBufferType type, GPUResourceHandle handle)
+	{
+		if (!bRecording)
+		{
+			Begin();
+		}
+		mEncoder.WriteCommand(CommandBufferCMD::CopyBuffer);
+		mEncoder.WriteBuffer(type);
+		mEncoder.WriteBuffer(handle);
+	}
+
+	void CommandBuffer::Submit()
+	{
+		mEncoder.WriteCommand(CommandBufferCMD::Submit);
 	}
 }

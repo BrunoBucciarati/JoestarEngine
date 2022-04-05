@@ -54,16 +54,18 @@ namespace Joestar {
 		float dt = GetSubsystem<TimeManager>()->GetElapseTime();
 		//Input Update
 		GetSubsystem<TimeManager>()->BeginFrame();
-		GetSubsystem<HID>()->Clear();
+		GetSubsystem<HID>()->ClearInput();
 		GetSubsystem<Window>()->Update(dt);
 
-		//Logic Update
+		Graphics* graphics = GetSubsystem<Graphics>();
+		graphics->WaitForRender();
+		//Logic Update,逻辑更新时可能会创建GPU数据，因此需要等待上一帧的渲染结束。
 		mMainView->Update(dt);
 
 		//Render Update
-		Graphics* graphics = GetSubsystem<Graphics>();
-		graphics->WaitForRender();
 		mMainView->Render();
+		graphics->SubmitTransfer();
+		graphics->SubmitRender();
 		graphics->Present();
 		graphics->Flush();
 

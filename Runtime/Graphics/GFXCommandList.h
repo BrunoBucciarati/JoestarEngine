@@ -10,6 +10,7 @@ namespace Joestar
 	enum class GFXCommand
 	{
 		CreateSwapChain = 0,
+		CreateCommandPool,
 		CreateCommandBuffer,
 		CreateFrameBuffer,
 		CreateImage,
@@ -34,6 +35,7 @@ namespace Joestar
 		CreateDescriptorSetLayout,
 		CreateDescriptorSets,
 		UpdateDescriptorSets,
+		SubmitCommandBuffer,
 		QueueSubmitCommandBuffer,
 		Present,
 		CommandCount

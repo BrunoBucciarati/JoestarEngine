@@ -100,8 +100,7 @@ namespace Joestar
 			}
 		}
 		cb->EndRenderPass(mGraphics->GetMainRenderPass());
-		cb->End();
-		mGraphics->QueueSubmit(cb);
+		//cb->End();
 		return bRecord;
 	}
 
