@@ -92,8 +92,6 @@ namespace Joestar {
 		explicit GPUImageView(EngineContext*);
 		void SetImage(Image*);
 	private:
-		U32 mBaseMipLevel{ 0 };
-		U32 mBaseLayer{ 0 };
 		WeakPtr<Graphics> mGraphics;
 	};
 

@@ -3,7 +3,8 @@
 
 #define GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, _VEC) \
     if (_HANDLE + 1 > _VEC.Size()) _VEC.Resize(_HANDLE + 1); \
-    _TYP##& _VAR =  _VEC[_HANDLE];
+	_VEC[_HANDLE] = JOJO_NEW(_TYP, MEMORY_GFX_STRUCT); \
+    _TYP& _VAR =  *_VEC[_HANDLE];
 
 #define GET_STRUCT_BY_HANDLE(_VAR, _TYP, _HANDLE) \
     GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, m##_TYP##s);
@@ -180,5 +181,13 @@ namespace Joestar {
 	void RenderAPIProtocol::CreateSwapChain(GPUSwapChainCreateInfo& createInfo, U32 num)
 	{
 		swapChain = createInfo.swapChain;
+	}
+
+	void RenderAPIProtocol::CreateTexture(GPUResourceHandle handle, GPUTextureCreateInfo& createInfo)
+	{
+#define GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, _VEC) \
+    if (_HANDLE + 1 > _VEC.Size()) _VEC.Resize(_HANDLE + 1); \
+    _TYP##& _VAR =  _VEC[_HANDLE];
+
 	}
 }

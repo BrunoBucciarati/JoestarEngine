@@ -93,6 +93,7 @@ namespace Joestar {
 		void CreateDescriptorSets(DescriptorSets* sets);
 		void CreatePipelineLayout(PipelineLayout*);
 		void SetSampler(SharedPtr<Sampler>&);
+		void CreateTexture(Texture*);
 		void QueueSubmit(CommandBuffer* cb);
 		void Submit(CommandBuffer* cb);
 		SharedPtr<DescriptorSets>& GetGlobalDescriptorSets()
@@ -134,6 +135,7 @@ namespace Joestar {
 		HashMap<U32, SharedPtr<DescriptorSetLayout>> mDescriptorSetLayouts;
 		Vector<SharedPtr<DescriptorSets>> mDescriptorSets;
 		HashMap<U32, SharedPtr<Sampler>> mSamplerTable;
+		Vector<SharedPtr<Texture>> mTextures;
 		SwapChain* mSwapChain;
 
 		struct ThreadCommandList

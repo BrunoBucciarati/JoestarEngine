@@ -50,6 +50,7 @@ namespace Joestar {
 		void CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo) override;
 		void UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo) override;
 		void CreateSampler(GPUResourceHandle handle, GPUSamplerCreateInfo& createInfo) override;
+		void CreateTexture(GPUResourceHandle handle, GPUTextureCreateInfo& createInfo) override;
 		void QueueSubmit(GPUResourceHandle handle) override;
 		void BeginFrame(U32 frameIndex);
 		void EndFrame(U32 frameIndex);
@@ -121,6 +122,7 @@ namespace Joestar {
 		Vector<DescriptorSetLayoutVK*> mDescriptorSetLayouts;
 		Vector<DescriptorSetsVK*> mDescriptorSets;
 		Vector<SamplerVK*> mSamplers;
+		Vector<TextureVK*> mTextures;
 		VkDescriptorPool mDescriptorPool;
 
 		SwapChainVK mSwapChain;

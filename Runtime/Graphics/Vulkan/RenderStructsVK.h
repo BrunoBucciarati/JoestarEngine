@@ -319,7 +319,6 @@ namespace Joestar {
 	class ImageViewVK
 	{
 	public:
-		ImageVK* image;
 		void Create(VkDevice& device, VkImageViewCreateInfo& viewInfo, U32 num = 1)
 		{
 			imageViews.Resize(num);
@@ -331,12 +330,7 @@ namespace Joestar {
 				}
 			}
 		}
-		Vector<VkImageView> imageViews;
 
-		void SetRawImageViews(Vector<VkImageView>& imgs)
-		{
-			imageViews = imgs;
-		}
         void TransitionImageLayout(CommandBufferVK& cb, VkImageLayout oldLayout, VkImageLayout newLayout, U32 aspect = VK_IMAGE_ASPECT_COLOR_BIT) {
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -463,7 +457,38 @@ namespace Joestar {
             }
             cb.End();
             cb.Submit();
+            imageLayout = newLayout;
         }
+
+        VkImageView GetImageView(U32 idx = 0)
+        {
+            return imageViews[idx];
+        }
+
+        void SetRawImageViews(Vector<VkImageView>& imgViews)
+        {
+            imageViews = imgViews;
+        }
+        ImageVK* GetImage()
+        {
+            return image;
+        }
+        void SetImage(ImageVK* img)
+        {
+            image = img;
+        }
+        void CreateRawImage()
+        {
+            image = JOJO_NEW(ImageVK, MEMORY_GFX_STRUCT);
+        }
+        VkImageLayout GetImageLayout()
+        {
+            return imageLayout;
+        }
+    private:
+        ImageVK* image;
+        VkImageLayout imageLayout;
+        Vector<VkImageView> imageViews;
 	};
 
 	class RenderPassVK
@@ -481,9 +506,9 @@ namespace Joestar {
 		U32 msaaSamples{ 1 };
 		void SetRawImages(Vector<VkImage>& images, U32 idx = 0)
 		{
-            if (!colorAttachments[idx]->image)
-                colorAttachments[idx]->image = JOJO_NEW(ImageVK, MEMORY_GFX_STRUCT);
-			colorAttachments[idx]->image->SetRawImages(images);
+            if (!colorAttachments[idx]->GetImage())
+                colorAttachments[idx]->CreateRawImage();
+			colorAttachments[idx]->GetImage()->SetRawImages(images);
 		}
 		void SetRawImageViews(Vector<VkImageView>& imageViews, U32 idx = 0)
 		{
@@ -635,7 +660,23 @@ namespace Joestar {
     {
     public:
         void Create(VkDevice&, GPUSamplerCreateInfo&);
+        VkSampler GetSampler()
+        {
+            return sampler;
+        }
     private:
         VkSampler sampler;
+    };
+
+    class TextureVK
+    {
+    public:
+        void Create(ImageViewVK* imageView, SamplerVK* sampler);
+        VkDescriptorImageInfo& GetDescriptorImageInfo(U32 idx = 0)
+        {
+            return imageInfo;
+        }
+    private:
+        VkDescriptorImageInfo imageInfo{};
     };
 }

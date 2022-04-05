@@ -1,5 +1,4 @@
 #include "Descriptor.h"
-#include "Texture.h"
 namespace Joestar {
 	bool operator==(const DescriptorSetLayoutBinding& lhs, const DescriptorSetLayoutBinding& rhs)
 	{

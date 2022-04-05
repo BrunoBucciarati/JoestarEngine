@@ -6,6 +6,8 @@ namespace Joestar {
 	GPUImage::GPUImage(EngineContext* ctx) : Super(ctx),
 		mGraphics(GetSubsystem<Graphics>())
 	{}
+	GPUImage::~GPUImage()
+	{}
 	void GPUImage::SetImage(Image* image)
 	{
 		mWidth = image->GetWidth();
@@ -25,6 +27,8 @@ namespace Joestar {
 
 	GPUImageView::GPUImageView(EngineContext* ctx) : Super(ctx),
 		mGraphics(GetSubsystem<Graphics>())
+	{}
+	GPUImageView::~GPUImageView()
 	{}
 
 	void GPUImageView::SetImage(Image* image)

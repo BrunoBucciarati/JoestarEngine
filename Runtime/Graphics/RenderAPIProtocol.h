@@ -3,6 +3,7 @@
 #include "GPUResource.h"
 #include "GPUCreateInfos.h"
 #include "../Container/Vector.h"
+#include "../Container/Ptr.h"
 #include "../Graphics/CommandBuffer.h"
 namespace Joestar
 {
@@ -38,6 +39,7 @@ namespace Joestar
 		virtual void UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo) = 0;
 		virtual void CreateSampler(GPUResourceHandle handle, GPUSamplerCreateInfo& createInfo) = 0;
 		virtual void QueueSubmit(GPUResourceHandle handle) = 0;
+		virtual void CreateTexture(GPUResourceHandle handle, GPUTextureCreateInfo& createInfo) = 0;
 		virtual void Present() = 0;
 		///Uniform Functions
 		void CreateMemory(GPUResourceHandle handle, U32 size, U8* data);
@@ -87,12 +89,11 @@ namespace Joestar
 		GPUResourceHandle gCommandBufferHandle{0};
 		GPUResourceHandle gPipelineStateHandle{0};
 		Vector<GPUMemory> mMemories;
-		Vector<GPUColorBlendStateCreateInfo> mColorBlendStates;
-		Vector<GPUDepthStencilStateCreateInfo> mDepthStencilStates;
-		Vector<GPURasterizationStateCreateInfo> mRasterizationStates;
-		Vector<GPUMultiSampleStateCreateInfo> mMultiSampleStates;
-		Vector<GPUShaderProgramCreateInfo> mShaderPrograms;
-		Vector<CommandEncoder> mCommandEncoders;
+		Vector<GPUColorBlendStateCreateInfo*> mColorBlendStates;
+		Vector<GPUDepthStencilStateCreateInfo*> mDepthStencilStates;
+		Vector<GPURasterizationStateCreateInfo*> mRasterizationStates;
+		Vector<GPUMultiSampleStateCreateInfo*> mMultiSampleStates;
+		Vector<GPUShaderProgramCreateInfo*> mShaderPrograms;
 		bool bResized{ false };
 		bool bSync{ false };
 	};

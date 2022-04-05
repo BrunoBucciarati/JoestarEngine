@@ -36,6 +36,7 @@ namespace Joestar
 		CreateDescriptorSets,
 		UpdateDescriptorSets,
 		CreateSampler,
+		CreateTexture,
 		SubmitCommandBuffer,
 		QueueSubmitCommandBuffer,
 		Present,

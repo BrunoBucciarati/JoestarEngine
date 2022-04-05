@@ -3,20 +3,23 @@
 
 namespace Joestar {
 	Texture::Texture(EngineContext* ctx) : Super(ctx),
-		mGraphics(GetSubsystem<Graphics>())
-	{}
+		mGraphics(GetSubsystem<Graphics>()),
+		mSampler(JOJO_NEW(Sampler, MEMORY_TEXTURE)),
+		mImageView(JOJO_NEW(GPUImageView(ctx), MEMORY_TEXTURE))
+	{
+		mGraphics->SetSampler(mSampler);		
+	}
 	Texture::~Texture()
 	{}
 
 	void Texture::CreateSampler()
 	{
-		mSampler = JOJO_NEW(Sampler, MEMORY_TEXTURE);
-		mGraphics->SetSampler(mSampler);
 	}
 
 	void Texture::SetImage(Image* image, U32 layer)
 	{
 		mImageView->SetImage(image);
+		mGraphics->CreateTexture(this);
 	}
 
 

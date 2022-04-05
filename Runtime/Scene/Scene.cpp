@@ -55,7 +55,7 @@ namespace Joestar {
         String path = "Textures/marble.jpg";
         Image image(mContext);
         image.Load(path);
-        texture->SetImage(image);
+        texture->SetImage(&image);
         pr->GetMaterial()->SetTexture(texture, 0);
         pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
         pr->SetShader("vertex", ShaderStage::VS);

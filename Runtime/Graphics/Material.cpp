@@ -48,7 +48,7 @@ namespace Joestar {
 		String path = "Textures/marble.jpg";
 		Image image(mContext);
 		image.Load(path);
-		texture->SetImage(image);
+		texture->SetImage(&image);
 	}
 
 	void Material::AllocDescriptorSets()
@@ -75,7 +75,6 @@ namespace Joestar {
 			{
 				mTextures[i] = JOJO_NEW(Texture(mContext), MEMORY_TEXTURE);
 				mTextures[i]->SetFrequency(UniformFrequency::BATCH);
-				mTextures[i]->CreateSampler();
 				mDescriptorSets->SetBindingTexture(binding->binding, mTextures[i]);
 			}
 		}

@@ -374,4 +374,12 @@ namespace Joestar {
             LOGERROR("failed to create texture sampler!");
         }
     }
+
+
+    void TextureVK::Create(ImageViewVK* imageView, SamplerVK* sampler)
+    {
+        imageInfo.imageLayout = imageView->GetImageLayout();
+        imageInfo.imageView = imageView->GetImageView();
+        imageInfo.sampler = sampler->GetSampler();;
+    }
 }

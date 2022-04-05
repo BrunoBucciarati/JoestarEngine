@@ -392,6 +392,24 @@ namespace Joestar {
                 mProtocol->UpdateDescriptorSets(handle, updateInfo);
                 break;
             }
+            CASECMD(GFXCommand::CreateTexture)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+                GPUTextureCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateTexture(handle, createInfo);
+                break;
+            }
+            CASECMD(GFXCommand::CreateSampler)
+            {
+                GPUResourceHandle handle;
+                cmdList->ReadBuffer<GPUResourceHandle>(handle);
+                GPUSamplerCreateInfo createInfo;
+                cmdList->ReadBuffer(createInfo);
+                mProtocol->CreateSampler(handle, createInfo);
+                break;
+            }
             CASECMD(GFXCommand::SubmitCommandBuffer)
             {
                 GPUResourceHandle handle;

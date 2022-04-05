@@ -13,8 +13,7 @@ namespace Joestar {
 		explicit RenderThread(EngineContext* ctx, Vector<GFXCommandBuffer*>& cmdBufs, Vector<GFXCommandBuffer*>& comCmdBufs) : Super(ctx),
 			cmdBuffers(cmdBufs),
 			computeCmdBuffers(comCmdBufs)
-		{
-		}
+		{}
 		void SetGFXCommandList(GFXCommandList** start);
 		virtual void DrawFrame(GFXCommandBuffer* cmdBuffer) {}
 		virtual void DispatchCompute(GFXCommandBuffer* cmdBuffer) {}

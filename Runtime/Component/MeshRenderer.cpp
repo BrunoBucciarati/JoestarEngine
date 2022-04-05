@@ -17,6 +17,7 @@ namespace Joestar {
 		cb->BindVertexBuffer(mMesh->GetVertexBuffer());
 		//后面外面要按材质排序，这个BATCH的应该放在外面--todo
 		cb->BindDescriptorSets(UniformFrequency::PASS, mShaderProgram->GetPipelineLayout(), cb->GetPassDescriptorSets());
+		cb->BindDescriptorSets(UniformFrequency::BATCH, mShaderProgram->GetPipelineLayout(), mMaterial->GetDescriptorSets());
 		cb->BindDescriptorSets(UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mDescriptorSets);
 		cb->BindIndexBuffer(mMesh->GetIndexBuffer());
 		cb->DrawIndexed(mMesh->GetIndexCount());

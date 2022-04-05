@@ -163,6 +163,7 @@
     <ClCompile Include="Graphics\Descriptor.cpp" />
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
     <ClCompile Include="Graphics\GPUResource.cpp" />
+    <ClCompile Include="Graphics\GPUTexture.cpp" />
     <ClCompile Include="Graphics\GraphicDefines.cpp" />
     <ClCompile Include="Graphics\Image.cpp" />
     <ClCompile Include="Graphics\IndexBuffer.cpp" />

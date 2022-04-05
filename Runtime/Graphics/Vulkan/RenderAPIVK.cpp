@@ -510,9 +510,7 @@ namespace Joestar {
 
     void RenderAPIVK::CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo)
     {
-        if (handle + 1 > mImages.Size())
-            mImages.Resize(handle + 1);
-        ImageVK& image = *mImages[handle];
+        GET_STRUCT_BY_HANDLE(image, Image, handle);
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = GetImageTypeVK(createInfo.type);
@@ -545,11 +543,9 @@ namespace Joestar {
 
     void RenderAPIVK::CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo)
     {
-        if (handle + 1 > mImageViews.Size())
-            mImageViews.Resize(handle + 1);
-        ImageViewVK& imageView = *mImageViews[handle];
+        GET_STRUCT_BY_HANDLE(imageView, ImageView, handle);
         ImageVK& image = *mImages[createInfo.imageHandle];
-        imageView.image = &image;
+        imageView.SetImage(&image);
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.viewType = GetImageViewTypeVK(createInfo.type);
@@ -671,6 +667,12 @@ namespace Joestar {
 
     }
 
+    void RenderAPIVK::CreateTexture(GPUResourceHandle handle, GPUTextureCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE_FROM_VECTOR(texture, Texture, handle, mTextures);
+        texture.Create(mImageViews[createInfo.imageViewHandle], mSamplers[createInfo.samplerHandle]);
+    }
+
     void RenderAPIVK::CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo)
     {
         if (mSwapChain.frameBuffer)
@@ -704,7 +706,7 @@ namespace Joestar {
         CreateImage(*depthImage, depthImgCreateInfo, mSwapChain.GetImageCount());
 
         ImageViewVK* depthStencilView = JOJO_NEW(ImageViewVK);
-        depthStencilView->image = depthImage;
+        depthStencilView->SetImage(depthImage);
         mSwapChain.frameBuffer->depthStencilAttachment = depthStencilView;
 
         VkImageViewCreateInfo depthViewCreateInfo{};
@@ -721,7 +723,7 @@ namespace Joestar {
         depthStencilView->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
         ImageViewVK* colorView = JOJO_NEW(ImageViewVK);
-        colorView->imageViews = mSwapChain.imageViews;
+        colorView->SetRawImageViews(mSwapChain.imageViews);
         mSwapChain.frameBuffer->colorAttachments.Push(colorView);
         mSwapChain.frameBuffer->SetRawImages(mSwapChain.images);
         mSwapChain.frameBuffer->SetRawImageViews(mSwapChain.imageViews);
@@ -772,7 +774,7 @@ namespace Joestar {
             {
                 attachments = {
                     mSwapChain.imageViews[i],
-                    depthStencilView->imageViews[i]
+                    depthStencilView->GetImageView(i)
                 };
             }
 
@@ -899,14 +901,22 @@ namespace Joestar {
         U32 idx = mFrameIndex % 3;
         for (U32 i = 0; i < updateInfo.num; ++i) {
             descriptorWrites[i] = {};
-            auto& entry = updateInfo.updateSets[i];
             descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            auto& entry = updateInfo.updateSets[i];
             descriptorWrites[i].dstSet = mDescriptorSets[entry.setHandle]->GetDescriptorSets(idx);
             descriptorWrites[i].dstBinding = entry.binding;
             descriptorWrites[i].dstArrayElement = 0;
             descriptorWrites[i].descriptorType = GetDescriptorTypeVK(entry.type);
             descriptorWrites[i].descriptorCount = 1;
-            descriptorWrites[i].pBufferInfo = &mUniformBuffers[entry.uniformHandle]->GetDescriptorBufferInfo(idx);
+            if (entry.type == DescriptorType::COMBINED_IMAGE_SAMPLER)
+            {
+                VkDescriptorImageInfo imageInfo;
+                descriptorWrites[i].pImageInfo = &mTextures[entry.textureHandle]->GetDescriptorImageInfo(idx);
+            }
+            else
+            {
+                descriptorWrites[i].pBufferInfo = &mUniformBuffers[entry.uniformHandle]->GetDescriptorBufferInfo(idx);
+            }
             
             vkUpdateDescriptorSets(mDevice, descriptorWrites.Size(), descriptorWrites.Buffer(), 0, nullptr);
         }
@@ -979,12 +989,12 @@ namespace Joestar {
             createInfo.viewport.SetSize(mSwapChain.extent.width, mSwapChain.extent.height);
         }
         pso.CreateViewportState(createInfo.viewport);
-        pso.CreateRasterizationState(mRasterizationStates[createInfo.rasterizationStateHandle]);
-        pso.CreateMultiSampleState(mMultiSampleStates[createInfo.multiSampleStateHandle]);
-        pso.CreateDepthStencilState(mDepthStencilStates[createInfo.depthStencilStateHandle]);
-        pso.CreateColorBlendState(mColorBlendStates[createInfo.colorBlendStateHandle]);
+        pso.CreateRasterizationState(*(mRasterizationStates[createInfo.rasterizationStateHandle]));
+        pso.CreateMultiSampleState(*(mMultiSampleStates[createInfo.multiSampleStateHandle]));
+        pso.CreateDepthStencilState(*(mDepthStencilStates[createInfo.depthStencilStateHandle]));
+        pso.CreateColorBlendState(*(mColorBlendStates[createInfo.colorBlendStateHandle]));
 
-        GPUShaderProgramCreateInfo& program = mShaderPrograms[createInfo.shaderProramHandle];
+        GPUShaderProgramCreateInfo& program = *(mShaderPrograms[createInfo.shaderProramHandle]);
         PODVector<ShaderVK*> shaders;
         for (U32 i = 0; i < program.numStages; ++i)
         {

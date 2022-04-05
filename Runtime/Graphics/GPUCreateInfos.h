@@ -30,8 +30,7 @@ namespace Joestar
 		U32 baseMipLevel;
 		U32 layer;
 		U32 baseLayer;
-		U32 num{1};
-		PODVector<GPUResourceHandle> imageHandle;
+		U32 num{ 1 };
 	};
 
 	struct GPUSwapChainCreateInfo
@@ -195,7 +194,8 @@ namespace Joestar
 			U32 binding;
 			DescriptorType type;
 			U32 count;
-			GPUResourceHandle uniformHandle;
+			GPUResourceHandle uniformHandle{ GPUResource::INVALID_HANDLE };
+			GPUResourceHandle textureHandle{GPUResource::INVALID_HANDLE};
 		};
 		U32 num;
 		PODVector<Entry> updateSets;
@@ -266,5 +266,11 @@ namespace Joestar
 		F32 minLod;
 		F32 maxLod;
 		F32 mipLodBias;
+	};
+
+	struct GPUTextureCreateInfo
+	{
+		GPUResourceHandle imageViewHandle;
+		GPUResourceHandle  samplerHandle;
 	};
 }

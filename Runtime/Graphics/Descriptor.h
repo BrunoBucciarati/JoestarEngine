@@ -4,9 +4,9 @@
 #include "GraphicDefines.h"
 #include "GPUResource.h"
 #include "UniformBuffer.h"
+#include "Texture.h"
 namespace Joestar
 {
-	class Texture;
 	enum class DescriptorType
 	{
 		SAMPLER = 0,

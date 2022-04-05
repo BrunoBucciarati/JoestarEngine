@@ -216,7 +216,8 @@ namespace Joestar {
 				set.binding,
 				set.type,
 				set.count,
-				set.ub->GetHandle()
+				set.ub ? set.ub->GetHandle() : GPUResource::INVALID_HANDLE,
+				set.texture ? set.texture->GetHandle() : GPUResource::INVALID_HANDLE
 			};
 			GetMainCmdList()->WriteBuffer(entry);
 		}
@@ -738,6 +739,20 @@ namespace Joestar {
 			};
 			GetMainCmdList()->WriteBuffer(createInfo);
 		}
+	}
+
+
+	void Graphics::CreateTexture(Texture* texture)
+	{
+		ASSIGN_NEW_HANDLE(texture, mTextures);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateTexture);
+		GetMainCmdList()->WriteBuffer(handle);
+		GPUTextureCreateInfo createInfo{
+			texture->GetImageView()->GetHandle(),
+			texture->GetSampler()->GetHandle()
+		};
+		GetMainCmdList()->WriteBuffer(createInfo);
+
 	}
 
 	void Graphics::QueueSubmit(CommandBuffer* cb)

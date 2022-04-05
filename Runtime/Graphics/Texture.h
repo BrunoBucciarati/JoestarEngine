@@ -24,6 +24,14 @@ namespace Joestar {
 		void SetData(U8* data);
 		void SetImage(Image* image, U32 layer = 0);
 		void CreateSampler();
+		GPUImageView* GetImageView()
+		{
+			return mImageView;
+		}
+		Sampler* GetSampler()
+		{
+			return mSampler;
+		}
 	protected:
 		U32 mWidth{ 0 };
 		U32 mHeight{ 0 };
