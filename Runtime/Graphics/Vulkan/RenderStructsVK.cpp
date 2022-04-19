@@ -426,14 +426,17 @@ namespace Joestar {
 
         vkCmdCopyBufferToImage(cb, stagingBuffer->GetBuffer(), GetImage(), VkImageLayout(layout), 1, &region);
     }
-
-
     void ImageVK::TransitionImageLayout(VkCommandBuffer& cb, ImageLayout oldLayout, ImageLayout newLayout, U32 aspectFlags)
+    {
+        TransitionImageLayout(cb, VkImageLayout(oldLayout), VkImageLayout(newLayout), aspectFlags);
+    }
+
+    void ImageVK::TransitionImageLayout(VkCommandBuffer& cb, VkImageLayout oldLayout, VkImageLayout newLayout, U32 aspectFlags)
     {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = VkImageLayout(oldLayout);
-        barrier.newLayout = VkImageLayout(newLayout);
+        barrier.oldLayout = oldLayout;
+        barrier.newLayout = newLayout;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image = GetImage();
@@ -547,7 +550,6 @@ namespace Joestar {
             0, nullptr,
             1, &barrier
         );
-
     }
 
     void TextureVK::Create(ImageViewVK* imageView, SamplerVK* sampler)

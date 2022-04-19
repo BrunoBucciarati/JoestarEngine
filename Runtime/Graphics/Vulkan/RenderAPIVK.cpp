@@ -727,8 +727,10 @@ namespace Joestar {
         depthViewCreateInfo.subresourceRange.layerCount = 1;
         depthStencilView->Create(mDevice, depthViewCreateInfo, mSwapChain.GetImageCount());
         CommandBufferVK cb = GetTempCommandBuffer();
-        depthStencilView->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
-
+        cb.Begin();
+        depthImage->TransitionImageLayout(cb.GetCommandBuffer(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+        cb.End();
+        cb.Submit();
         ImageViewVK* colorView = JOJO_NEW(ImageViewVK);
         colorView->SetRawImageViews(mSwapChain.imageViews);
         mSwapChain.frameBuffer->colorAttachments.Push(colorView);
