@@ -164,6 +164,27 @@ namespace Joestar {
 				CBCopyBuffer(cbHandle, type, handle);
 				break;
 			}
+			CASECMD(CommandBufferCMD::CopyBufferToImage)
+			{
+				GPUResourceHandle handle;
+				encoder.ReadBuffer(handle);
+				ImageLayout layout;
+				encoder.ReadBuffer(layout);
+				CBCopyBufferToImage(cbHandle, handle, layout);
+				break;
+			}
+			CASECMD(CommandBufferCMD::TransitionImageLayout)
+			{
+				GPUResourceHandle handle;
+				encoder.ReadBuffer(handle);
+				ImageLayout oldLayout, newLayout;
+				U32 aspectFlags;
+				encoder.ReadBuffer(oldLayout);
+				encoder.ReadBuffer(newLayout);
+				encoder.ReadBuffer(aspectFlags);
+				CBTransitionImageLayout(cbHandle, handle, oldLayout, newLayout, aspectFlags);
+				break;
+			}
 			CASECMD(CommandBufferCMD::Submit)
 			{
 				CBSubmit(cbHandle);

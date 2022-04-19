@@ -526,10 +526,17 @@ namespace Joestar {
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.samples = VkSampleCountFlagBits(createInfo.samples);
         //imageInfo.flags = viewType == VK_IMAGE_VIEW_TYPE_CUBE ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0; // Optional  
-        imageInfo.flags = 0; // Optional  
+        imageInfo.flags = 0; // Optional
+
+        GPUMemory& mem = mMemories[createInfo.memHandle];
+        StagingBufferVK* stagingBuffer = JOJO_NEW(StagingBufferVK, MEMORY_GFX_STRUCT);
+        stagingBuffer->count = 1;
+        stagingBuffer->SetDevice(mDevice, mPhysicalDevice);
+        stagingBuffer->SetSize(mem.size);
+        stagingBuffer->Create(mem.data);
+        image.SetStagingBuffer(stagingBuffer);
 
         CreateImage(image, imageInfo, createInfo.num);
-
     }
 
     void RenderAPIVK::CreateImage(ImageVK& image, VkImageCreateInfo& imageInfo, U32 num)
@@ -942,6 +949,7 @@ namespace Joestar {
         if (mDescriptorPool != VK_NULL_HANDLE) return;
         Vector<VkDescriptorPoolSize> poolSizes;
         //创建一个足够大的池子，后续有需要还要补扩容逻辑
+        poolSizes.Push({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER , maxUniformBuffers * num });
         poolSizes.Push({ VK_DESCRIPTOR_TYPE_SAMPLER , maxBindings * num });
         poolSizes.Push({ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE , maxBindings * num });
         poolSizes.Push({ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE , maxBindings * num });
@@ -1126,6 +1134,15 @@ namespace Joestar {
         {
             mUniformBuffers[bufferHandle]->CopyBuffer(GetFrameCommandBuffer(handle));
         }
+    }
+    void RenderAPIVK::CBCopyBufferToImage(GPUResourceHandle handle, GPUResourceHandle imageHandle, ImageLayout layout)
+    {
+        mImages[imageHandle]->CopyBufferToImage(GetFrameCommandBuffer(handle), layout);
+    }
+
+    void RenderAPIVK::CBTransitionImageLayout(GPUResourceHandle handle, GPUResourceHandle imageHandle, ImageLayout oldLayout, ImageLayout newLayout, U32 aspectFlags)
+    {
+        mImages[imageHandle]->TransitionImageLayout(GetFrameCommandBuffer(handle), oldLayout, newLayout, aspectFlags);
     }
     void RenderAPIVK::CBSubmit(GPUResourceHandle handle)
     {

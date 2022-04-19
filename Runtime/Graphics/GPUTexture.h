@@ -45,10 +45,12 @@ namespace Joestar {
 	enum class ImageFormat
 	{
 		R8G8B8A8_SRGB = 0,
-		B8G8R8A8_SRGB = 1,
-		RG11B10 = 2,
-		D24S8 = 3,
-		D32S8 = 4,
+		R8G8B8_SRGB,
+		B8G8R8A8_SRGB,
+		B8G8R8_SRGB,
+		RG11B10,
+		D24S8,
+		D32S8,
 		FormatCount
 	};
 	class Image;
@@ -62,15 +64,19 @@ namespace Joestar {
 		GET_SET_STATEMENT_INITVALUE(U32, Width, 0);
 		GET_SET_STATEMENT_INITVALUE(U32, Height, 0);
 		GET_SET_STATEMENT_INITVALUE(U32, Depth, 1);
-		GET_SET_STATEMENT_INITVALUE(U32, Layer, 0);
-		GET_SET_STATEMENT_INITVALUE(U32, Usage, (U32)ImageUsageBits::SAMPLED_BIT);
-		GET_SET_STATEMENT_INITVALUE(U32, Samples, 0);
-		GET_SET_STATEMENT_INITVALUE(U32, MipLevels, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, Layer, 1);
+		GET_SET_STATEMENT_INITVALUE(U32, Usage, (U32)ImageUsageBits::TRANSFER_SRC_BIT | (U32)ImageUsageBits::TRANSFER_DST_BIT | (U32)ImageUsageBits::SAMPLED_BIT);
+		GET_SET_STATEMENT_INITVALUE(U32, Samples, 1);
+		GET_SET_STATEMENT_INITVALUE(U32, MipLevels, 1);
 		GET_SET_STATEMENT_INITVALUE(U32, Size, 0);
 	public:
 		explicit GPUImage(EngineContext*);
 		void SetImage(Image* image);
 		void SetData(U8* data);
+		U8* GetData()
+		{
+			return mData;
+		}
 	private:
 		U8* mData{ nullptr };
 		WeakPtr<Graphics> mGraphics;
@@ -85,9 +91,9 @@ namespace Joestar {
 		GET_SET_STATEMENT_INITVALUE(ImageFormat, Format, ImageFormat::R8G8B8A8_SRGB);
 		GET_SET_STATEMENT_INITVALUE(U32, AspectBits, (U32)ImageAspectFlagBits::COLOR_BIT);
 		GET_SET_STATEMENT_INITVALUE(U32, BaseMipLevel, 0);
-		GET_SET_STATEMENT_INITVALUE(U32, MipLevels, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, MipLevels, 1);
 		GET_SET_STATEMENT_INITVALUE(U32, BaseLayer, 0);
-		GET_SET_STATEMENT_INITVALUE(U32, Layer, 0);
+		GET_SET_STATEMENT_INITVALUE(U32, Layer, 1);
 	public:
 		explicit GPUImageView(EngineContext*);
 		void SetImage(Image*);

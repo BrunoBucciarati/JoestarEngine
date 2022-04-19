@@ -13,6 +13,8 @@ namespace Joestar {
 		mWidth = image->GetWidth();
 		mHeight = image->GetHeight();
 		mSize = image->GetSize();
+		if (image->GetNumChannels() == 3)
+			mFormat = ImageFormat::R8G8B8_SRGB;
 		SetData(image->GetData());
 	}
 
@@ -36,6 +38,7 @@ namespace Joestar {
 		if (!mImage)
 			mImage = JOJO_NEW(GPUImage(mContext), MEMORY_TEXTURE);
 		mImage->SetImage(image);
+		mFormat = mImage->GetFormat();
 		//如果2D图片，凑够一张就可以提交了
 		if (mType == ImageViewType::TYPE_2D)
 		{

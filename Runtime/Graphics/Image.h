@@ -11,8 +11,10 @@ namespace Joestar {
 		U32 GetHeight() { return mHeight; }
 		U32 GetSize() { return mWidth * mHeight * mChannels; }
 		U8* GetData() { return mData; }
+		U32 GetNumChannels() const { return mChannels; }
 	private:
 		U32 mWidth, mHeight, mChannels;
 		U8* mData;
+		bool mImageFreed{ false };
 	};
 }

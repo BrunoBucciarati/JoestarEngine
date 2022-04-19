@@ -33,17 +33,20 @@ namespace Joestar {
 
     void RenderThread::ThreadFunc()
     {
-        if (!bInit) {
+        if (!bInit)
+        {
             InitContext();
             bInit = true;
             frameIndex = 0;
         }
 
-        while (!bExit) {
+        while (!bExit)
+        {
             if (!mCmdList)
                 continue;
             U32 idx = frameIndex % MAX_CMDLISTS_IN_FLIGHT;
-            while (!mCmdList[idx]->readFlag) {
+            while (!mCmdList[idx]->readFlag)
+            {
                 //wait for 0.01 sec
                 Sleep(10.F);
             }

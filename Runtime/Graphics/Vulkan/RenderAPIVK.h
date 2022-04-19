@@ -70,6 +70,8 @@ namespace Joestar {
 		void CBDraw(GPUResourceHandle handle, U32 count) override;
 		void CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0) override;
 		void CBCopyBuffer(GPUResourceHandle handle, CopyBufferType type, GPUResourceHandle) override;
+		void CBCopyBufferToImage(GPUResourceHandle handle, GPUResourceHandle, ImageLayout) override;
+		void CBTransitionImageLayout(GPUResourceHandle handle, GPUResourceHandle, ImageLayout, ImageLayout, U32) override;
 		void CBSubmit(GPUResourceHandle handle) override;
 	private:
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);

@@ -18,6 +18,8 @@ namespace Joestar {
 		Draw,
 		DrawIndexed,
 		CopyBuffer,
+		CopyBufferToImage,
+		TransitionImageLayout,
 		Submit,
 		CommandCount
 	};
@@ -73,6 +75,8 @@ namespace Joestar {
 		void DrawIndexed(U32 num, U32 indexStart = 0, U32 vertStart = 0);
 		void Draw(U32 num, U32 vertStart = 0);
 		void CopyBuffer(CopyBufferType, GPUResourceHandle);
+		void CopyBufferToImage(GPUResourceHandle, ImageLayout);
+		void TransitionImageLayout(GPUResourceHandle, ImageLayout, ImageLayout, U32);
 		void Submit();
 		RenderPass* GetRenderPass() const
 		{

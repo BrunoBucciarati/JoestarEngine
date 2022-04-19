@@ -272,33 +272,9 @@ namespace Joestar {
 	class ImageVK
 	{
 	public:
-		void Create(VkDevice& device, VkImageCreateInfo& imageInfo, U32 num = 1)
-		{
-			images.Resize(num);
-			for (int i = 0; i < num; ++i)
-			{
-				if (vkCreateImage(device, &imageInfo, nullptr, &images[i]) != VK_SUCCESS) {
-					LOGERROR("failed to create image!");
-				}
-			}
-			vkGetImageMemoryRequirements(device, images[0], &memRequirements);
-		}
+        void Create(VkDevice& device, VkImageCreateInfo& imageInfo, U32 num = 1);
 
-		void AllocMemory(VkDevice& device, U32 memoryTypeIdx)
-		{
-			VkMemoryAllocateInfo allocInfo{};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = memoryTypeIdx;
-			imageMemorys.Resize(images.Size());
-			for (int i = 0; i < images.Size(); ++i)
-			{
-				if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemorys[i]) != VK_SUCCESS) {
-					LOGERROR("failed to allocate image memory!");
-				}
-				vkBindImageMemory(device, images[i], imageMemorys[i], 0);
-			}
-		}
+        void AllocMemory(VkDevice& device, U32 memoryTypeIdx);
 
 		VkImage& GetImage(U32 idx = 0)
 		{
@@ -310,10 +286,22 @@ namespace Joestar {
 		{
 			images = imgs;
 		}
+        void SetStagingBuffer(StagingBufferVK* buffer)
+        {
+            stagingBuffer = buffer;
+        }
+        void CopyBufferToImage(VkCommandBuffer& cb, ImageLayout layout);
+        void TransitionImageLayout(VkCommandBuffer& cb, ImageLayout oldLayout, ImageLayout newLayout, U32 aspectFlags);
 
 	private:
         Vector<VkImage> images;
         Vector<VkDeviceMemory> imageMemorys{};
+        UniquePtr<StagingBufferVK> stagingBuffer;
+        U32 layers;
+        U32 mipLevels;
+        VkExtent3D extent;
+        VkImageLayout finalLayout;
+        VkFormat format;
 	};
 
 	class ImageViewVK

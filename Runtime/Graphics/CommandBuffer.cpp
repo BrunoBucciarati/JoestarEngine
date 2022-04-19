@@ -84,6 +84,30 @@ namespace Joestar
 		mEncoder.WriteBuffer(handle);
 	}
 
+	void CommandBuffer::CopyBufferToImage(GPUResourceHandle handle, ImageLayout layout)
+	{
+		if (!bRecording)
+		{
+			Begin();
+		}
+		mEncoder.WriteCommand(CommandBufferCMD::CopyBufferToImage);
+		mEncoder.WriteBuffer(handle);
+		mEncoder.WriteBuffer(layout);
+	}
+
+	void CommandBuffer::TransitionImageLayout(GPUResourceHandle handle, ImageLayout oldLayout, ImageLayout newLayout, U32 aspectFlags)
+	{
+		if (!bRecording)
+		{
+			Begin();
+		}
+		mEncoder.WriteCommand(CommandBufferCMD::TransitionImageLayout);
+		mEncoder.WriteBuffer(handle);
+		mEncoder.WriteBuffer(oldLayout);
+		mEncoder.WriteBuffer(newLayout);
+		mEncoder.WriteBuffer(aspectFlags);
+	}
+
 	void CommandBuffer::Submit()
 	{
 		mEncoder.WriteCommand(CommandBufferCMD::Submit);

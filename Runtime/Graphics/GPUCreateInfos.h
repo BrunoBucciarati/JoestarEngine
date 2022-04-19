@@ -18,6 +18,7 @@ namespace Joestar
 		U32 mipLevels;
 		U32 samples;
 		U32 num{1};
+		GPUResourceHandle memHandle;
 	};
 
 	struct GPUImageViewCreateInfo

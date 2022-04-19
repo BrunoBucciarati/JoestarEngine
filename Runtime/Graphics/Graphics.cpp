@@ -598,6 +598,12 @@ namespace Joestar {
 	void Graphics::CreateImage(GPUImage* image, U32 num)
 	{
 		ASSIGN_NEW_HANDLE(image, mImages);
+
+		GPUMemory* mem = CreateGPUMemory();
+		mem->size = image->GetSize();
+		mem->data = image->GetData();
+		SetGPUMemory(mem);
+
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateImage);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
 
@@ -611,9 +617,17 @@ namespace Joestar {
 			image->GetLayer(),
 			image->GetMipLevels(),
 			image->GetSamples(),
-			num
+			num,
+			mem->GetHandle()
 		};
 		GetMainCmdList()->WriteBuffer<GPUImageCreateInfo>(createInfo);
+
+		if (bStagingBuffer)
+		{
+			GetTransferCommandBuffer()->TransitionImageLayout(handle, ImageLayout::UNDEFINED, ImageLayout::TRANSFER_DST_OPTIMAL, (U32)ImageAspectFlagBits::COLOR_BIT);
+			GetTransferCommandBuffer()->CopyBufferToImage(handle, ImageLayout::TRANSFER_DST_OPTIMAL);
+			GetTransferCommandBuffer()->TransitionImageLayout(handle, ImageLayout::TRANSFER_DST_OPTIMAL, ImageLayout::SHADER_READ_ONLY_OPTIMAL, (U32)ImageAspectFlagBits::COLOR_BIT);
+		}
 	}
 
 	void Graphics::CreateImageView(GPUImageView* imageView, U32 num)
