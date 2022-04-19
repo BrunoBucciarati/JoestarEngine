@@ -73,11 +73,19 @@ namespace Joestar {
 			}
 			else if (binding->type == DescriptorType::COMBINED_IMAGE_SAMPLER)
 			{
-				mTextures[i] = JOJO_NEW(Texture(mContext), MEMORY_TEXTURE);
+				if (!mTextures[i])
+				{
+					mTextures[i] = JOJO_NEW(Texture(mContext), MEMORY_TEXTURE);
+				}
 				mTextures[i]->SetFrequency(UniformFrequency::BATCH);
 				mDescriptorSets->SetBindingTexture(binding->binding, mTextures[i]);
 			}
 		}
+	}
+
+	void Material::UpdateDescriptorSets()
+	{
+		mGraphics->UpdateDescriptorSets(mDescriptorSets);
 	}
 
 	void Material::SetUniformBuffer(PerBatchUniforms uniform, float* data)

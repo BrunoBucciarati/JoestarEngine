@@ -12,6 +12,7 @@ namespace Joestar {
 		SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (U8*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
 		mGraphics->SetUniformBuffer(mUniformBuffers[0]);
 		mGraphics->UpdateDescriptorSets(mDescriptorSets);
+		mMaterial->UpdateDescriptorSets();
 		auto pso = GetPipelineState(cb);
 		cb->BindPipelineState(pso);
 		cb->BindVertexBuffer(mMesh->GetVertexBuffer());

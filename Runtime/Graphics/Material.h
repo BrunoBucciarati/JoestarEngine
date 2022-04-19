@@ -35,6 +35,7 @@ namespace Joestar {
 			mDescriptorSetLayout = setLayout;
 		}
 		void AllocDescriptorSets();
+		void UpdateDescriptorSets();
 
 	private:
 		Vector<SharedPtr<Texture>> mTextures;
