@@ -52,7 +52,7 @@ namespace Joestar {
         gameObjects.Push(plane);
         MeshRenderer* pr = plane->GetComponent<MeshRenderer>();
         Texture2D* texture = NEW_OBJECT(Texture2D);
-        String path = "Textures/marble.jpg";
+        String path = "Textures/texture.jpg";
         Image image(mContext);
         image.Load(path);
         texture->SetImage(&image);
