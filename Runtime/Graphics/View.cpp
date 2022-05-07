@@ -90,20 +90,29 @@ namespace Joestar
 		CommandBuffer* cb = mGraphics->GetMainCommandBuffer();
 		cb->Begin();
 		cb->SetViewport(&mViewport);
-		cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());
-		cb->SetPassDescriptorSets(mDescriptorSets);
 		//if (bRecord)
-		{
-			if (mScene)
-			{
-				mScene->RenderScene(cb);
-			}
-		}
+		RenderScene(cb);
+		RenderSkybox(cb);
 		cb->EndRenderPass(mGraphics->GetMainRenderPass());
 		//cb->End();
 		return bRecord;
 	}
 
+	void View::RenderScene(CommandBuffer* cb)
+	{
+		cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());
+		cb->SetPassDescriptorSets(mDescriptorSets);
+		if (mScene)
+		{
+			mScene->RenderScene(cb);
+		}
+	}
+
+	void View::RenderSkybox(CommandBuffer* cb)
+	{
+		if (mScene)
+			mScene->RenderSkybox(cb);
+	}
 
 	void View::SetUniformBuffer(PerPassUniforms uniform, U8* data)
 	{

@@ -12,6 +12,7 @@ namespace Joestar
 	class DescriptorSets;
 	class DescriptorSetLayout;
 	class UniformBuffer;
+	class CommandBuffer;
 	class HID;
 	class View : public Object
 	{
@@ -30,6 +31,8 @@ namespace Joestar
 			mSwapChain = ptr;
 		}
 	private:
+		void RenderScene(CommandBuffer* cb);
+		void RenderSkybox(CommandBuffer* cb);
 		void CreatePassDescriptor();
 		void SetUniformBuffer(PerPassUniforms, U8* data);
 		UniquePtr<Camera> mCamera;

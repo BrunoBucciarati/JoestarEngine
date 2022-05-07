@@ -23,22 +23,27 @@ namespace Joestar {
 		{
 			//设置逐材质的参数描述到材质中
 			auto layout = mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT);
-			mDescriptorSets->AllocFromLayout(layout);
-			mGraphics->CreateDescriptorSets(mDescriptorSets);
-
-			//对描述符分配对应的UB
-			mUniformBuffers.Clear();
-			mUniformBuffers.Resize(mDescriptorSets->Size());
-			for (U32 i = 0; i < layout->GetNumBindings(); ++i)
+			//如果存在逐Object的uniform，那么设置到renderer中
+			if (layout)
 			{
-				DescriptorSetLayoutBinding* binding = layout->GetLayoutBinding(i);
-				mUniformBuffers[i] = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
-				mUniformBuffers[i]->AllocFromBinding(binding);
-				mUniformBuffers[i]->SetFrequency(UniformFrequency::OBJECT);
-				mGraphics->CreateUniformBuffer(mUniformBuffers[i]);
-				mDescriptorSets->SetBindingUniformBuffer(binding->binding, mUniformBuffers[i]);
+				mDescriptorSets->AllocFromLayout(layout);
+				mGraphics->CreateDescriptorSets(mDescriptorSets);
+
+				//对描述符分配对应的UB
+				mUniformBuffers.Clear();
+				mUniformBuffers.Resize(mDescriptorSets->Size());
+				for (U32 i = 0; i < layout->GetNumBindings(); ++i)
+				{
+					DescriptorSetLayoutBinding* binding = layout->GetLayoutBinding(i);
+					mUniformBuffers[i] = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
+					mUniformBuffers[i]->AllocFromBinding(binding);
+					mUniformBuffers[i]->SetFrequency(UniformFrequency::OBJECT);
+					mGraphics->CreateUniformBuffer(mUniformBuffers[i]);
+					mDescriptorSets->SetBindingUniformBuffer(binding->binding, mUniformBuffers[i]);
+				}
 			}
 
+			//设置逐材质的uniform
 			mMaterial->SetDescriptorSetLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::BATCH));
 			mMaterial->AllocDescriptorSets();
 		}
@@ -47,6 +52,8 @@ namespace Joestar {
 	void Renderer::SetUniformBuffer(PerObjectUniforms uniform, U8* data)
 	{
 		auto layout = mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT);
+		if (!layout)
+			return;
 		DescriptorSetLayoutBinding::Member member;
 		U32 binding = layout->GetUniformMemberAndBinding((U32)uniform, member);
 		mUniformBuffers[binding]->SetData(member.offset, member.size, data);

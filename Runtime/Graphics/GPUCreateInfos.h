@@ -1,5 +1,5 @@
 #pragma once
-#include "GPUTexture.h"
+#include "GPUImage.h"
 #include "Viewport.h"
 #include "Descriptor.h"
 #include "SwapChain.h"

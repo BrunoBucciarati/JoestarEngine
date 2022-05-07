@@ -1,6 +1,7 @@
 #pragma once
 #include "GPUResource.h"
 #include "../Container/Ptr.h"
+#include "../Container/Vector.h"
 #include "../Core/Object.h"
 
 namespace Joestar {
@@ -72,7 +73,9 @@ namespace Joestar {
 	public:
 		explicit GPUImage(EngineContext*);
 		void SetImage(Image* image);
+		void SetImages(Vector<SharedPtr<Image>>&);
 		void SetData(U8* data);
+		void SetSubData(U8* data, U32 offset=0);
 		U8* GetData()
 		{
 			return mData;
@@ -97,6 +100,7 @@ namespace Joestar {
 	public:
 		explicit GPUImageView(EngineContext*);
 		void SetImage(Image*);
+		void SetImages(Vector<SharedPtr<Image>>&);
 	private:
 		WeakPtr<Graphics> mGraphics;
 	};

@@ -10,13 +10,16 @@ namespace Joestar {
 	void MeshRenderer::Render(CommandBuffer* cb)
 	{
 		SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (U8*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
-		mGraphics->SetUniformBuffer(mUniformBuffers[0]);
-		mGraphics->UpdateDescriptorSets(mDescriptorSets);
+		if (!mUniformBuffers.Empty())
+		{
+			mGraphics->SetUniformBuffer(mUniformBuffers[0]);
+			mGraphics->UpdateDescriptorSets(mDescriptorSets);
+		}
 		mMaterial->UpdateDescriptorSets();
 		auto pso = GetPipelineState(cb);
 		cb->BindPipelineState(pso);
 		cb->BindVertexBuffer(mMesh->GetVertexBuffer());
-		//后面外面要按材质排序，这个BATCH的应该放在外面--todo
+		//后面外面要按材质排序，这个BATCH的应该放在外面 --todo
 		cb->BindDescriptorSets(UniformFrequency::PASS, mShaderProgram->GetPipelineLayout(), cb->GetPassDescriptorSets());
 		cb->BindDescriptorSets(UniformFrequency::BATCH, mShaderProgram->GetPipelineLayout(), mMaterial->GetDescriptorSets());
 		cb->BindDescriptorSets(UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mDescriptorSets);

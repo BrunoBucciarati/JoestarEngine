@@ -53,6 +53,8 @@ namespace Joestar {
 
 	void Material::AllocDescriptorSets()
 	{
+		if (!mDescriptorSetLayout)
+			return;
 		mDescriptorSets->AllocFromLayout(mDescriptorSetLayout);
 		mGraphics->CreateDescriptorSets(mDescriptorSets);
 

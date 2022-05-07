@@ -1,5 +1,5 @@
 #pragma once
-#include "GPUTexture.h"
+#include "GPUImage.h"
 namespace Joestar {
 	class RenderTarget
 	{

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Core/Minimal.h"
 #include "GraphicDefines.h"
-#include "GPUTexture.h"
+#include "GPUImage.h"
 #include "Viewport.h"
 #include "Shader/ShaderProgram.h"
 #include "VertexBuffer.h"
@@ -13,7 +13,9 @@ namespace Joestar {
         void ResizeLayouts(U32 sz);
         SharedPtr<DescriptorSetLayout> GetSetLayout(U32 idx)
         {
-            return mSetLayouts[idx];
+            if (mSetLayouts.Size() > idx)
+                return mSetLayouts[idx];
+            return nullptr;
         }
         Vector<SharedPtr<DescriptorSetLayout>>& GetSetLayouts()
         {

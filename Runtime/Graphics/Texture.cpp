@@ -18,8 +18,37 @@ namespace Joestar {
 
 	void Texture::SetImage(Image* image, U32 layer)
 	{
-		mImageView->SetImage(image);
-		mGraphics->CreateTexture(this);
+		if (mImages.Empty())
+		{
+			mImages.Resize(mLayers);
+			for (U32 i = 0; i < mLayers; ++i)
+			{
+				mImages[i] = nullptr;
+			}
+		}
+		mImages[layer] = image;
+		if (mLayers == 1)
+		{
+			mImageView->SetImage(image);
+			mGraphics->CreateTexture(this);
+		}
+		else
+		{
+			bool bReady = true;
+			for (U32 i = 0; i < mLayers; ++i)
+			{
+				if (!mImages[i])
+				{
+					bReady = false;
+					break;
+				}
+			}
+			if (bReady)
+			{
+				mImageView->SetImages(mImages);
+				mGraphics->CreateTexture(this);
+			}
+		}
 	}
 
 

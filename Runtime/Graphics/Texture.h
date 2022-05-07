@@ -3,7 +3,7 @@
 #include "../Core/Minimal.h"
 #include "GraphicDefines.h"
 #include "Sampler.h"
-#include "GPUTexture.h"
+#include "GPUImage.h"
 namespace Joestar {
 	class Graphics;
 	class Texture : public Object
@@ -12,7 +12,7 @@ namespace Joestar {
 		GET_SET_STATEMENT_INITVALUE(GPUResourceHandle, Handle, GPUResource::INVALID_HANDLE);
 		GET_SET_STATEMENT_INITVALUE(U32, Size, 0);
 		GET_SET_STATEMENT(ImageFormat, Format, 0);
-		GET_SET_STATEMENT(ImageType, Type, 0);
+		GET_SET_STATEMENT(ImageViewType, Type, 0);
 		GET_SET_STATEMENT(UniformFrequency, Frequency, UniformFrequency::BATCH);
 		
 	public:
@@ -20,7 +20,6 @@ namespace Joestar {
 		virtual U32 GetSize() { return mWidth * mHeight; }
 		virtual U32 GetWidth() { return mWidth; }
 		virtual U32 GetHeight() { return mHeight; }
-		virtual U8* GetData() { return mData; }
 		void SetData(U8* data);
 		void SetImage(Image* image, U32 layer = 0);
 		void CreateSampler();
@@ -38,7 +37,8 @@ namespace Joestar {
 		SharedPtr<GPUImageView> mImageView;
 		SharedPtr<Sampler> mSampler;
 		U32 numMipMaps{ 0 };
-		U8* mData{ nullptr };
+		U32 mLayers{ 1 };
 		WeakPtr<Graphics> mGraphics;
+		Vector<SharedPtr<Image>> mImages;
 	};
 }

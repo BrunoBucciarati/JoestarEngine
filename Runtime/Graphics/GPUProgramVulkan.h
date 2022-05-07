@@ -578,7 +578,7 @@ namespace Joestar {
         U32 GetSize() { return texture->GetSize(); }
         U32 GetWidth() { return texture->GetWidth(); }
         U32 GetHeight() { return texture->GetHeight(); }
-        void* GetData() { return texture->GetData(); }
+        void* GetData() { return nullptr; }
         bool HasMipmap() { return false; }
         TEXTURE_TYPE Type() { return TEXTURE_TYPE::TEXTURE_2D; }
         ImageVK1* image;

@@ -3,8 +3,24 @@
 #include "../Container/Vector.h"
 
 namespace Joestar {
-	TextureCube::TextureCube(EngineContext* ctx) : Texture(ctx) {
-		mType = ImageType::TYPE_2D;
+	TextureCube::TextureCube(EngineContext* ctx) : Texture(ctx)
+	{
+		mType = ImageViewType::TYPE_CUBE;
+		mLayers = 6;
+	}
+
+	void TextureCube::SetImageDir(const String& dir, const Vector<String>& faces)
+	{
+		for (unsigned int i = 0; i < faces.Size(); i++)
+		{
+			Image* img = NEW_OBJECT(Image);
+			img->Load((dir + faces[i]).CString());
+			//目前认为六个面必须一样的尺寸
+			mWidth = img->GetWidth();
+			mHeight = img->GetHeight();
+			mFormat = ImageFormat::R8G8B8A8_SRGB;
+			SetImage(img, i);
+		}
 	}
 	//void TextureCube::TextureFromImage(String& path) {
 	//	Vector<String> faces;

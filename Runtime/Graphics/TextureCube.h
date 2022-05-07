@@ -7,5 +7,6 @@ namespace Joestar {
 		REGISTER_OBJECT(TextureCube, Texture)
 	public:
 		explicit TextureCube(EngineContext* ctx);
+		void SetImageDir(const String& dir, const Vector<String>& faces);
 	};
 }

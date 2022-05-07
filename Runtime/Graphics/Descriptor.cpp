@@ -82,6 +82,8 @@ namespace Joestar {
 	void DescriptorSets::AllocFromLayout(DescriptorSetLayout* layout)
 	{
 		mSize = 0;
+		if (!layout)
+			return;
 		mSets.Resize(layout->GetNumBindings());
 		for (U32 i = 0; i < layout->GetNumBindings(); ++i)
 		{

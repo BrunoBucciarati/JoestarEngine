@@ -15,7 +15,7 @@ namespace Joestar {
 	{
 		FileSystem* fs = GetSubsystem<FileSystem>();
 		mFile = fs->ReadFile(path);
-		if (mFile)
+		if (mFile->Size())
 		{
 			return true;
 		}

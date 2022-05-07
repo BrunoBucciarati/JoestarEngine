@@ -19,7 +19,7 @@ namespace Joestar {
 		void PreRenderCompute();
 		void RenderScene(CommandBuffer* cb);
 		void RenderLights();
-		void RenderSkybox();
+		void RenderSkybox(CommandBuffer* cb);
 		void Update(float);
 		void CreateLights();
 		void CreateCompute();
@@ -29,7 +29,6 @@ namespace Joestar {
 		Vector<Light*> lights;
 		Light* mainLight;
 		GameObject* selection;
-		Material* skyboxMat;
 		Material* lightMat;
 		LightBatch* lightBatch;
 		//ComputeBuffer* shComputeBuffer;
@@ -41,5 +40,6 @@ namespace Joestar {
 		LightBlocks lightBlocks;
 		Graphics* mGraphics;
 		SharedPtr<RenderPass> mMainRenderPass;
+		SharedPtr<GameObject> mSkyboxGO;
 	};
 }

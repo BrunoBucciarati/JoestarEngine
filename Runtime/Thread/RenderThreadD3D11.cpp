@@ -285,7 +285,7 @@ namespace Joestar {
         tdesc.MiscFlags = 0;	// 指定需要生成mipmap
         D3D11_SUBRESOURCE_DATA tinitdata;
         ZeroMemory(&tinitdata, sizeof(tinitdata));
-        tinitdata.pSysMem = tex2D->GetData();
+        tinitdata.pSysMem = nullptr;// tex2D->GetData();
         tinitdata.SysMemPitch = tex2D->GetWidth() * 4;
         md3dDevice->CreateTexture2D(&tdesc, &tinitdata, &mDiffTex);
 
