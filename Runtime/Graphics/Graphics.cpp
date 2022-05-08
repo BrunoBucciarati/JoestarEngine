@@ -172,8 +172,7 @@ namespace Joestar {
 
 	void Graphics::CreatePipelineLayout(PipelineLayout* layout)
 	{
-		U32 handle = mPipelineLayouts.Size();
-		layout->SetHandle(handle);
+		ASSIGN_NEW_HANDLE(layout, mPipelineLayouts);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreatePipelineLayout);
 		GetMainCmdList()->WriteBuffer(handle);
 		GPUPipelineLayoutCreateInfo createInfo{
@@ -515,6 +514,15 @@ namespace Joestar {
 	void Graphics::CreateDepthStencilState(DepthStencilState* state)
 	{
 		state->Rehash();
+		//这种状态全局不会很多，就线性存储查询了。
+		for (U32 i = 0; i < mDepthStencilStates.Size(); ++i)
+		{
+			if (mDepthStencilStates[i]->Hash() == state->Hash())
+			{
+				state->handle = mDepthStencilStates[i]->handle;
+				return;
+			}
+		}
 		state->handle = mDepthStencilStates.Size();
 		mDepthStencilStates.Push(state);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateDepthStencilState);

@@ -9,20 +9,20 @@ namespace Joestar {
 
 	void MeshRenderer::Render(CommandBuffer* cb)
 	{
-		SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (U8*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
 		if (!mUniformBuffers.Empty())
 		{
+			SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (U8*)mGameObject->GetComponent<Transform>()->GetAfflineTransform());
 			mGraphics->SetUniformBuffer(mUniformBuffers[0]);
 			mGraphics->UpdateDescriptorSets(mDescriptorSets);
+			cb->BindDescriptorSets(UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mDescriptorSets);
 		}
-		mMaterial->UpdateDescriptorSets();
+		bool flag = mMaterial->Update();
 		auto pso = GetPipelineState(cb);
 		cb->BindPipelineState(pso);
 		cb->BindVertexBuffer(mMesh->GetVertexBuffer());
 		//后面外面要按材质排序，这个BATCH的应该放在外面 --todo
 		cb->BindDescriptorSets(UniformFrequency::PASS, mShaderProgram->GetPipelineLayout(), cb->GetPassDescriptorSets());
 		cb->BindDescriptorSets(UniformFrequency::BATCH, mShaderProgram->GetPipelineLayout(), mMaterial->GetDescriptorSets());
-		cb->BindDescriptorSets(UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mDescriptorSets);
 		cb->BindIndexBuffer(mMesh->GetIndexBuffer());
 		cb->DrawIndexed(mMesh->GetIndexCount());
 	}
@@ -30,14 +30,27 @@ namespace Joestar {
 	SharedPtr<GraphicsPipelineState> MeshRenderer::GetPipelineState(CommandBuffer* cb)
 	{
 		RenderPass* pass = cb->GetRenderPass();
+		U32 hashIndex = pass->Hash() << 5 + mMaterial->Hash();
 		for (auto& pso : mPSOs)
 		{
-			if (pso->GetRenderPass() == pass && pso->GetViewport() == cb->GetViewport())
+			if (pso->GetHashIndex() == hashIndex)
 			{
 				return pso;
 			}
 		}
+		auto pso = GetDefaultPipelineState(cb);
+		if (mMaterial->GetDepthStencilState())
+		{
+			pso->SetDepthStencilState(mMaterial->GetDepthStencilState());
+		}
+		pso->SetHashIndex(hashIndex);
+		mGraphics->CreateGraphicsPipelineState(pso);
+		return pso;
+	}
 
+	SharedPtr<GraphicsPipelineState> MeshRenderer::GetDefaultPipelineState(CommandBuffer* cb)
+	{
+		RenderPass* pass = cb->GetRenderPass();
 		//没找到对应的，创建一个新的PSO
 		SharedPtr<GraphicsPipelineState>& pso = mPSOs.EmplaceBack();
 		pso = JOJO_NEW(GraphicsPipelineState, MEMORY_GFX_STRUCT);
@@ -69,7 +82,6 @@ namespace Joestar {
 			0, vb->GetVertexSize(), false
 		});
 		pso->SetInputBindings(inputBindings);
-		mGraphics->CreateGraphicsPipelineState(pso);
 		return pso;
 	}
 }

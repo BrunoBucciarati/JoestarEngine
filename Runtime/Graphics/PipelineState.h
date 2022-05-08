@@ -231,6 +231,7 @@ namespace Joestar {
         GET_SET_STATEMENT(SharedPtr<PipelineLayout>, PipelineLayout);
         GET_SET_STATEMENT_REF(PODVector<InputBinding>, InputBindings);
         GET_SET_STATEMENT_REF(PODVector<InputAttribute>, InputAttributes);
+        GET_SET_STATEMENT(U32, HashIndex);
 
         U32 GetNumInputBindings()
         {

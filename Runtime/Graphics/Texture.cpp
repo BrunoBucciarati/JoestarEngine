@@ -7,7 +7,7 @@ namespace Joestar {
 		mSampler(JOJO_NEW(Sampler, MEMORY_TEXTURE)),
 		mImageView(JOJO_NEW(GPUImageView(ctx), MEMORY_TEXTURE))
 	{
-		mGraphics->SetSampler(mSampler);		
+		mGraphics->SetSampler(mSampler);
 	}
 	Texture::~Texture()
 	{}

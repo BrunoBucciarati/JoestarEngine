@@ -6,7 +6,9 @@ namespace Joestar {
 	TextureCube::TextureCube(EngineContext* ctx) : Texture(ctx)
 	{
 		mType = ImageViewType::TYPE_CUBE;
+		mImageView->SetType(mType);
 		mLayers = 6;
+		mImageView->SetLayer(mLayers);
 	}
 
 	void TextureCube::SetImageDir(const String& dir, const Vector<String>& faces)

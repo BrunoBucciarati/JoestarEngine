@@ -26,6 +26,7 @@ namespace Joestar {
 		mHeight = images[0]->GetHeight();
 		U32 sz = images[0]->GetSize();
 		mSize = sz * images.Size();
+		mLayer = images.Size();
 		if (mData)
 			JOJO_DELETE_ARRAY(mData);
 		mData = JOJO_NEW_ARRAY(U8, mSize, MEMORY_TEXTURE);

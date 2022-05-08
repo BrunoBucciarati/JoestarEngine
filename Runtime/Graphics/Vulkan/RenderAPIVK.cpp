@@ -525,8 +525,10 @@ namespace Joestar {
         imageInfo.usage = GetImageUsageBitsVK(createInfo.usage);;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.samples = VkSampleCountFlagBits(createInfo.samples);
-        //imageInfo.flags = viewType == VK_IMAGE_VIEW_TYPE_CUBE ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0; // Optional  
-        imageInfo.flags = 0; // Optional
+        if (createInfo.layer == 6)
+            imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT; // Optional  
+        else
+            imageInfo.flags = 0; // Optional
 
         GPUMemory& mem = mMemories[createInfo.memHandle];
         StagingBufferVK* stagingBuffer = JOJO_NEW(StagingBufferVK, MEMORY_GFX_STRUCT);

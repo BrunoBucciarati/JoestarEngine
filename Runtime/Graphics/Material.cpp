@@ -1,5 +1,6 @@
 #include "Material.h"
 #include "Graphics.h"
+#include "PipelineState.h"
 
 namespace Joestar {
 	Material::Material(EngineContext* ctx) : Super(ctx),
@@ -14,6 +15,10 @@ namespace Joestar {
 		if (binding >= mTextures.Size())
 			mTextures.Resize(binding + 1);
 		mTextures[binding] = tex;
+		if (mDescriptorSets->Size() > binding)
+		{
+			mDescriptorSets->SetBindingTexture(binding, tex);
+		}
 	}
 
 	void Material::SetPBR()
@@ -85,9 +90,25 @@ namespace Joestar {
 		}
 	}
 
-	void Material::UpdateDescriptorSets()
+	bool Material::Update()
 	{
+		bool bUpdate = false;
+		if (bDepthStencilStateDirty)
+		{
+			mGraphics->CreateDepthStencilState(mDepthStencilState);
+			bUpdate = true;
+			bDepthStencilStateDirty = false;
+		}
 		mGraphics->UpdateDescriptorSets(mDescriptorSets);
+		if (bUpdate)
+			ReHash();
+		return bUpdate;
+	}
+
+
+	void Material::ReHash()
+	{
+		mHash = mDepthStencilState ? mDepthStencilState->Hash() : 0;
 	}
 
 	void Material::SetUniformBuffer(PerBatchUniforms uniform, float* data)
@@ -119,5 +140,21 @@ namespace Joestar {
 		//set.set = (U32)UniformFrequency::BATCH;
 		//set.ub = mGraphics->CreateUniformBuffer((U32)uniform, { GetPerBatchUniformDataType(uniform), UniformFrequency::BATCH });
 		//mDescriptorSets.Push(set);
+	}
+
+
+	void Material::SetDepthCompareOp(CompareOp op)
+	{
+		if (!mDepthStencilState)
+		{
+			mDepthStencilState = JOJO_NEW(DepthStencilState, MEMORY_GFX_STRUCT);			
+		}
+		mDepthStencilState->SetDepthCompareOp(op);
+		bDepthStencilStateDirty = true;
+	}
+
+	SharedPtr<DepthStencilState> Material::GetDepthStencilState() const
+	{
+		return mDepthStencilState;
 	}
 }

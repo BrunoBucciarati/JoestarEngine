@@ -21,6 +21,7 @@ namespace Joestar
 		void Render(CommandBuffer* cb) override;
 	private:
 		SharedPtr<GraphicsPipelineState> GetPipelineState(CommandBuffer* pass);
+		SharedPtr<GraphicsPipelineState> GetDefaultPipelineState(CommandBuffer* pass);
 		SharedPtr<Mesh> mMesh;
 	};
 }

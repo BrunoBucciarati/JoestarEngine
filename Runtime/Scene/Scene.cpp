@@ -51,25 +51,28 @@ namespace Joestar {
         pr->SetShader("fragment", ShaderStage::PS);
 
         if (!mSkyboxGO) {
-            //mSkyboxGO = NEW_OBJECT(GameObject);
-            //MeshRenderer* sbRenderer = mSkyboxGO->GetComponent<MeshRenderer>();
-            //Material* skyboxMat = sbRenderer->GetMaterial();
-            //sbRenderer->SetShader("skybox", ShaderStage::VS);
-            //sbRenderer->SetShader("skybox", ShaderStage::PS);
-            //sbRenderer->SetMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere());
+            mSkyboxGO = NEW_OBJECT(GameObject);
+            MeshRenderer* sbRenderer = mSkyboxGO->GetComponent<MeshRenderer>();
+            Material* skyboxMat = sbRenderer->GetMaterial();
+            sbRenderer->SetShader("skybox_vs", ShaderStage::VS);
+            sbRenderer->SetShader("skybox_ps", ShaderStage::PS);
+            sbRenderer->SetMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere());
 
-            //Vector<String> faces;
-            //faces.Push("right.jpg");
-            //faces.Push("left.jpg");
-            //faces.Push("top.jpg");
-            //faces.Push("bottom.jpg");
-            //faces.Push("front.jpg");
-            //faces.Push("back.jpg");
+            mSkyboxGO->SetScale(100.F);
 
-            //TextureCube* cube = NEW_OBJECT(TextureCube);
-            //String skydir = "Textures/skybox/";
-            //cube->SetImageDir(skydir, faces);
-            //skyboxMat->SetTexture(cube, 0);
+            Vector<String> faces;
+            faces.Push("right.jpg");
+            faces.Push("left.jpg");
+            faces.Push("top.jpg");
+            faces.Push("bottom.jpg");
+            faces.Push("front.jpg");
+            faces.Push("back.jpg");
+
+            TextureCube* cube = NEW_OBJECT(TextureCube);
+            String skydir = "Textures/skybox/";
+            cube->SetImageDir(skydir, faces);
+            skyboxMat->SetTexture(cube, 0);
+            skyboxMat->SetDepthCompareOp(CompareOp::LESS_EQUAL);
         }
 
         //GameObject* tri = NEW_OBJECT(GameObject);
@@ -82,8 +85,6 @@ namespace Joestar {
         mMainRenderPass->SetLoadOp(AttachmentLoadOp::DONT_CARE);
         mMainRenderPass->SetStoreOp(AttachmentStoreOp::DONT_CARE);
         mGraphics->CreateRenderPass(mMainRenderPass);
-
-
     }
 
     Scene::~Scene()
@@ -101,8 +102,8 @@ namespace Joestar {
 
     void Scene::RenderSkybox(CommandBuffer* cb)
     {
-        //if (mSkyboxGO)
-        //    mSkyboxGO->GetComponent<MeshRenderer>()->Render(cb);
+        if (mSkyboxGO)
+            mSkyboxGO->GetComponent<MeshRenderer>()->Render(cb);
     }
 
     void Scene::RenderLights()

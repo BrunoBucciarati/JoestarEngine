@@ -2,12 +2,14 @@
 #include "Shader/ShaderProgram.h"
 #include "../Container/Str.h"
 #include "../Container/Vector.h"
+#include "../Container/Ptr.h"
 #include "../Core/Object.h"
 #include "Texture2D.h"
 
 namespace Joestar {
 	class Graphics;
-	class Material : public Object {
+	class DepthStencilState;
+	class Material : public Object, public Hashable {
 		REGISTER_OBJECT(Material, Object);
 	public:
 		explicit Material(EngineContext* ctx);
@@ -35,7 +37,10 @@ namespace Joestar {
 			mDescriptorSetLayout = setLayout;
 		}
 		void AllocDescriptorSets();
-		void UpdateDescriptorSets();
+		bool Update();
+		void ReHash();
+		void SetDepthCompareOp(CompareOp op);
+		SharedPtr<DepthStencilState> GetDepthStencilState() const;
 
 	private:
 		Vector<SharedPtr<Texture>> mTextures;
@@ -43,5 +48,7 @@ namespace Joestar {
 		SharedPtr<DescriptorSets> mDescriptorSets;
 		SharedPtr<DescriptorSetLayout> mDescriptorSetLayout;
 		WeakPtr<Graphics> mGraphics;
+		SharedPtr<DepthStencilState> mDepthStencilState;
+		bool bDepthStencilStateDirty{ false };
 	};
 }

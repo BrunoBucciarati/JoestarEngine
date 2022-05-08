@@ -13,9 +13,12 @@ namespace Joestar {
 		explicit GameObject(EngineContext* ctx);
 
 		template<class T>
-		T* GetComponent() {
-			for (auto& comp : components) {
-				if (comp->GetClassID() == T::GetClassIDStatic()) {
+		T* GetComponent()
+		{
+			for (auto& comp : components)
+			{
+				if (comp->GetClassID() == T::GetClassIDStatic())
+				{
 					return static_cast<T*>(comp);
 				}
 			}
@@ -24,44 +27,60 @@ namespace Joestar {
 			return t;
 		}
 		template<class T>
-		T* HasComponent() {
-			for (auto& comp : components) {
-				if (comp->GetClassID() == T::GetClassIDStatic()) {
+		T* HasComponent()
+		{
+			for (auto& comp : components)
+			{
+				if (comp->GetClassID() == T::GetClassIDStatic())
+				{
 					return static_cast<T*>(comp);
 				}
 			}
 			return nullptr;
 		}
 
-		Vector3f GetPosition() {
+		Vector3f GetPosition()
+		{
 			//comp 0 must be transform
 			return GetTransform()->GetPosition();
 		}
 
-		void SetPosition(Vector3f& v) {
+		void SetPosition(Vector3f& v)
+		{
 			GetTransform()->SetPosition(v);
 		}
 
-		void SetPosition(float x, float y, float z) {
+		void SetPosition(float x, float y, float z)
+		{
 			GetTransform()->SetPosition(x, y, z);
 		}
 
-		Quaternionf GetRotation() {
+		Quaternionf GetRotation()
+		{
 			//comp 0 must be transform
 			return GetTransform()->GetRotation();
 		}
 
-		void SetRotation(Quaternionf& q) {
+		void SetRotation(Quaternionf& q)
+		{
 			GetTransform()->SetRotation(q);
 		}
 
-		Vector3f GetScale() {
+		Vector3f GetScale()
+		{
 			//comp 0 must be transform
 			return GetTransform()->GetScale();
 		}
 
-		void SetScale(Vector3f& v) {
+		void SetScale(Vector3f& v)
+		{
 			GetTransform()->SetScale(v);
+		}
+
+		void SetScale(F32 s)
+		{
+			Vector3f scale(s, s, s);
+			GetTransform()->SetScale(scale);
 		}
 
 		void SetLocalEulerAngles(Vector3f& v) {
