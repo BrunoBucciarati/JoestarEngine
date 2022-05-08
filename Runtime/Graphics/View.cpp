@@ -15,7 +15,8 @@ namespace Joestar
 		mScene = NEW_OBJECT(Scene);
 		mGraphics = GetSubsystem<Graphics>();
 		CreatePassDescriptor();
-		mCamera->SetOrthographic(10.0F);
+		//mCamera->SetOrthographic(10.0F);
+		mCamera->SetPerspective();
 		mHID = GetSubsystem<HID>();
 	}
 

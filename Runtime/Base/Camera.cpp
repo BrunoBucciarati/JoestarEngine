@@ -66,12 +66,12 @@ namespace Joestar {
         front.y = sin(Deg2Rad(mPitch));
         front.z = sin(Deg2Rad(mYaw)) * cos(Deg2Rad(mPitch));
         mFront = Normalize(front);
-        LOG("front: %.2f, %.2f, %.2f\n", mFront.x, mFront.y, mFront.z);
+        //LOG("front: %.2f, %.2f, %.2f\n", mFront.x, mFront.y, mFront.z);
         // also re-calculate the Right and Up vector
         mRight = Normalize(Cross(mFront, mWorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-        LOG("Right: %.2f, %.2f, %.2f\n", mRight.x, mRight.y, mRight.z);
+        //LOG("Right: %.2f, %.2f, %.2f\n", mRight.x, mRight.y, mRight.z);
         mUp = Normalize(Cross(mRight, mFront));
-        LOG("Up: %.2f, %.2f, %.2f\n", mUp.x, mUp.y, mUp.z);
+        //LOG("Up: %.2f, %.2f, %.2f\n", mUp.x, mUp.y, mUp.z);
         mView.LookAt(mPosition, mFront, mRight, mUp);
     }
 }

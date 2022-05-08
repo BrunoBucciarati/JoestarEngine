@@ -1,9 +1,10 @@
 #include "Window.h"
 #include "../Misc/GlobalConfig.h"
 #include "../IO/HID.h"
+#include "../IO/Log.h"
 
 namespace Joestar {
-    U32 CurPosX = 0, CurPosY = 0;
+    F32 CurPosX = 0, CurPosY = 0;
     HID* HIDSystem;
     LRESULT CALLBACK WinProc(
         HWND hwnd,      // handle to window
@@ -63,9 +64,16 @@ namespace Joestar {
                 break;
             }
             break;
-        case WM_MOVE:
+        case WM_MOUSEMOVE:
             xPos = (U32)(short)LOWORD(lParam);   // horizontal position 
             yPos = (U32)(short)HIWORD(lParam);   // vertical position 
+            LOG("x:%d y:%d\n", xPos, yPos);
+            if (CurPosX != 0 || CurPosY != 0)
+            {
+                HIDSystem->SetMouseInputs((F32)xPos - CurPosX, (F32)yPos - CurPosY, 0.F, 0.F);
+            }
+            CurPosX = xPos;
+            CurPosY = yPos;
             break;
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);

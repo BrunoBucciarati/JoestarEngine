@@ -5,10 +5,10 @@
 #include "../Graphics/Vulkan/RenderAPIVK.h"
 #include "../Misc/GlobalConfig.h"
 #include "../Graphics/GPUCreateInfos.h"
+#include "../Graphics/GraphicsDebugs.h"
 #include "../IO/Log.h"
 namespace Joestar {
 #define MAX_FRAMES_IN_FLIGHT 3
-#define DEBUG_CMD 1
 #if DEBUG_CMD
 #define CASECMD(CMD_TYPE) \
     case CMD_TYPE: \

@@ -497,6 +497,9 @@
     <ClInclude Include="Graphics\Sampler.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\GraphicsDebugs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Container\Container.natvis" />

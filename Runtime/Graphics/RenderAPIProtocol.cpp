@@ -1,5 +1,6 @@
 #include "RenderAPIProtocol.h"
 #include "Window.h"
+#include "../Graphics/GraphicsDebugs.h"
 
 #define GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, _VEC) \
     if (_HANDLE + 1 > _VEC.Size()) _VEC.Resize(_HANDLE + 1); \
@@ -9,7 +10,6 @@
 #define GET_STRUCT_BY_HANDLE(_VAR, _TYP, _HANDLE) \
     GET_STRUCT_BY_HANDLE_FROM_VECTOR(_VAR, _TYP, _HANDLE, m##_TYP##s);
 
-#define DEBUG_CMD 1
 #if DEBUG_CMD
 #define CASECMD(CMD_TYPE) \
     case CMD_TYPE: \

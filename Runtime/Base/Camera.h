@@ -10,7 +10,8 @@
 namespace Joestar {
 
     // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-    class Camera : public Object {
+    class Camera : public Object
+    {
         REGISTER_OBJECT(Camera, Object)
     public:
         // constructor with vectors
@@ -46,6 +47,11 @@ namespace Joestar {
             mProjection.SetOrtho(-orthographicSize * mAspect, orthographicSize * mAspect, -orthographicSize, orthographicSize, mNearClip, mFarClip);
         }
 
+        void SetPerspective()
+        {
+            mProjection.SetPerspective(mFov, mAspect, mNearClip, mFarClip);
+        }
+
         void ProcessHID(HID* hid, float dt);
 
     private:
@@ -63,11 +69,12 @@ namespace Joestar {
         float mYaw{-90.0f};
         float mPitch{-30.0f};
         // camera options
-        float mSpeed{1.f};
-        float mSensitivity{.3f};
+        float mSpeed{10.f};
+        float mSensitivity{1.f};
         float mZoom{60.f};
         float mAspect{45.f};
         float mNearClip{.1f};
         float mFarClip{100.f};
+        float mFov{ 45.f };
     };
 }

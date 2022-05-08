@@ -250,6 +250,7 @@
     <ClInclude Include="Graphics\GPUResource.h" />
     <ClInclude Include="Graphics\GPUImage.h" />
     <ClInclude Include="Graphics\GraphicDefines.h" />
+    <ClInclude Include="Graphics\GraphicsDebugs.h" />
     <ClInclude Include="Graphics\Image.h" />
     <ClInclude Include="Graphics\IndexBuffer.h" />
     <ClInclude Include="Graphics\PipelineState.h" />
