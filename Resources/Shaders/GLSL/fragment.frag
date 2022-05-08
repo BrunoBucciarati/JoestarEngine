@@ -8,6 +8,6 @@ layout(set = 1, binding = 0) uniform sampler2D diffuse;
 
 void main()
 {
-    vec4 diff = texture(diffuse, TexCoords);
+    vec4 diff = textureLod(diffuse, TexCoords, 0.0);
     FragColor = diff;
 }
