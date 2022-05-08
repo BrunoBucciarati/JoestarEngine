@@ -111,7 +111,7 @@ namespace Joestar {
 	{
 		RenderPass* rp = JOJO_NEW(RenderPass, MEMORY_GFX_STRUCT);
 		rp->SetClear(true);
-		rp->SetLoadOp(AttachmentLoadOp::DONT_CARE);
+		rp->SetLoadOp(AttachmentLoadOp::CLEAR);
 		rp->SetStoreOp(AttachmentStoreOp::STORE);
 		CreateRenderPass(rp);
 	}

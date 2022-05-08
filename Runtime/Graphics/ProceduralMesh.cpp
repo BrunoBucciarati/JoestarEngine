@@ -44,8 +44,8 @@ namespace Joestar {
                 indices.Push((y + 1) * (X_SEGMENTS + 1) + x);
                 indices.Push((y + 1) * (X_SEGMENTS + 1) + x + 1);
                 indices.Push(y * (X_SEGMENTS + 1) + x);
-                indices.Push(y * (X_SEGMENTS + 1) + x + 1);
                 indices.Push((y + 1) * (X_SEGMENTS + 1) + x + 1);
+                indices.Push(y * (X_SEGMENTS + 1) + x + 1);
             }
         }
 
