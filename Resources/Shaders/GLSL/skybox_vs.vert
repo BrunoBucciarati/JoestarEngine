@@ -12,6 +12,7 @@ layout(location = 0) out vec3 aTexCoords;
 void main()
 {
     aTexCoords = aPosition;
+    aTexCoords.y = -aTexCoords.y;
     mat4 view1 = view;
     view1[3].xyz = vec3(0.0);
     gl_Position = proj * view1 * vec4(aPosition * 1.0, 1.0);
