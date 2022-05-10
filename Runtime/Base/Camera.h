@@ -59,18 +59,18 @@ namespace Joestar {
         void UpdateCameraVectors();
         // camera Attributes
         Vector3f mPosition{ Vector3f(0.0, 1.0, -3.0)};
-        Vector3f mFront{ Vector3f::Front };
-        Vector3f mUp{ Vector3f::Up };
+        Vector3f mFront{ Normalize(Vector3f(0.0, -0.3, 1.0)) };
+        Vector3f mUp{ Normalize(Vector3f(0.0, 0.3, -1.0)) };
         Vector3f mRight{ Vector3f::Right};
         Vector3f mWorldUp{Vector3f::Up};
         Matrix4x4f mView;
         Matrix4x4f mProjection;
         // euler Angles
-        float mYaw{-90.0f};
-        float mPitch{-30.0f};
+        //float mYaw{-90.0f};
+        //float mPitch{-30.0f};
         // camera options
-        float mSpeed{10.f};
-        float mSensitivity{1.f};
+        float mSpeed{30.f};
+        float mSensitivity{0.01f};
         float mZoom{60.f};
         float mAspect{45.f};
         float mNearClip{.1f};

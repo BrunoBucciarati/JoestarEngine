@@ -58,8 +58,6 @@ namespace Joestar {
             sbRenderer->SetShader("skybox_ps", ShaderStage::PS);
             sbRenderer->SetMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere());
 
-            mSkyboxGO->SetScale(100.F);
-
             Vector<String> faces;
             faces.Push("right.jpg");
             faces.Push("left.jpg");
@@ -75,12 +73,6 @@ namespace Joestar {
             skyboxMat->SetDepthCompareOp(CompareOp::LESS_EQUAL);
         }
 
-        //GameObject* tri = NEW_OBJECT(GameObject);
-        //gameObjects.Push(tri);
-        //MeshRenderer* tr = tri->GetComponent<MeshRenderer>();
-        //tr->SetMesh(GetSubsystem<ProceduralMesh>()->GetTriangle());
-        //tr->SetShader("triangle", ShaderStage::VS);
-        //tr->SetShader("triangle", ShaderStage::PS);
         mMainRenderPass = JOJO_NEW(RenderPass, MEMORY_GFX_STRUCT);
         mMainRenderPass->SetLoadOp(AttachmentLoadOp::DONT_CARE);
         mMainRenderPass->SetStoreOp(AttachmentStoreOp::DONT_CARE);

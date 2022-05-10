@@ -23,7 +23,7 @@ namespace Joestar {
 		InitSubSystem(GlobalConfig, gContext)
 		U32 GFX_API = GFX_API_VULKAN;
 		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_GFX_API, GFX_API);
-		U32 width = 800, height = 600;
+		U32 width = 1280, height = 720;
 		InitSubSystem(HID, gContext)
 		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_WIDTH, width);
 		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_WINDOW_HEIGHT, height);

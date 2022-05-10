@@ -34,7 +34,7 @@ namespace Joestar {
                 vertices.Push(1.F);
                 vertices.Push(1.F);
                 vertices.Push(xSegment);
-                vertices.Push(ySegment);
+                vertices.Push(1.0 - ySegment);
             }
         }
 
@@ -96,7 +96,7 @@ namespace Joestar {
                 vertices.Push(.7F);
                 vertices.Push(.7F);
                 vertices.Push(xSegment);
-                vertices.Push(ySegment);
+                vertices.Push(1.F - ySegment);
             }
         }
 
@@ -105,11 +105,11 @@ namespace Joestar {
             for (U32 x = 0; x < X_SEGMENTS - 1; ++x)
             {
                 indices.Push(y * X_SEGMENTS + x);
-                indices.Push((y + 1) * X_SEGMENTS + x);
-                indices.Push(y * X_SEGMENTS + x + 1);
                 indices.Push(y * X_SEGMENTS + x + 1);
                 indices.Push((y + 1) * X_SEGMENTS + x);
+                indices.Push(y * X_SEGMENTS + x + 1);
                 indices.Push((y + 1) * X_SEGMENTS + x + 1);
+                indices.Push((y + 1) * X_SEGMENTS + x);
             }
         }
 

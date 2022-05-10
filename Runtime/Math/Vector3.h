@@ -43,6 +43,7 @@ namespace Joestar {
 		static const Vector3f	Zero;
 		static const Vector3f	One;
 		static const Vector3f	Up;
+		static const Vector3f	Down;
 		static const Vector3f	Right;
 		static const Vector3f	Left;
 		static const Vector3f	Front;
