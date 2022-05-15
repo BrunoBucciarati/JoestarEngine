@@ -37,6 +37,22 @@ namespace Joestar {
 		{
 			mInputFlag |= (1 << bit);
 		}
+		void SetMouseRightDown(bool flag)
+		{
+			mMouseRightDown = flag;
+		}
+		void SetMouseLeftDown(bool flag)
+		{
+			mMouseLeftDown = flag;
+		}
+		bool IsMouseLeftDown()
+		{
+			return mMouseLeftDown;
+		}
+		bool IsMouseRightDown()
+		{
+			return mMouseRightDown;
+		}
 		void ClearInput()
 		{
 			mInputFlag = 0;
@@ -49,5 +65,7 @@ namespace Joestar {
 		U32 mInputFlag;
 		F32 mouseOffset[2];
 		F32 mouseScroll[2];
+		bool mMouseRightDown;
+		bool mMouseLeftDown;
 	};
 }

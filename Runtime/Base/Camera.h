@@ -58,9 +58,9 @@ namespace Joestar {
         // calculates the front vector from the Camera's (updated) Euler Angles
         void UpdateCameraVectors();
         // camera Attributes
-        Vector3f mPosition{ Vector3f(0.0, 1.0, -3.0)};
-        Vector3f mFront{ Normalize(Vector3f(0.0, -0.3, 1.0)) };
-        Vector3f mUp{ Normalize(Vector3f(0.0, 0.3, -1.0)) };
+        Vector3f mPosition{ Vector3f(0.0, 1.0, 3.0)};
+        Vector3f mFront{ Normalize(Vector3f(0.0, 0.3, 1.0)) };
+        Vector3f mUp{ Normalize(Vector3f(0.0, 1.0, -0.3)) };
         Vector3f mRight{ Vector3f::Right};
         Vector3f mWorldUp{Vector3f::Up};
         Matrix4x4f mView;

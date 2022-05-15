@@ -29,7 +29,8 @@ namespace Joestar {
     }
 
     const Vector<const char*> DeviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        VK_KHR_MAINTENANCE_1_EXTENSION_NAME
         //VK_USE_PLATFORM_WIN32_KHR
     };
     const Vector<const char*> ValidationLayers = {
@@ -1152,6 +1153,16 @@ namespace Joestar {
     {
         mCommandBuffers[handle]->SetIndex(mImageIndex);
         mCommandBuffers[handle]->Submit();
+    }
+    void RenderAPIVK::CBSetViewport(GPUResourceHandle handle, const Viewport& vp)
+    {
+        VkViewport viewport{};
+
+        viewport.width = vp.rect.width;
+        viewport.height = -vp.rect.height;
+        viewport.x = 0;
+        viewport.y = vp.rect.height;
+        vkCmdSetViewport(GetFrameCommandBuffer(handle), 0, 1, &viewport);
     }
 
     void RenderAPIVK::BeginFrame(U32 frameIndex)

@@ -65,6 +65,7 @@ namespace Joestar {
         viewport.x = vp.rect.x;
         viewport.y = vp.rect.y;
         viewport.width = vp.rect.width;
+        //Flip Y
         viewport.height = vp.rect.height;
         viewport.minDepth = vp.minDepth;
         viewport.maxDepth = vp.maxDepth;

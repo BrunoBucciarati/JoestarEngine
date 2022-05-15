@@ -73,6 +73,7 @@ namespace Joestar {
 		void CBCopyBufferToImage(GPUResourceHandle handle, GPUResourceHandle, ImageLayout) override;
 		void CBTransitionImageLayout(GPUResourceHandle handle, GPUResourceHandle, ImageLayout, ImageLayout, U32) override;
 		void CBSubmit(GPUResourceHandle handle) override;
+		void CBSetViewport(GPUResourceHandle handle, const Viewport& vp) override;
 	private:
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CreateRenderPass(RenderPassVK* rp, GPURenderPassCreateInfo& createInfo);

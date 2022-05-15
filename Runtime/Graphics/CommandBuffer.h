@@ -17,6 +17,7 @@ namespace Joestar {
 		PushConstants,
 		Draw,
 		DrawIndexed,
+		SetViewport,
 		CopyBuffer,
 		CopyBufferToImage,
 		TransitionImageLayout,
@@ -56,7 +57,6 @@ namespace Joestar {
 	class CommandBuffer : public GPUResource
 	{
 		GET_SET_STATEMENT(GPUQueue, Queue);
-		GET_SET_STATEMENT(Viewport*, Viewport);
 		GET_SET_STATEMENT(DescriptorSets*, PassDescriptorSets);
 		GET_SET_STATEMENT(CommandPool*, Pool);
 	public:
@@ -73,6 +73,7 @@ namespace Joestar {
 			return BindDescriptorSets(U32(freq), pipelineLayout, sets);
 		}
 		void DrawIndexed(U32 num, U32 indexStart = 0, U32 vertStart = 0);
+		void SetViewport(Viewport* vp);
 		void Draw(U32 num, U32 vertStart = 0);
 		void CopyBuffer(CopyBufferType, GPUResourceHandle);
 		void CopyBufferToImage(GPUResourceHandle, ImageLayout);
@@ -90,11 +91,15 @@ namespace Joestar {
 		{
 			return bRecording;
 		}
-
+		Viewport* GetViewport()
+		{
+			return mViewport;
+		}
 	private:
 		RenderPass* mPass;
 		CommandEncoder mEncoder;
 		GraphicsPipelineState* mGraphicsPSO;
+		Viewport* mViewport;
 		bool bRecording{ false };
 	};
 }

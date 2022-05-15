@@ -2,9 +2,8 @@
 #include "../Math/Quaternion.h"
 
 namespace Joestar {
-    Camera::~Camera() {
-
-    }
+    Camera::~Camera()
+    {}
 	void Camera::ProcessHID(HID* hid, float deltaTime)
     {
         float velocity = mSpeed * deltaTime;
@@ -30,26 +29,29 @@ namespace Joestar {
             dirty = true;
         }
 
-        float* offset = hid->GetMouseOffset();
-        if (offset[0] != 0.f || offset[1] != 0.f)
+        if (hid->IsMouseRightDown())
         {
-            F32 offsetX = offset[0] * mSensitivity;
-            //LOG("offsetY: %.2f\n", offset[1]);
-            F32 offsetY = offset[1] * mSensitivity;
-            //Quaternionf front = FromToQuaternion(Vector3f::Front, mFront);
-            //Vector3f right = Cross(Vector3f::Up, mFront);
-            //Vector3f up = Cross(mFront, right);
-            //Quaternionf rotx = Quaternionf::identity();// AxisAngleToQuaternion(Vector3f::Up, offsetX);
-            Quaternionf rotx = AxisAngleToQuaternion(Vector3f::Up, offsetX);
-            Quaternionf roty = AxisAngleToQuaternion(mRight, offsetY);
-            mFront = Normalize(RotateVectorByQuat(rotx * roty, mFront));
-            mUp = RotateVectorByQuat(rotx * roty, mUp);
-            mRight = RotateVectorByQuat(rotx, mRight);
+            float* offset = hid->GetMouseOffset();
+            if (offset[0] != 0.f || offset[1] != 0.f)
+            {
+                F32 offsetX = offset[0] * mSensitivity;
+                //LOG("offsetY: %.2f\n", offset[1]);
+                F32 offsetY = offset[1] * mSensitivity;
+                //Quaternionf front = FromToQuaternion(Vector3f::Front, mFront);
+                //Vector3f right = Cross(Vector3f::Up, mFront);
+                //Vector3f up = Cross(mFront, right);
+                //Quaternionf rotx = Quaternionf::identity();// AxisAngleToQuaternion(Vector3f::Up, offsetX);
+                Quaternionf rotx = AxisAngleToQuaternion(Vector3f::Up, offsetX);
+                Quaternionf roty = AxisAngleToQuaternion(mRight, -offsetY);
+                mFront = Normalize(RotateVectorByQuat(rotx * roty, mFront));
+                mUp = RotateVectorByQuat(rotx * roty, mUp);
+                mRight = RotateVectorByQuat(rotx, mRight);
 
-            Vector3f tmp = Normalize(Cross(mFront, mUp));
-            mUp = Normalize(Cross(tmp, mFront));
-            mRight = Normalize(Cross(mUp, mFront));
-            dirty = true;
+                Vector3f tmp = Normalize(Cross(mFront, mUp));
+                mUp = Normalize(Cross(tmp, mFront));
+                mRight = Normalize(Cross(mUp, mFront));
+                dirty = true;
+            }
         }
 
         float* scroll = hid->GetMouseScroll();
@@ -78,8 +80,10 @@ namespace Joestar {
         //mFront = Normalize(front);
         // also re-calculate the Right and Up vector
         //mRight = Normalize(Cross(mFront, mWorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-        mUp = Normalize(Cross(mFront, mRight));
+        //mUp = Normalize(Cross(mFront, mRight));
         mView.LookAt(mPosition, mFront, mRight, mUp);
+        Vector4f testP = mView.MultiplyVector4(Vector4f(0.F, 0.F, 0.F, 1.F));
+        Vector4f testP1 = mProjection.MultiplyVector4(testP);
         LOG("Up: %.2f, %.2f, %.2f\n", mUp.x, mUp.y, mUp.z);
         LOG("Right: %.2f, %.2f, %.2f\n", mRight.x, mRight.y, mRight.z);
         LOG("Front: %.2f, %.2f, %.2f\n", mFront.x, mFront.y, mFront.z);

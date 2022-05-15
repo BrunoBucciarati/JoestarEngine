@@ -26,6 +26,7 @@ namespace Joestar {
 		Get(0, 0) = right.x;		Get(0, 1) = up.x;		Get(0, 2) = dir.x;		Get(0, 3) = -Dot(pos, right);
 		Get(1, 0) = right.y;		Get(1, 1) = up.y;		Get(1, 2) = dir.y;		Get(1, 3) = -Dot(pos, up);
 		Get(2, 0) = -right.z;		Get(2, 1) = -up.z;		Get(2, 2) = -dir.z;		Get(2, 3) = Dot(pos, dir);
+		//Get(2, 0) = -right.z;		Get(2, 1) = -up.z;		Get(2, 2) = -dir.z;		Get(2, 3) = Dot(pos, dir);
 		Get(3, 0) = 0.0;			Get(3, 1) = 0.0;		Get(3, 2) = 0.0;		Get(3, 3) = 1.0;
 
 		return *this;
@@ -42,10 +43,15 @@ namespace Joestar {
 		cotangent = cos(radians) / sin(radians);
 		deltaZ = zNear - zFar;
 
+		//Get(0, 0) = cotangent / aspect;	Get(0, 1) = 0.0F;      Get(0, 2) = 0.0F;                    Get(0, 3) = 0.0F;
+		//Get(1, 0) = 0.0F;               Get(1, 1) = -cotangent; Get(1, 2) = 0.0F;                    Get(1, 3) = 0.0F;
+		//Get(2, 0) = 0.0F;               Get(2, 1) = 0.0F;      Get(2, 2) = (zFar + zNear) / deltaZ; Get(2, 3) = 2.0F * zNear * zFar / deltaZ;
+		//Get(3, 0) = 0.0F;               Get(3, 1) = 0.0F;      Get(3, 2) = -1.0F;                   Get(3, 3) = 0.0F;
+
 		Get(0, 0) = cotangent / aspect;	Get(0, 1) = 0.0F;      Get(0, 2) = 0.0F;                    Get(0, 3) = 0.0F;
 		Get(1, 0) = 0.0F;               Get(1, 1) = cotangent; Get(1, 2) = 0.0F;                    Get(1, 3) = 0.0F;
-		Get(2, 0) = 0.0F;               Get(2, 1) = 0.0F;      Get(2, 2) = (zFar + zNear) / deltaZ; Get(2, 3) = 2.0F * zNear * zFar / deltaZ;
-		Get(3, 0) = 0.0F;               Get(3, 1) = 0.0F;      Get(3, 2) = -1.0F;                   Get(3, 3) = 0.0F;
+		Get(2, 0) = 0.0F;               Get(2, 1) = 0.0F;      Get(2, 2) = -zFar / deltaZ;			Get(2, 3) = zNear * zFar / deltaZ;
+		Get(3, 0) = 0.0F;               Get(3, 1) = 0.0F;      Get(3, 2) = 1.0F;                   Get(3, 3) = 0.0F;
 
 		return *this;
 	}

@@ -190,6 +190,13 @@ namespace Joestar {
 				CBSubmit(cbHandle);
 				break;
 			}
+			CASECMD(CommandBufferCMD::SetViewport)
+			{
+				Viewport vp;
+				encoder.ReadBuffer(vp);
+				CBSetViewport(cbHandle, vp);
+				break;
+			}
 			default:
 			{
 				LOGERROR("Unknown CommandBuffer CMD: %d", cmd);

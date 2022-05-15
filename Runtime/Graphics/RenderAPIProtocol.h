@@ -69,6 +69,7 @@ namespace Joestar
 		virtual void CBCopyBufferToImage(GPUResourceHandle handle, GPUResourceHandle, ImageLayout) = 0;
 		virtual void CBTransitionImageLayout(GPUResourceHandle handle, GPUResourceHandle, ImageLayout, ImageLayout, U32) = 0;
 		virtual void CBSubmit(GPUResourceHandle handle) = 0;
+		virtual void CBSetViewport(GPUResourceHandle handle, const Viewport& vp) = 0;
 		virtual void BeginFrame(U32 frameIndex)
 		{
 			SetFrame(frameIndex);

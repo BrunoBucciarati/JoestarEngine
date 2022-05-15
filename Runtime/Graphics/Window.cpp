@@ -17,17 +17,17 @@ namespace Joestar {
         U32 yPos = 0;   // vertical position 
         switch (uMsg)
         {
-        //case WM_CHAR:
-            //char szChar[20];
-            ////sprintf(szChar,"char code is %d",wParam);
-            //MessageBox(hwnd, TEXT("char"), TEXT("char"), 0);
-            //break;
         case WM_LBUTTONDOWN:
-            //MessageBox(hwnd, TEXT("mouse clicked"), TEXT("message"), 0);
-            //HDC hdc;
-            //hdc = GetDC(hwnd);
-            //TextOut(hdc, 0, 50, TEXT("µã»÷"), strlen("µã»÷"));
-            //ReleaseDC(hwnd,hdc);
+            HIDSystem->SetMouseLeftDown(true);
+            break;
+        case WM_LBUTTONUP:
+            HIDSystem->SetMouseRightDown(false);
+            break;
+        case WM_RBUTTONDOWN:
+            HIDSystem->SetMouseRightDown(true);
+            break;
+        case WM_RBUTTONUP:
+            HIDSystem->SetMouseRightDown(false);
             break;
         case WM_PAINT:
             HDC hDC;

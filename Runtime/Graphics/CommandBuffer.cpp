@@ -72,6 +72,12 @@ namespace Joestar
 		mEncoder.WriteBuffer(indexStart);
 		mEncoder.WriteBuffer(vertStart);
 	}
+	void CommandBuffer::SetViewport(Viewport* vp)
+	{
+		mEncoder.WriteCommand(CommandBufferCMD::SetViewport);
+		mEncoder.WriteBuffer(*vp);
+		mViewport = vp;
+	}
 
 	void CommandBuffer::CopyBuffer(CopyBufferType type, GPUResourceHandle handle)
 	{
