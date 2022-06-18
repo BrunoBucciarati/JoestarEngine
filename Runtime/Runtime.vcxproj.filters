@@ -72,9 +72,6 @@
     <ClCompile Include="Graphics\Mesh.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Base\Camera.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="IO\HID.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -213,6 +210,9 @@
     <ClCompile Include="Graphics\GPUImage.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Camera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -246,9 +246,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Component\Renderer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Base\Camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\RenderCommand.h">
@@ -498,6 +495,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\GraphicsDebugs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

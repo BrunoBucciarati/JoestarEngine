@@ -10,7 +10,7 @@
 #include "../Component/MeshRenderer.h"
 #include "../IO/MemoryManager.h"
 #include "../Misc/TimeManager.h"
-#include "../Base/Camera.h"
+#include "../Graphics/Camera.h"
 
 namespace Joestar {
     const U32 SH_LEVEL = 1;
@@ -32,7 +32,7 @@ namespace Joestar {
 
         //lightBatch = NEW_OBJECT(LightBatch);
 
-        //CreateLights();
+        CreateLights();
 
         //CreateCompute();
 
@@ -155,10 +155,11 @@ namespace Joestar {
 
     void Scene::CreateLights()
     {
-        //mainLight = NEW_OBJECT(DirectionalLight);
-        //mainLight->SetDirection(0.0, -1.0, 0.0);
-        //mainLight->SetPosition(0.0, 3.0, 0.0);
-        //mainLight->SetIntensity(20.f);
+        mMainLightNode = NEW_OBJECT(GameObject);
+        mMainLight = mMainLightNode->GetComponent<DirectionalLight>();
+        mMainLight->SetDirection(0.0, -1.0, 0.0);
+        mMainLight->SetPosition(0.0, 3.0, 0.0);
+        mMainLight->SetIntensity(20.f);
 
         //Vector<Vector3f> lightPos;
         //lightPos.Push({ 5.0, 4.0, 4.0 });

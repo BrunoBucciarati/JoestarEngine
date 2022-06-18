@@ -45,7 +45,7 @@ namespace Joestar {
 			return GetTransform()->GetPosition();
 		}
 
-		void SetPosition(Vector3f& v)
+		void SetPosition(const Vector3f& v)
 		{
 			GetTransform()->SetPosition(v);
 		}
@@ -61,7 +61,7 @@ namespace Joestar {
 			return GetTransform()->GetRotation();
 		}
 
-		void SetRotation(Quaternionf& q)
+		void SetRotation(const Quaternionf& q)
 		{
 			GetTransform()->SetRotation(q);
 		}

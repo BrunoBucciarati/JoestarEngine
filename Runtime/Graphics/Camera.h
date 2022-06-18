@@ -4,18 +4,19 @@
 #include "../Math/Matrix4x4.h"
 #include "../IO/HID.h"
 #include "../IO/Log.h"
-#include "../Core/Object.h"
+#include "../Component/Component.h"
+#include "../Base/GameObject.h"
 #include "../Misc/GlobalConfig.h"
 
 namespace Joestar {
 
     // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-    class Camera : public Object
+    class Camera : public Component
     {
-        REGISTER_OBJECT(Camera, Object)
+        REGISTER_OBJECT(Camera, Component)
     public:
         // constructor with vectors
-        Camera(EngineContext* ctx) : Super(ctx) 
+        Camera(EngineContext* ctx, GameObject* go) : Super(ctx, go)
         {
             mNearClip = 0.1f;
             mFarClip = 1000.0f;
@@ -37,9 +38,9 @@ namespace Joestar {
             return &mProjection;
         }
 
-        Vector3f& GetPosition()
+        Vector3f GetPosition()
         {
-            return mPosition;
+            return mGameObject->GetPosition();
         }
 
         void SetOrthographic(float orthographicSize)
@@ -54,11 +55,20 @@ namespace Joestar {
 
         void ProcessHID(HID* hid, float dt);
 
+        void SetPosition(const Vector3f& pos)
+        {
+            mGameObject->SetPosition(pos);
+        }
+        void SetFront(const Vector3f& dir)
+        {
+            mFront = dir;
+        }
+        void SetWorldRotation(const Quaternionf& quat);
+
     private:
         // calculates the front vector from the Camera's (updated) Euler Angles
         void UpdateCameraVectors();
         // camera Attributes
-        Vector3f mPosition{ Vector3f(0.0, 1.0, 3.0)};
         Vector3f mFront{ Normalize(Vector3f(0.0, 0.3, 1.0)) };
         Vector3f mUp{ Normalize(Vector3f(0.0, 1.0, -0.3)) };
         Vector3f mRight{ Vector3f::Right};

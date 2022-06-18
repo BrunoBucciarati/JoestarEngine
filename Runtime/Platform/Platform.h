@@ -14,4 +14,5 @@ const U64 U64_MAX = UINT64_MAX;
 typedef float F32;
 typedef double F64;
 #define INDEX_NONE -1
+#define M_EPSILON 1e-6
 }

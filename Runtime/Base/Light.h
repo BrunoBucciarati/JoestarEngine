@@ -1,5 +1,6 @@
 #pragma once
-#include "../Core/Object.h"
+#include "../Component/Component.h"
+#include "../Base/GameObject.h"
 #include "../Math/Vector3.h"
 #include "../Math/Matrix4x4.h"
 #include "../Graphics/Material.h"
@@ -10,45 +11,83 @@ namespace Joestar {
 		POINT_LIGHT,
 		SPOT_LIGHT
 	};
-	class Light : public Object {
-		REGISTER_OBJECT(Light, Object)
+	class Light : public Component
+	{
+		REGISTER_OBJECT(Light, Component)
 	public:
-		explicit Light(EngineContext* ctx) : Super(ctx), mat(Matrix4x4f::identity) {
-			position.Set(0.f, 0.f, 0.f);
+		explicit Light(EngineContext* ctx, GameObject* go) : Super(ctx, go)
+		{
 		}
 		virtual void Init() {}
-		Vector3f& GetDirection() { return direction; }
-		void SetDirection(Vector3f& dir) { direction = dir; UpdateMatrix(); }
-		void SetDirection(float x, float y, float z) { direction.Set(x, y, z); UpdateMatrix();}
-		Vector3f& GetPosition() { return position; }
-		void SetPosition(Vector3f& pos) { position = pos;  UpdateMatrix();}
-		void SetPosition(float x, float y, float z) { position.Set(x, y, z); UpdateMatrix();}
-		float GetIntensity() { return intensity; }
-		void UpdateMatrix();
-		Matrix4x4f& GetModelMatrix() { return mat; }
-		void SetIntensity(float i) { intensity = i; intensityMixColor = i * lightColor; }
-		Vector3f& GetColor() { return lightColor; }
-		Vector3f& GetIntensityMixColor() { return intensityMixColor; }
-		void SetColor(Vector3f& c) { lightColor = c; intensityMixColor = intensity * lightColor;}
-		void SetColor(float x, float y, float z) {
-			lightColor.Set(x, y, z);
-			intensityMixColor = intensity * lightColor;
+		void SetDirection(Vector3f& dir)
+		{
+			Quaternionf q;
+			q.FromLookRotation(dir);
+			mGameObject->SetRotation(q);
 		}
-		LightType& GetType() { return lightType; }
+		void SetDirection(float x, float y, float z)
+		{
+			Vector3f v(x, y, z);
+			SetDirection(v);
+		}
+		Vector3f GetPosition()
+		{
+			return mGameObject->GetPosition();
+		}
+		void SetPosition(Vector3f& pos) {
+			mGameObject->SetPosition(pos);
+		}
+		void SetPosition(float x, float y, float z)
+		{
+			mGameObject->SetPosition(x, y, z);
+		}
+		float GetIntensity()
+		{
+			return mIntensity;
+		}
+		void SetIntensity(float i)
+		{
+			mIntensity = i; 
+			mFinalColor = i * mColor;
+		}
+		Vector3f& GetColor()
+		{
+			return mColor;
+		}
+		Vector3f& GetIntensityMixColor()
+		{
+			return mFinalColor;
+		}
+		void SetColor(Vector3f& c)
+		{
+			mColor = c;
+			mFinalColor = mIntensity * mColor;
+		}
+		void SetColor(float x, float y, float z)
+		{
+			mColor.Set(x, y, z);
+			mFinalColor = mIntensity * mColor;
+		}
+		LightType& GetType()
+		{
+			return mLightType;
+		}
+		Quaternionf GetWorldRotation()
+		{
+			return mGameObject->GetRotation();
+		}
 	protected:
-		float intensity = 1.0f;
-		LightType lightType;
-		Vector3f direction = Vector3f::Zero;
-		Vector3f lightColor = Vector3f::One;
-		Vector3f intensityMixColor = Vector3f::One;
-		Vector3f position = Vector3f::Zero;
-		Matrix4x4f mat;
+		float mIntensity = 1.0f;
+		LightType mLightType;
+		Vector3f mColor = Vector3f::One;
+		Vector3f mFinalColor = Vector3f::One;
 	};
 
 	class DirectionalLight : public Light {
 		REGISTER_OBJECT(DirectionalLight, Light)
-		explicit DirectionalLight(EngineContext* ctx) : Super(ctx) {
-			lightType = DIRECTIONAL_LIGHT;
+		explicit DirectionalLight(EngineContext* ctx, GameObject* go) : Super(ctx, go)
+		{
+			mLightType = DIRECTIONAL_LIGHT;
 		}
 	public:
 		void Init();
@@ -56,8 +95,9 @@ namespace Joestar {
 
 	class PointLight : public Light {
 		REGISTER_OBJECT(PointLight, Light)
-		explicit PointLight(EngineContext* ctx) : Super(ctx) {
-			lightType = POINT_LIGHT;
+		explicit PointLight(EngineContext* ctx, GameObject* go) : Super(ctx, go)
+		{
+			mLightType = POINT_LIGHT;
 		}
 	public:
 		void Init();
@@ -65,14 +105,16 @@ namespace Joestar {
 
 	class SpotLight : public Light {
 		REGISTER_OBJECT(SpotLight, Light)
-		explicit SpotLight(EngineContext* ctx) : Super(ctx) {
-			lightType = SPOT_LIGHT;
+		explicit SpotLight(EngineContext* ctx, GameObject* go) : Super(ctx, go)
+		{
+			mLightType = SPOT_LIGHT;
 		}
 	public:
 		void Init();
 	};
 
-	class LightBatch : public Object {
+	class LightBatch : public Object
+	{
 		REGISTER_OBJECT(LightBatch, Object)
 		explicit LightBatch(EngineContext* ctx);
 		void SetLights(Vector<Light*>& ls);

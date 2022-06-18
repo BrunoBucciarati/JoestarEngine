@@ -2,14 +2,15 @@
 #include "../Graphics/ProceduralMesh.h"
 #include "../Container/Vector.h"
 namespace Joestar {
-	void Light::UpdateMatrix() {
-		if (direction != Vector3f::Zero)
-			mat.SetFromToRotation(Vector3f::Front, direction);
-		mat.SetPosition(position);
+	//void Light::UpdateMatrix()
+	//{
+	//	if (direction != Vector3f::Zero)
+	//		mat.SetFromToRotation(Vector3f::Front, direction);
+	//	mat.SetPosition(position);
 
-		//light should be small
-		mat.SetScale(0.2);
-	}
+	//	//light should be small
+	//	mat.SetScale(0.2);
+	//}
 	Light::~Light() {}
 	void DirectionalLight::Init() {
 	}

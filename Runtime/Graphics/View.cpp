@@ -1,5 +1,5 @@
 #include "View.h"
-#include "../Base/Camera.h"
+#include "../Graphics/Camera.h"
 #include "../Scene/Scene.h"
 #include "GraphicDefines.h"
 #include "SwapChain.h"
@@ -11,7 +11,10 @@ namespace Joestar
 {
 	View::View(EngineContext* ctx) : Super(ctx)
 	{
-		mCamera = NEW_OBJECT(Camera);
+		mShadowCameraNode = NEW_OBJECT(GameObject);
+		mCameraNode = NEW_OBJECT(GameObject);
+		mCameraNode->SetPosition(0.0, 1.0, 3.0);
+		mCamera = mCameraNode->GetComponent<Camera>();
 		mScene = NEW_OBJECT(Scene);
 		mGraphics = GetSubsystem<Graphics>();
 		CreatePassDescriptor();
@@ -84,16 +87,11 @@ namespace Joestar
 				bRecord = true;
 			}
 		}
-		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mCamera->GetViewMatrix());
-		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mCamera->GetProjectionMatrix());
-		mGraphics->SetUniformBuffer(mUniformBuffers[0]);
-		mGraphics->UpdateDescriptorSets(mDescriptorSets);
 		CommandBuffer* cb = mGraphics->GetMainCommandBuffer();
 		cb->Begin();
 		cb->SetViewport(&mViewport);
 		//if (bRecord)
-		RenderScene(cb);
-		RenderSkybox(cb);
+		ForwardRender(cb);
 		cb->EndRenderPass(mGraphics->GetMainRenderPass());
 		//cb->End();
 		return bRecord;
@@ -120,5 +118,25 @@ namespace Joestar
 		DescriptorSetLayoutBinding::Member member;
 		U32 binding = mDescriptorSetLayout->GetUniformMemberAndBinding((U32)uniform, member);
 		mUniformBuffers[binding]->SetData(member.offset, member.size, data);
+	}
+
+	void View::ForwardRender(CommandBuffer* cb)
+	{
+		//Shadow Pass
+		if (!mShadowCamera)
+		{
+			mShadowCamera = mShadowCameraNode->GetComponent<Camera>();
+		}
+		Light* mainLight = mScene->GetMainLight();
+		mShadowCamera->SetPosition(mainLight->GetPosition());
+		mShadowCamera->SetOrthographic(100.F);
+		mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
+		//Scene Pass
+		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mCamera->GetViewMatrix());
+		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mCamera->GetProjectionMatrix());
+		mGraphics->SetUniformBuffer(mUniformBuffers[0]);
+		mGraphics->UpdateDescriptorSets(mDescriptorSets);
+		RenderScene(cb);
+		RenderSkybox(cb);
 	}
 }

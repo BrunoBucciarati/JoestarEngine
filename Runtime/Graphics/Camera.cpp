@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "../Math/Quaternion.h"
+#include "../Base/GameObject.h"
 
 namespace Joestar {
     Camera::~Camera()
@@ -8,24 +9,25 @@ namespace Joestar {
     {
         float velocity = mSpeed * deltaTime;
         bool dirty = false;
+        Vector3f pos = GetPosition();
         if (hid->CheckKeyboardInput(KEY_W))
         {
-            mPosition += mFront * velocity;
+            pos += mFront * velocity;
             dirty = true;
         }
         if (hid->CheckKeyboardInput(KEY_S))
         {
-            mPosition -= mFront * velocity;
+            pos -= mFront * velocity;
             dirty = true;
         }
         if (hid->CheckKeyboardInput(KEY_A))
         {
-            mPosition -= mRight * velocity;
+            pos -= mRight * velocity;
             dirty = true;
         }
         if (hid->CheckKeyboardInput(KEY_D))
         {
-            mPosition += mRight * velocity;
+            pos += mRight * velocity;
             dirty = true;
         }
 
@@ -67,6 +69,7 @@ namespace Joestar {
 
         if (dirty)
         {
+            SetPosition(pos);
             UpdateCameraVectors();
         }
 	}
@@ -81,11 +84,21 @@ namespace Joestar {
         // also re-calculate the Right and Up vector
         //mRight = Normalize(Cross(mFront, mWorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         //mUp = Normalize(Cross(mFront, mRight));
-        mView.LookAt(mPosition, mFront, mRight, mUp);
+        mView.LookAt(GetPosition(), mFront, mRight, mUp);
         Vector4f testP = mView.MultiplyVector4(Vector4f(0.F, 0.F, 0.F, 1.F));
         Vector4f testP1 = mProjection.MultiplyVector4(testP);
         LOG("Up: %.2f, %.2f, %.2f\n", mUp.x, mUp.y, mUp.z);
         LOG("Right: %.2f, %.2f, %.2f\n", mRight.x, mRight.y, mRight.z);
         LOG("Front: %.2f, %.2f, %.2f\n", mFront.x, mFront.y, mFront.z);
+    }
+
+    void Camera::SetWorldRotation(const Quaternionf& quat)
+    {
+        mGameObject->SetRotation(quat);
+        Matrix3x3f mat = quat.RotationMatrix();
+        mRight = mat.GetColumn(0);
+        mUp = mat.GetColumn(1);
+        mFront = mat.GetColumn(2);
+        UpdateCameraVectors();
     }
 }

@@ -147,7 +147,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ThirdParty\SPIRV-Reflect\spirv_reflect.c" />
-    <ClCompile Include="Base\Camera.cpp" />
     <ClCompile Include="Base\GameObject.cpp" />
     <ClCompile Include="Base\StringHash.cpp" />
     <ClCompile Include="Component\Component.cpp" />
@@ -159,6 +158,7 @@
     <ClCompile Include="Core\EngineContext.cpp" />
     <ClCompile Include="Core\Object.cpp" />
     <ClCompile Include="Core\SubSystem.cpp" />
+    <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\CommandBuffer.cpp" />
     <ClCompile Include="Graphics\Descriptor.cpp" />
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
@@ -214,7 +214,6 @@
     <ClCompile Include="Misc\GlobalConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Base\Camera.h" />
     <ClInclude Include="Base\GameObject.h" />
     <ClInclude Include="Base\StringHash.h" />
     <ClInclude Include="Base\Light.h" />
@@ -241,6 +240,7 @@
     <ClInclude Include="Core\Platform.h" />
     <ClInclude Include="Core\RefCount.h" />
     <ClInclude Include="Core\SubSystem.h" />
+    <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\CommandBuffer.h" />
     <ClInclude Include="Graphics\Descriptor.h" />
     <ClInclude Include="Graphics\FrameBuffer.h" />

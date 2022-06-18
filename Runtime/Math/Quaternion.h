@@ -94,6 +94,21 @@ namespace Joestar {
 		}
 
 		static Quaternionf identity() { return Quaternionf(0.0F, 0.0F, 0.0F, 1.0F); }
+
+		/// Return whether is NaN.
+		bool IsNaN() const { return Joestar::IsNaN(w) || Joestar::IsNaN(x) || Joestar::IsNaN(y) || Joestar::IsNaN(z); }
+		/// Define from a direction to look in and an up direction. Return true if successful, or false if would result in a NaN, in which case the current value remains.
+		bool FromLookRotation(const Vector3f& direction, const Vector3f& up = Vector3f::Up);
+
+
+		void FromAxes(const Vector3f& xAxis, const Vector3f& yAxis, const Vector3f& zAxis);
+
+		void FromRotationMatrix(const Matrix3x3f& matrix);
+
+		void FromRotationTo(const Vector3f& start, const Vector3f& end);
+
+
+		Matrix3x3f RotationMatrix() const;
 	};
 
 	bool CompareApproximately(const Quaternionf& q1, const Quaternionf& q2, float epsilon = Vector3f::epsilon);

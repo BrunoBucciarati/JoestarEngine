@@ -22,7 +22,8 @@ namespace Joestar {
 			m_Data[i] = data[i];
 	}
 
-	Matrix4x4f& Matrix4x4f::LookAt(const Vector3f& pos, const Vector3f& dir, const Vector3f& right, const Vector3f& up) {
+	Matrix4x4f& Matrix4x4f::LookAt(const Vector3f& pos, const Vector3f& dir, const Vector3f& right, const Vector3f& up)
+	{
 		Get(0, 0) = right.x;		Get(0, 1) = up.x;		Get(0, 2) = dir.x;		Get(0, 3) = -Dot(pos, right);
 		Get(1, 0) = right.y;		Get(1, 1) = up.y;		Get(1, 2) = dir.y;		Get(1, 3) = -Dot(pos, up);
 		Get(2, 0) = -right.z;		Get(2, 1) = -up.z;		Get(2, 2) = -dir.z;		Get(2, 3) = Dot(pos, dir);

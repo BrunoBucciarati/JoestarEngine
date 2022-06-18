@@ -32,4 +32,12 @@ namespace Joestar {
 	/// Check whether two floating point values are equal within accuracy.
 	template <class T>
 	inline bool Equals(T lhs, T rhs, T tolerance) { return lhs + tolerance >= rhs && lhs - tolerance <= rhs; }
+
+	inline float Sqrtf(float a)
+	{
+		return sqrtf(a);
+	}
+
+	/// Check whether a floating point value is NaN.
+	template <class T> inline bool IsNaN(T value) { return isnan(value); }
 }

@@ -36,6 +36,34 @@ namespace Joestar {
 
 		Vector3f& Scale(const Vector3f& inV) { x *= inV.x; y *= inV.y; z *= inV.z; return *this; }
 
+		float LengthSquared()
+		{
+			return x * x + y * y + z * z;
+		}
+
+		float Length() const
+		{
+			return Sqrtf(x * x + y * y + z * z);
+		}
+
+		void Normalize()
+		{
+			float length = Length();
+			x /= length;
+			y /= length;
+			z /= length;
+		}
+
+		Vector3f Normalized() const
+		{
+			float length = Length();
+			return Vector3f(x / length, y / length, z / length);
+		}
+
+		bool IsNaN()
+		{
+			return Joestar::IsNaN(x) || Joestar::IsNaN(y) || Joestar::IsNaN(z);
+		}
 
 		static const float		epsilon;
 		static const float		infinity;

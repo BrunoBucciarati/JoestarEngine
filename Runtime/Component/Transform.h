@@ -13,17 +13,20 @@ namespace Joestar {
 		Vector3f GetLocalEulerAngles() { return QuaternionToEuler(rotation); }
 		Quaternionf& GetRotation() { return rotation; }
 		Matrix4x4f* GetAfflineTransform();
-		void SetPosition(Vector3f& v) {
+		void SetPosition(const Vector3f& v)
+		{
 			translate = v;
 			dirty = true;
 		}
-		void SetPosition(float x, float y, float z) {
+		void SetPosition(float x, float y, float z)
+		{
 			translate.Set(x, y, z);
 			dirty = true;
 		}
 		void SetScale(Vector3f& v) { scale = v; dirty = true;}
-		void SetRotation(Quaternionf& q) { rotation = q; dirty = true;}
-		void SetLocalEulerAngles(Vector3f& euler) {
+		void SetRotation(const Quaternionf& q) { rotation = q; dirty = true;}
+		void SetLocalEulerAngles(Vector3f& euler)
+		{
 			rotation = EulerToQuaternion(euler);
 			dirty = true;
 		}

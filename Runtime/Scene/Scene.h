@@ -24,10 +24,15 @@ namespace Joestar {
 		void CreateLights();
 		void CreateCompute();
 		void RenderShadowMap();
+		Light* GetMainLight()
+		{
+			return mMainLightNode->GetComponent<Light>();
+		}
 	private:
 		Vector<GameObject*> gameObjects;
 		Vector<Light*> lights;
-		Light* mainLight;
+		GameObject* mMainLightNode;
+		Light* mMainLight;
 		GameObject* selection;
 		Material* lightMat;
 		LightBatch* lightBatch;
