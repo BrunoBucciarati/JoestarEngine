@@ -6,11 +6,13 @@ namespace Joestar {
 	class Component : public Object {
 		REGISTER_OBJECT(Component, Object)
 	public:
-		explicit Component(EngineContext* ctx, GameObject* go) : Super(ctx), mGameObject(go) {
-
-		}
+		explicit Component(EngineContext* ctx, GameObject* go) : Super(ctx), mGameObject(go)
+		{}
 		virtual void Init() {}
-
+		GameObject* GetGameObject()
+		{
+			return mGameObject;
+		}
 	protected:
 		GameObject* mGameObject;
 	};

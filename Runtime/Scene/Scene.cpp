@@ -37,25 +37,22 @@ namespace Joestar {
         //CreateCompute();
 
         GameObject* plane = NEW_OBJECT(GameObject);
-        gameObjects.Push(plane);
+        mGameObjects.Push(plane);
         MeshRenderer* pr = plane->GetComponent<MeshRenderer>();
         Texture2D* texture = NEW_OBJECT(Texture2D);
         String path = "Textures/texture.jpg";
         Image image(mContext);
         image.Load(path);
         texture->SetImage(&image);
-
+        pr->SetMaterial("vertex", "fragment");
         pr->GetMaterial()->SetTexture(texture, 0);
         pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
-        pr->SetShader("vertex", ShaderStage::VS);
-        pr->SetShader("fragment", ShaderStage::PS);
 
         if (!mSkyboxGO) {
             mSkyboxGO = NEW_OBJECT(GameObject);
             MeshRenderer* sbRenderer = mSkyboxGO->GetComponent<MeshRenderer>();
-            Material* skyboxMat = sbRenderer->GetMaterial();
-            sbRenderer->SetShader("skybox_vs", ShaderStage::VS);
-            sbRenderer->SetShader("skybox_ps", ShaderStage::PS);
+            sbRenderer->SetMaterial("skybox_vs", "skybox_ps");
+            MaterialInstance* skyboxMat = sbRenderer->GetMaterial();
             sbRenderer->SetMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere());
 
             Vector<String> faces;
@@ -84,7 +81,7 @@ namespace Joestar {
 
     void Scene::RenderScene(CommandBuffer* cb)
     {
-        for (auto go : gameObjects) {
+        for (auto go : mGameObjects) {
             MeshRenderer* render = go->HasComponent<MeshRenderer>();
             if (render) {
                 render->Render(cb);
@@ -184,7 +181,7 @@ namespace Joestar {
 
     void Scene::Update(float dt)
     {
-        HID* hid = GetSubsystem<HID>();
+        //HID* hid = GetSubsystem<HID>();
         //camera->ProcessHID(hid, 0.01f);
 
         ////Test Selection Movement

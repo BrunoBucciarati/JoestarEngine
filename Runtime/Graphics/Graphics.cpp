@@ -445,6 +445,20 @@ namespace Joestar {
 		GetMainCmdList()->WriteBuffer<GPUUniformBufferCreateInfo>(createInfo);
 	}
 
+	bool Graphics::GetGraphicsPipelineState(GraphicsPipelineState* pso)
+	{
+		pso->Rehash();
+		for (auto& curPso : mGraphicsPSOs)
+		{
+			if (curPso->Hash() == pso->Hash())
+			{
+				pso->SetHandle(curPso->GetHandle());
+				return true;
+			}
+		}
+		return false;
+	}
+
 	void Graphics::CreateGraphicsPipelineState(GraphicsPipelineState* pso)
 	{
 		pso->Rehash();

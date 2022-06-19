@@ -6,7 +6,9 @@ namespace Joestar {
 	Material::Material(EngineContext* ctx) : Super(ctx),
 		mGraphics(GetSubsystem<Graphics>()),
 		mDescriptorSets(JOJO_NEW(DescriptorSets, MEMORY_GFX_STRUCT))
-	{}
+	{
+		mShaderProgram = NEW_OBJECT(ShaderProgram);
+	}
 	Material::~Material()
 	{}
 
@@ -156,5 +158,38 @@ namespace Joestar {
 	SharedPtr<DepthStencilState> Material::GetDepthStencilState() const
 	{
 		return mDepthStencilState;
+	}
+
+	void Material::SetShader(const String& name, ShaderStage stage)
+	{
+		mShaderProgram->SetShader(stage, name);
+		if (mShaderProgram->IsValid())
+		{
+			//设置逐材质的参数描述到材质中
+			auto layout = mShaderProgram->GetDescriptorSetLayout(UniformFrequency::OBJECT);
+			//如果存在逐Object的uniform，那么设置到renderer中
+			if (layout)
+			{
+				//mDescriptorSets->AllocFromLayout(layout);
+				//mGraphics->CreateDescriptorSets(mDescriptorSets);
+
+				//对描述符分配对应的UB
+				//mUniformBuffers.Clear();
+				//mUniformBuffers.Resize(mDescriptorSets->Size());
+				//for (U32 i = 0; i < layout->GetNumBindings(); ++i)
+				//{
+				//	DescriptorSetLayoutBinding* binding = layout->GetLayoutBinding(i);
+				//	mUniformBuffers[i] = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
+				//	mUniformBuffers[i]->AllocFromBinding(binding);
+				//	mUniformBuffers[i]->SetFrequency(UniformFrequency::OBJECT);
+				//	mGraphics->CreateUniformBuffer(mUniformBuffers[i]);
+				//	mDescriptorSets->SetBindingUniformBuffer(binding->binding, mUniformBuffers[i]);
+				//}
+			}
+
+			//设置逐材质的uniform
+			SetDescriptorSetLayout(mShaderProgram->GetDescriptorSetLayout(UniformFrequency::BATCH));
+			//mMaterial->AllocDescriptorSets();
+		}
 	}
 }

@@ -131,6 +131,10 @@ namespace Joestar
 		VertexType    format;
 		U32    offset;
 		String name;
+		U32 Hash()
+		{
+			return ((location * 31 + binding) * 31 + (U32)format) * 31 + offset;
+		}
 	};
 
 	struct InputBinding
@@ -138,5 +142,9 @@ namespace Joestar
 		U32 binding{ 0 };
 		U32 stride{ 0 };
 		bool instance{ false };
+		U32 Hash()
+		{
+			return (binding * 31 + stride) * 31 + instance ? 1 : 0;
+		}
 	};
 }

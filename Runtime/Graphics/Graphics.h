@@ -58,6 +58,7 @@ namespace Joestar {
 		void CreateUniformBuffer(UniformBuffer*);
 		void CreateRenderPass(RenderPass*);
 		void CreateGraphicsPipelineState(GraphicsPipelineState*);
+		bool GetGraphicsPipelineState(GraphicsPipelineState*);
 		RenderPass* GetMainRenderPass();
 
 		void CreateSwapChain();

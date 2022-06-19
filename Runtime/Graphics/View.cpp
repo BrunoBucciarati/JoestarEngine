@@ -2,9 +2,11 @@
 #include "../Graphics/Camera.h"
 #include "../Scene/Scene.h"
 #include "GraphicDefines.h"
+#include "Shader/Shader.h"
 #include "SwapChain.h"
 #include "Descriptor.h"
 #include "UniformBuffer.h"
+#include "../Component/MeshRenderer.h"
 #include "../IO/HID.h"
 
 namespace Joestar
@@ -120,23 +122,72 @@ namespace Joestar
 		mUniformBuffers[binding]->SetData(member.offset, member.size, data);
 	}
 
+	void View::CollectBatches()
+	{
+		mBatches.Clear();
+		auto& gameObjects = mScene->GetGameObjects();
+		for (auto go : gameObjects)
+		{
+			MeshRenderer* renderer = go->HasComponent<MeshRenderer>();
+			Batch batch(renderer);
+			batch.CalculateKey();
+			mBatches.Push(batch);
+		}
+	}
+
+	void View::CollectShadowBatches()
+	{
+		mShadowBatches.Clear();
+		auto& gameObjects = mScene->GetGameObjects();
+		if (!mShadowProgram)
+		{
+			mShadowProgram = NEW_OBJECT(ShaderProgram);
+			mShadowProgram->SetShader(ShaderStage::VS, "shadow_vs");
+			mShadowProgram->SetShader(ShaderStage::PS, "shadow_ps");
+		}
+		for (auto go : gameObjects)
+		{
+			//MeshRenderer* renderer = go->HasComponent<MeshRenderer>();
+			//Batch batch(renderer);
+			//batch.mPipelineLayout = mShadowProgram->GetPipelineLayout();
+			//batch.CalculateKey();
+			//mBatches.Push(batch);
+		}
+	}
+
 	void View::ForwardRender(CommandBuffer* cb)
 	{
-		//Shadow Pass
-		if (!mShadowCamera)
-		{
-			mShadowCamera = mShadowCameraNode->GetComponent<Camera>();
-		}
-		Light* mainLight = mScene->GetMainLight();
-		mShadowCamera->SetPosition(mainLight->GetPosition());
-		mShadowCamera->SetOrthographic(100.F);
-		mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
+		CollectBatches();
+
 		//Scene Pass
 		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mCamera->GetViewMatrix());
 		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mCamera->GetProjectionMatrix());
 		mGraphics->SetUniformBuffer(mUniformBuffers[0]);
 		mGraphics->UpdateDescriptorSets(mDescriptorSets);
-		RenderScene(cb);
-		RenderSkybox(cb);
+		cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());
+		cb->SetPassDescriptorSets(mDescriptorSets);
+		for (auto& batch : mBatches)
+		{
+			batch.Render(this, cb);
+		}
+		//Shadow Pass
+		//if (!mShadowCamera)
+		//{
+		//	mShadowCamera = mShadowCameraNode->GetComponent<Camera>();
+		//}
+		//Light* mainLight = mScene->GetMainLight();
+		//mShadowCamera->SetPosition(mainLight->GetPosition());
+		//mShadowCamera->SetOrthographic(100.F);
+		//mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
+		//SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mShadowCamera->GetViewMatrix());
+		//SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mShadowCamera->GetViewMatrix());
+		//RenderScene(cb);
+		////Scene Pass
+		//SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mCamera->GetViewMatrix());
+		//SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mCamera->GetProjectionMatrix());
+		//mGraphics->SetUniformBuffer(mUniformBuffers[0]);
+		//mGraphics->UpdateDescriptorSets(mDescriptorSets);
+		//RenderScene(cb);
+		//RenderSkybox(cb);
 	}
 }

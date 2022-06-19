@@ -3,6 +3,7 @@
 #include "../Math/Rect.h"
 #include "Viewport.h"
 #include "GraphicDefines.h"
+#include "Batch.h"
 namespace Joestar
 {
 	class Camera;
@@ -31,12 +32,18 @@ namespace Joestar
 		{
 			mSwapChain = ptr;
 		}
+		Graphics* GetGraphics()
+		{
+			return mGraphics;
+		}
 	private:
 		void RenderScene(CommandBuffer* cb);
 		void RenderSkybox(CommandBuffer* cb);
 		void CreatePassDescriptor();
 		void SetUniformBuffer(PerPassUniforms, U8* data);
 		void ForwardRender(CommandBuffer* cb);
+		void CollectBatches();
+		void CollectShadowBatches();
 		UniquePtr<Camera> mCamera;
 		UniquePtr<Camera> mShadowCamera;
 		UniquePtr<Scene> mScene;
@@ -49,5 +56,8 @@ namespace Joestar
 		Vector<SharedPtr<UniformBuffer>> mUniformBuffers;
 		SharedPtr<GameObject> mShadowCameraNode;
 		SharedPtr<GameObject> mCameraNode;
+		Vector<Batch> mBatches;
+		Vector<Batch> mShadowBatches;
+		SharedPtr<ShaderProgram> mShadowProgram;
 	};
 }

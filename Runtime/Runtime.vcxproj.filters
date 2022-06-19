@@ -213,6 +213,12 @@
     <ClCompile Include="Graphics\Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Batch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\MaterialInstance.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -498,6 +504,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Batch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\MaterialInstance.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

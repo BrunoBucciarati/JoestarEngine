@@ -262,6 +262,14 @@ namespace Joestar {
             HashInsert(mColorBlendState->Hash());
             HashInsert(mRenderPass->Hash());
             HashInsert(mViewport->Hash());
+            for (auto& binding : mInputBindings)
+            {
+                HashInsert(binding.Hash());
+            }
+            for (auto& attr : mInputAttributes)
+            {
+                HashInsert(attr.Hash());
+            }
         }
     };
 }

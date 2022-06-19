@@ -28,8 +28,12 @@ namespace Joestar {
 		{
 			return mMainLightNode->GetComponent<Light>();
 		}
+		const Vector<SharedPtr<GameObject>>& GetGameObjects() const
+		{
+			return mGameObjects;
+		}
 	private:
-		Vector<GameObject*> gameObjects;
+		Vector<SharedPtr<GameObject>> mGameObjects;
 		Vector<Light*> lights;
 		GameObject* mMainLightNode;
 		Light* mMainLight;

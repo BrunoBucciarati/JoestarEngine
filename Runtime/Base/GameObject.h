@@ -91,7 +91,7 @@ namespace Joestar {
 			return GetTransform()->GetLocalEulerAngles();
 		}
 
-		Matrix4x4f* GetAfflineTransform()
+		Matrix4x4f GetAfflineTransform()
 		{
 			return GetTransform()->GetAfflineTransform();
 		}

@@ -9,13 +9,13 @@ namespace Joestar {
 		mat = Matrix4x4f::identity;
 	}
 
-	Matrix4x4f* Transform::GetAfflineTransform()
+	Matrix4x4f Transform::GetAfflineTransform()
 	{
 		if (dirty) {
 			mat.SetPosition(translate);
 			dirty = false;
 		}
-		return &mat;
+		return mat;
 	}
 	Transform::~Transform()
 	{

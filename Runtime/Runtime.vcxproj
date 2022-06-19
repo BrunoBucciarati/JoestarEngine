@@ -158,6 +158,7 @@
     <ClCompile Include="Core\EngineContext.cpp" />
     <ClCompile Include="Core\Object.cpp" />
     <ClCompile Include="Core\SubSystem.cpp" />
+    <ClCompile Include="Graphics\Batch.cpp" />
     <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\CommandBuffer.cpp" />
     <ClCompile Include="Graphics\Descriptor.cpp" />
@@ -168,6 +169,7 @@
     <ClCompile Include="Graphics\Image.cpp" />
     <ClCompile Include="Graphics\IndexBuffer.cpp" />
     <ClCompile Include="Graphics\Material.cpp" />
+    <ClCompile Include="Graphics\MaterialInstance.cpp" />
     <ClCompile Include="Graphics\Mesh.cpp" />
     <ClCompile Include="Graphics\PipelineState.cpp" />
     <ClCompile Include="Graphics\ProceduralMesh.cpp" />
@@ -240,6 +242,7 @@
     <ClInclude Include="Core\Platform.h" />
     <ClInclude Include="Core\RefCount.h" />
     <ClInclude Include="Core\SubSystem.h" />
+    <ClInclude Include="Graphics\Batch.h" />
     <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\CommandBuffer.h" />
     <ClInclude Include="Graphics\Descriptor.h" />
@@ -253,6 +256,7 @@
     <ClInclude Include="Graphics\GraphicsDebugs.h" />
     <ClInclude Include="Graphics\Image.h" />
     <ClInclude Include="Graphics\IndexBuffer.h" />
+    <ClInclude Include="Graphics\MaterialInstance.h" />
     <ClInclude Include="Graphics\PipelineState.h" />
     <ClInclude Include="Graphics\ProceduralMesh.h" />
     <ClInclude Include="Graphics\ProgramCPU.h" />

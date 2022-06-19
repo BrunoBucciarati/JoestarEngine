@@ -42,12 +42,36 @@ namespace Joestar {
 		void SetDepthCompareOp(CompareOp op);
 		SharedPtr<DepthStencilState> GetDepthStencilState() const;
 
+		void SetShader(const String& name, ShaderStage stage = ShaderStage::VS_PS);
+
+		void SetShader(Shader* shader, ShaderStage stage = ShaderStage::VS_PS)
+		{
+			mShaderProgram->SetShader(stage, shader);
+		}
+		Shader* GetShader(ShaderStage stage)
+		{
+			return mShaderProgram->GetShader(stage);
+		}
+		String GetShaderName(ShaderStage stage)
+		{
+			return GetShader(stage)->GetName();
+		}
+		bool IsValid()
+		{
+			return mShaderProgram && mShaderProgram->IsValid();
+		}
+		ShaderProgram* GetShaderProgram()
+		{
+			return mShaderProgram;
+		}
+
 	private:
 		Vector<SharedPtr<Texture>> mTextures;
 		Vector<SharedPtr<UniformBuffer>> mUniformBuffers;
 		SharedPtr<DescriptorSets> mDescriptorSets;
 		SharedPtr<DescriptorSetLayout> mDescriptorSetLayout;
 		WeakPtr<Graphics> mGraphics;
+		SharedPtr<ShaderProgram> mShaderProgram;
 		SharedPtr<DepthStencilState> mDepthStencilState;
 		bool bDepthStencilStateDirty{ false };
 	};
