@@ -98,6 +98,11 @@ namespace Joestar {
                     mProtocol->CreateBackBuffers(createInfo);
                     break;
                 }
+                createInfo.colorHandles.Resize(createInfo.numColorAttachments);
+                for (U32 i = 0; i < createInfo.numColorAttachments; ++i)
+                {
+                    cmdList->ReadBuffer(createInfo.colorHandles[i]);
+                }
                 mProtocol->CreateFrameBuffers(handle, createInfo);
                 break;
             }
@@ -210,7 +215,6 @@ namespace Joestar {
                 for (U32 i = 0; i < createInfo.numAttachments; ++i)
                 {
                     cmdList->ReadBuffer(createInfo.attachments[i]);
-
                 }
                 mProtocol->CreateColorBlendState(handle, createInfo);
                 break;

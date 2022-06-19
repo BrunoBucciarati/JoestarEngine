@@ -42,6 +42,13 @@ namespace Joestar
 	struct GPUFrameBufferCreateInfo
 	{
 		U32 msaaSamples{ 1 };
+		U32 width;
+		U32 height;
+		U32 layers{ 1 };
+		GPUResourceHandle renderPassHandle;
+		GPUResourceHandle depthStencilHandle;
+		U32 numColorAttachments;
+		PODVector<GPUResourceHandle> colorHandles;
 	};
 
 	struct GPURenderPassCreateInfo

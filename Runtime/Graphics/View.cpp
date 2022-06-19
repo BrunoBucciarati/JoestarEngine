@@ -8,6 +8,7 @@
 #include "UniformBuffer.h"
 #include "../Component/MeshRenderer.h"
 #include "../IO/HID.h"
+#include "Texture2D.h"
 
 namespace Joestar
 {
@@ -48,17 +49,26 @@ namespace Joestar
 		binding->members[1].size = 64;
 		mGraphics->SetDescriptorSetLayout(mDescriptorSetLayout);
 
-		mDescriptorSets = JOJO_NEW(DescriptorSets, MEMORY_GFX_STRUCT);
-		mDescriptorSets->AllocFromLayout(mDescriptorSetLayout);
-		mGraphics->CreateDescriptorSets(mDescriptorSets);
+		mAllDescriptorSets.Resize((U32)Pass::Count);
+		for (U32 i = 0; i < (U32)Pass::Count; ++i)
+		{
+			mAllDescriptorSets[i] = JOJO_NEW(DescriptorSets, MEMORY_GFX_STRUCT);
+			mAllDescriptorSets[i]->AllocFromLayout(mDescriptorSetLayout);
+			mGraphics->CreateDescriptorSets(mAllDescriptorSets[i]);
+		}
 
-		UniformBuffer* ub = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
-		ub->SetFrequency(UniformFrequency::PASS);
-		ub->AllocFromBinding(binding);
-		mGraphics->CreateUniformBuffer(ub);
-		mDescriptorSets->SetBindingUniformBuffer(0, ub);
+		mAllUniformBuffers.Resize((U32)Pass::Count);
+		for (U32 i = 0; i < (U32)Pass::Count; ++i)
+		{
+			UniformBuffer* ub = JOJO_NEW(UniformBuffer, MEMORY_GFX_STRUCT);
+			ub->SetFrequency(UniformFrequency::PASS);
+			ub->AllocFromBinding(binding);
+			mGraphics->CreateUniformBuffer(ub);
 
-		mUniformBuffers.Push(ub);
+			Vector<SharedPtr<UniformBuffer>>& passBuffer = mAllUniformBuffers[i];
+			mAllDescriptorSets[i]->SetBindingUniformBuffer(0, ub);
+			passBuffer.Push(ub);
+		}
 	}
 
 	void View::Update(float dt)
@@ -94,19 +104,18 @@ namespace Joestar
 		cb->SetViewport(&mViewport);
 		//if (bRecord)
 		ForwardRender(cb);
-		cb->EndRenderPass(mGraphics->GetMainRenderPass());
 		//cb->End();
 		return bRecord;
 	}
 
 	void View::RenderScene(CommandBuffer* cb)
 	{
-		cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());
-		cb->SetPassDescriptorSets(mDescriptorSets);
-		if (mScene)
-		{
-			mScene->RenderScene(cb);
-		}
+		//cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());
+		//cb->SetPassDescriptorSets(mDescriptorSets);
+		//if (mScene)
+		//{
+		//	mScene->RenderScene(cb);
+		//}
 	}
 
 	void View::RenderSkybox(CommandBuffer* cb)
@@ -115,11 +124,12 @@ namespace Joestar
 			mScene->RenderSkybox(cb);
 	}
 
-	void View::SetUniformBuffer(PerPassUniforms uniform, U8* data)
+	void View::SetUniformBuffer(PerPassUniforms uniform, U8* data, Pass pass)
 	{
 		DescriptorSetLayoutBinding::Member member;
 		U32 binding = mDescriptorSetLayout->GetUniformMemberAndBinding((U32)uniform, member);
-		mUniformBuffers[binding]->SetData(member.offset, member.size, data);
+		Vector<SharedPtr<UniformBuffer>>& passBuffer = mAllUniformBuffers[(U32)pass];
+		passBuffer[binding]->SetData(member.offset, member.size, data);
 	}
 
 	void View::CollectBatches()
@@ -139,33 +149,83 @@ namespace Joestar
 	{
 		mShadowBatches.Clear();
 		auto& gameObjects = mScene->GetGameObjects();
-		if (!mShadowProgram)
+		if (!mShadowMaterial)
 		{
-			mShadowProgram = NEW_OBJECT(ShaderProgram);
-			mShadowProgram->SetShader(ShaderStage::VS, "shadow_vs");
-			mShadowProgram->SetShader(ShaderStage::PS, "shadow_ps");
+			Material* mat = NEW_OBJECT(Material);
+			mat->SetShader("shadow_vs", ShaderStage::VS);
+			mat->SetShader("shadow_ps", ShaderStage::PS);
+			mShadowMaterial = NEW_OBJECT(MaterialInstance, mat);
 		}
 		for (auto go : gameObjects)
 		{
-			//MeshRenderer* renderer = go->HasComponent<MeshRenderer>();
-			//Batch batch(renderer);
-			//batch.mPipelineLayout = mShadowProgram->GetPipelineLayout();
-			//batch.CalculateKey();
-			//mBatches.Push(batch);
+			MeshRenderer* renderer = go->HasComponent<MeshRenderer>();
+			Batch batch(renderer);
+			batch.mMaterial = mShadowMaterial;
+			batch.mShaderProgram = mShadowMaterial->GetShaderProgram();
+			batch.CalculateKey();
+			mShadowBatches.Push(batch);
 		}
 	}
 
+	void View::InitShadowPass()
+	{
+		if (mShadowPass)
+		{
+			return;
+		}
+		mShadowCamera = mShadowCameraNode->GetComponent<Camera>();
+		mShadowPass = JOJO_NEW(RenderPass, MEMORY_GFX_STRUCT);
+		mShadowPass->SetClear(true);
+		mShadowPass->SetLoadOp(AttachmentLoadOp::CLEAR);
+		mShadowPass->SetStoreOp(AttachmentStoreOp::STORE);
+		mGraphics->CreateRenderPass(mShadowPass);
+
+		mShadowMap = NEW_OBJECT(Texture2D);
+		mShadowMap->SetFormat(ImageFormat::D24S8);
+		mShadowMap->SetWidth(2048);
+		mShadowMap->SetHeight(2048);
+		mShadowMap->SetRenderTarget();
+
+		mShadowFrameBuffer = JOJO_NEW(FrameBuffer, MEMORY_GFX_STRUCT);
+		mShadowFrameBuffer->SetWidth(2048);
+		mShadowFrameBuffer->SetHeight(2048);
+		mShadowFrameBuffer->SetRenderPass(mShadowPass);
+		mShadowFrameBuffer->SetDepthStencil(mShadowMap);
+		mGraphics->CreateFrameBuffer(mShadowFrameBuffer);
+	}
+
+
 	void View::ForwardRender(CommandBuffer* cb)
 	{
+		CollectShadowBatches();
 		CollectBatches();
+
+		//Shadow Pass
+		InitShadowPass();
+		Light* mainLight = mScene->GetMainLight();
+		mShadowCamera->SetPosition(mainLight->GetPosition());
+		mShadowCamera->SetOrthographic(100.F);
+		mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
+		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mShadowCamera->GetViewMatrix());
+		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mShadowCamera->GetViewMatrix());
+		mGraphics->SetUniformBuffer(mAllUniformBuffers[(U32)Pass::Shadow][0]);
+		mGraphics->UpdateDescriptorSets(mAllDescriptorSets[(U32)Pass::Shadow]);
+		//要增加shadow的pass和FrameBuffer
+		cb->BeginRenderPass(mShadowPass, mShadowFrameBuffer);
+		cb->SetPassDescriptorSets(mAllDescriptorSets[(U32)Pass::Shadow]);
+		for (auto& batch : mShadowBatches)
+		{
+			batch.Render(this, cb);
+		}
+		cb->EndRenderPass(mShadowPass);
 
 		//Scene Pass
 		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mCamera->GetViewMatrix());
 		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mCamera->GetProjectionMatrix());
-		mGraphics->SetUniformBuffer(mUniformBuffers[0]);
-		mGraphics->UpdateDescriptorSets(mDescriptorSets);
+		mGraphics->SetUniformBuffer(mAllUniformBuffers[(U32)Pass::Scene][0]);
+		mGraphics->UpdateDescriptorSets(mAllDescriptorSets[(U32)Pass::Scene]);
 		cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());
-		cb->SetPassDescriptorSets(mDescriptorSets);
+		cb->SetPassDescriptorSets(mAllDescriptorSets[(U32)Pass::Scene]);
 		for (auto& batch : mBatches)
 		{
 			batch.Render(this, cb);
@@ -178,25 +238,6 @@ namespace Joestar
 			Batch skyboxBatch(skybox->GetComponent<MeshRenderer>());
 			skyboxBatch.Render(this, cb);
 		}
-			
-		//Shadow Pass
-		//if (!mShadowCamera)
-		//{
-		//	mShadowCamera = mShadowCameraNode->GetComponent<Camera>();
-		//}
-		//Light* mainLight = mScene->GetMainLight();
-		//mShadowCamera->SetPosition(mainLight->GetPosition());
-		//mShadowCamera->SetOrthographic(100.F);
-		//mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
-		//SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mShadowCamera->GetViewMatrix());
-		//SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mShadowCamera->GetViewMatrix());
-		//RenderScene(cb);
-		////Scene Pass
-		//SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mCamera->GetViewMatrix());
-		//SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mCamera->GetProjectionMatrix());
-		//mGraphics->SetUniformBuffer(mUniformBuffers[0]);
-		//mGraphics->UpdateDescriptorSets(mDescriptorSets);
-		//RenderScene(cb);
-		//RenderSkybox(cb);
+		cb->EndRenderPass(mGraphics->GetMainRenderPass());
 	}
 }

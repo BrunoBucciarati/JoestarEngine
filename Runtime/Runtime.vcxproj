@@ -162,6 +162,7 @@
     <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\CommandBuffer.cpp" />
     <ClCompile Include="Graphics\Descriptor.cpp" />
+    <ClCompile Include="Graphics\FrameBuffer.cpp" />
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
     <ClCompile Include="Graphics\GPUResource.cpp" />
     <ClCompile Include="Graphics\GPUImage.cpp" />

@@ -43,7 +43,8 @@ namespace Joestar {
 		void CreateCommandBuffer(CommandBuffer* cb);
 
 		FrameBuffer* GetBackBuffer();
-		FrameBuffer* CreateFrameBuffer();
+		FrameBuffer* CreateBackBuffer();
+		void CreateFrameBuffer(FrameBuffer*);
 		void CreateDescriptorPool();
 		void CreateCommandPool(CommandPool* pool);
 		SwapChain* GetSwapChain();

@@ -76,6 +76,7 @@ namespace Joestar {
 		void SetImages(Vector<SharedPtr<Image>>&);
 		void SetData(U8* data);
 		void SetSubData(U8* data, U32 offset=0);
+		void SetRenderTarget(U32 w, U32 h);
 		U8* GetData()
 		{
 			return mData;
@@ -100,6 +101,7 @@ namespace Joestar {
 	public:
 		explicit GPUImageView(EngineContext*);
 		void SetImage(Image*);
+		void SetRenderTarget(U32 w, U32 h);
 		void SetImages(Vector<SharedPtr<Image>>&);
 	private:
 		WeakPtr<Graphics> mGraphics;

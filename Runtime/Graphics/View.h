@@ -16,6 +16,15 @@ namespace Joestar
 	class CommandBuffer;
 	class HID;
 	class GameObject;
+	class RenderPass;
+	class FrameBuffer;
+	class Texture2D;
+	enum class Pass
+	{
+		Shadow = 0,
+		Scene,
+		Count
+	};
 	class View : public Object
 	{
 		REGISTER_OBJECT(View, Object);
@@ -40,10 +49,11 @@ namespace Joestar
 		void RenderScene(CommandBuffer* cb);
 		void RenderSkybox(CommandBuffer* cb);
 		void CreatePassDescriptor();
-		void SetUniformBuffer(PerPassUniforms, U8* data);
+		void SetUniformBuffer(PerPassUniforms, U8* data, Pass pass = Pass::Scene);
 		void ForwardRender(CommandBuffer* cb);
 		void CollectBatches();
 		void CollectShadowBatches();
+		void InitShadowPass();
 		UniquePtr<Camera> mCamera;
 		UniquePtr<Camera> mShadowCamera;
 		UniquePtr<Scene> mScene;
@@ -51,13 +61,16 @@ namespace Joestar
 		WeakPtr<HID> mHID;
 		SwapChain* mSwapChain;
 		Viewport mViewport;
-		SharedPtr<DescriptorSets> mDescriptorSets;
+		Vector<SharedPtr<DescriptorSets>> mAllDescriptorSets;
 		SharedPtr<DescriptorSetLayout> mDescriptorSetLayout;
-		Vector<SharedPtr<UniformBuffer>> mUniformBuffers;
+		Vector<Vector<SharedPtr<UniformBuffer>>> mAllUniformBuffers;
 		SharedPtr<GameObject> mShadowCameraNode;
 		SharedPtr<GameObject> mCameraNode;
 		Vector<Batch> mBatches;
 		Vector<Batch> mShadowBatches;
-		SharedPtr<ShaderProgram> mShadowProgram;
+		SharedPtr<MaterialInstance> mShadowMaterial;
+		SharedPtr<RenderPass> mShadowPass;
+		SharedPtr<FrameBuffer> mShadowFrameBuffer;
+		SharedPtr<Texture2D> mShadowMap;
 	};
 }

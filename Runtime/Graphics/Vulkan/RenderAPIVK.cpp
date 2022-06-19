@@ -570,6 +570,47 @@ namespace Joestar {
 
     void RenderAPIVK::CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo)
     {
+        U32 numAttachments = createInfo.numColorAttachments;
+        bool hasColor = numAttachments > 0;
+        bool hasDepthStencil = false;
+        if (createInfo.depthStencilHandle != GPUResource::INVALID_HANDLE)
+        {
+            ++numAttachments;
+            hasDepthStencil = true;
+        }
+        RenderPassVK* renderPass = mRenderPasses[createInfo.renderPassHandle];
+        for (U32 i = 0; i < mSwapChain.GetImageCount(); ++i)
+        {
+            Vector<VkImageView> attachments;
+            if (createInfo.msaaSamples > 1) {
+                //todo
+            }
+            else
+            {
+                attachments.Resize(numAttachments);
+                for (U32 j = 0; j < createInfo.numColorAttachments; ++j)
+                {
+                    TextureVK* tex = mTextures[createInfo.colorHandles[j]];
+                    attachments[j] = tex->GetDescriptorImageInfo().imageView;
+                }
+                if (hasDepthStencil)
+                {
+                    TextureVK* tex = mTextures[createInfo.depthStencilHandle];
+                    attachments[numAttachments - 1] = tex->GetDescriptorImageInfo().imageView;
+                }
+            }
+
+            VkFramebufferCreateInfo framebufferInfo{};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = renderPass->renderPass;
+            framebufferInfo.attachmentCount = attachments.Size();
+            framebufferInfo.pAttachments = attachments.Buffer();
+            framebufferInfo.width = createInfo.width;
+            framebufferInfo.height = createInfo.height;
+            framebufferInfo.layers = createInfo.layers;
+
+            VK_CHECK(vkCreateFramebuffer(mDevice, &framebufferInfo, nullptr, &mSwapChain.frameBuffer->frameBuffers[i]));
+        }
 
     }
 
@@ -800,7 +841,7 @@ namespace Joestar {
             framebufferInfo.layers = 1;
 
             VK_CHECK(vkCreateFramebuffer(mDevice, &framebufferInfo, nullptr, &mSwapChain.frameBuffer->frameBuffers[i]));
-        }        
+        }
     }
 
     void RenderAPIVK::CreateSyncObjects(U32 num)

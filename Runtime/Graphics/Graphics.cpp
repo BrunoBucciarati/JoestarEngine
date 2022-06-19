@@ -74,7 +74,7 @@ namespace Joestar {
 		cb->SetPool(cp);
 		CreateCommandBuffer(cb);
 		//创建BackBuffer
-		CreateFrameBuffer();
+		CreateBackBuffer();
 		CreateDescriptorPool();
 		//创建内建的Uniform
 		CreatePerPassUniforms();
@@ -315,7 +315,7 @@ namespace Joestar {
 		return mFrameBuffers[0];
 	}
 
-	FrameBuffer* Graphics::CreateFrameBuffer()
+	FrameBuffer* Graphics::CreateBackBuffer()
 	{
 		GPUResourceHandle handle = mFrameBuffers.Size();
 		FrameBuffer* fb = JOJO_NEW(FrameBuffer);
@@ -329,6 +329,29 @@ namespace Joestar {
 		};
 		GetMainCmdList()->WriteBuffer<GPUFrameBufferCreateInfo>(createInfo);
 		return fb;
+	}
+
+	void Graphics::CreateFrameBuffer(FrameBuffer* fb)
+	{
+		ASSIGN_NEW_HANDLE(fb, mFrameBuffers);
+		GetMainCmdList()->WriteCommand(GFXCommand::CreateFrameBuffer);
+		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
+
+		U32 numColorAttachments = fb->GetNumColorAttachments();
+		GPUFrameBufferCreateInfo createInfo{
+			fb->GetMultiSample(),
+			fb->GetWidth(),
+			fb->GetHeight(),
+			fb->GetLayers(),
+			fb->GetRenderPass()->GetHandle(),
+			fb->GetDepthStencil()->GetHandle(),
+			numColorAttachments,
+		};
+		GetMainCmdList()->WriteBuffer<GPUFrameBufferCreateInfo>(createInfo);
+		for (U32 i = 0; i < numColorAttachments; ++i)
+		{
+			GetMainCmdList()->WriteBuffer<GPUResourceHandle>(fb->GetColorAttachment(i)->GetHandle());
+		}
 	}
 
 	GPUMemory* Graphics::CreateGPUMemory()

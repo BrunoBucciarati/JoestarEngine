@@ -48,6 +48,17 @@ namespace Joestar {
 		mGraphics->CreateImage(this);
 	}
 
+	void GPUImage::SetRenderTarget(U32 w, U32 h)
+	{
+		if (mFormat == ImageFormat::D24S8 || mFormat == ImageFormat::D32S8)
+			mUsage = (U32)ImageUsageBits::DEPTH_STENCIL_ATTACHMENT_BIT;
+		else
+			mUsage = (U32)ImageUsageBits::COLOR_ATTACHMENT_BIT;
+		mWidth = w;
+		mHeight = h;
+		mGraphics->CreateImage(this);
+	}
+
 	GPUImageView::GPUImageView(EngineContext* ctx) : Super(ctx),
 		mGraphics(GetSubsystem<Graphics>())
 	{}
@@ -60,6 +71,15 @@ namespace Joestar {
 			mImage = JOJO_NEW(GPUImage(mContext), MEMORY_TEXTURE);
 		mImage->SetImage(image);
 		mFormat = mImage->GetFormat();
+		mGraphics->CreateImageView(this);
+	}
+
+	void GPUImageView::SetRenderTarget(U32 w, U32 h)
+	{
+		if (!mImage)
+			mImage = JOJO_NEW(GPUImage(mContext), MEMORY_TEXTURE);
+		mImage->SetFormat(mFormat);
+		mImage->SetRenderTarget(w, h);
 		mGraphics->CreateImageView(this);
 	}
 
