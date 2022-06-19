@@ -32,6 +32,10 @@ namespace Joestar {
 		{
 			return mGameObjects;
 		}
+		GameObject* GetSkybox()
+		{
+			return mSkyboxGO;
+		}
 	private:
 		Vector<SharedPtr<GameObject>> mGameObjects;
 		Vector<Light*> lights;

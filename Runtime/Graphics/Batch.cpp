@@ -14,13 +14,15 @@ namespace Joestar
 	void Batch::Render(View* view, CommandBuffer* cb)
 	{
 		bool flag = mMaterial->Update();
-		cb->BindDescriptorSets(UniformFrequency::BATCH, mShaderProgram->GetPipelineLayout(), mMaterial->GetBatchDescriptorSets());
+		if (mMaterial->GetBatchDescriptorSets())
+			cb->BindDescriptorSets(UniformFrequency::BATCH, mShaderProgram->GetPipelineLayout(), mMaterial->GetBatchDescriptorSets());
 		
 		auto model = mRenderer->GetGameObject()->GetAfflineTransform();
 		mMaterial->SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (U8*)&model);
 		mMaterial->UpdateDescriptorSets();
 
-		cb->BindDescriptorSets(UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mMaterial->GetObjectDescriptorSets());
+		if (mMaterial->GetObjectDescriptorSets())
+			cb->BindDescriptorSets(UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mMaterial->GetObjectDescriptorSets());
 
 		GraphicsPipelineState* pso = PreparePipelineState(view, cb);
 		cb->BindPipelineState(pso);

@@ -170,6 +170,15 @@ namespace Joestar
 		{
 			batch.Render(this, cb);
 		}
+
+		//Skybox
+		if (mScene)
+		{
+			GameObject* skybox = mScene->GetSkybox();
+			Batch skyboxBatch(skybox->GetComponent<MeshRenderer>());
+			skyboxBatch.Render(this, cb);
+		}
+			
 		//Shadow Pass
 		//if (!mShadowCamera)
 		//{

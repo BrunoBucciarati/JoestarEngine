@@ -175,14 +175,16 @@ namespace Joestar {
 			if (ub)
 				mGraphics->SetUniformBuffer(ub);
 		}
-		mGraphics->UpdateDescriptorSets(mBatchDescriptorSets);
+		if (mBatchDescriptorSets)
+			mGraphics->UpdateDescriptorSets(mBatchDescriptorSets);
 
 		for (auto& ub : mObjectUniformBuffers)
 		{
 			if (ub)
 				mGraphics->SetUniformBuffer(ub);
 		}
-		mGraphics->UpdateDescriptorSets(mObjectDescriptorSets);
+		if (mObjectDescriptorSets)
+			mGraphics->UpdateDescriptorSets(mObjectDescriptorSets);
 	}
 
 	ShaderProgram* MaterialInstance::GetShaderProgram()
