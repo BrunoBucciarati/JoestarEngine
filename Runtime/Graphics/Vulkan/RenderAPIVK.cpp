@@ -37,12 +37,14 @@ namespace Joestar {
         "VK_LAYER_KHRONOS_validation"
     };
 
-    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+    {
         LOGERROR("validation layer: %s\n", pCallbackData->pMessage);
 
         return VK_FALSE;
     }
-    void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+    void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
+    {
         createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -50,17 +52,21 @@ namespace Joestar {
         createInfo.pfnUserCallback = DebugCallback;
     }
 
-    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
+    {
         auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-        if (func != nullptr) {
+        if (func != nullptr)
+        {
             return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
         }
-        else {
+        else
+        {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }
     }
 
-    U32 RenderAPIVK::FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties) {
+    U32 RenderAPIVK::FindMemoryType(U32 typeFilter, VkMemoryPropertyFlags properties)
+    {
         VkPhysicalDeviceMemoryProperties memProperties;
         vkGetPhysicalDeviceMemoryProperties(mPhysicalDevice, &memProperties);
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
@@ -73,22 +79,27 @@ namespace Joestar {
     }
 
 
-    bool CheckValidationLayerSupport() {
+    bool CheckValidationLayerSupport()
+    {
         U32 layerCount = 0;
         Vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.Buffer());
 
-        for (const char* layerName : ValidationLayers) {
+        for (const char* layerName : ValidationLayers)
+        {
             bool layerFound = false;
 
-            for (const auto& layerProperties : availableLayers) {
-                if (strcmp(layerName, layerProperties.layerName) == 0) {
+            for (const auto& layerProperties : availableLayers)
+            {
+                if (strcmp(layerName, layerProperties.layerName) == 0)
+                {
                     layerFound = true;
                     break;
                 }
             }
 
-            if (!layerFound) {
+            if (!layerFound)
+            {
                 return false;
             }
         }
@@ -96,7 +107,8 @@ namespace Joestar {
         return true;
     }
 
-    bool CheckDeviceExtensionSupport(VkPhysicalDevice device) {
+    bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
+    {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -109,14 +121,16 @@ namespace Joestar {
             requiredExtensions.Insert(ext);
         }
 
-        for (const auto& extension : availableExtensions) {
+        for (const auto& extension : availableExtensions)
+        {
             requiredExtensions.Erase(extension.extensionName);
         }
 
         return requiredExtensions.Empty();
     }
 
-    bool RenderAPIVK::IsDeviceSuitable(VkPhysicalDevice device) {
+    bool RenderAPIVK::IsDeviceSuitable(VkPhysicalDevice device)
+    {
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
         VkPhysicalDeviceFeatures deviceFeatures;
@@ -124,7 +138,8 @@ namespace Joestar {
         bool extensionsSupported = CheckDeviceExtensionSupport(device);
 
         bool swapChainAdequate = false;
-        if (extensionsSupported) {
+        if (extensionsSupported)
+        {
             SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device);
             swapChainAdequate = !swapChainSupport.formats.Empty() && !swapChainSupport.presentModes.Empty();
         }
@@ -132,14 +147,16 @@ namespace Joestar {
     }
 
 
-    SwapChainSupportDetails RenderAPIVK::QuerySwapChainSupport(VkPhysicalDevice device) {
+    SwapChainSupportDetails RenderAPIVK::QuerySwapChainSupport(VkPhysicalDevice device)
+    {
         SwapChainSupportDetails details;
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, mSurface, &details.capabilities);
 
         U32 formatCount;
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, mSurface, &formatCount, nullptr);
 
-        if (formatCount != 0) {
+        if (formatCount != 0)
+        {
             details.formats.Resize(formatCount);
             vkGetPhysicalDeviceSurfaceFormatsKHR(device, mSurface, &formatCount, details.formats.Buffer());
         }
@@ -147,7 +164,8 @@ namespace Joestar {
         U32 presentModeCount;
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, mSurface, &presentModeCount, nullptr);
 
-        if (presentModeCount != 0) {
+        if (presentModeCount != 0)
+        {
             details.presentModes.Resize(presentModeCount);
             vkGetPhysicalDeviceSurfacePresentModesKHR(device, mSurface, &presentModeCount, details.presentModes.Buffer());
         }
@@ -573,6 +591,7 @@ namespace Joestar {
 
     void RenderAPIVK::CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo)
     {
+        GET_STRUCT_BY_HANDLE(fb, FrameBuffer, handle);
         U32 numAttachments = createInfo.numColorAttachments;
         bool hasColor = numAttachments > 0;
         bool hasDepthStencil = false;
@@ -582,6 +601,7 @@ namespace Joestar {
             hasDepthStencil = true;
         }
         RenderPassVK* renderPass = mRenderPasses[createInfo.renderPassHandle];
+        fb.frameBuffers.Resize(mSwapChain.GetImageCount());
         for (U32 i = 0; i < mSwapChain.GetImageCount(); ++i)
         {
             Vector<VkImageView> attachments;
@@ -612,7 +632,7 @@ namespace Joestar {
             framebufferInfo.height = createInfo.height;
             framebufferInfo.layers = createInfo.layers;
 
-            VK_CHECK(vkCreateFramebuffer(mDevice, &framebufferInfo, nullptr, &mSwapChain.frameBuffer->frameBuffers[i]));
+            VK_CHECK(vkCreateFramebuffer(mDevice, &framebufferInfo, nullptr, &fb.frameBuffers[i]));
         }
 
     }
@@ -624,6 +644,8 @@ namespace Joestar {
         U32 numAttachments = createInfo.numColorAttachments + (createInfo.hasDepthStencil ? 1 : 0);
         Vector<VkAttachmentDescription> attachments;
         attachments.Resize(numAttachments);
+        Vector<VkAttachmentReference> colorAttachmentRefs;
+        colorAttachmentRefs.Resize(createInfo.numColorAttachments);
         for (U32 i = 0; i < createInfo.numColorAttachments; ++i)
         {
             attachments[i] = {};
@@ -635,11 +657,10 @@ namespace Joestar {
             attachments[i].stencilStoreOp = VkAttachmentStoreOp(createInfo.stencilStoreOp);
             attachments[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachments[i].finalLayout = bMSAA ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        }
 
-        VkAttachmentReference colorAttachmentRef{};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_GENERAL;
+            colorAttachmentRefs[i].attachment = i;
+            colorAttachmentRefs[i].layout = VK_IMAGE_LAYOUT_GENERAL;
+        }
 
         VkAttachmentReference depthAttachmentRef{};
         if (createInfo.hasDepthStencil)
@@ -655,7 +676,7 @@ namespace Joestar {
             depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            depthAttachmentRef.attachment = 1;
+            depthAttachmentRef.attachment = createInfo.numColorAttachments;
             depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         }
 
@@ -678,8 +699,8 @@ namespace Joestar {
 
             VkSubpassDescription subpass{};
             subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpass.colorAttachmentCount = 1;
-            subpass.pColorAttachments = &colorAttachmentRef;
+            subpass.colorAttachmentCount = createInfo.numColorAttachments;
+            subpass.pColorAttachments = colorAttachmentRefs.Buffer();
             subpass.pDepthStencilAttachment = &depthAttachmentRef;
             subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
@@ -706,8 +727,8 @@ namespace Joestar {
         {
             VkSubpassDescription subpass{};
             subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpass.colorAttachmentCount = 1;
-            subpass.pColorAttachments = &colorAttachmentRef;
+            subpass.colorAttachmentCount = createInfo.numColorAttachments;
+            subpass.pColorAttachments = colorAttachmentRefs.Buffer();
             subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
             VkSubpassDependency dependency{};
