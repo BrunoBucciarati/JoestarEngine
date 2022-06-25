@@ -161,6 +161,8 @@
     <ClCompile Include="Graphics\Batch.cpp" />
     <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\CommandBuffer.cpp" />
+    <ClCompile Include="Graphics\D3D\RenderAPID3D11.cpp" />
+    <ClCompile Include="Graphics\D3D\RenderStructsD3D11.cpp" />
     <ClCompile Include="Graphics\Descriptor.cpp" />
     <ClCompile Include="Graphics\FrameBuffer.cpp" />
     <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
@@ -246,6 +248,8 @@
     <ClInclude Include="Graphics\Batch.h" />
     <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\CommandBuffer.h" />
+    <ClInclude Include="Graphics\D3D\RenderAPID3D11.h" />
+    <ClInclude Include="Graphics\D3D\RenderStructsD3D11.h" />
     <ClInclude Include="Graphics\Descriptor.h" />
     <ClInclude Include="Graphics\FrameBuffer.h" />
     <ClInclude Include="Graphics\GFXCommandList.h" />

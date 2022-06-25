@@ -190,7 +190,7 @@ namespace Joestar
 		mShadowFrameBuffer->SetWidth(2048);
 		mShadowFrameBuffer->SetHeight(2048);
 		mShadowFrameBuffer->SetRenderPass(mShadowPass);
-		mShadowFrameBuffer->SetDepthStencil(mShadowMap);
+		mShadowFrameBuffer->SetDepthStencil(mShadowMap->GetImageView());
 		mGraphics->CreateFrameBuffer(mShadowFrameBuffer);
 	}
 

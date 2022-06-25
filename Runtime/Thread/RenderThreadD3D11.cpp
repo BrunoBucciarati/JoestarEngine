@@ -72,11 +72,11 @@ namespace Joestar {
         UINT  m4xMsaaQuality;
         hr = md3dDevice->CheckMultisampleQualityLevels(
             DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality);
-        bool mEnable4xMsaa = m4xMsaaQuality > 0;
+        bool mEnable4xMsaa = false;// m4xMsaaQuality > 0;
 
         DXGI_SWAP_CHAIN_DESC sd;
-        sd.BufferDesc.Width = 800;    // 使用窗口客户区宽度
-        sd.BufferDesc.Height = 600;
+        sd.BufferDesc.Width = window->GetWidth();    // 使用窗口客户区宽度
+        sd.BufferDesc.Height = window->GetHeight();
         sd.BufferDesc.RefreshRate.Numerator = 60;
         sd.BufferDesc.RefreshRate.Denominator = 1;
         sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;

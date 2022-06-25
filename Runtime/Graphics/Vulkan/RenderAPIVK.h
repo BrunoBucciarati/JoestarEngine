@@ -5,14 +5,16 @@
 #include "RenderStructsVK.h"
 #include <vulkan/vulkan.h>
 namespace Joestar {
-	struct QueueFamilyIndices {
+	struct QueueFamilyIndices
+	{
 		U32 graphicsFamily;
 		U32 transferFamily;
 		U32 presentFamily;
 		U32 computeFamily;
 	};
 
-	struct SwapChainSupportDetails {
+	struct SwapChainSupportDetails
+	{
 		VkSurfaceCapabilitiesKHR capabilities;
 		Vector<VkSurfaceFormatKHR> formats;
 		Vector<VkPresentModeKHR> presentModes;
@@ -31,9 +33,9 @@ namespace Joestar {
 		}
 		void CreateSyncObjects(U32 num = 1);
 		void CreateCommandPool(GPUResourceHandle handle, GPUQueue queue) override;
-		void CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo);
-		void CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo);
-		void CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo);
+		void CreateCommandBuffers(GPUResourceHandle handle, GPUCommandBufferCreateInfo& createInfo) override;
+		void CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo) override;
+		void CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo) override;
 		void CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo);
 		void CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo);
 		void CreateIndexBuffer(GPUResourceHandle handle, GPUIndexBufferCreateInfo& createInfo);

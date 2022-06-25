@@ -613,13 +613,13 @@ namespace Joestar {
                 attachments.Resize(numAttachments);
                 for (U32 j = 0; j < createInfo.numColorAttachments; ++j)
                 {
-                    TextureVK* tex = mTextures[createInfo.colorHandles[j]];
-                    attachments[j] = tex->GetDescriptorImageInfo().imageView;
+                    ImageViewVK* view = mImageViews[createInfo.colorHandles[j]];
+                    attachments[j] = view->GetImageView();
                 }
                 if (hasDepthStencil)
                 {
-                    TextureVK* tex = mTextures[createInfo.depthStencilHandle];
-                    attachments[numAttachments - 1] = tex->GetDescriptorImageInfo().imageView;
+                    ImageViewVK* view = mImageViews[createInfo.depthStencilHandle];
+                    attachments[numAttachments - 1] = view->GetImageView();
                 }
             }
 
@@ -765,7 +765,7 @@ namespace Joestar {
     {
         if (mSwapChain.frameBuffer)
             return;
-        mSwapChain.frameBuffer = JOJO_NEW(FrameBufferVK);
+        mSwapChain.frameBuffer = JOJO_NEW(FrameBufferVK, MEMORY_GFX_STRUCT);
         if (mFrameBuffers.Empty())
             mFrameBuffers.Resize(1);
         mFrameBuffers[0] = mSwapChain.frameBuffer;

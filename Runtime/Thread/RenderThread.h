@@ -7,7 +7,8 @@
 #include "../Container/Ptr.h"
 namespace Joestar {
 	class GFXCommandList;
-	class RenderThread : public Thread {
+	class RenderThread : public Thread
+	{
 	public:
 		REGISTER_OBJECT(RenderThread, Thread);
 		explicit RenderThread(EngineContext* ctx, Vector<GFXCommandBuffer*>& cmdBufs, Vector<GFXCommandBuffer*>& comCmdBufs) : Super(ctx),
