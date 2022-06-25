@@ -79,6 +79,14 @@ namespace Joestar {
 		if (!mImage)
 			mImage = JOJO_NEW(GPUImage(mContext), MEMORY_TEXTURE);
 		mImage->SetFormat(mFormat);
+		if (mFormat == ImageFormat::D24S8 || mFormat == ImageFormat::D32S8)
+		{
+			SetAspectBits((U32)ImageAspectFlagBits::DEPTH_BIT | (U32)ImageAspectFlagBits::STENCIL_BIT);
+		}
+		else
+		{
+			SetAspectBits((U32)ImageAspectFlagBits::COLOR_BIT);
+		}
 		mImage->SetRenderTarget(w, h);
 		mGraphics->CreateImageView(this);
 	}

@@ -531,13 +531,16 @@ namespace Joestar {
         else
             imageInfo.flags = 0; // Optional
 
-        GPUMemory& mem = mMemories[createInfo.memHandle];
-        StagingBufferVK* stagingBuffer = JOJO_NEW(StagingBufferVK, MEMORY_GFX_STRUCT);
-        stagingBuffer->count = 1;
-        stagingBuffer->SetDevice(mDevice, mPhysicalDevice);
-        stagingBuffer->SetSize(mem.size);
-        stagingBuffer->Create(mem.data);
-        image.SetStagingBuffer(stagingBuffer);
+        if (GPUResource::IsValid(createInfo.memHandle))
+        {
+            GPUMemory& mem = mMemories[createInfo.memHandle];
+            StagingBufferVK* stagingBuffer = JOJO_NEW(StagingBufferVK, MEMORY_GFX_STRUCT);
+            stagingBuffer->count = 1;
+            stagingBuffer->SetDevice(mDevice, mPhysicalDevice);
+            stagingBuffer->SetSize(mem.size);
+            stagingBuffer->Create(mem.data);
+            image.SetStagingBuffer(stagingBuffer);
+        }
 
         CreateImage(image, imageInfo, createInfo.num);
     }
@@ -617,33 +620,44 @@ namespace Joestar {
     void RenderAPIVK::CreateRenderPass(RenderPassVK* rp, GPURenderPassCreateInfo& createInfo)
     {
         bool bMSAA = createInfo.msaaSamples > 1;
-        VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = GetImageFormatVK(createInfo.colorFormat);
-        colorAttachment.samples = VkSampleCountFlagBits(createInfo.msaaSamples);
-        colorAttachment.loadOp = VkAttachmentLoadOp(createInfo.colorLoadOp);
-        colorAttachment.storeOp = VkAttachmentStoreOp(createInfo.colorStoreOp);
-        colorAttachment.stencilLoadOp = VkAttachmentLoadOp(createInfo.stencilLoadOp);
-        colorAttachment.stencilStoreOp = VkAttachmentStoreOp(createInfo.stencilStoreOp);
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = bMSAA ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        U32 numAttachments = createInfo.numColorAttachments + (createInfo.hasDepthStencil ? 1 : 0);
+        Vector<VkAttachmentDescription> attachments;
+        attachments.Resize(numAttachments);
+        for (U32 i = 0; i < createInfo.numColorAttachments; ++i)
+        {
+            attachments[i] = {};
+            attachments[i].format = GetImageFormatVK(createInfo.colorFormats[i]);
+            attachments[i].samples = VkSampleCountFlagBits(createInfo.msaaSamples);
+            attachments[i].loadOp = VkAttachmentLoadOp(createInfo.colorLoadOps[i]);
+            attachments[i].storeOp = VkAttachmentStoreOp(createInfo.colorStoreOps[i]);
+            attachments[i].stencilLoadOp = VkAttachmentLoadOp(createInfo.stencilLoadOp);
+            attachments[i].stencilStoreOp = VkAttachmentStoreOp(createInfo.stencilStoreOp);
+            attachments[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[i].finalLayout = bMSAA ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        }
 
         VkAttachmentReference colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_GENERAL;
 
-        VkAttachmentDescription depthAttachment{};
-        depthAttachment.format = GetImageFormatVK(createInfo.depthStencilFormat);
-        depthAttachment.samples = VkSampleCountFlagBits(createInfo.msaaSamples);
-        depthAttachment.loadOp = VkAttachmentLoadOp(createInfo.depthLoadOp);
-        depthAttachment.storeOp = VkAttachmentStoreOp(createInfo.depthStoreOp);
-        depthAttachment.stencilLoadOp = VkAttachmentLoadOp(createInfo.stencilLoadOp);
-        depthAttachment.stencilStoreOp = VkAttachmentStoreOp(createInfo.stencilStoreOp);
-        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
         VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = 1;
-        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        if (createInfo.hasDepthStencil)
+        {
+            VkAttachmentDescription& depthAttachment = attachments[createInfo.numColorAttachments];
+            depthAttachment = {};
+            depthAttachment.format = GetImageFormatVK(createInfo.depthStencilFormat);
+            depthAttachment.samples = VkSampleCountFlagBits(createInfo.msaaSamples);
+            depthAttachment.loadOp = VkAttachmentLoadOp(createInfo.depthLoadOp);
+            depthAttachment.storeOp = VkAttachmentStoreOp(createInfo.depthStoreOp);
+            depthAttachment.stencilLoadOp = VkAttachmentLoadOp(createInfo.stencilLoadOp);
+            depthAttachment.stencilStoreOp = VkAttachmentStoreOp(createInfo.stencilStoreOp);
+            depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            depthAttachmentRef.attachment = 1;
+            depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        }
 
         VkRenderPassCreateInfo renderPassInfo{};
         if (bMSAA)
@@ -677,7 +691,7 @@ namespace Joestar {
             dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
             dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-            Vector<VkAttachmentDescription> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
+            attachments.Push(colorAttachmentResolve);
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
             renderPassInfo.attachmentCount = attachments.Size();
             renderPassInfo.pAttachments = attachments.Buffer();
@@ -704,7 +718,6 @@ namespace Joestar {
             dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
             dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-            Vector<VkAttachmentDescription> attachments = { colorAttachment, depthAttachment };
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
             renderPassInfo.attachmentCount = attachments.Size();
             renderPassInfo.pAttachments = attachments.Buffer();
@@ -721,7 +734,10 @@ namespace Joestar {
     void RenderAPIVK::CreateTexture(GPUResourceHandle handle, GPUTextureCreateInfo& createInfo)
     {
         GET_STRUCT_BY_HANDLE_FROM_VECTOR(texture, Texture, handle, mTextures);
-        texture.Create(mImageViews[createInfo.imageViewHandle], mSamplers[createInfo.samplerHandle]);
+        if (GPUResource::IsValid(createInfo.samplerHandle))
+            texture.Create(mImageViews[createInfo.imageViewHandle], mSamplers[createInfo.samplerHandle]);
+        else
+            texture.Create(mImageViews[createInfo.imageViewHandle], nullptr);
     }
 
     void RenderAPIVK::CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo)
@@ -781,38 +797,11 @@ namespace Joestar {
         mSwapChain.frameBuffer->SetRawImages(mSwapChain.images);
         mSwapChain.frameBuffer->SetRawImageViews(mSwapChain.imageViews);
 
-        //VkImageCreateInfo imageInfo{};
-        //imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        //imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        //imageInfo.extent.width = mSwapChain.extent.width;
-        //imageInfo.extent.height = mSwapChain.extent.height;
-        //imageInfo.extent.depth = 1;
-        //imageInfo.mipLevels = 1;
-        //imageInfo.arrayLayers = 1;
-        //imageInfo.format = mSwapChain.format;
-        //imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        //imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        //imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        //imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        //imageInfo.samples = VkSampleCountFlagBits(mSwapChain.frameBuffer->msaaSamples);
-        //imageInfo.flags = 0; // Optional  
-        //CreateImage(*colorView->image, imageInfo, mSwapChain.GetImageCount());
-
-        //VkImageViewCreateInfo colorViewCreateInfo{};
-        //colorViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        //colorViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        //colorViewCreateInfo.format = mSwapChain.format;
-        //colorViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        //colorViewCreateInfo.subresourceRange.baseMipLevel = 0;
-        //colorViewCreateInfo.subresourceRange.levelCount = 1;
-        //colorViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-        //colorViewCreateInfo.subresourceRange.layerCount = 1;
-        //colorView->Create(mDevice, colorViewCreateInfo, mSwapChain.GetImageCount());
-        //cb = GetTempCommandBuffer();
-        //colorView->TransitionImageLayout(cb, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
-
         RenderPassVK* renderPass = JOJO_NEW(RenderPassVK);
         GPURenderPassCreateInfo rpInfo;
+        rpInfo.colorFormats.Push(ImageFormat::B8G8R8A8_SRGB);
+        rpInfo.colorLoadOps.Push(AttachmentLoadOp::CLEAR);
+        rpInfo.colorStoreOps.Push(AttachmentStoreOp::STORE);
         CreateRenderPass(renderPass, rpInfo);
 
         mSwapChain.frameBuffer->renderPass = renderPass;

@@ -16,11 +16,15 @@ namespace Joestar {
 
 	void Texture::SetRenderTarget(U32 layer)
 	{
+		mImageView->SetFormat(mFormat);
 		mImageView->SetRenderTarget(mWidth, mHeight);
+		mGraphics->CreateTexture(this);
 	}
 
 	void Texture::SetImage(Image* image, U32 layer)
 	{
+		mSampler = JOJO_NEW(Sampler, MEMORY_TEXTURE);
+		mGraphics->SetSampler(mSampler);
 		if (mImages.Empty())
 		{
 			mImages.Resize(mLayers);
@@ -52,8 +56,6 @@ namespace Joestar {
 				mGraphics->CreateTexture(this);
 			}
 		}
-		mSampler = JOJO_NEW(Sampler, MEMORY_TEXTURE);
-		mGraphics->SetSampler(mSampler);
 	}
 
 

@@ -4,7 +4,7 @@ namespace Joestar {
 
 	U32 FrameBuffer::GetNumColorAttachments()
 	{
-		for (U32 i = 3; i >= 0; --i)
+		for (I32 i = 3; i >= 0; --i)
 		{
 			if (mColorAttachments[i])
 				return i + 1;

@@ -401,7 +401,8 @@ namespace Joestar {
         imageMemorys.Resize(images.Size());
         for (int i = 0; i < images.Size(); ++i)
         {
-            if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemorys[i]) != VK_SUCCESS) {
+            if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemorys[i]) != VK_SUCCESS)
+            {
                 LOGERROR("failed to allocate image memory!");
             }
             vkBindImageMemory(device, images[i], imageMemorys[i], 0);
@@ -557,6 +558,6 @@ namespace Joestar {
     {
         imageInfo.imageLayout = imageView->GetImageLayout();
         imageInfo.imageView = imageView->GetImageView();
-        imageInfo.sampler = sampler->GetSampler();;
+        imageInfo.sampler = sampler ? sampler->GetSampler() : nullptr;
     }
 }

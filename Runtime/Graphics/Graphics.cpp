@@ -258,7 +258,8 @@ namespace Joestar {
 		QueueSubmit(cb);
 	}
 
-	void Graphics::Present() {
+	void Graphics::Present()
+	{
 		WaitForRender();
 		GetMainCmdList()->WriteCommand(GFXCommand::Present);
 		return;
@@ -621,18 +622,31 @@ namespace Joestar {
 		mRenderPasses.Push(pass);
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateRenderPass);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(pass->handle);
-		GPURenderPassCreateInfo createInfo{
-			pass->GetColorFormat(),
+		GPURenderPassCreateInfo createInfo
+		{
+			pass->GetColorAttachmentCount(),
+			pass->GetHasDepthStencil(),
 			pass->GetDepthStencilFormat(),
-			pass->GetColorLoadOp(),
 			pass->GetDepthLoadOp(),
 			pass->GetStencilLoadOp(),
-			pass->GetColorStoreOp(),
 			pass->GetDepthStoreOp(),
 			pass->GetStencilStoreOp(),
-			pass->GetClear()
+			pass->GetClear(),
+			1
 		};
 		GetMainCmdList()->WriteBuffer<GPURenderPassCreateInfo>(createInfo);
+		for (U32 i = 0; i < pass->GetColorAttachmentCount(); ++i)
+		{
+			GetMainCmdList()->WriteBuffer(pass->GetColorFormat(i));
+		}
+		for (U32 i = 0; i < pass->GetColorAttachmentCount(); ++i)
+		{
+			GetMainCmdList()->WriteBuffer(pass->GetColorLoadOp(i));
+		}
+		for (U32 i = 0; i < pass->GetColorAttachmentCount(); ++i)
+		{
+			GetMainCmdList()->WriteBuffer(pass->GetColorStoreOp(i));
+		}
 	}
 
 	RenderPass* Graphics::GetMainRenderPass()
@@ -644,10 +658,14 @@ namespace Joestar {
 	{
 		ASSIGN_NEW_HANDLE(image, mImages);
 
-		GPUMemory* mem = CreateGPUMemory();
-		mem->size = image->GetSize();
-		mem->data = image->GetData();
-		SetGPUMemory(mem);
+		GPUMemory* mem = nullptr;
+		if (image->GetSize())
+		{
+			mem = CreateGPUMemory();
+			mem->size = image->GetSize();
+			mem->data = image->GetData();
+			SetGPUMemory(mem);
+		}
 
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateImage);
 		GetMainCmdList()->WriteBuffer<GPUResourceHandle>(handle);
@@ -663,11 +681,11 @@ namespace Joestar {
 			image->GetMipLevels(),
 			image->GetSamples(),
 			num,
-			mem->GetHandle()
+			mem ? mem->GetHandle() : GPUResource::INVALID_HANDLE
 		};
 		GetMainCmdList()->WriteBuffer<GPUImageCreateInfo>(createInfo);
 
-		if (bStagingBuffer)
+		if (bStagingBuffer && mem)
 		{
 			GetTransferCommandBuffer()->TransitionImageLayout(handle, ImageLayout::UNDEFINED, ImageLayout::TRANSFER_DST_OPTIMAL, (U32)ImageAspectFlagBits::COLOR_BIT);
 			GetTransferCommandBuffer()->CopyBufferToImage(handle, ImageLayout::TRANSFER_DST_OPTIMAL);
@@ -697,7 +715,7 @@ namespace Joestar {
 
 	void Graphics::CreateSwapChain()
 	{
-		mSwapChain = JOJO_NEW(SwapChain);
+		mSwapChain = JOJO_NEW(SwapChain, MEMORY_GFX_STRUCT);
 
 		GetMainCmdList()->WriteCommand(GFXCommand::CreateSwapChain);
 
@@ -808,7 +826,7 @@ namespace Joestar {
 		GetMainCmdList()->WriteBuffer(handle);
 		GPUTextureCreateInfo createInfo{
 			texture->GetImageView()->GetHandle(),
-			texture->GetSampler()->GetHandle()
+			texture->GetSampler() ? texture->GetSampler()->GetHandle() : GPUResource::INVALID_HANDLE
 		};
 		GetMainCmdList()->WriteBuffer(createInfo);
 

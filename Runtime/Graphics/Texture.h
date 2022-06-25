@@ -24,6 +24,10 @@ namespace Joestar {
 		void SetImage(Image* image, U32 layer = 0);
 		void SetRenderTarget(U32 layer = 0);
 		void CreateSampler();
+		GPUResourceHandle GetImageViewHandle()
+		{
+			return mImageView->GetHandle();
+		}
 		GPUImageView* GetImageView()
 		{
 			return mImageView;

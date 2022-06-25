@@ -187,6 +187,25 @@ namespace Joestar {
 
                 GPURenderPassCreateInfo createInfo;
                 cmdList->ReadBuffer(createInfo);
+
+                createInfo.colorFormats.Resize(createInfo.numColorAttachments);
+                for (U32 i = 0; i < createInfo.numColorAttachments; ++i)
+                {
+                    cmdList->ReadBuffer(createInfo.colorFormats[i]);
+                }
+
+                createInfo.colorLoadOps.Resize(createInfo.numColorAttachments);
+                for (U32 i = 0; i < createInfo.numColorAttachments; ++i)
+                {
+                    cmdList->ReadBuffer(createInfo.colorLoadOps[i]);
+                }
+
+                createInfo.colorStoreOps.Resize(createInfo.numColorAttachments);
+                for (U32 i = 0; i < createInfo.numColorAttachments; ++i)
+                {
+                    cmdList->ReadBuffer(createInfo.colorStoreOps[i]);
+                }
+
                 mProtocol->CreateRenderPass(handle, createInfo);
                 break;
             }

@@ -4,6 +4,6 @@ namespace Joestar
 {
 	bool GPUResource::IsValid(GPUResourceHandle handle)
 	{
-		return handle == INVALID_HANDLE;
+		return handle != INVALID_HANDLE;
 	}
 }

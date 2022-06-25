@@ -104,7 +104,6 @@ namespace Joestar
 		cb->SetViewport(&mViewport);
 		//if (bRecord)
 		ForwardRender(cb);
-		//cb->End();
 		return bRecord;
 	}
 

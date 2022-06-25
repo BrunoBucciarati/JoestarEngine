@@ -1,2 +1,2 @@
 #pragma once
-#define DEBUG_CMD 0
+#define DEBUG_CMD 1

@@ -53,17 +53,19 @@ namespace Joestar
 
 	struct GPURenderPassCreateInfo
 	{
-		ImageFormat colorFormat{ ImageFormat::B8G8R8A8_SRGB };
+		U32 numColorAttachments{1};
+		bool hasDepthStencil{true};
 		ImageFormat depthStencilFormat{ImageFormat::D32S8};
-		AttachmentLoadOp colorLoadOp{ AttachmentLoadOp::DONT_CARE };
 		AttachmentLoadOp depthLoadOp{ AttachmentLoadOp::DONT_CARE };
 		AttachmentLoadOp stencilLoadOp{ AttachmentLoadOp::DONT_CARE };
-		AttachmentStoreOp colorStoreOp{ AttachmentStoreOp::DONT_CARE };
 		AttachmentStoreOp depthStoreOp{ AttachmentStoreOp::DONT_CARE };
 		AttachmentStoreOp stencilStoreOp{ AttachmentStoreOp::DONT_CARE };
 		bool clear{ false };
 		
 		U32 msaaSamples{ 1 };
+		PODVector<ImageFormat> colorFormats;
+		PODVector<AttachmentLoadOp> colorLoadOps;
+		PODVector<AttachmentStoreOp> colorStoreOps;
 	};
 
 	struct GPUDepthStencilStateCreateInfo

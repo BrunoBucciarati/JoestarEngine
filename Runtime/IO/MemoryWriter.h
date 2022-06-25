@@ -129,7 +129,8 @@ namespace Joestar
 	{
 	public:
 		template<typename T>
-		bool ReadBuffer(T& t) {
+		bool ReadBuffer(T& t)
+		{
 			U32 sz = sizeof(T);
 			if (cursor + sz > last) return false;
 			memcpy(&t, data + cursor, sizeof(T));
@@ -138,7 +139,8 @@ namespace Joestar
 		}
 
 		template<typename T>
-		bool ReadBufferWithSize(T& t, U32& sz) {
+		bool ReadBufferWithSize(T& t, U32& sz)
+		{
 			if (!ReadBuffer<U32>(sz)) return false;
 			if (cursor + sz > last) return false;
 			memcpy(t, data + cursor, sz);
@@ -146,8 +148,10 @@ namespace Joestar
 			return true;
 		}
 
-		bool ReadBufferPtr(U8* p, U32 sz) {
-			if (sz + cursor > last) {
+		bool ReadBufferPtr(U8* p, U32 sz)
+		{
+			if (sz + cursor > last)
+			{
 				return false;
 			}
 			memcpy(p, data + cursor, sz);
@@ -166,7 +170,8 @@ namespace Joestar
 		void WriteBuffer(T& t)
 		{
 			U32 sz = sizeof(T);
-			while (sz + cursor > size) {
+			while (sz + cursor > size)
+			{
 				DoubleSizeBuffer();
 			}
 			memcpy(data + cursor, &t, sz);
@@ -176,7 +181,8 @@ namespace Joestar
 		void WriteBuffer(const T& t)
 		{
 			U32 sz = sizeof(T);
-			while (sz + cursor > size) {
+			while (sz + cursor > size)
+			{
 				DoubleSizeBuffer();
 			}
 			memcpy(data + cursor, &t, sz);
@@ -187,7 +193,8 @@ namespace Joestar
 		void WriteBufferWithSize(T& t)
 		{
 			U32 sz = sizeof(T);
-			while (sz + cursor > size) {
+			while (sz + cursor > size)
+			{
 				DoubleSizeBuffer();
 			}
 			WriteBuffer<U32>(sz);
@@ -196,19 +203,22 @@ namespace Joestar
 		}
 
 		void WriteBufferPtr(U8* p, U32 sz) {
-			while (sz + cursor > size) {
+			while (sz + cursor > size)
+			{
 				DoubleSizeBuffer();
 			}
 			memcpy(data + cursor, p, sz);
 			cursor += sz;
 		}
 
-		virtual void Flush() {
+		virtual void Flush()
+		{
 			last = cursor;
 			cursor = 0;
 		}
 	private:
-		void DoubleSizeBuffer() {
+		void DoubleSizeBuffer()
+		{
 			U8* oldData = data;
 			data = JOJO_NEW(U8[2 * size], MEMORY_CONTAINER);
 			memset(data, 0, 2 * size);

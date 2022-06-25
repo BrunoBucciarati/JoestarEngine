@@ -196,24 +196,63 @@ namespace Joestar {
             SetDepthStoreOp(op);
             SetStencilStoreOp(op);
         }
+        void SetColorStoreOp(AttachmentStoreOp op)
+        {
+            for (U32 i = 0; i < mColorStoreOps.Size(); ++i)
+            {
+                mColorStoreOps[i] = op;
+            }
+        }
+        void SetColorLoadOp(AttachmentLoadOp op)
+        {
+            for (U32 i = 0; i < mColorLoadOps.Size(); ++i)
+            {
+                mColorLoadOps[i] = op;
+            }
+        }
+        ImageFormat GetColorFormat(U32 idx)
+        {
+            return mColorFormats[idx];
+        }
+        AttachmentStoreOp GetColorStoreOp(U32 idx)
+        {
+            return mColorStoreOps[idx];
+        }
+        AttachmentLoadOp GetColorLoadOp(U32 idx)
+        {
+            return mColorLoadOps[idx];
+        }
         GET_SET_STATEMENT_PREFIX_INITVALUE(bool, Clear, b, false);
-        GET_SET_STATEMENT_INITVALUE(ImageFormat, ColorFormat, ImageFormat::B8G8R8A8_SRGB);
+        GET_SET_STATEMENT_PREFIX_INITVALUE(bool, HasDepthStencil, b, true);
+        GET_SET_STATEMENT_INITVALUE(U32, ColorAttachmentCount, 1);
+        GET_SET_STATEMENT_INITVALUE(Vector<ImageFormat>, ColorFormats, ImageFormat::B8G8R8A8_SRGB);
         GET_SET_STATEMENT_INITVALUE(ImageFormat, DepthStencilFormat, ImageFormat::D32S8);
-        GET_SET_STATEMENT_INITVALUE(AttachmentLoadOp, ColorLoadOp, AttachmentLoadOp::LOAD);
+        GET_SET_STATEMENT_INITVALUE(Vector<AttachmentLoadOp>, ColorLoadOps, AttachmentLoadOp::LOAD);
         GET_SET_STATEMENT_INITVALUE(AttachmentLoadOp, DepthLoadOp, AttachmentLoadOp::LOAD);
         GET_SET_STATEMENT_INITVALUE(AttachmentLoadOp, StencilLoadOp, AttachmentLoadOp::LOAD);
-        GET_SET_STATEMENT_INITVALUE(AttachmentStoreOp, ColorStoreOp, AttachmentStoreOp::STORE);
+        GET_SET_STATEMENT_INITVALUE(Vector<AttachmentStoreOp>, ColorStoreOps, AttachmentStoreOp::STORE);
         GET_SET_STATEMENT_INITVALUE(AttachmentStoreOp, DepthStoreOp, AttachmentStoreOp::STORE);
         GET_SET_STATEMENT_INITVALUE(AttachmentStoreOp, StencilStoreOp, AttachmentStoreOp::STORE);
         void InsertAllHash() override
         {
             HashInsert(bClear);
-            HashInsert(mColorFormat);
+            HashInsert(bHasDepthStencil);
+            HashInsert(mColorAttachmentCount);
+            for (U32 i = 0; i < mColorFormats.Size(); ++i)
+            {
+                HashInsert(mColorFormats[i]);
+            }
             HashInsert(mDepthStencilFormat);
-            HashInsert(mColorLoadOp);
+            for (U32 i = 0; i < mColorLoadOps.Size(); ++i)
+            {
+                HashInsert(mColorLoadOps[i]);
+            }
             HashInsert(mDepthLoadOp);
             HashInsert(mStencilLoadOp);
-            HashInsert(mColorStoreOp);
+            for (U32 i = 0; i < mColorStoreOps.Size(); ++i)
+            {
+                HashInsert(mColorStoreOps[i]);
+            }
             HashInsert(mDepthStoreOp);
             HashInsert(mStencilStoreOp);
         }
@@ -232,7 +271,7 @@ namespace Joestar {
         GET_SET_STATEMENT_REF(PODVector<InputBinding>, InputBindings);
         GET_SET_STATEMENT_REF(PODVector<InputAttribute>, InputAttributes);
         GET_SET_STATEMENT(U32, HashIndex);
-
+         
         U32 GetNumInputBindings()
         {
             return mInputBindings.Size();
