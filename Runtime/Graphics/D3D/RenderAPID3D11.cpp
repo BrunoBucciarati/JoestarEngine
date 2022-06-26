@@ -2,6 +2,7 @@
 #include "../../Misc/Application.h"
 #include "../Window.h"
 #include "../../IO/Log.h"
+#include "../../Core/Assert.h"
 
 #define ReleaseCOM(x) { if(x){ x->Release(); x = 0; } }
 static HRESULT hr;
@@ -43,7 +44,7 @@ namespace Joestar
             D3D11_SDK_VERSION,
             &mDevice,
             &featureLevel,
-            &md3dImmediateContext);
+            &mImmediateContext);
         if (FAILED(hr))
         {
             MessageBox(0, L"D3D11CreateDevice Failed.", 0, 0);
@@ -174,6 +175,8 @@ namespace Joestar
     {
         GET_STRUCT_BY_HANDLE(cb, CommandBuffer, handle);
         cb.createInfo = createInfo;
+        //暂时没有多线程
+        cb.context = mImmediateContext;
     }
 
     void RenderAPID3D11::CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo)
@@ -187,6 +190,19 @@ namespace Joestar
         GET_STRUCT_BY_HANDLE(imageView, ImageView, handle);
         ImageD3D11* image = mImages[createInfo.imageHandle];
         imageView.Create(mDevice, image, createInfo);
+    }
+
+    void RenderAPID3D11::CreateSampler(GPUResourceHandle handle, GPUSamplerCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(sampler, Sampler, handle);
+        sampler.Create(mDevice, createInfo);
+    }
+
+    void RenderAPID3D11::CreateTexture(GPUResourceHandle handle, GPUTextureCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(tex, Texture, handle);
+        tex.imageView = mImageViews[createInfo.imageViewHandle];
+        tex.sampler = mSamplers[createInfo.samplerHandle];
     }
 
     void RenderAPID3D11::CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo)
@@ -207,5 +223,71 @@ namespace Joestar
             D3D11_DEPTH_STENCIL_VIEW_DESC desc = view->GetDepthStencilViewDesc();
             mDevice->CreateDepthStencilView(view->GetImage()->GetTexture2D(), &desc, &fb.depthStencilView);
         }
+    }
+
+    void RenderAPID3D11::CreateIndexBuffer(GPUResourceHandle handle, GPUIndexBufferCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(ib, IndexBuffer, handle);
+        GPUMemory& mem = mMemories[createInfo.memoryHandle];
+        ib.Create(mDevice, createInfo, mem);
+    }
+
+    void RenderAPID3D11::CreateVertexBuffer(GPUResourceHandle handle, GPUVertexBufferCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(vb, VertexBuffer, handle);
+        GPUMemory& mem = mMemories[createInfo.memoryHandle];
+        vb.Create(mDevice, createInfo, mem);
+    }
+
+    void RenderAPID3D11::CreateUniformBuffer(GPUResourceHandle handle, GPUUniformBufferCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(ub, UniformBuffer, handle);
+        ub.Create(mDevice, createInfo);
+    }
+
+    void RenderAPID3D11::CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE_FROM_VECTOR(pass, RenderPass, handle, mRenderPasses);
+        pass.createInfo = createInfo;
+    }
+
+    void RenderAPID3D11::CreateDescriptorPool(U32 num = 1)
+    {
+
+    }
+    void RenderAPID3D11::CreateColorBlendState(GPUResourceHandle handle, GPUColorBlendStateCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(state, ColorBlendState, handle);
+        state.Create(mDevice, createInfo);
+    }
+    void RenderAPID3D11::CreateDepthStencilState(GPUResourceHandle handle, GPUDepthStencilStateCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(state, DepthStencilState, handle);
+        state.Create(mDevice, createInfo);
+    }
+    void RenderAPID3D11::CreateRasterizationState(GPUResourceHandle handle, GPURasterizationStateCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(state, RasterizationState, handle);
+        state.Create(mDevice, createInfo);
+    }
+    void RenderAPID3D11::SetUniformBuffer(GPUResourceHandle handle, U8* data, U32 size)
+    {
+        UniformBufferD3D11* ub = mUniformBuffers[handle];
+        ub->SetStagingData(data, size);
+    }
+    void RenderAPID3D11::CreateShader(GPUResourceHandle handle, GPUShaderCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(shader, Shader, handle);
+        shader.Create(mDevice, createInfo);
+    }
+    void RenderAPID3D11::CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(state, GraphicsPipelineState, handle);
+        state.Create(mDevice, this, createInfo);
+    }
+    void RenderAPID3D11::CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo)
+    {
+        GET_STRUCT_BY_HANDLE(state, ComputePipelineState, handle);
+        state.Create(mDevice, this, createInfo);
     }
 }

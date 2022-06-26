@@ -24,30 +24,31 @@ namespace Joestar
 		virtual void CreateBackBuffers(GPUFrameBufferCreateInfo& createInfo) = 0;
 		virtual void CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo) = 0;
 		virtual void CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo) = 0;
+		virtual void CreateSampler(GPUResourceHandle handle, GPUSamplerCreateInfo& createInfo) = 0;
+		virtual void CreateTexture(GPUResourceHandle handle, GPUTextureCreateInfo& createInfo) = 0;
 		virtual void CreateIndexBuffer(GPUResourceHandle handle, GPUIndexBufferCreateInfo& createInfo) = 0;
 		virtual void CreateVertexBuffer(GPUResourceHandle handle, GPUVertexBufferCreateInfo& createInfo) = 0;
 		virtual void CreateUniformBuffer(GPUResourceHandle handle, GPUUniformBufferCreateInfo& createInfo) = 0;
 		virtual void CreateRenderPass(GPUResourceHandle handle, GPURenderPassCreateInfo& createInfo) = 0;
 		virtual void CreateDescriptorPool(U32 num = 1) = 0;
-		virtual void CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo) = 0;
-		virtual void CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo) = 0;
 		virtual void CreateShader(GPUResourceHandle handle, GPUShaderCreateInfo& createInfo) = 0;
 		virtual void SetUniformBuffer(GPUResourceHandle handle, U8* data, U32 size) = 0;
-		virtual void CreatePipelineLayout(GPUResourceHandle handle, GPUPipelineLayoutCreateInfo& createInfo) = 0;
 		virtual void CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<GPUDescriptorSetLayoutBinding>& bindings) {};
 		virtual void CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo) = 0;
 		virtual void UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo) = 0;
-		virtual void CreateSampler(GPUResourceHandle handle, GPUSamplerCreateInfo& createInfo) = 0;
+		virtual void CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo) = 0;
+		virtual void CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo) = 0;
 		virtual void QueueSubmit(GPUResourceHandle handle) = 0;
-		virtual void CreateTexture(GPUResourceHandle handle, GPUTextureCreateInfo& createInfo) = 0;
 		virtual void Present() = 0;
+		//Maybe Software Functions
+		virtual void CreatePipelineLayout(GPUResourceHandle handle, GPUPipelineLayoutCreateInfo& createInfo);
 		///Uniform Functions
 		void CreateMemory(GPUResourceHandle handle, U32 size, U8* data);
-		void CreateColorBlendState(GPUResourceHandle handle, GPUColorBlendStateCreateInfo& createInfo);
-		void CreateDepthStencilState(GPUResourceHandle handle, GPUDepthStencilStateCreateInfo& createInfo);
-		void CreateRasterizationState(GPUResourceHandle handle, GPURasterizationStateCreateInfo& createInfo);
-		void CreateMultiSampleState(GPUResourceHandle handle, GPUMultiSampleStateCreateInfo& createInfo);
-		void CreateShaderProgram(GPUResourceHandle handle, GPUShaderProgramCreateInfo& createInfo);
+		virtual void CreateColorBlendState(GPUResourceHandle handle, GPUColorBlendStateCreateInfo& createInfo);
+		virtual void CreateDepthStencilState(GPUResourceHandle handle, GPUDepthStencilStateCreateInfo& createInfo);
+		virtual void CreateRasterizationState(GPUResourceHandle handle, GPURasterizationStateCreateInfo& createInfo);
+		virtual void CreateMultiSampleState(GPUResourceHandle handle, GPUMultiSampleStateCreateInfo& createInfo);
+		virtual void CreateShaderProgram(GPUResourceHandle handle, GPUShaderProgramCreateInfo& createInfo);
 		void QueueSubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data, U32);
 		void SubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data, U32);
 
@@ -82,6 +83,18 @@ namespace Joestar
 		{
 			mFrameIndex = frameIndex;
 		}
+		GPUMultiSampleStateCreateInfo* GetMultiSampleState(GPUResourceHandle handle)
+		{
+			return mMultiSampleStates[handle];
+		}
+		GPUPipelineLayoutCreateInfo* GetPipelineLayout(GPUResourceHandle handle)
+		{
+			return mPipelineLayouts[handle];
+		}
+		GPUShaderProgramCreateInfo* GetShaderProgram(GPUResourceHandle handle)
+		{
+			return mShaderPrograms[handle];
+		}
 	protected:
 		U32 maxMsaaSamples;
 		U32 maxBindings{16};
@@ -97,6 +110,9 @@ namespace Joestar
 		Vector<GPURasterizationStateCreateInfo*> mRasterizationStates;
 		Vector<GPUMultiSampleStateCreateInfo*> mMultiSampleStates;
 		Vector<GPUShaderProgramCreateInfo*> mShaderPrograms;
+		Vector<GPUPipelineLayoutCreateInfo*> mPipelineLayouts;
+		//Vector<GPUGraphicsPipelineStateCreateInfo*> mGraphicsPipelineStates;
+		//Vector<GPUComputePipelineStateCreateInfo*> mComputePipelineStates;
 		bool bResized{ false };
 		bool bSync{ false };
 	};
