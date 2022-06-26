@@ -133,6 +133,7 @@ namespace Joestar
 
         count = createInfo.indexCount;
         size = createInfo.indexSize;
+        indexFormat = count == 4 ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT;
     }
 
 
@@ -256,6 +257,46 @@ namespace Joestar
         for (U32 i = 0; i < shaderProgram->numStages; ++i)
         {
             shaders[i] = ctx->GetShader(shaderProgram->shaderHandles[i]);
+            if (shaders[i]->stage == (U32)ShaderStage::VS)
+            {
+                Vector<D3D11_INPUT_ELEMENT_DESC> vertexDescs;
+                vertexDescs.Resize(createInfo.numInputAttributes);
+                for (U32 j = 0; j < createInfo.numInputAttributes; ++j)
+                {
+                    InputAttribute& attr = createInfo.inputAttributes[j];
+                    if (attr.semantic == VertexSemantic::POSITION)
+                    {
+                        vertexDescs[j].SemanticName = "POSITION";
+                        vertexDescs[j].SemanticIndex = 0;
+                    }
+                    else if (attr.semantic == VertexSemantic::NORMAL)
+                    {
+                        vertexDescs[j].SemanticName = "NORMAL";
+                        vertexDescs[j].SemanticIndex = 0;
+                    }
+                    else if (attr.semantic == VertexSemantic::TEXCOORD0)
+                    {
+                        vertexDescs[j].SemanticName = "TEXCOORD";
+                        vertexDescs[j].SemanticIndex = 0;
+                    }
+                    else if (attr.semantic == VertexSemantic::TEXCOORD1)
+                    {
+                        vertexDescs[j].SemanticName = "TEXCOORD";
+                        vertexDescs[j].SemanticIndex = 1;
+                    }
+                    else if (attr.semantic == VertexSemantic::TEXCOORD2)
+                    {
+                        vertexDescs[j].SemanticName = "TEXCOORD";
+                        vertexDescs[j].SemanticIndex = 2;
+                    }
+                    vertexDescs[j].Format = GetVertexFormatD3D(attr.format);
+                    vertexDescs[j].InputSlot = 0;
+                    vertexDescs[j].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                    vertexDescs[j].InstanceDataStepRate = 0;
+                    vertexDescs[j].AlignedByteOffset = attr.offset;
+                }
+                HR(device->CreateInputLayout(vertexDescs.Buffer(), vertexDescs.Size(), shaders[i]->compiledShader->GetBufferPointer(), shaders[i]->compiledShader->GetBufferSize(), &inputLayout));
+            }
         }
     }
 
@@ -287,5 +328,150 @@ namespace Joestar
         }
         HR(D3DCompile(filePtr->GetBuffer(), filePtr->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.CString(),
             target.CString(), flags, 0, &compiledShader, &compilationMsgs));
+        stage = (U32)createInfo.stage;
+
+        if (createInfo.stage == ShaderStage::VS)
+        {
+            device->CreateVertexShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), NULL, &shaderPtr.vertexShader);
+        }
+        else if (createInfo.stage == ShaderStage::PS)
+        {
+            device->CreatePixelShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), NULL, &shaderPtr.pixelShader);
+        }
+        else if (createInfo.stage == ShaderStage::CS)
+        {
+            device->CreateComputeShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), NULL, &shaderPtr.computeShader);
+        }
+    }
+
+    void CommandBufferD3D11::BeginRenderPass(RenderPassBeginInfo& beginInfo)
+    {
+        RenderPassD3D11* renderPass = renderContext->GetRenderPass(beginInfo.passHandle);
+        FrameBufferD3D11* frameBuffer = renderContext->GetFrameBuffer(beginInfo.fbHandle);
+        deviceContext->OMSetRenderTargets(frameBuffer->renderTargetViews.Size(), frameBuffer->renderTargetViews.Buffer(), frameBuffer->depthStencilView);
+        for (U32 i = 0; i < beginInfo.numClearValues; ++i)
+        {
+            ClearValue& clear = beginInfo.clearValues[i];
+            if (i == beginInfo.numClearValues - 1)
+            {
+                deviceContext->ClearDepthStencilView(frameBuffer->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clear.depthStencil.depth, clear.depthStencil.stencil);
+            }
+            else
+            {
+                deviceContext->ClearRenderTargetView(frameBuffer->renderTargetViews[i], clear.color.f32);
+            }
+        }
+    }
+
+    void CommandBufferD3D11::BindGraphicsPipeline(GraphicsPipelineStateD3D11* pipeline)
+    {
+        float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        deviceContext->OMSetBlendState(pipeline->colorBlendState->blendState, blendFactor, 0xFFFFFFFF);
+        deviceContext->OMSetDepthStencilState(pipeline->depthStencilState->depthStencilState, 0);
+        deviceContext->RSSetState(pipeline->rasterState->rasterState);
+        deviceContext->IASetInputLayout(pipeline->inputLayout);
+        deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        for (U32 i = 0; i < pipeline->shaders.Size(); ++i)
+        {
+            if (pipeline->shaders[i]->stage == (U32)ShaderStage::VS)
+            {
+                deviceContext->VSSetShader(pipeline->shaders[i]->shaderPtr.vertexShader, 0, 0);
+            }
+            else if (pipeline->shaders[i]->stage == (U32)ShaderStage::PS)
+            {
+                deviceContext->PSSetShader(pipeline->shaders[i]->shaderPtr.pixelShader, 0, 0);
+            }
+        }
+    }
+
+    void CommandBufferD3D11::BindComputePipeline(ComputePipelineStateD3D11* pipeline)
+    {
+        deviceContext->CSSetShader(pipeline->shaders[0]->shaderPtr.computeShader, 0, 0);
+    }
+
+    void CommandBufferD3D11::BindVertexBuffer(VertexBufferD3D11* vb, U32 slot)
+    {
+        deviceContext->IASetVertexBuffers(slot, 1, &vb->buffer, &vb->size, { 0 });
+    }
+
+    void CommandBufferD3D11::BindIndexBuffer(IndexBufferD3D11* ib)
+    {
+        deviceContext->IASetIndexBuffer(ib->buffer, ib->indexFormat, 0);
+    }
+
+    void CommandBufferD3D11::Draw(U32 vertCount)
+    {
+        deviceContext->Draw(vertCount, 0);
+    }
+
+    void CommandBufferD3D11::DrawIndexed(U32 indexCount, U32 indexStart, U32 vertStart)
+    {
+        deviceContext->DrawIndexed(indexCount, indexStart, vertStart);
+    }
+
+    void CommandBufferD3D11::SetViewport(const Viewport& vp)
+    {
+        D3D11_VIEWPORT viewport{};
+        viewport.MaxDepth = vp.maxDepth;
+        viewport.MinDepth = vp.minDepth;
+        viewport.TopLeftX = vp.rect.x;
+        viewport.TopLeftY = vp.rect.y + vp.rect.height;
+        viewport.Width = vp.rect.width;
+        viewport.Height = vp.rect.height;
+        deviceContext->RSSetViewports(1, &viewport);
+    }
+
+    void CommandBufferD3D11::BindDescriptorSets(SoftwareDescriptorSets* sets, U32 setIndex = 0)
+    {
+        PODVector<GPUDescriptorSetLayoutBinding>& setLayout = renderContext->GetDescriptorSetLayout(sets->layoutHandle);
+        PODVector<GPUDescriptorSetsUpdateInfo::Entry>& updateSets = sets->updateInfo.updateSets;
+        for (U32 i = 0; i < updateSets.Size(); ++i)
+        {
+            GPUDescriptorSetLayoutBinding binding;
+            for (U32 j = 0; j < setLayout.Size(); ++j)
+            {
+                if (setLayout[j].binding == updateSets[i].binding)
+                {
+                    binding = setLayout[j];
+                }
+            }
+            if (GPUResource::IsValid(updateSets[i].textureHandle))
+            {
+                TextureD3D11* tex = renderContext->GetTexture(updateSets[i].textureHandle);
+                if (binding.stage & (U32)ShaderStage::VS)
+                {
+                    deviceContext->VSSetShaderResources(binding.binding, 1, &tex->imageView->imageView);
+                    deviceContext->VSSetSamplers(binding.binding, 1, &tex->sampler->samplerState);
+                }
+                if (binding.stage & (U32)ShaderStage::PS)
+                {
+                    deviceContext->PSSetShaderResources(binding.binding, 1, &tex->imageView->imageView);
+                    deviceContext->PSSetSamplers(binding.binding, 1, &tex->sampler->samplerState);
+                }
+                if (binding.stage & (U32)ShaderStage::CS)
+                {
+                    deviceContext->CSSetShaderResources(binding.binding, 1, &tex->imageView->imageView);
+                    deviceContext->CSSetSamplers(binding.binding, 1, &tex->sampler->samplerState);
+                }
+            }
+            else
+            {
+                UniformBufferD3D11* ub = renderContext->GetUniformBuffer(updateSets[i].uniformHandle);
+                deviceContext->UpdateSubresource(ub->buffer, 0, NULL, ub->GetStagingData(), 0, 0);
+                if (binding.stage & (U32)ShaderStage::VS)
+                {
+                    deviceContext->VSSetConstantBuffers(binding.binding, 1, &ub->buffer);
+                }
+                if (binding.stage & (U32)ShaderStage::PS)
+                {
+                    deviceContext->PSSetConstantBuffers(binding.binding, 1, &ub->buffer);
+                }
+                if (binding.stage & (U32)ShaderStage::CS)
+                {
+                    deviceContext->CSSetConstantBuffers(binding.binding, 1, &ub->buffer);
+                }
+            }
+        }
     }
 }

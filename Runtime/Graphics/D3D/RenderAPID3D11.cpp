@@ -176,7 +176,8 @@ namespace Joestar
         GET_STRUCT_BY_HANDLE(cb, CommandBuffer, handle);
         cb.createInfo = createInfo;
         //暂时没有多线程
-        cb.context = mImmediateContext;
+        cb.deviceContext = mImmediateContext;
+        cb.renderContext = this;
     }
 
     void RenderAPID3D11::CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo)
@@ -289,5 +290,58 @@ namespace Joestar
     {
         GET_STRUCT_BY_HANDLE(state, ComputePipelineState, handle);
         state.Create(mDevice, this, createInfo);
+    }
+    void RenderAPID3D11::CBBeginRenderPass(GPUResourceHandle handle, RenderPassBeginInfo& beginInfo)
+    {
+        CommandBufferD3D11* cb = mCommandBuffers[handle];
+        cb->BeginRenderPass(beginInfo);
+    }
+    void RenderAPID3D11::CBEndRenderPass(GPUResourceHandle handle, GPUResourceHandle passHandle)
+    {}
+    void RenderAPID3D11::CBBindGraphicsPipeline(GPUResourceHandle handle, GPUResourceHandle psoHandle)
+    {
+        CommandBufferD3D11* cb = mCommandBuffers[handle];
+        GraphicsPipelineStateD3D11* pso = mGraphicsPipelineStates[psoHandle];
+        cb->BindGraphicsPipeline(pso);
+    }
+    void RenderAPID3D11::CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle psoHandle)
+    {
+        CommandBufferD3D11* cb = mCommandBuffers[handle];
+        ComputePipelineStateD3D11* pso = mComputePipelineStates[psoHandle];
+        cb->BindComputePipeline(pso);
+    }
+    void RenderAPID3D11::CBBindIndexBuffer(GPUResourceHandle handle, GPUResourceHandle ibHandle)
+    {
+        CommandBufferD3D11* cb = mCommandBuffers[handle];
+        IndexBufferD3D11* ib = mIndexBuffers[ibHandle];
+        cb->BindIndexBuffer(ib);
+    }
+    void RenderAPID3D11::CBBindVertexBuffer(GPUResourceHandle handle, GPUResourceHandle vbHandle, U32 slot)
+    {
+        CommandBufferD3D11* cb = mCommandBuffers[handle];
+        VertexBufferD3D11* vb = mVertexBuffers[vbHandle];
+        cb->BindVertexBuffer(vb, slot);
+    }
+
+    void RenderAPID3D11::CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle layoutHandle, GPUResourceHandle setsHandle, U32 sets)
+    {
+        CommandBufferD3D11* cb = mCommandBuffers[handle];
+        SoftwareDescriptorSets* descriptorSets = mDescriptorSets[setsHandle];
+        cb->BindDescriptorSets(descriptorSets, sets);
+    }
+    void RenderAPID3D11::CBDraw(GPUResourceHandle handle, U32 count)
+    {
+        CommandBufferD3D11* cb = mCommandBuffers[handle];
+        cb->Draw(count);
+    }
+    void RenderAPID3D11::CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart, U32 vertStart)
+    {
+        CommandBufferD3D11* cb = mCommandBuffers[handle];
+        cb->DrawIndexed(count, indexStart, vertStart);
+    }
+    void RenderAPID3D11::CBSetViewport(GPUResourceHandle handle, const Viewport& vp)
+    {
+        CommandBufferD3D11* cb = mCommandBuffers[handle];
+        cb->SetViewport(vp);
     }
 }

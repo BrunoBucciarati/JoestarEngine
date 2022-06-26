@@ -102,6 +102,11 @@ namespace Joestar
 		{
 			return mShaderPrograms[handle];
 		}
+
+		PODVector<GPUDescriptorSetLayoutBinding>& GetDescriptorSetLayout(GPUResourceHandle handle)
+		{
+			return mDescriptorSetLayouts[handle];
+		}
 	protected:
 		U32 maxMsaaSamples;
 		U32 maxBindings{16};

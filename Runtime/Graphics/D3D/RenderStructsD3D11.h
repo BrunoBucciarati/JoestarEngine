@@ -8,6 +8,12 @@ namespace Joestar
 {
 	class FrameBufferD3D11;
 	class RenderAPID3D11;
+	class GraphicsPipelineStateD3D11;
+	class ComputePipelineStateD3D11;
+	class VertexBufferD3D11;
+	class IndexBufferD3D11;
+	class SoftwareDescriptorSets;
+
 	class SwapChainD3D11
 	{
 	public:
@@ -75,7 +81,17 @@ namespace Joestar
 	{
 	public:
 		GPUCommandBufferCreateInfo createInfo;
-		ID3D11DeviceContext* context;
+		ID3D11DeviceContext* deviceContext;
+		RenderAPID3D11* renderContext;
+		void BeginRenderPass(RenderPassBeginInfo& beginInfo);
+		void BindGraphicsPipeline(GraphicsPipelineStateD3D11* pipeline);
+		void BindComputePipeline(ComputePipelineStateD3D11* pipeline);
+		void BindVertexBuffer(VertexBufferD3D11* vb, U32 slot=0);
+		void BindIndexBuffer(IndexBufferD3D11* ib);
+		void BindDescriptorSets(SoftwareDescriptorSets* sets, U32 setIndex = 0);
+		void Draw(U32 vertCount);
+		void DrawIndexed(U32 indexCount, U32 indexStart, U32 vertStart);
+		void SetViewport(const Viewport& vp);
 	};
 
 	class BufferD3D11
@@ -90,16 +106,15 @@ namespace Joestar
 	{
 	public:
 		void Create(ID3D11Device* device, GPUIndexBufferCreateInfo& createInfo, GPUMemory& mem);
-	private:
 		U32 count;
 		U32 size;
+		DXGI_FORMAT indexFormat;
 	};
 
 	class VertexBufferD3D11 : public BufferD3D11
 	{
 	public:
 		void Create(ID3D11Device* device, GPUVertexBufferCreateInfo& createInfo, GPUMemory& mem);
-	private:
 		U32 count;
 		U32 size;
 	};
@@ -109,6 +124,14 @@ namespace Joestar
 	public:
 		void Create(ID3D11Device* device, GPUUniformBufferCreateInfo& createInfo);
 		void SetStagingData(U8* dat, U32 sz);
+		U8* GetStagingData() const
+		{
+			return data;
+		}
+		U32 GetSize() const
+		{
+			return size;
+		}
 	private:
 		U32 size;
 		U8* data;
@@ -161,6 +184,7 @@ namespace Joestar
 	{
 	public:
 		void Create(ID3D11Device* device, RenderAPID3D11* ctx, GPUComputePipelineStateCreateInfo& createInfo);
+		PODVector<ShaderD3D11*> shaders;
 		GPUPipelineLayoutCreateInfo* pipelineLayout;
 		RenderAPID3D11* renderCtx;
 	};
@@ -168,8 +192,16 @@ namespace Joestar
 	class ShaderD3D11
 	{
 	public:
+		union ShaderPtrD3D11
+		{
+			ID3D11VertexShader* vertexShader;
+			ID3D11PixelShader* pixelShader;
+			ID3D11ComputeShader* computeShader;
+		} shaderPtr;
 		void Create(ID3D11Device* device, GPUShaderCreateInfo& createInfo);
 		ID3D10Blob* compiledShader = 0;
 		ID3D10Blob* compilationMsgs = 0;
+		U32 stage{ 0 };
+
 	};
 }

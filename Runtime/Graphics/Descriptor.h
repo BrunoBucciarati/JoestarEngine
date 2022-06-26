@@ -130,6 +130,7 @@ namespace Joestar
 		U32    binding;
 		VertexType    format;
 		U32    offset;
+		VertexSemantic semantic;
 		String name;
 		U32 Hash()
 		{

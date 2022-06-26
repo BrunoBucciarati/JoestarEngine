@@ -14,4 +14,5 @@ namespace Joestar
 	D3D11_BLEND_OP GetD3D11BlendOp(BlendOp op);
 	D3D11_COLOR_WRITE_ENABLE GetD3D11ColorWriteMask(ColorWriteMask mask);
 	D3D11_STENCIL_OP GetD3D11StencilOp(StencilOp op);
+	DXGI_FORMAT GetVertexFormatD3D(VertexType type);
 }

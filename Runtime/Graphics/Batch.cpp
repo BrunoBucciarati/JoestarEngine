@@ -64,6 +64,7 @@ namespace Joestar
 			VertexSemantic semantic = GetMatchingSemantic(inputAttributes[i].name.CString());
 			inputAttributes[i].offset = vb->GetElementOffset(semantic);
 			inputAttributes[i].binding = 0;
+			inputAttributes[i].semantic = semantic;
 		}
 		pso->SetInputAttributes(inputAttributes);
 

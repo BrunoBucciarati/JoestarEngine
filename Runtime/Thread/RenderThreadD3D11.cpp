@@ -118,7 +118,7 @@ namespace Joestar {
         ReleaseCOM(dxgiDevice);
         ReleaseCOM(dxgiAdapter);
         ReleaseCOM(dxgiFactory);
-
+           
         ID3D11Texture2D* backBuffer;
         mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
             reinterpret_cast<void**>(&backBuffer));

@@ -38,6 +38,26 @@ namespace Joestar
 		void CreateDepthStencilState(GPUResourceHandle handle, GPUDepthStencilStateCreateInfo& createInfo) override;
 		void CreateRasterizationState(GPUResourceHandle handle, GPURasterizationStateCreateInfo& createInfo) override;
 
+		//command buffer APIs
+		void CBBegin(GPUResourceHandle handle) {};
+		void CBEnd(GPUResourceHandle handle) {};
+		void CBBeginRenderPass(GPUResourceHandle handle, RenderPassBeginInfo&);
+		void CBEndRenderPass(GPUResourceHandle handle, GPUResourceHandle);
+		void CBBindGraphicsPipeline(GPUResourceHandle handle, GPUResourceHandle);
+		void CBBindComputePipeline(GPUResourceHandle handle, GPUResourceHandle);
+		void CBBindIndexBuffer(GPUResourceHandle handle, GPUResourceHandle);
+		void CBBindVertexBuffer(GPUResourceHandle handle, GPUResourceHandle, U32 = 0);
+		void CBBindDescriptorSets(GPUResourceHandle handle, GPUResourceHandle, GPUResourceHandle, U32 = 0);
+		void CBDraw(GPUResourceHandle handle, U32 count) override;
+		void CBDrawIndexed(GPUResourceHandle handle, U32 count, U32 indexStart = 0, U32 vertStart = 0) override;
+		void CBSetViewport(GPUResourceHandle handle, const Viewport& vp) override;
+		//not for D3D11
+		void CBPushConstants(GPUResourceHandle handle, GPUResourceHandle) override {}
+		void CBCopyBuffer(GPUResourceHandle handle, CopyBufferType type, GPUResourceHandle) override {};
+		void CBCopyBufferToImage(GPUResourceHandle handle, GPUResourceHandle, ImageLayout) override {};
+		void CBTransitionImageLayout(GPUResourceHandle handle, GPUResourceHandle, ImageLayout, ImageLayout, U32) override {};
+		void CBSubmit(GPUResourceHandle handle) override {};
+
 		DepthStencilStateD3D11* GetDepthStencilState(GPUResourceHandle handle)
 		{
 			return mDepthStencilStates[handle];
@@ -61,6 +81,26 @@ namespace Joestar
 		ShaderD3D11* GetShader(GPUResourceHandle handle)
 		{
 			return mShaders[handle];
+		}
+
+		RenderPassD3D11* GetRenderPass(GPUResourceHandle handle)
+		{
+			return mRenderPasses[handle];
+		}
+
+		FrameBufferD3D11* GetFrameBuffer(GPUResourceHandle handle)
+		{
+			return mFrameBuffers[handle];
+		}
+
+		TextureD3D11* GetTexture(GPUResourceHandle handle)
+		{
+			return mTextures[handle];
+		}
+
+		UniformBufferD3D11* GetUniformBuffer(GPUResourceHandle handle)
+		{
+			return mUniformBuffers[handle];
 		}
 	private:
 		bool      mAppPaused;    // 程序是否处在暂停状态
@@ -102,23 +142,5 @@ namespace Joestar
 		D3D_DRIVER_TYPE md3dDriverType;
 		//  设置为true则使用4XMSAA(§4.1.8)，默认为false。
 		bool mEnable4xMsaa;
-
-		ID3D11RasterizerState* mRS;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11VertexShader* vs;
-		ID3D11PixelShader* ps;
-		ID3D11Texture2D* mDiffTex;
-		ID3D11ShaderResourceView* mDiffSRV;
-		ID3D11SamplerState* mSampleState;
-		ID3D11BlendState* mBlendState;
-		ID3D11DepthStencilState* mDepthStencilState;
-
-		//compute
-		ID3D11Buffer* mInputBuffer;
-		ID3D11Buffer* mOutputBuffer;
-		ID3D11Buffer* mOutputDebugBuffer;
-		ID3D11ShaderResourceView* mInputASRV;
-		ID3D11UnorderedAccessView* mOutputUAV;
-		ID3D11ComputeShader* cs;
 	};
 }
