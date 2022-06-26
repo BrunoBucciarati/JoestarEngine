@@ -162,6 +162,7 @@
     <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\CommandBuffer.cpp" />
     <ClCompile Include="Graphics\D3D\RenderAPID3D11.cpp" />
+    <ClCompile Include="Graphics\D3D\RenderEnumsD3D.cpp" />
     <ClCompile Include="Graphics\D3D\RenderStructsD3D11.cpp" />
     <ClCompile Include="Graphics\Descriptor.cpp" />
     <ClCompile Include="Graphics\FrameBuffer.cpp" />
@@ -235,6 +236,7 @@
     <ClInclude Include="Container\Variant.h" />
     <ClInclude Include="Container\Vector.h" />
     <ClInclude Include="Container\SparseArray.h" />
+    <ClInclude Include="Core\Assert.h" />
     <ClInclude Include="Core\ClassIDs.h" />
     <ClInclude Include="Core\EngineContext.h" />
     <ClInclude Include="Core\Functions.h" />
@@ -249,6 +251,7 @@
     <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\CommandBuffer.h" />
     <ClInclude Include="Graphics\D3D\RenderAPID3D11.h" />
+    <ClInclude Include="Graphics\D3D\RenderEnumsD3D.h" />
     <ClInclude Include="Graphics\D3D\RenderStructsD3D11.h" />
     <ClInclude Include="Graphics\Descriptor.h" />
     <ClInclude Include="Graphics\FrameBuffer.h" />
