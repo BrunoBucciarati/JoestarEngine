@@ -63,16 +63,24 @@ namespace Joestar {
 		GET_STRUCT_BY_HANDLE_FROM_VECTOR(layout, GPUPipelineLayoutCreateInfo, handle, mPipelineLayouts);
 		layout = createInfo;
 	}
-	//void RenderAPIProtocol::CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo)
-	//{
-	//	GET_STRUCT_BY_HANDLE_FROM_VECTOR(state, GPUGraphicsPipelineStateCreateInfo, handle, mGraphicsPipelineStates);
-	//	state = createInfo;
-	//}
-	//void RenderAPIProtocol::CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo)
-	//{
-	//	GET_STRUCT_BY_HANDLE_FROM_VECTOR(state, GPUComputePipelineStateCreateInfo, handle, mComputePipelineStates);
-	//	state = createInfo;
-	//}
+	void RenderAPIProtocol::CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<GPUDescriptorSetLayoutBinding>& bindings)
+	{
+		if (handle + 1 > mDescriptorSetLayouts.Size())
+			mDescriptorSetLayouts.Resize(handle + 1);
+		mDescriptorSetLayouts[handle + 1] = bindings;
+	}
+
+	void RenderAPIProtocol::CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo)
+	{
+		GET_STRUCT_BY_HANDLE_FROM_VECTOR(sets, SoftwareDescriptorSets, handle, mDescriptorSets);
+		sets.layoutHandle = createInfo.layoutHandle;
+	}
+
+	void RenderAPIProtocol::UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo)
+	{
+		SoftwareDescriptorSets* sets = mDescriptorSets[handle];
+		sets->updateInfo = updateInfo;
+	}
 	void RenderAPIProtocol::SubmitCommandBuffer(GPUResourceHandle handle, U32 size, U8* data, U32 last)
 	{
 		//GET_STRUCT_BY_HANDLE_FROM_VECTOR(encoder, CommandEncoder, handle, mCommandEncoders);

@@ -9,6 +9,13 @@ namespace Joestar
 {
 	class Window;
 	class SwapChain;
+	//Èí¼þÃèÊö·û
+	class SoftwareDescriptorSets
+	{
+	public:
+		GPUResourceHandle layoutHandle;
+		GPUDescriptorSetsUpdateInfo updateInfo;
+	};
 
 	class RenderAPIProtocol
 	{
@@ -33,15 +40,15 @@ namespace Joestar
 		virtual void CreateDescriptorPool(U32 num = 1) = 0;
 		virtual void CreateShader(GPUResourceHandle handle, GPUShaderCreateInfo& createInfo) = 0;
 		virtual void SetUniformBuffer(GPUResourceHandle handle, U8* data, U32 size) = 0;
-		virtual void CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<GPUDescriptorSetLayoutBinding>& bindings) {};
-		virtual void CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo) = 0;
-		virtual void UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo) = 0;
 		virtual void CreateGraphicsPipelineState(GPUResourceHandle handle, GPUGraphicsPipelineStateCreateInfo& createInfo) = 0;
 		virtual void CreateComputePipelineState(GPUResourceHandle handle, GPUComputePipelineStateCreateInfo& createInfo) = 0;
 		virtual void QueueSubmit(GPUResourceHandle handle) = 0;
 		virtual void Present() = 0;
 		//Maybe Software Functions
 		virtual void CreatePipelineLayout(GPUResourceHandle handle, GPUPipelineLayoutCreateInfo& createInfo);
+		virtual void CreateDescriptorSetLayout(GPUResourceHandle handle, PODVector<GPUDescriptorSetLayoutBinding>& bindings);
+		virtual void CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo);
+		virtual void UpdateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsUpdateInfo& updateInfo);
 		///Uniform Functions
 		void CreateMemory(GPUResourceHandle handle, U32 size, U8* data);
 		virtual void CreateColorBlendState(GPUResourceHandle handle, GPUColorBlendStateCreateInfo& createInfo);
@@ -111,6 +118,8 @@ namespace Joestar
 		Vector<GPUMultiSampleStateCreateInfo*> mMultiSampleStates;
 		Vector<GPUShaderProgramCreateInfo*> mShaderPrograms;
 		Vector<GPUPipelineLayoutCreateInfo*> mPipelineLayouts;
+		Vector<PODVector<GPUDescriptorSetLayoutBinding>> mDescriptorSetLayouts;
+		Vector<SoftwareDescriptorSets*> mDescriptorSets;
 		//Vector<GPUGraphicsPipelineStateCreateInfo*> mGraphicsPipelineStates;
 		//Vector<GPUComputePipelineStateCreateInfo*> mComputePipelineStates;
 		bool bResized{ false };

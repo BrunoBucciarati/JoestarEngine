@@ -252,6 +252,16 @@ namespace Joestar
 
 	struct GPUDescriptorSetLayoutBinding
 	{
+		GPUDescriptorSetLayoutBinding& operator=(const GPUDescriptorSetLayoutBinding& rhs)
+		{
+			binding = rhs.binding;
+			type = rhs.type;
+			count = rhs.count;
+			stage = rhs.stage;
+			size = rhs.size;
+			numMembers = rhs.numMembers;
+			members = rhs.members;
+		}
 		U32 binding{ 0 };
 		DescriptorType type;
 		U32 count{ 0 };
