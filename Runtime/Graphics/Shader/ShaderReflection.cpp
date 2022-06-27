@@ -121,7 +121,8 @@ namespace Joestar
             D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
             pReflection->GetInputParameterDesc(i, &paramDesc);
             mInputAttributes[i].name = paramDesc.SemanticName;
-            mInputAttributes[i].binding = paramDesc.Register;
+            mInputAttributes[i].location = paramDesc.Register;
+            mInputAttributes[i].binding = paramDesc.Stream;
             mInputAttributes[i].offset = offset;
             if (paramDesc.SemanticName == "POSITION")
             {

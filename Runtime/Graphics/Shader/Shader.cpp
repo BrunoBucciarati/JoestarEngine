@@ -8,22 +8,25 @@
 namespace Joestar {
 	Shader::Shader(EngineContext* ctx): Super(ctx)
 	{
-		SetLanguage(mLang);
 
 		auto* cfg = GetSubsystem<GlobalConfig>();
 		GFX_API api = (GFX_API)cfg->GetConfig<U32>(CONFIG_GFX_API);
 		if (api == GFX_API_OPENGL)
 		{
 			mTargetLang = ShaderLanguage::GLSL;
+			mLang = ShaderLanguage::GLSL;
 		}
 		else if (api == GFX_API_VULKAN)
 		{
 			mTargetLang = ShaderLanguage::SPIRV;
+			mLang = ShaderLanguage::GLSL;
 		}
 		else if (api == GFX_API_D3D11 || api == GFX_API_D3D12)
 		{
 			mTargetLang = ShaderLanguage::HLSL;
+			mLang = ShaderLanguage::HLSL;
 		}
+		SetLanguage(mLang);
 	}
 
 	Shader::~Shader()
@@ -68,7 +71,14 @@ namespace Joestar {
 						HRESULT hr = D3DCompile(mFile->GetBuffer(), mFile->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "CS",
 							"cs_5_0", flags, 0, &compiledShader, &compilationMsgs);
 					}
+					// compilationMsgs中包含错误或警告信息
+					if (compilationMsgs != 0)
+					{
+						LOGERROR((char*)compilationMsgs->GetBufferPointer());
+					}
 					mBlob = compiledShader;
+					mReflection = JOJO_NEW(ShaderReflection, MEMORY_GFX_STRUCT);
+					mReflection->ReflectHLSL(mBlob, mStage);
 				}
 				else
 				{

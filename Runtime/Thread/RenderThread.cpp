@@ -3,6 +3,7 @@
 #include "../Graphics/GraphicDefines.h"
 #include "../Graphics/GFXCommandList.h"
 #include "../Graphics/Vulkan/RenderAPIVK.h"
+#include "../Graphics/D3D/RenderAPID3D11.h"
 #include "../Misc/GlobalConfig.h"
 #include "../Graphics/GPUCreateInfos.h"
 #include "../Graphics/GraphicsDebugs.h"
@@ -480,7 +481,9 @@ namespace Joestar {
         GlobalConfig* cfg = GetSubsystem<GlobalConfig>();
         U32 api = cfg->GetConfig<U32>(CONFIG_GFX_API);
         if (api == GFX_API_VULKAN)
-            mProtocol = (RenderAPIProtocol*)JOJO_NEW(RenderAPIVK);
+            mProtocol = (RenderAPIProtocol*)JOJO_NEW(RenderAPIVK, MEMORY_GFX_STRUCT);
+        else if (api == GFX_API_D3D11)
+            mProtocol = (RenderAPIProtocol*)JOJO_NEW(RenderAPID3D11, MEMORY_GFX_STRUCT);
 
         Window* window = GetSubsystem<Window>();
         mProtocol->SetWindow(window);

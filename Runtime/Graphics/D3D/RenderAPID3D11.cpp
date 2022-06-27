@@ -344,4 +344,12 @@ namespace Joestar
         CommandBufferD3D11* cb = mCommandBuffers[handle];
         cb->SetViewport(vp);
     }
+    void RenderAPID3D11::QueueSubmit(GPUResourceHandle handle)
+    {
+
+    }
+    void RenderAPID3D11::Present()
+    {
+        mSwapChain->swapChain->Present(0, 0);
+    }
 }

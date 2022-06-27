@@ -8,20 +8,27 @@ namespace Joestar {
 		File file(mContext, filename);
 
 		//先写成同步的，不过按回调机制处理，后续可以改异步IO
-		if (file.IsReady()) {
+		if (file.IsReady())
+		{
 			callback(&file);
 		}
 	}
 
-	File* FileSystem::ReadFile(const String& filename)
+	SharedPtr<File> FileSystem::ReadFile(const String& filename)
 	{
+		if (mFileMap.Contains(filename) && mFileMap[filename])
+			return mFileMap[filename];
 		File* file = NEW_OBJECT(File, filename);
+		mFileMap[filename] = file;
 		return file;
 	}
 
-	File* FileSystem::OpenFile(const String& filename)
+	SharedPtr<File> FileSystem::OpenFile(const String& filename)
 	{
+		if (mFileMap.Contains(filename) && mFileMap[filename])
+			return mFileMap[filename];
 		File* file = NEW_OBJECT(File, filename);
+		mFileMap[filename] = file;
 		return file;
 	}
 
@@ -35,11 +42,14 @@ namespace Joestar {
 		return true;
 	}
 
-
-	File* FileSystem::GetShaderCodeFile(const String& file)
+	SharedPtr<File> FileSystem::GetShaderCodeFile(const String& filename)
 	{
-		File* f = ReadFile(file);
+		if (mFileMap.Contains(filename) && mFileMap[filename])
+			return mFileMap[filename];
+
+		File* f = ReadFile(filename);
 		f->Close();
+		mFileMap[filename] = f;
 		return f;
 	}
 }

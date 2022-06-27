@@ -6,7 +6,8 @@
 namespace Joestar {
 	class ShaderReflection;
 
-	class Shader : public Resource {
+	class Shader : public Resource
+	{
 		REGISTER_OBJECT(Shader, Resource)
 	public:
 		explicit Shader(EngineContext* ctx);

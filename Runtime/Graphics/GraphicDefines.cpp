@@ -15,6 +15,10 @@ namespace Joestar
 		{
 			return ".spv";
 		}
+		if (ShaderLanguage::HLSL == lang)
+		{
+			return ".hlsl";
+		}
 		return "";
 	}
 

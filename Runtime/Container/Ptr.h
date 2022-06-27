@@ -39,13 +39,16 @@ namespace Joestar
 			AddRef();
 			return *this;
 		}
-		void AddRef() {
+		void AddRef()
+		{
 			if (mPtr)
 				mPtr->AddRef();
 		}
-		void ReleaseRef() {
+		void ReleaseRef()
+		{
 			if (mPtr)
 				mPtr->Release();
+			mPtr = nullptr;
 		}
 		bool Null() {
 			return !!mPtr;
