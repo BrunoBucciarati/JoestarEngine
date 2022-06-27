@@ -94,6 +94,16 @@ namespace Joestar
 		return true;
 	}
 
+    U32 GetConstantBufferSetIdx(const char* name)
+    {
+        if (0 == strcmp(name, "cbPerPass"))
+            return 0;
+        if (0 == strcmp(name, "cbPerBatch"))
+            return 1;
+        if (0 == strcmp(name, "cbPerObject"))
+            return 2;
+    }
+
     bool ShaderReflection::ReflectHLSL(void* blob, ShaderStage stage)
     {
         ID3D10Blob* compiledShader = (ID3D10Blob*)blob;
@@ -191,15 +201,26 @@ namespace Joestar
             }
         }
 
+
+        U32 maxSets = 0;
+        for (U32 i = 0; i < shaderDesc.ConstantBuffers; ++i)
+        {
+            ID3D11ShaderReflectionConstantBuffer* pCBReflection = pReflection->GetConstantBufferByIndex(i);
+            D3D11_SHADER_BUFFER_DESC desc;
+            pCBReflection->GetDesc(&desc);
+            U32 setIdx = GetConstantBufferSetIdx(desc.Name);
+            maxSets = Max(maxSets, setIdx);
+        }
         for (U32 i = 0; i < shaderDesc.ConstantBuffers; ++i)
         {
             ID3D11ShaderReflectionConstantBuffer* pCBReflection = pReflection->GetConstantBufferByIndex(i);
             D3D11_SHADER_BUFFER_DESC desc;
             pCBReflection->GetDesc(&desc);
 
+            U32 setIdx = GetConstantBufferSetIdx(desc.Name);
             if (desc.Type == D3D_CT_CBUFFER)
             {
-
+                
             }
             else if (desc.Type == D3D_CT_TBUFFER)
             {
