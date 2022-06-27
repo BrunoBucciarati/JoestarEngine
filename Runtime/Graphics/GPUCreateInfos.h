@@ -262,6 +262,7 @@ namespace Joestar
 			size = rhs.size;
 			numMembers = rhs.numMembers;
 			members = rhs.members;
+			return *this;
 		}
 		U32 binding{ 0 };
 		DescriptorType type;

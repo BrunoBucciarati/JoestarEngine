@@ -10,7 +10,7 @@ namespace Joestar {
 		DXGI_FORMAT_D24_UNORM_S8_UINT,
 		DXGI_FORMAT_D32_FLOAT_S8X24_UINT
 	};
-	DXGI_FORMAT GetImageFormatVK(ImageFormat fmt)
+	DXGI_FORMAT GetImageFormatD3D(ImageFormat fmt)
 	{
 		return ImageFormatMapping[(U32)fmt];
 	}

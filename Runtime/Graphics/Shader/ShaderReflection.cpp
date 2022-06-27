@@ -1,6 +1,7 @@
 #include "ShaderReflection.h"
 #include <spirv_reflect.h>
 #include <d3dcompiler.h>
+#include <d3d11shader.h>
 #include "../../IO/File.h"
 #include "assert.h"
 

@@ -73,6 +73,7 @@ namespace Joestar
         desc.Format = format;
         desc.ViewDimension = rtvDimension;
         desc.Texture2D = { 0 };
+        return desc;
     }
 
     D3D11_DEPTH_STENCIL_VIEW_DESC ImageViewD3D11::GetDepthStencilViewDesc()
@@ -82,6 +83,7 @@ namespace Joestar
         desc.ViewDimension = dsvDimension;
         desc.Flags = 0;
         desc.Texture2D = { 0 };
+        return desc;
     }
 
 
