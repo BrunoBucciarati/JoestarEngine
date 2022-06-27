@@ -13,7 +13,7 @@ namespace Joestar {
 	}
 
 
-	Texture2D* FrameBuffer::GetColorAttachment(U32 idx)
+	GPUImageView* FrameBuffer::GetColorAttachment(U32 idx)
 	{
 		return mColorAttachments[idx];
 	}

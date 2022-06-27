@@ -13,6 +13,7 @@ namespace Joestar
 	class VertexBufferD3D11;
 	class IndexBufferD3D11;
 	class SoftwareDescriptorSets;
+	class ShaderD3D11;
 
 	class SwapChainD3D11
 	{

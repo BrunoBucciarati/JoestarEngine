@@ -201,7 +201,6 @@ namespace Joestar
             }
         }
 
-
         U32 maxSets = 0;
         for (U32 i = 0; i < shaderDesc.ConstantBuffers; ++i)
         {
@@ -211,6 +210,7 @@ namespace Joestar
             U32 setIdx = GetConstantBufferSetIdx(desc.Name);
             maxSets = Max(maxSets, setIdx);
         }
+        mDescriptorSetLayouts.Resize(maxSets + 1);
         for (U32 i = 0; i < shaderDesc.ConstantBuffers; ++i)
         {
             ID3D11ShaderReflectionConstantBuffer* pCBReflection = pReflection->GetConstantBufferByIndex(i);
@@ -218,13 +218,27 @@ namespace Joestar
             pCBReflection->GetDesc(&desc);
 
             U32 setIdx = GetConstantBufferSetIdx(desc.Name);
+            //only 1?
+            mDescriptorSetLayouts[setIdx].SetNumBindings(1);
+            DescriptorSetLayoutBinding* binding = mDescriptorSetLayouts[setIdx].GetLayoutBinding(0);
+            binding->members.Resize(desc.Variables);
             if (desc.Type == D3D_CT_CBUFFER)
             {
-                
+                binding->type = DescriptorType::UNIFORM_BUFFER;
+                binding->size = desc.Size;
             }
             else if (desc.Type == D3D_CT_TBUFFER)
             {
-
+                binding->type = DescriptorType::COMBINED_IMAGE_SAMPLER;
+            }
+            for (U32 j = 0; j < desc.Variables; ++j)
+            {
+                ID3D11ShaderReflectionVariable* var = pCBReflection->GetVariableByIndex(j);
+                D3D11_SHADER_VARIABLE_DESC varDesc;
+                var->GetDesc(&varDesc);
+                binding->members[j].ID = GetUniformID(varDesc.Name);
+                binding->members[j].offset = varDesc.StartOffset;
+                binding->members[j].size = varDesc.Size;
             }
         }
     }

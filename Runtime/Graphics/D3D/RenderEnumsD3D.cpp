@@ -186,15 +186,6 @@ namespace Joestar {
 		return StencilOpMapping[(U32)op];
 	}
 
-
-	enum class VertexType
-	{
-		VEC4 = 0,
-		VEC3,
-		VEC2,
-		FLOAT,
-		UINT32
-	};
 	const DXGI_FORMAT VertexFormatMapping[]
 	{
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
@@ -205,6 +196,6 @@ namespace Joestar {
 	};
 	DXGI_FORMAT GetVertexFormatD3D(VertexType type)
 	{
-
+		return VertexFormatMapping[(U32)type];
 	}
 }

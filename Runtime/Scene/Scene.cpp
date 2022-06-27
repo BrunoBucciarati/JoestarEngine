@@ -44,14 +44,14 @@ namespace Joestar {
         Image image(mContext);
         image.Load(path);
         texture->SetImage(&image);
-        pr->SetMaterial("vertex", "fragment");
+        pr->SetMaterial("test");
         pr->GetMaterial()->SetTexture(texture, 0);
         pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
 
         if (!mSkyboxGO) {
             mSkyboxGO = NEW_OBJECT(GameObject);
             MeshRenderer* sbRenderer = mSkyboxGO->GetComponent<MeshRenderer>();
-            sbRenderer->SetMaterial("skybox_vs", "skybox_ps");
+            sbRenderer->SetMaterial("skybox");
             MaterialInstance* skyboxMat = sbRenderer->GetMaterial();
             sbRenderer->SetMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere());
 

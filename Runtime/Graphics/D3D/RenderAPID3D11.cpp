@@ -252,7 +252,7 @@ namespace Joestar
         pass.createInfo = createInfo;
     }
 
-    void RenderAPID3D11::CreateDescriptorPool(U32 num = 1)
+    void RenderAPID3D11::CreateDescriptorPool(U32 num)
     {
 
     }

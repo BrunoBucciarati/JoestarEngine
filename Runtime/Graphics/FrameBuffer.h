@@ -13,7 +13,7 @@ namespace Joestar
 		GET_SET_STATEMENT(SharedPtr<RenderPass>, RenderPass);
 	public:
 		U32 GetNumColorAttachments();
-		Texture2D* GetColorAttachment(U32 idx = 0);
+		GPUImageView* GetColorAttachment(U32 idx = 0);
 	private:
 		SharedPtr<GPUImageView> mColorAttachments[4]{};
 	};

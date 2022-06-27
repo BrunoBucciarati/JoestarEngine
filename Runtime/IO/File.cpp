@@ -60,7 +60,7 @@ namespace Joestar {
 		int c = 1;
 	}
 
-	void File::WriteBuffer(const char* data, U32 size)
+	void File::WriteBuffer(U8* data, U32 size)
 	{
 		mBuffer = JOJO_NEW_ARRAY(char, size);
 		memcpy(mBuffer, data, size);

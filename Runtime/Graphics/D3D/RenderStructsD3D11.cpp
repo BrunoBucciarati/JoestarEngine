@@ -422,7 +422,7 @@ namespace Joestar
         deviceContext->RSSetViewports(1, &viewport);
     }
 
-    void CommandBufferD3D11::BindDescriptorSets(SoftwareDescriptorSets* sets, U32 setIndex = 0)
+    void CommandBufferD3D11::BindDescriptorSets(SoftwareDescriptorSets* sets, U32 setIndex)
     {
         PODVector<GPUDescriptorSetLayoutBinding>& setLayout = renderContext->GetDescriptorSetLayout(sets->layoutHandle);
         PODVector<GPUDescriptorSetsUpdateInfo::Entry>& updateSets = sets->updateInfo.updateSets;

@@ -151,8 +151,7 @@ namespace Joestar
 		if (!mShadowMaterial)
 		{
 			Material* mat = NEW_OBJECT(Material);
-			mat->SetShader("shadow_vs", ShaderStage::VS);
-			mat->SetShader("shadow_ps", ShaderStage::PS);
+			mat->SetShader("shadow");
 			mShadowMaterial = NEW_OBJECT(MaterialInstance, mat);
 		}
 		for (auto go : gameObjects)

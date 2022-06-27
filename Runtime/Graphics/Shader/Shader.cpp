@@ -51,8 +51,8 @@ namespace Joestar {
 				bool ret = Super::LoadFile(path + GetShaderSuffix(mLang, mStage));
 				if (ret)
 				{
-					ID3D10Blob* compiledShader;
-					ID3D10Blob* compilationMsgs;
+					ID3D10Blob* compiledShader{ nullptr };
+					ID3D10Blob* compilationMsgs{ nullptr };
 					if (mStage == ShaderStage::VS)
 					{
 						HRESULT hr = D3DCompile(mFile->GetBuffer(), mFile->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS",
