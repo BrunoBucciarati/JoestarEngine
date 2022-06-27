@@ -13,7 +13,6 @@ namespace Joestar {
 	}
 	Renderer::~Renderer(){}
 
-
 	void Renderer::SetMaterial(const String& vs, const String& ps)
 	{
 		Material* mat = NEW_OBJECT(Material);
@@ -23,6 +22,11 @@ namespace Joestar {
 			mMaterial = NEW_OBJECT(MaterialInstance, mat);
 		else
 			LOGERROR("Material Is Not Valid!");
+	}
+
+	void Renderer::SetMaterial(const String& vsps)
+	{
+		SetMaterial(vsps, vsps);
 	}
 	//void Renderer::SetShader(const String& name, ShaderStage stage)
 	//{

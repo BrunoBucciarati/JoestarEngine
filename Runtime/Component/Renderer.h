@@ -19,6 +19,7 @@ namespace Joestar {
 		}
 
 		void SetMaterial(const String& vs, const String& ps);
+		void SetMaterial(const String& vsps);
 
 		MaterialInstance* GetMaterial()
 		{
