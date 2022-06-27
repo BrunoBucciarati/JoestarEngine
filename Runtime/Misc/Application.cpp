@@ -15,13 +15,15 @@
 
 namespace Joestar {
 	F32 TARGET_FPS = 1.0F / 120.0F;
-	void Application::Start() {
+	void Application::Start()
+	{
 		gContext = JOJO_NEW(EngineContext);
 		InitSubSystem(MemoryManager, gContext)
 		InitSubSystem(TimeManager, gContext)
 		InitSubSystem(FileSystem, gContext)
 		InitSubSystem(GlobalConfig, gContext)
-		U32 GFX_API = GFX_API_VULKAN;
+		//U32 GFX_API = GFX_API_VULKAN;
+		U32 GFX_API = GFX_API_D3D11;
 		GetSubsystem<GlobalConfig>()->UpdateConfig(CONFIG_GFX_API, GFX_API);
 		U32 width = 1280, height = 720;
 		InitSubSystem(HID, gContext)
@@ -45,12 +47,14 @@ namespace Joestar {
 	{
 		Start();
 		GetSubsystem<Window>()->Show();
-		while (true) {
+		while (true)
+		{
 			Update();
 		}
 	}
 
-	void Application::Update() {
+	void Application::Update()
+	{
 		float dt = GetSubsystem<TimeManager>()->GetElapseTime();
 		//Input Update
 		GetSubsystem<TimeManager>()->BeginFrame();
@@ -77,7 +81,8 @@ namespace Joestar {
 	}
 
 	static Application* appInstance;
-	Application* Application::GetApplication() {
+	Application* Application::GetApplication()
+	{
 		if (!appInstance) {
 			appInstance = new Application;
 		}

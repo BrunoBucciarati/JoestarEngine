@@ -180,6 +180,7 @@ namespace Joestar
 	{
 		ShaderStage stage;
 		void* file;
+		void* blob;
 	};
 
 	struct GPUShaderProgramCreateInfo

@@ -36,11 +36,11 @@ namespace Joestar
 #endif
         D3D_FEATURE_LEVEL featureLevel;
         HRESULT hr = D3D11CreateDevice(
-            0,                     //  Ä¬ÈÏÏÔÊ¾ÊÊÅäÆ÷
+            0,                     //  é»˜è®¤æ˜¾ç¤ºé€‚é…å™¨
             D3D_DRIVER_TYPE_HARDWARE,
-            0,                     //  ²»Ê¹ÓÃÈí¼şÉè±¸
+            0,                     //  ä¸ä½¿ç”¨è½¯ä»¶è®¾å¤‡
             createDeviceFlags,
-            0, 0,               //  Ä¬ÈÏµÄÌØÕ÷µÈ¼¶Êı×é
+            0, 0,               //  é»˜è®¤çš„ç‰¹å¾ç­‰çº§æ•°ç»„
             D3D11_SDK_VERSION,
             &mDevice,
             &featureLevel,
@@ -65,7 +65,7 @@ namespace Joestar
         bool mEnable4xMsaa = false;// m4xMsaaQuality > 0;
 
         DXGI_SWAP_CHAIN_DESC sd;
-        sd.BufferDesc.Width = window->GetWidth();    // Ê¹ÓÃ´°¿Ú¿Í»§Çø¿í¶È
+        sd.BufferDesc.Width = window->GetWidth();    // ä½¿ç”¨çª—å£å®¢æˆ·åŒºå®½åº¦
         sd.BufferDesc.Height = window->GetHeight();
         sd.BufferDesc.RefreshRate.Numerator = 60;
         sd.BufferDesc.RefreshRate.Denominator = 1;
@@ -75,11 +75,11 @@ namespace Joestar
         mSwapChain = JOJO_NEW(SwapChainD3D11, MEMORY_GFX_STRUCT);
         mSwapChain->width = window->GetWidth();
         mSwapChain->height = window->GetHeight();
-        // ÊÇ·ñÊ¹ÓÃ4X MSAA?
+        // æ˜¯å¦ä½¿ç”¨4X MSAA?
         if (mEnable4xMsaa)
         {
             sd.SampleDesc.Count = 4;
-            // m4xMsaaQualityÊÇÍ¨¹ıCheckMultisampleQualityLevels()·½·¨»ñµÃµÄ
+            // m4xMsaaQualityæ˜¯é€šè¿‡CheckMultisampleQualityLevels()æ–¹æ³•è·å¾—çš„
             sd.SampleDesc.Quality = m4xMsaaQuality - 1;
         }
         // NoMSAA
@@ -99,12 +99,12 @@ namespace Joestar
         HR(mDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice));
         IDXGIAdapter* dxgiAdapter = 0;
         HR(dxgiDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&dxgiAdapter));
-        // »ñµÃIDXGIFactory ½Ó¿Ú
+        // è·å¾—IDXGIFactory æ¥å£
         IDXGIFactory* dxgiFactory = 0;
         HR(dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory));
-        // ÏÖÔÚ£¬´´½¨½»»»Á´
+        // ç°åœ¨ï¼Œåˆ›å»ºäº¤æ¢é“¾
         HR(dxgiFactory->CreateSwapChain(mDevice, &sd, &mSwapChain->swapChain));
-        // ÊÍ·ÅCOM½Ó¿Ú
+        // é‡Šæ”¾COMæ¥å£
         ReleaseCOM(dxgiDevice);
         ReleaseCOM(dxgiAdapter);
         ReleaseCOM(dxgiFactory);
@@ -136,13 +136,13 @@ namespace Joestar
         depthStencilDesc.MipLevels = 1;
         depthStencilDesc.ArraySize = createInfo.layers;
         depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        // Ê¹ÓÃ4X MSAA?¡ª¡ª±ØĞëÓë½»»»Á´µÄMSAAµÄÖµÆ¥Åä
+        // ä½¿ç”¨4X MSAA?â€”â€”å¿…é¡»ä¸äº¤æ¢é“¾çš„MSAAçš„å€¼åŒ¹é…
         if (mEnable4xMsaa)
         {
             depthStencilDesc.SampleDesc.Count = 4;
             depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
         }
-        //  ²»Ê¹ÓÃMSAA
+        //  ä¸ä½¿ç”¨MSAA
         else
         {
             depthStencilDesc.SampleDesc.Count = 1;
@@ -175,7 +175,7 @@ namespace Joestar
     {
         GET_STRUCT_BY_HANDLE(cb, CommandBuffer, handle);
         cb.createInfo = createInfo;
-        //ÔİÊ±Ã»ÓĞ¶àÏß³Ì
+        //æš‚æ—¶æ²¡æœ‰å¤šçº¿ç¨‹
         cb.deviceContext = mImmediateContext;
         cb.renderContext = this;
     }

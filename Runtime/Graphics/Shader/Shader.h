@@ -29,6 +29,10 @@ namespace Joestar {
 		{
 			return mReflection;
 		}
+		void* GetBlob()
+		{
+			return mBlob;
+		}
 	private:
 		String GetDirectoryByLang(ShaderLanguage lang);
 		ShaderStage mStage;
@@ -36,5 +40,6 @@ namespace Joestar {
 		ShaderLanguage mTargetLang;
 		UniquePtr<ShaderReflection> mReflection;
 		GPUResourceHandle mGPUHandle;
+		void* mBlob{ nullptr };
 	};
 }

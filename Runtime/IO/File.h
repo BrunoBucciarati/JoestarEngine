@@ -17,6 +17,7 @@ namespace Joestar {
 		void Open(const String& filename);
 		void Close();
 		void Read(U32=0);
+		void WriteBuffer(U8* data, U32 size);
 		void Write(const char* data, U32 size);
 		void Seek(U32);
 		U32 Size() { return mSize; }

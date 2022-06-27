@@ -3,6 +3,7 @@
 #include "../../Misc/GlobalConfig.h"
 #include "../Graphics.h"
 #include "ShaderReflection.h"
+#include <d3dcompiler.h>
 
 namespace Joestar {
 	Shader::Shader(EngineContext* ctx): Super(ctx)
@@ -39,7 +40,45 @@ namespace Joestar {
 	{
 		if (mLang == mTargetLang)
 		{
-			return Super::LoadFile(path + GetShaderSuffix(mLang, mStage));
+			//HLSLÏÈ±à³ÌBlob
+			if (mLang == ShaderLanguage::HLSL)
+			{
+
+				UINT flags = 0;
+#if defined( DEBUG ) || defined( _DEBUG )
+				flags |= D3DCOMPILE_DEBUG;
+#endif
+				bool ret = Super::LoadFile(path + GetShaderSuffix(mLang, mStage));
+				if (ret)
+				{
+					ID3D10Blob* compiledShader;
+					ID3D10Blob* compilationMsgs;
+					if (mStage == ShaderStage::VS)
+					{
+						HRESULT hr = D3DCompile(mFile->GetBuffer(), mFile->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS",
+							"vs_5_0", flags, 0, &compiledShader, &compilationMsgs);
+					}
+					else if (mStage == ShaderStage::PS)
+					{
+						HRESULT hr = D3DCompile(mFile->GetBuffer(), mFile->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS",
+							"ps_5_0", flags, 0, &compiledShader, &compilationMsgs);
+					}
+					else if (mStage == ShaderStage::CS)
+					{
+						HRESULT hr = D3DCompile(mFile->GetBuffer(), mFile->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "CS",
+							"cs_5_0", flags, 0, &compiledShader, &compilationMsgs);
+					}
+					mBlob = compiledShader;
+				}
+				else
+				{
+					return ret;
+				}
+			}
+			else
+			{
+				return Super::LoadFile(path + GetShaderSuffix(mLang, mStage));
+			}
 		}
 		//Compile To Spirv
 		else if (mTargetLang == ShaderLanguage::SPIRV)

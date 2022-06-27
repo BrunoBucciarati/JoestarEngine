@@ -751,7 +751,8 @@ namespace Joestar {
 		GPUShaderCreateInfo createInfo
 		{
 			shader->GetStage(),
-			shader->GetFile()
+			shader->GetFile(),
+			shader->GetBlob()
 		};
 		GetMainCmdList()->WriteBuffer<GPUShaderCreateInfo>(createInfo);
 	}

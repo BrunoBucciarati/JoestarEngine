@@ -1,5 +1,6 @@
 #include "ShaderReflection.h"
 #include <spirv_reflect.h>
+#include <d3dcompiler.h>
 #include "../../IO/File.h"
 #include "assert.h"
 
@@ -92,4 +93,118 @@ namespace Joestar
 
 		return true;
 	}
+
+    bool ShaderReflection::ReflectHLSL(void* blob, ShaderStage stage)
+    {
+        ID3D10Blob* compiledShader = (ID3D10Blob*)blob;
+        ID3D11ShaderReflection* pReflection;
+        HRESULT hr = D3DReflect(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&pReflection);
+        if (FAILED(hr))
+            return false;
+        D3D11_SHADER_DESC shaderDesc;
+        pReflection->GetDesc(&shaderDesc);
+        mInputAttributes.Resize(shaderDesc.InputParameters);
+        U32 offset = 0;
+        for (U32 i = 0; i < shaderDesc.InputParameters; ++i)
+        {
+            D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+            pReflection->GetInputParameterDesc(i, &paramDesc);
+            mInputAttributes[i].name = paramDesc.SemanticName;
+            mInputAttributes[i].binding = paramDesc.Register;
+            mInputAttributes[i].offset = offset;
+            if (paramDesc.SemanticName == "POSITION")
+            {
+                mInputAttributes[i].semantic = VertexSemantic::POSITION;
+            }
+            else if (paramDesc.SemanticName == "NORMAL")
+            {
+                mInputAttributes[i].semantic = VertexSemantic::NORMAL;
+            }
+            else if (paramDesc.SemanticName == "TEXCOORD")
+            {
+                mInputAttributes[i].semantic = (VertexSemantic)((U32)VertexSemantic::TEXCOORD0 + paramDesc.SemanticIndex);
+            }
+
+            if (paramDesc.Mask == 1)
+            {
+                if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
+                {
+                    mInputAttributes[i].format = VertexType::UINT32;
+                }
+                else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
+                {
+                    mInputAttributes[i].format = VertexType::SINT32;
+                }
+                else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
+                {
+                    mInputAttributes[i].format = VertexType::FLOAT;
+                }
+                offset += 4;
+            }
+            else if (paramDesc.Mask <= 3)
+            {
+                if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
+                {
+                    mInputAttributes[i].format = VertexType::UVEC2;
+                }
+                else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
+                {
+                    mInputAttributes[i].format = VertexType::SVEC2;
+                }
+                else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
+                {
+                    mInputAttributes[i].format = VertexType::VEC2;
+                }
+                offset += 8;
+            }
+            else if (paramDesc.Mask <= 7)
+            {
+                if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
+                {
+                    mInputAttributes[i].format = VertexType::UVEC3;
+                }
+                else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
+                {
+                    mInputAttributes[i].format = VertexType::SVEC3;
+                }
+                else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
+                {
+                    mInputAttributes[i].format = VertexType::VEC3;
+                }
+                offset += 12;
+            }
+            else if (paramDesc.Mask <= 15)
+            {
+                if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
+                {
+                    mInputAttributes[i].format = VertexType::UVEC4;
+                }
+                else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
+                {
+                    mInputAttributes[i].format = VertexType::SVEC4;
+                }
+                else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
+                {
+                    mInputAttributes[i].format = VertexType::VEC4;
+                }
+                offset += 16;
+            }
+        }
+
+        for (U32 i = 0; i < shaderDesc.ConstantBuffers; ++i)
+        {
+            ID3D11ShaderReflectionConstantBuffer* pCBReflection = pReflection->GetConstantBufferByIndex(i);
+            D3D11_SHADER_BUFFER_DESC desc;
+            pCBReflection->GetDesc(&desc);
+
+            if (desc.Type == D3D_CT_CBUFFER)
+            {
+
+            }
+            else if (desc.Type == D3D_CT_TBUFFER)
+            {
+
+            }
+        }
+    }
 }

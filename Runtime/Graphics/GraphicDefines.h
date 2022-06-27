@@ -259,7 +259,14 @@ namespace Joestar {
 		VEC3,
 		VEC2,
 		FLOAT,
-		UINT32
+		UINT32,
+		SINT32,
+		UVEC2,
+		UVEC3,
+		UVEC4,
+		SVEC2,
+		SVEC3,
+		SVEC4
 	};
 
 	const U32 VertexTypeSize[] = {

@@ -9,6 +9,7 @@ namespace Joestar
 	{
 	public:
 		bool ReflectSpirv(File* file, ShaderStage stage);
+		bool ReflectHLSL(void* blob, ShaderStage stage);
 		Vector<DescriptorSetLayout>& GetDescriptorSetLayouts()
 		{
 			return mDescriptorSetLayouts;

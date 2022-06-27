@@ -308,26 +308,26 @@ namespace Joestar
 
     void ShaderD3D11::Create(ID3D11Device* device, GPUShaderCreateInfo& createInfo)
     {
-        File* filePtr = (File*)createInfo.file;
+        ID3D10Blob* compiledShader = (ID3D10Blob*)createInfo.blob;
 
-        UINT flags = 0;
-#if defined( DEBUG ) || defined( _DEBUG )
-        flags |= D3DCOMPILE_DEBUG;
-#endif
-        String entryPoint = "CS";
-        String target = "cs_5_0";
-        if (createInfo.stage == ShaderStage::VS)
-        {
-            entryPoint = "VS";
-            target = "vs_5_0";
-        }
-        else if (createInfo.stage == ShaderStage::PS)
-        {
-            entryPoint = "PS";
-            target = "ps_5_0";
-        }
-        HR(D3DCompile(filePtr->GetBuffer(), filePtr->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.CString(),
-            target.CString(), flags, 0, &compiledShader, &compilationMsgs));
+//        UINT flags = 0;
+//#if defined( DEBUG ) || defined( _DEBUG )
+//        flags |= D3DCOMPILE_DEBUG;
+//#endif
+//        String entryPoint = "CS";
+//        String target = "cs_5_0";
+//        if (createInfo.stage == ShaderStage::VS)
+//        {
+//            entryPoint = "VS";
+//            target = "vs_5_0";
+//        }
+//        else if (createInfo.stage == ShaderStage::PS)
+//        {
+//            entryPoint = "PS";
+//            target = "ps_5_0";
+//        }
+//        HR(D3DCompile(filePtr->GetBuffer(), filePtr->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.CString(),
+//            target.CString(), flags, 0, &compiledShader, &compilationMsgs));
         stage = (U32)createInfo.stage;
 
         if (createInfo.stage == ShaderStage::VS)
