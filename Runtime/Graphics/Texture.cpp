@@ -14,8 +14,9 @@ namespace Joestar {
 	{
 	}
 
-	void Texture::SetRenderTarget(U32 layer)
+	void Texture::SetRenderTarget()
 	{
+		mImageView->SetWriteOnly(bWriteOnly);
 		mImageView->SetFormat(mFormat);
 		mImageView->SetRenderTarget(mWidth, mHeight);
 		mGraphics->CreateTexture(this);

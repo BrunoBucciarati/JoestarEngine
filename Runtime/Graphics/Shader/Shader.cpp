@@ -74,7 +74,8 @@ namespace Joestar {
 					// compilationMsgs中包含错误或警告信息
 					if (compilationMsgs != 0)
 					{
-						LOGERROR((char*)compilationMsgs->GetBufferPointer());
+						const char* errorMsg = (const char*)compilationMsgs->GetBufferPointer();
+						LOGERROR("%s\n", errorMsg);
 					}
 					mBlob = compiledShader;
 					mReflection = JOJO_NEW(ShaderReflection, MEMORY_GFX_STRUCT);

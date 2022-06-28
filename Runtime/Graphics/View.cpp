@@ -180,7 +180,7 @@ namespace Joestar
 		mGraphics->CreateRenderPass(mShadowPass);
 
 		mShadowMap = NEW_OBJECT(Texture2D);
-		mShadowMap->SetFormat(ImageFormat::D32S8);
+		mShadowMap->SetFormat(ImageFormat::D32);
 		mShadowMap->SetWidth(2048);
 		mShadowMap->SetHeight(2048);
 		mShadowMap->SetRenderTarget();

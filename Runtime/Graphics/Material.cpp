@@ -80,7 +80,7 @@ namespace Joestar {
 				mGraphics->CreateUniformBuffer(mUniformBuffers[i]);
 				mDescriptorSets->SetBindingUniformBuffer(binding->binding, mUniformBuffers[i]);
 			}
-			else if (binding->type == DescriptorType::COMBINED_IMAGE_SAMPLER)
+			else if (binding->type == DescriptorType::COMBINED_IMAGE_SAMPLER || binding->type == DescriptorType::SAMPLED_IMAGE)
 			{
 				if (!mTextures[i])
 				{

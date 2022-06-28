@@ -212,6 +212,16 @@ namespace Joestar
             U32 setIdx = GetConstantBufferSetIdx(desc.Name);
             maxSets = Max(maxSets, setIdx);
         }
+        for (U32 i = 0; i < shaderDesc.BoundResources; ++i)
+        {
+            D3D11_SHADER_INPUT_BIND_DESC bindDesc;
+            pReflection->GetResourceBindingDesc(i, &bindDesc);
+            //纹理默认是PerBatch的
+            if (bindDesc.Type == D3D_SIT_TEXTURE)
+            {
+                maxSets = Max(maxSets, 1);
+            }
+        }
         mDescriptorSetLayouts.Resize(maxSets + 1);
         for (U32 i = 0; i < shaderDesc.ConstantBuffers; ++i)
         {
@@ -231,7 +241,8 @@ namespace Joestar
             }
             else if (desc.Type == D3D_CT_TBUFFER)
             {
-                binding->type = DescriptorType::COMBINED_IMAGE_SAMPLER;
+                binding->type = DescriptorType::UNIFORM_BUFFER;
+                binding->size = desc.Size;
             }
             for (U32 j = 0; j < desc.Variables; ++j)
             {
@@ -242,6 +253,28 @@ namespace Joestar
                 binding->members[j].offset = varDesc.StartOffset;
                 binding->members[j].size = varDesc.Size;
             }
+        }
+
+        for (U32 i = 0; i < shaderDesc.BoundResources; ++i)
+        {
+            D3D11_SHADER_INPUT_BIND_DESC bindDesc;
+            pReflection->GetResourceBindingDesc(i, &bindDesc);
+            if (bindDesc.Type == D3D_SIT_TEXTURE)
+            {
+                DescriptorSetLayoutBinding* binding = JOJO_NEW(DescriptorSetLayoutBinding, MEMORY_GFX_STRUCT);
+                //引擎中逻辑层不抽象单独的Sampler了，太麻烦
+                binding->type = DescriptorType::COMBINED_IMAGE_SAMPLER;
+                binding->binding = bindDesc.BindPoint;
+
+                mDescriptorSetLayouts[1].AddBinding(binding);
+            }
+            //else if (bindDesc.Type == D3D_SIT_SAMPLER)
+            //{
+            //    DescriptorSetLayoutBinding* binding = JOJO_NEW(DescriptorSetLayoutBinding, MEMORY_GFX_STRUCT);
+            //    binding->type = DescriptorType::SAMPLER;
+            //    binding->binding = bindDesc.BindPoint;
+            //    mDescriptorSetLayouts[1].AddBinding(binding);
+            //}
         }
     }
 }

@@ -28,6 +28,7 @@ namespace Joestar
 	{
 	public:
 		ImageType type;
+		ImageFormat fmt;
 		ID3D11Resource* image;
 		void Create(ID3D11Device* device, GPUImageCreateInfo& createInfo);
 		ID3D11Texture2D* GetTexture2D()
@@ -50,7 +51,7 @@ namespace Joestar
 		ImageD3D11* image;
 		D3D11_RENDER_TARGET_VIEW_DESC GetRenderTargetViewDesc();
 		D3D11_DEPTH_STENCIL_VIEW_DESC GetDepthStencilViewDesc();
-		DXGI_FORMAT format;
+		ImageFormat format;
 		D3D11_RTV_DIMENSION rtvDimension;
 		D3D11_DSV_DIMENSION dsvDimension;
 	};

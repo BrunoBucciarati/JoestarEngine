@@ -3,6 +3,10 @@
 #include "Graphics.h"
 
 namespace Joestar {
+	static bool IsDepthFormat(ImageFormat fmt)
+	{
+		return fmt == ImageFormat::D24S8 || fmt == ImageFormat::D32S8 || fmt == ImageFormat::D32;
+	}
 	GPUImage::GPUImage(EngineContext* ctx) : Super(ctx),
 		mGraphics(GetSubsystem<Graphics>())
 	{}
@@ -50,10 +54,14 @@ namespace Joestar {
 
 	void GPUImage::SetRenderTarget(U32 w, U32 h)
 	{
-		if (mFormat == ImageFormat::D24S8 || mFormat == ImageFormat::D32S8)
+		if (IsDepthFormat(mFormat))
 			mUsage = (U32)ImageUsageBits::DEPTH_STENCIL_ATTACHMENT_BIT;
 		else
 			mUsage = (U32)ImageUsageBits::COLOR_ATTACHMENT_BIT;
+		if (!bWriteOnly)
+		{
+			mUsage |= (U32)ImageUsageBits::SAMPLED_BIT;
+		}
 		mWidth = w;
 		mHeight = h;
 		mGraphics->CreateImage(this);
@@ -79,7 +87,8 @@ namespace Joestar {
 		if (!mImage)
 			mImage = JOJO_NEW(GPUImage(mContext), MEMORY_TEXTURE);
 		mImage->SetFormat(mFormat);
-		if (mFormat == ImageFormat::D24S8 || mFormat == ImageFormat::D32S8)
+		mImage->SetWriteOnly(bWriteOnly);
+		if (IsDepthFormat(mFormat))
 		{
 			SetAspectBits((U32)ImageAspectFlagBits::DEPTH_BIT | (U32)ImageAspectFlagBits::STENCIL_BIT);
 		}

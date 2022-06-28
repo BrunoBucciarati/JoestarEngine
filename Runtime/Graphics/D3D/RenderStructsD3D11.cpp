@@ -7,13 +7,14 @@ static HRESULT hr1;
 #define HR(f) { \
     hr1 = f; \
     if (FAILED(hr1)) \
-        { LOGERROR("D3D FAILED: %s", #f);} \
+        { LOGERROR("D3D FAILED IN STRUCT: %s\n", #f);} \
 }
 namespace Joestar
 {
 	void ImageD3D11::Create(ID3D11Device* device, GPUImageCreateInfo& createInfo)
 	{
         type = createInfo.type;
+        fmt = createInfo.format;
         if (type == ImageType::TYPE_1D)
         {
             //ID3D11Texture1D* tex;
@@ -27,17 +28,31 @@ namespace Joestar
             desc.Height = createInfo.height;
             desc.MipLevels = createInfo.mipLevels;
             desc.ArraySize = createInfo.layer;
-            desc.Format = GetImageFormatD3D(createInfo.format);
             desc.SampleDesc.Count = 1;
             desc.SampleDesc.Quality = 0;
             desc.Usage = D3D11_USAGE_DEFAULT;
-            desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-            if (createInfo.usage | (U32)ImageUsageBits::STORAGE_BIT)
+            desc.Format = GetTypelessImageFormatD3D(createInfo.format);
+            desc.BindFlags = 0;
+            if (createInfo.usage & (U32)ImageUsageBits::COLOR_ATTACHMENT_BIT)
+            {
+                desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+            }
+            if (createInfo.usage & (U32)ImageUsageBits::DEPTH_STENCIL_ATTACHMENT_BIT)
+            {
+                desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+            }
+            if (createInfo.usage & (U32)ImageUsageBits::SAMPLED_BIT)
+            {
+                //DX 深度格式要处理成R32/R24这种
+                //dxFmt = GetImageViewFormatD3D(createInfo.format);
+                desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+            }
+            if (createInfo.usage & (U32)ImageUsageBits::STORAGE_BIT)
             {
                 desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
             }
             desc.CPUAccessFlags = 0;
-            desc.MiscFlags = 0;
+            desc.MiscFlags = createInfo.layer == 6 ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
 
             ID3D11Texture2D* tex;
             HR(device->CreateTexture2D(&desc, 0, &tex));
@@ -54,15 +69,23 @@ namespace Joestar
 
     void ImageViewD3D11::Create(ID3D11Device* device, ImageD3D11* img, GPUImageViewCreateInfo& createInfo)
     {
+        image = img;
         D3D11_SHADER_RESOURCE_VIEW_DESC desc;
         desc.Format = GetImageFormatD3D(createInfo.format);
         desc.ViewDimension = GetViewDimensionD3D(createInfo.type);
-        desc.Texture2D.MostDetailedMip = createInfo.baseMipLevel;
-        desc.Texture2D.MipLevels = createInfo.mipLevels;
+        if (createInfo.type == ImageViewType::TYPE_CUBE)
+        {
+            desc.TextureCube.MostDetailedMip = createInfo.baseMipLevel;
+            desc.TextureCube.MipLevels = createInfo.mipLevels;
+        }
+        else if (createInfo.type == ImageViewType::TYPE_2D)
+        {
+            desc.Texture2D.MostDetailedMip = createInfo.baseMipLevel;
+            desc.Texture2D.MipLevels = createInfo.mipLevels;
+        }
         HR(device->CreateShaderResourceView(image->image, &desc, &imageView));
 
-        image = img;
-        format = desc.Format;
+        format = createInfo.format;
         rtvDimension = GetRTVDimensionD3D(createInfo.type);
         dsvDimension = GetDSVDimensionD3D(createInfo.type);
     }
@@ -70,7 +93,7 @@ namespace Joestar
     D3D11_RENDER_TARGET_VIEW_DESC ImageViewD3D11::GetRenderTargetViewDesc()
     {
         D3D11_RENDER_TARGET_VIEW_DESC desc{};
-        desc.Format = format;
+        desc.Format = GetRenderTargetFormatD3D(format);
         desc.ViewDimension = rtvDimension;
         desc.Texture2D = { 0 };
         return desc;
@@ -79,7 +102,7 @@ namespace Joestar
     D3D11_DEPTH_STENCIL_VIEW_DESC ImageViewD3D11::GetDepthStencilViewDesc()
     {
         D3D11_DEPTH_STENCIL_VIEW_DESC desc{};
-        desc.Format = format;
+        desc.Format = GetRenderTargetFormatD3D(format);
         desc.ViewDimension = dsvDimension;
         desc.Flags = 0;
         desc.Texture2D = { 0 };

@@ -21,7 +21,7 @@ namespace Joestar {
 		if (mat->IsValid())
 			mMaterial = NEW_OBJECT(MaterialInstance, mat);
 		else
-			LOGERROR("Material Is Not Valid!");
+			LOGERROR("Material Is Not Valid!\n");
 	}
 
 	void Renderer::SetMaterial(const String& vsps)

@@ -22,7 +22,7 @@ namespace Joestar {
 		virtual U32 GetSize() { return mWidth * mHeight; }
 		void SetData(U8* data);
 		void SetImage(Image* image, U32 layer = 0);
-		void SetRenderTarget(U32 layer = 0);
+		void SetRenderTarget();
 		void CreateSampler();
 		GPUResourceHandle GetImageViewHandle()
 		{
@@ -36,6 +36,10 @@ namespace Joestar {
 		{
 			return mSampler;
 		}
+		void SetWriteOnly(bool f)
+		{
+			bWriteOnly = f;
+		}
 	protected:
 		SharedPtr<GPUImageView> mImageView;
 		SharedPtr<Sampler> mSampler;
@@ -43,5 +47,6 @@ namespace Joestar {
 		U32 mLayers{ 1 };
 		WeakPtr<Graphics> mGraphics;
 		Vector<SharedPtr<Image>> mImages;
+		bool bWriteOnly{false};
 	};
 }

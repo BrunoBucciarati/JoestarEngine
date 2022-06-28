@@ -67,7 +67,7 @@ namespace Joestar {
 	{
 		if (handle + 1 > mDescriptorSetLayouts.Size())
 			mDescriptorSetLayouts.Resize(handle + 1);
-		mDescriptorSetLayouts[handle + 1] = bindings;
+		mDescriptorSetLayouts[handle] = bindings;
 	}
 
 	void RenderAPIProtocol::CreateDescriptorSets(GPUResourceHandle handle, GPUDescriptorSetsCreateInfo& createInfo)

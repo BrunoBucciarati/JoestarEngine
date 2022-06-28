@@ -9,7 +9,7 @@ static HRESULT hr;
 #define HR(f) { \
     hr = f; \
     if (FAILED(hr)) \
-        {LOGERROR("D3D FAILED: %s", #f);}\
+        {LOGERROR("D3D FAILED: %s\n", #f);}\
 }
 
 #define GET_STRUCT_BY_HANDLE_FROM_VECTOR_ORIGIN(_VAR, _TYP, _HANDLE, _VEC) \
@@ -203,7 +203,8 @@ namespace Joestar
     {
         GET_STRUCT_BY_HANDLE(tex, Texture, handle);
         tex.imageView = mImageViews[createInfo.imageViewHandle];
-        tex.sampler = mSamplers[createInfo.samplerHandle];
+        if (GPUResource::IsValid(createInfo.samplerHandle))
+            tex.sampler = mSamplers[createInfo.samplerHandle];
     }
 
     void RenderAPID3D11::CreateFrameBuffers(GPUResourceHandle handle, GPUFrameBufferCreateInfo& createInfo)

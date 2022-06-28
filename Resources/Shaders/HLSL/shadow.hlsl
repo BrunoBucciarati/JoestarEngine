@@ -8,10 +8,6 @@ cbuffer cbPerObject
 	float4x4 model; 
 };
 
-Texture2D gDiffTex : register(t0);
-SamplerState gDiffSampler : register(s0);
-
-
 struct VertexIn
 {
 	float3 PosL  : POSITION;
@@ -37,4 +33,5 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
+    return float4(0.0, 0.0, 0.0, 0.0);
 }

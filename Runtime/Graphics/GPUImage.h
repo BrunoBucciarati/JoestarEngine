@@ -52,8 +52,11 @@ namespace Joestar {
 		RG11B10,
 		D24S8,
 		D32S8,
+		D32,
 		FormatCount
 	};
+
+	static bool IsDepthFormat(ImageFormat);
 	class Image;
 	class Graphics;
 	class GPUImage : public Object
@@ -70,6 +73,7 @@ namespace Joestar {
 		GET_SET_STATEMENT_INITVALUE(U32, Samples, 1);
 		GET_SET_STATEMENT_INITVALUE(U32, MipLevels, 1);
 		GET_SET_STATEMENT_INITVALUE(U32, Size, 0);
+		GET_SET_STATEMENT_PREFIX_INITVALUE(bool, WriteOnly, b, false);
 	public:
 		explicit GPUImage(EngineContext*);
 		void SetImage(Image* image);
@@ -98,6 +102,7 @@ namespace Joestar {
 		GET_SET_STATEMENT_INITVALUE(U32, MipLevels, 1);
 		GET_SET_STATEMENT_INITVALUE(U32, BaseLayer, 0);
 		GET_SET_STATEMENT_INITVALUE(U32, Layer, 1);
+		GET_SET_STATEMENT_PREFIX_INITVALUE(bool, WriteOnly, b, false);
 	public:
 		explicit GPUImageView(EngineContext*);
 		void SetImage(Image*);
