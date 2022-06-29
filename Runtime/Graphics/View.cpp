@@ -205,8 +205,15 @@ namespace Joestar
 		mShadowCamera->SetPosition(mainLight->GetPosition());
 		mShadowCamera->SetOrthographic(100.F);
 		mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
-		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mShadowCamera->GetViewMatrix());
-		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mShadowCamera->GetViewMatrix());
+		Matrix4x4f view = mShadowCamera->GetViewMatrix();
+		Matrix4x4f proj = mShadowCamera->GetProjectionMatrix();
+		if (!mGraphics->IsColumnMajor())
+		{
+			view.Transponse();
+			proj.Transponse();
+		}
+		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)&view);
+		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)&proj);
 		mGraphics->SetUniformBuffer(mAllUniformBuffers[(U32)Pass::Shadow][0]);
 		mGraphics->UpdateDescriptorSets(mAllDescriptorSets[(U32)Pass::Shadow]);
 		//要增加shadow的pass和FrameBuffer
@@ -219,8 +226,15 @@ namespace Joestar
 		cb->EndRenderPass(mShadowPass);
 
 		//Scene Pass
-		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)mCamera->GetViewMatrix());
-		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)mCamera->GetProjectionMatrix());
+		view = mCamera->GetViewMatrix();
+		proj = mCamera->GetProjectionMatrix();
+		if (!mGraphics->IsColumnMajor())
+		{
+			view.Transponse();
+			proj.Transponse();
+		}
+		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)&view);
+		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)&proj);
 		mGraphics->SetUniformBuffer(mAllUniformBuffers[(U32)Pass::Scene][0]);
 		mGraphics->UpdateDescriptorSets(mAllDescriptorSets[(U32)Pass::Scene]);
 		cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());

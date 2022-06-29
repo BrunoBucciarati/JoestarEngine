@@ -80,6 +80,8 @@ namespace Joestar {
 					mBlob = compiledShader;
 					mReflection = JOJO_NEW(ShaderReflection, MEMORY_GFX_STRUCT);
 					mReflection->ReflectHLSL(mBlob, mStage);
+
+					GetSubsystem<Graphics>()->CreateShader(this);
 				}
 				else
 				{

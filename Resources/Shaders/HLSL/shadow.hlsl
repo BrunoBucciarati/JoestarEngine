@@ -1,9 +1,9 @@
-cbuffer cbPerPass
+cbuffer cbPerPass : register(b0)
 {
 	float4x4 view; 
 	float4x4 proj; 
 };
-cbuffer cbPerObject
+cbuffer cbPerObject : register(b2)
 {
 	float4x4 model; 
 };
@@ -31,7 +31,7 @@ VertexOut VS(VertexIn vin)
     return vout;
 }
 
-float4 PS(VertexOut pin) : SV_Target
+void PS(VertexOut pin)
 {
-    return float4(0.0, 0.0, 0.0, 0.0);
+    // return float4(0.0, 0.0, 0.0, 0.0);
 }

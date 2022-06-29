@@ -1,9 +1,9 @@
-cbuffer cbPerPass
+cbuffer cbPerPass : register(b0)
 {
 	float4x4 view; 
 	float4x4 proj; 
 };
-cbuffer cbPerObject
+cbuffer cbPerObject : register(b2)
 {
 	float4x4 model; 
 };
@@ -19,6 +19,7 @@ struct VertexIn
 
 struct VertexOut
 {
+	float4 Pos  : SV_POSITION;
     float3 UV   : TEXCOORD0;
 };
 
@@ -33,7 +34,7 @@ VertexOut VS(VertexIn vin)
 	pos = mul(pos, view1);
 	pos = mul(pos, proj);
     pos.w = pos.z;
-    
+    vout.Pos = pos;
     return vout;
 }
 

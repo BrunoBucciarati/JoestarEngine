@@ -11,7 +11,7 @@ static HRESULT hr1;
 }
 namespace Joestar
 {
-	void ImageD3D11::Create(ID3D11Device* device, GPUImageCreateInfo& createInfo)
+	void ImageD3D11::Create(ID3D11Device* device, GPUImageCreateInfo& createInfo, GPUMemory* mem)
 	{
         type = createInfo.type;
         fmt = createInfo.format;
@@ -52,10 +52,39 @@ namespace Joestar
                 desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
             }
             desc.CPUAccessFlags = 0;
-            desc.MiscFlags = createInfo.layer == 6 ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
+            bool isCubeMap = createInfo.layer == 6;
+            desc.MiscFlags = isCubeMap ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
 
             ID3D11Texture2D* tex;
-            HR(device->CreateTexture2D(&desc, 0, &tex));
+            if (mem)
+            {
+                //if (createInfo.layer > 0)
+                {
+                    PODVector<D3D11_SUBRESOURCE_DATA> tinitdatas;
+                    tinitdatas.Resize(createInfo.layer);
+                    for (U32 i = 0; i < createInfo.layer; ++i)
+                    {
+                        auto& tinitdata = tinitdatas[i];
+                        ZeroMemory(&tinitdata, sizeof(tinitdata));
+
+                        tinitdata.SysMemPitch = mem->size / (createInfo.layer * createInfo.height);
+                        tinitdata.pSysMem = mem->data + i * mem->size / createInfo.layer;
+                    }
+                    //tinitdata.SysMemPitch = mem->size / ( 6 * createInfo.height);
+                    HR(device->CreateTexture2D(&desc, tinitdatas.Buffer(), &tex));
+                }
+                //else
+                //{
+                //    D3D11_SUBRESOURCE_DATA tinitdata;
+                //    ZeroMemory(&tinitdata, sizeof(tinitdata));
+                //    tinitdata.pSysMem = mem->data;
+                //    tinitdata.SysMemPitch = mem->size / createInfo.height;
+                //}
+            }
+            else
+            {
+                HR(device->CreateTexture2D(&desc, 0, &tex));
+            }
             image = tex;
         }
         else if (type == ImageType::TYPE_3D)
@@ -257,7 +286,7 @@ namespace Joestar
         {
             rsDesc.CullMode = D3D11_CULL_BACK;
         }
-        else if (createInfo.cullMode == CullMode::FRONT_AND_BACK)
+        else if (createInfo.cullMode == CullMode::NONE)
         {
             rsDesc.CullMode = D3D11_CULL_NONE;
         }
@@ -320,7 +349,7 @@ namespace Joestar
                     vertexDescs[j].InstanceDataStepRate = 0;
                     vertexDescs[j].AlignedByteOffset = attr.offset;
                 }
-                HR(device->CreateInputLayout(vertexDescs.Buffer(), vertexDescs.Size(), shaders[i]->compiledShader->GetBufferPointer(), shaders[i]->compiledShader->GetBufferSize(), &inputLayout));
+                HR(device->CreateInputLayout(vertexDescs.Buffer(), vertexDescs.Size(), shaders[i]->compiledBlob->GetBufferPointer(), shaders[i]->compiledBlob->GetBufferSize(), &inputLayout));
             }
         }
     }
@@ -334,7 +363,7 @@ namespace Joestar
     void ShaderD3D11::Create(ID3D11Device* device, GPUShaderCreateInfo& createInfo)
     {
         ID3D10Blob* compiledShader = (ID3D10Blob*)createInfo.blob;
-
+        compiledBlob = compiledShader;
 //        UINT flags = 0;
 //#if defined( DEBUG ) || defined( _DEBUG )
 //        flags |= D3DCOMPILE_DEBUG;
@@ -354,7 +383,6 @@ namespace Joestar
 //        HR(D3DCompile(filePtr->GetBuffer(), filePtr->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.CString(),
 //            target.CString(), flags, 0, &compiledShader, &compilationMsgs));
         stage = (U32)createInfo.stage;
-
         if (createInfo.stage == ShaderStage::VS)
         {
             device->CreateVertexShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), NULL, &shaderPtr.vertexShader);
@@ -383,7 +411,10 @@ namespace Joestar
             }
             else
             {
-                deviceContext->ClearRenderTargetView(frameBuffer->renderTargetViews[i], clear.color.f32);
+                if (frameBuffer->renderTargetViews.Size() > i)
+                {
+                    deviceContext->ClearRenderTargetView(frameBuffer->renderTargetViews[i], clear.color.f32);
+                }
             }
         }
     }
@@ -417,7 +448,8 @@ namespace Joestar
 
     void CommandBufferD3D11::BindVertexBuffer(VertexBufferD3D11* vb, U32 slot)
     {
-        deviceContext->IASetVertexBuffers(slot, 1, &vb->buffer, &vb->size, { 0 });
+        U32 offsets[]{ 0 };
+        deviceContext->IASetVertexBuffers(slot, 1, &vb->buffer, &vb->size, offsets);
     }
 
     void CommandBufferD3D11::BindIndexBuffer(IndexBufferD3D11* ib)
@@ -486,15 +518,15 @@ namespace Joestar
                 deviceContext->UpdateSubresource(ub->buffer, 0, NULL, ub->GetStagingData(), 0, 0);
                 if (binding.stage & (U32)ShaderStage::VS)
                 {
-                    deviceContext->VSSetConstantBuffers(binding.binding, 1, &ub->buffer);
+                    deviceContext->VSSetConstantBuffers(setIndex, 1, &ub->buffer);
                 }
                 if (binding.stage & (U32)ShaderStage::PS)
                 {
-                    deviceContext->PSSetConstantBuffers(binding.binding, 1, &ub->buffer);
+                    deviceContext->PSSetConstantBuffers(setIndex, 1, &ub->buffer);
                 }
                 if (binding.stage & (U32)ShaderStage::CS)
                 {
-                    deviceContext->CSSetConstantBuffers(binding.binding, 1, &ub->buffer);
+                    deviceContext->CSSetConstantBuffers(setIndex, 1, &ub->buffer);
                 }
             }
         }

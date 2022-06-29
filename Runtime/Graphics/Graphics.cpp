@@ -88,6 +88,7 @@ namespace Joestar {
 
 		GFX_API gfxAPI = (GFX_API)GetSubsystem<GlobalConfig>()->GetConfig<U32>(CONFIG_GFX_API);
 		bStagingBuffer = gfxAPI == GFX_API_VULKAN;
+		bIsColumnMajor = gfxAPI == GFX_API_VULKAN;
 	}
 
 	void Graphics::CreateDefaultStates()

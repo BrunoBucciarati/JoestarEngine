@@ -120,10 +120,7 @@ namespace Joestar
         if (mSwapChain->frameBuffer)
             return;
         mSwapChain->frameBuffer = JOJO_NEW(FrameBufferD3D11, MEMORY_GFX_STRUCT);
-        if (mFrameBuffers.Empty())
-            mFrameBuffers.Resize(1);
-        mFrameBuffers[0] = mSwapChain->frameBuffer;
-        mFrameBuffers[0]->renderTargetViews.Resize(1);
+        mSwapChain->frameBuffer->renderTargetViews.Resize(1);
 
         ID3D11Texture2D* backBuffer;
         mSwapChain->swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
@@ -157,6 +154,7 @@ namespace Joestar
         HR(mDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer));
 
         HR(mDevice->CreateDepthStencilView(mDepthStencilBuffer, 0, &mSwapChain->frameBuffer->depthStencilView));
+        mFrameBuffers.Push(mSwapChain->frameBuffer);
     }
 
     void RenderAPID3D11::CreateSyncObjects(U32 num)
@@ -183,7 +181,15 @@ namespace Joestar
     void RenderAPID3D11::CreateImage(GPUResourceHandle handle, GPUImageCreateInfo& createInfo)
     {
         GET_STRUCT_BY_HANDLE(image, Image, handle);
-        image.Create(mDevice, createInfo);
+        if (GPUResource::IsValid(createInfo.memHandle))
+        {
+            GPUMemory& mem = mMemories[createInfo.memHandle];
+            image.Create(mDevice, createInfo, &mem);
+        }
+        else
+        {
+            image.Create(mDevice, createInfo);
+        }
     }
 
     void RenderAPID3D11::CreateImageView(GPUResourceHandle handle, GPUImageViewCreateInfo& createInfo)

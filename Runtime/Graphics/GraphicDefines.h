@@ -239,7 +239,8 @@ namespace Joestar {
 
 	enum class VertexSemantic
 	{
-		POSITION = 0,
+		INVALID = 0,
+		POSITION = 1,
 		NORMAL,
 		TANGENT,
 		COLOR,

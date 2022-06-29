@@ -13,21 +13,25 @@ namespace Joestar
 {
 	void Batch::Render(View* view, CommandBuffer* cb)
 	{
+		GraphicsPipelineState* pso = PreparePipelineState(view, cb);
+		cb->BindPipelineState(pso);
+
 		bool flag = mMaterial->Update();
 		if (mMaterial->GetBatchDescriptorSets())
 			cb->BindDescriptorSets(UniformFrequency::BATCH, mShaderProgram->GetPipelineLayout(), mMaterial->GetBatchDescriptorSets());
 		
 		auto model = mRenderer->GetGameObject()->GetAfflineTransform();
+		if (!view->GetGraphics()->IsColumnMajor())
+		{
+			model.Transponse();
+		}
 		mMaterial->SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (U8*)&model);
 		mMaterial->UpdateDescriptorSets();
 
 		if (mMaterial->GetObjectDescriptorSets())
 			cb->BindDescriptorSets(UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mMaterial->GetObjectDescriptorSets());
 
-		GraphicsPipelineState* pso = PreparePipelineState(view, cb);
-		cb->BindPipelineState(pso);
 		cb->BindVertexBuffer(mMesh->GetVertexBuffer());
-		//后面外面要按材质排序，这个BATCH的应该放在外面 --todo
 		cb->BindDescriptorSets(UniformFrequency::PASS, mShaderProgram->GetPipelineLayout(), cb->GetPassDescriptorSets());
 		cb->BindIndexBuffer(mMesh->GetIndexBuffer());
 		cb->DrawIndexed(mMesh->GetIndexCount());
@@ -61,10 +65,13 @@ namespace Joestar
 		PODVector<VertexElement>& elements = vb->GetVertexElements();
 		for (U32 i = 0; i < inputAttributes.Size(); ++i)
 		{
-			VertexSemantic semantic = GetMatchingSemantic(inputAttributes[i].name.CString());
-			inputAttributes[i].offset = vb->GetElementOffset(semantic);
+			if (VertexSemantic::INVALID == inputAttributes[i].semantic)
+			{
+				VertexSemantic semantic = GetMatchingSemantic(inputAttributes[i].name.CString());
+				inputAttributes[i].semantic = semantic;
+			}
+			inputAttributes[i].offset = vb->GetElementOffset(inputAttributes[i].semantic);
 			inputAttributes[i].binding = 0;
-			inputAttributes[i].semantic = semantic;
 		}
 		pso->SetInputAttributes(inputAttributes);
 

@@ -28,14 +28,14 @@ namespace Joestar {
         }
 
         // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-        inline Matrix4x4f* GetViewMatrix()
+        Matrix4x4f GetViewMatrix()
         {
-            return &mView;
+            return mView;
         }
 
-        inline Matrix4x4f* GetProjectionMatrix()
+        Matrix4x4f GetProjectionMatrix()
         {
-            return &mProjection;
+            return mProjection;
         }
 
         Vector3f GetPosition()

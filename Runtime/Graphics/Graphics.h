@@ -102,6 +102,10 @@ namespace Joestar {
 		{
 			return mDescriptorSets[0];
 		}
+		bool IsColumnMajor()
+		{
+			return bIsColumnMajor;
+		}
 	private:
 		void CreatePerPassUniforms();
 		void CreateMainRenderPass();
@@ -148,5 +152,6 @@ namespace Joestar {
 		U32 msaaSamples{ 0 };
 		bool bFloatingPointRT{ false };
 		bool bStagingBuffer{ true };
+		bool bIsColumnMajor{ true };
 	};
 }

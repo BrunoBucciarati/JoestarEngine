@@ -18,10 +18,10 @@ namespace Joestar
 	class SwapChainD3D11
 	{
 	public:
-		IDXGISwapChain* swapChain;
+		IDXGISwapChain* swapChain{ nullptr };
 		U32 width;
 		U32 height;
-		FrameBufferD3D11* frameBuffer;
+		FrameBufferD3D11* frameBuffer{ nullptr };
 	};
 
 	class ImageD3D11
@@ -30,7 +30,7 @@ namespace Joestar
 		ImageType type;
 		ImageFormat fmt;
 		ID3D11Resource* image;
-		void Create(ID3D11Device* device, GPUImageCreateInfo& createInfo);
+		void Create(ID3D11Device* device, GPUImageCreateInfo& createInfo, GPUMemory* mem = nullptr);
 		ID3D11Texture2D* GetTexture2D()
 		{
 			if (type == ImageType::TYPE_2D)
@@ -201,8 +201,7 @@ namespace Joestar
 			ID3D11ComputeShader* computeShader;
 		} shaderPtr;
 		void Create(ID3D11Device* device, GPUShaderCreateInfo& createInfo);
-		ID3D10Blob* compiledShader = 0;
-		ID3D10Blob* compilationMsgs = 0;
+		ID3D10Blob* compiledBlob = 0;
 		U32 stage{ 0 };
 
 	};

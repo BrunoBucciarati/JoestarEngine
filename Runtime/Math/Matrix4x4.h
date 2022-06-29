@@ -5,6 +5,7 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "FloatMath.h"
+#include "../Core/Functions.h"
 
 namespace Joestar {
 	class Matrix3x3f;
@@ -72,6 +73,8 @@ namespace Joestar {
 		void SetScale(float x, float y, float z);
 
 		Matrix4x4f& SetFromToRotation(const Vector3f& from, const Vector3f& to);
+
+		void Transponse();
 
 		static const Matrix4x4f identity;
 	};
@@ -242,6 +245,16 @@ namespace Joestar {
 			IsFinite(f.m_Data[4]) & IsFinite(f.m_Data[5]) & IsFinite(f.m_Data[6]) &
 			IsFinite(f.m_Data[8]) & IsFinite(f.m_Data[9]) & IsFinite(f.m_Data[10]) &
 			IsFinite(f.m_Data[12]) & IsFinite(f.m_Data[13]) & IsFinite(f.m_Data[14]) & IsFinite(f.m_Data[15]);
+	}
+
+	inline void Matrix4x4f::Transponse()
+	{
+		Joestar::Swap(m_Data[1], m_Data[4]);
+		Joestar::Swap(m_Data[2], m_Data[8]);
+		Joestar::Swap(m_Data[3], m_Data[12]);
+		Joestar::Swap(m_Data[6], m_Data[9]);
+		Joestar::Swap(m_Data[7], m_Data[13]);
+		Joestar::Swap(m_Data[11], m_Data[14]);
 	}
 }
 #endif

@@ -48,6 +48,7 @@ namespace Joestar
                 mInputAttributes[i].format = VertexType::UINT32;
             }
             mInputAttributes[i].name = var->name;
+            mInputAttributes[i].semantic = GetMatchingSemantic(var->name);
         }
 
 		// Output variables, descriptor bindings, descriptor sets, and push constants
@@ -114,6 +115,13 @@ namespace Joestar
             return false;
         D3D11_SHADER_DESC shaderDesc;
         pReflection->GetDesc(&shaderDesc);
+
+        U32 inputParameters = shaderDesc.InputParameters;
+        //只有VS阶段的输入需要收集
+        if (stage == ShaderStage::VS)
+        {
+            inputParameters = 0;
+        }
         mInputAttributes.Resize(shaderDesc.InputParameters);
         U32 offset = 0;
         for (U32 i = 0; i < shaderDesc.InputParameters; ++i)
@@ -124,15 +132,15 @@ namespace Joestar
             mInputAttributes[i].location = paramDesc.Register;
             mInputAttributes[i].binding = paramDesc.Stream;
             mInputAttributes[i].offset = offset;
-            if (paramDesc.SemanticName == "POSITION")
+            if (0 == strcmp(paramDesc.SemanticName, "POSITION"))
             {
                 mInputAttributes[i].semantic = VertexSemantic::POSITION;
             }
-            else if (paramDesc.SemanticName == "NORMAL")
+            else if (0 == strcmp(paramDesc.SemanticName, "NORMAL"))
             {
                 mInputAttributes[i].semantic = VertexSemantic::NORMAL;
             }
-            else if (paramDesc.SemanticName == "TEXCOORD")
+            else if (0 == strcmp(paramDesc.SemanticName, "TEXCOORD"))
             {
                 mInputAttributes[i].semantic = (VertexSemantic)((U32)VertexSemantic::TEXCOORD0 + paramDesc.SemanticIndex);
             }
@@ -244,6 +252,7 @@ namespace Joestar
                 binding->type = DescriptorType::UNIFORM_BUFFER;
                 binding->size = desc.Size;
             }
+            binding->stage |= (U32)stage;
             for (U32 j = 0; j < desc.Variables; ++j)
             {
                 ID3D11ShaderReflectionVariable* var = pCBReflection->GetVariableByIndex(j);
@@ -265,6 +274,7 @@ namespace Joestar
                 //引擎中逻辑层不抽象单独的Sampler了，太麻烦
                 binding->type = DescriptorType::COMBINED_IMAGE_SAMPLER;
                 binding->binding = bindDesc.BindPoint;
+                binding->stage |= (U32)stage;
 
                 mDescriptorSetLayouts[1].AddBinding(binding);
             }
