@@ -135,10 +135,10 @@ namespace Joestar {
     Mesh* ProceduralMesh::GenTriangle() {
         Mesh* mesh = NEW_OBJECT(Mesh);
         Vector<F32> vertices = {
-            -0.5F, 0.0F, 0.5F, 0.5F, 0.0F, 0.5F, 0.5F, -0.5F, 0.5F
+            0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0.0F, 0.0F
         };
         Vector<U16> indices = {
-            0, 1, 2
+            0, 1, 2, 0, 2, 1
         };
         PODVector<VertexElement> elements;
         elements.Push({ VertexSemantic::POSITION, VertexType::VEC3 });

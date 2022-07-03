@@ -76,6 +76,12 @@ namespace Joestar {
 
 		void Transponse();
 
+		//Í¸ÊÓ¾ØÕó¡£YÖá·­×ª
+		void FlipY()
+		{
+			m_Data[5] = -m_Data[5];
+		}
+
 		static const Matrix4x4f identity;
 	};
 

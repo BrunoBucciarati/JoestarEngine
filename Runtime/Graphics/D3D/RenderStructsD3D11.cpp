@@ -291,7 +291,7 @@ namespace Joestar
             rsDesc.CullMode = D3D11_CULL_NONE;
         }
         rsDesc.FrontCounterClockwise = createInfo.frontFace == FrontFaceMode::COUNTER_CLOCKWISE;
-        rsDesc.DepthClipEnable = createInfo.depthClamp;
+        rsDesc.DepthClipEnable = true;// createInfo.depthClamp;
 
         HR(device->CreateRasterizerState(&rsDesc, &rasterState));
     }
@@ -473,7 +473,7 @@ namespace Joestar
         viewport.MaxDepth = vp.maxDepth;
         viewport.MinDepth = vp.minDepth;
         viewport.TopLeftX = vp.rect.x;
-        viewport.TopLeftY = vp.rect.y + vp.rect.height;
+        viewport.TopLeftY = vp.rect.y;
         viewport.Width = vp.rect.width;
         viewport.Height = vp.rect.height;
         deviceContext->RSSetViewports(1, &viewport);

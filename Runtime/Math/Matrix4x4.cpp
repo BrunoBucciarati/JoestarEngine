@@ -50,7 +50,7 @@ namespace Joestar {
 		//Get(3, 0) = 0.0F;               Get(3, 1) = 0.0F;      Get(3, 2) = -1.0F;                   Get(3, 3) = 0.0F;
 
 		Get(0, 0) = cotangent / aspect;	Get(0, 1) = 0.0F;      Get(0, 2) = 0.0F;                    Get(0, 3) = 0.0F;
-		Get(1, 0) = 0.0F;               Get(1, 1) = cotangent; Get(1, 2) = 0.0F;                    Get(1, 3) = 0.0F;
+		Get(1, 0) = 0.0F;               Get(1, 1) = -cotangent; Get(1, 2) = 0.0F;                    Get(1, 3) = 0.0F;
 		Get(2, 0) = 0.0F;               Get(2, 1) = 0.0F;      Get(2, 2) = -zFar / deltaZ;			Get(2, 3) = zNear * zFar / deltaZ;
 		Get(3, 0) = 0.0F;               Get(3, 1) = 0.0F;      Get(3, 2) = 1.0F;                   Get(3, 3) = 0.0F;
 

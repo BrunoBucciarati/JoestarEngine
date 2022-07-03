@@ -48,6 +48,12 @@ namespace Joestar {
         pr->GetMaterial()->SetTexture(texture, 0);
         pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
 
+        //GameObject* testTri = NEW_OBJECT(GameObject);
+        //mGameObjects.Push(testTri);
+        //MeshRenderer* tr = testTri->GetComponent<MeshRenderer>();
+        //tr->SetMaterial("testTriangle");
+        //tr->SetMesh(GetSubsystem<ProceduralMesh>()->GetTriangle());
+
         if (!mSkyboxGO) {
             mSkyboxGO = NEW_OBJECT(GameObject);
             MeshRenderer* sbRenderer = mSkyboxGO->GetComponent<MeshRenderer>();

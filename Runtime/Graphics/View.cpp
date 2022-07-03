@@ -212,6 +212,10 @@ namespace Joestar
 			view.Transponse();
 			proj.Transponse();
 		}
+		if (mGraphics->IsOriginBottomLeft())
+		{
+			proj.FlipY();
+		}
 		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)&view);
 		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)&proj);
 		mGraphics->SetUniformBuffer(mAllUniformBuffers[(U32)Pass::Shadow][0]);

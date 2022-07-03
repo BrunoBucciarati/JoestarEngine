@@ -8,29 +8,39 @@
 #define ReleaseCOM(x) { if(x){ x->Release(); x = 0; } }
 
 namespace Joestar {
+    //float vertices[] =
+    //{
+    //    -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+    //    -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+    //    1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+    //    1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+    //    -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+    //    -1.0f, +1.0f, +1.0f, 0.0f, 1.0f,
+    //    +1.0f, +1.0f, +1.0f, 1.0f, 1.0f,
+    //    +1.0f, -1.0f, +1.0f, 1.0f, 0.0f,
+    //};
     float vertices[] =
     {
-        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-        -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
-        -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-        -1.0f, +1.0f, +1.0f, 0.0f, 1.0f,
-        +1.0f, +1.0f, +1.0f, 1.0f, 1.0f,
-        +1.0f, -1.0f, +1.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
     };
 
-
-    UINT indices[24] = {
+    UINT indices[6] = {
         0, 1, 2,   //  Triangle  0
-        0, 2, 3,   //  Triangle  1
-        0, 3, 4,   //  Triangle  2
-        0, 4, 5,   //  Triangle  3
-        0, 5, 6,   //  Triangle  4
-        0, 6, 7,   //  Triangle  5
-        0, 7, 8,   //  Triangle  6
-        0, 8, 1    //  Triangle  7
+        0, 2, 1,   //  Triangle  1
     };
+
+    //UINT indices[24] = {
+    //    0, 1, 2,   //  Triangle  0
+    //    0, 2, 3,   //  Triangle  1
+    //    0, 3, 4,   //  Triangle  2
+    //    0, 4, 5,   //  Triangle  3
+    //    0, 5, 6,   //  Triangle  4
+    //    0, 6, 7,   //  Triangle  5
+    //    0, 7, 8,   //  Triangle  6
+    //    0, 8, 1    //  Triangle  7
+    //};
 	RenderThreadD3D11::RenderThreadD3D11(EngineContext* ctx, Vector<GFXCommandBuffer*>& cmdBuffers, Vector<GFXCommandBuffer*>& computeBuffers) :
         RenderThread(ctx, cmdBuffers, computeBuffers)
 	{
@@ -126,8 +136,8 @@ namespace Joestar {
         ReleaseCOM(backBuffer);
 
         D3D11_TEXTURE2D_DESC depthStencilDesc;
-        depthStencilDesc.Width = 800;
-        depthStencilDesc.Height = 600;
+        depthStencilDesc.Width = window->GetWidth();
+        depthStencilDesc.Height = window->GetHeight();
         depthStencilDesc.MipLevels = 1;
         depthStencilDesc.ArraySize = 1;
         depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -270,45 +280,45 @@ namespace Joestar {
         Texture2D* tex2D = new Texture2D(app->GetEngineContext());
         //tex2D->TextureFromImage(texpath);
 
-        D3D11_TEXTURE2D_DESC tdesc;
-        ZeroMemory(&tdesc, sizeof(tdesc));
-        tdesc.Width = tex2D->GetWidth();
-        tdesc.Height = tex2D->GetHeight();
-        tdesc.MipLevels = 1;
-        tdesc.ArraySize = 1;
-        tdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        tdesc.SampleDesc.Count = 1;		// 不使用多重采样
-        tdesc.SampleDesc.Quality = 0;
-        tdesc.Usage = D3D11_USAGE_DEFAULT;
-        tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-        tdesc.CPUAccessFlags = 0;
-        tdesc.MiscFlags = 0;	// 指定需要生成mipmap
-        D3D11_SUBRESOURCE_DATA tinitdata;
-        ZeroMemory(&tinitdata, sizeof(tinitdata));
-        tinitdata.pSysMem = nullptr;// tex2D->GetData();
-        tinitdata.SysMemPitch = tex2D->GetWidth() * 4;
-        md3dDevice->CreateTexture2D(&tdesc, &tinitdata, &mDiffTex);
+        //D3D11_TEXTURE2D_DESC tdesc;
+        //ZeroMemory(&tdesc, sizeof(tdesc));
+        //tdesc.Width = tex2D->GetWidth();
+        //tdesc.Height = tex2D->GetHeight();
+        //tdesc.MipLevels = 1;
+        //tdesc.ArraySize = 1;
+        //tdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        //tdesc.SampleDesc.Count = 1;		// 不使用多重采样
+        //tdesc.SampleDesc.Quality = 0;
+        //tdesc.Usage = D3D11_USAGE_DEFAULT;
+        //tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        //tdesc.CPUAccessFlags = 0;
+        //tdesc.MiscFlags = 0;	// 指定需要生成mipmap
+        //D3D11_SUBRESOURCE_DATA tinitdata;
+        //ZeroMemory(&tinitdata, sizeof(tinitdata));
+        //tinitdata.pSysMem = nullptr;// tex2D->GetData();
+        //tinitdata.SysMemPitch = tex2D->GetWidth() * 4;
+        //md3dDevice->CreateTexture2D(&tdesc, &tinitdata, &mDiffTex);
 
-        D3D11_SHADER_RESOURCE_VIEW_DESC vdesc;
-        ZeroMemory(&vdesc, sizeof(vdesc));
-        vdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        vdesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        vdesc.Texture2D.MostDetailedMip = 0;
-        vdesc.Texture2D.MipLevels = 1;
-        hr = md3dDevice->CreateShaderResourceView(mDiffTex, &vdesc, &mDiffSRV);
+        //D3D11_SHADER_RESOURCE_VIEW_DESC vdesc;
+        //ZeroMemory(&vdesc, sizeof(vdesc));
+        //vdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        //vdesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        //vdesc.Texture2D.MostDetailedMip = 0;
+        //vdesc.Texture2D.MipLevels = 1;
+        //hr = md3dDevice->CreateShaderResourceView(mDiffTex, &vdesc, &mDiffSRV);
 
-        D3D11_SAMPLER_DESC sampDesc;
-        ZeroMemory(&sampDesc, sizeof(sampDesc));
-        sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;//过滤器
-        sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;//寻址模式
-        sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-        sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-        sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-        sampDesc.MinLOD = 0;
-        sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-        // 创建采样器状态
-        //md3dDevice->CreateSamplerState(&sampDesc, m_pSamplerState.GetAddressOf());
-        md3dDevice->CreateSamplerState(&sampDesc, &mSampleState);
+        //D3D11_SAMPLER_DESC sampDesc;
+        //ZeroMemory(&sampDesc, sizeof(sampDesc));
+        //sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;//过滤器
+        //sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;//寻址模式
+        //sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+        //sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+        //sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        //sampDesc.MinLOD = 0;
+        //sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+        //// 创建采样器状态
+        ////md3dDevice->CreateSamplerState(&sampDesc, m_pSamplerState.GetAddressOf());
+        //md3dDevice->CreateSamplerState(&sampDesc, &mSampleState);
 
         D3D11_BLEND_DESC blendDesc = { 0 };
         blendDesc.AlphaToCoverageEnable = false;
@@ -462,13 +472,13 @@ namespace Joestar {
         while (!bExit) {
             U32 idx = frameIndex % MAX_CMDLISTS_IN_FLIGHT;
             //always dispatch compute first, then draw
-            while (!computeCmdBuffers[idx]->ready || !cmdBuffers[idx]->ready) {
-                //busy wait
-            }
-            DispatchCompute();
+            //while (!computeCmdBuffers[idx]->ready || !cmdBuffers[idx]->ready) {
+            //    //busy wait
+            //}
+            //DispatchCompute();
             DrawScene();
-            cmdBuffers[idx]->ready = false;
-            computeCmdBuffers[idx]->ready = false;
+            //cmdBuffers[idx]->ready = false;
+            //computeCmdBuffers[idx]->ready = false;
             ++frameIndex;
         }
     }
@@ -499,7 +509,7 @@ namespace Joestar {
 
 
     void RenderThreadD3D11::DrawScene() {
-        const float backColor[]{ 0.0f, 0.0f, 1.0f, 0.0 };
+        const float backColor[]{ 0.0f, 0.0f, 0.0f, 0.0 };
         md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, backColor);
         md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
@@ -524,8 +534,8 @@ namespace Joestar {
         bufferNum = 0;
 
         md3dImmediateContext->VSSetConstantBuffers(bufferNum, 1, &mCB);
-        md3dImmediateContext->PSSetShaderResources(bufferNum, 1, &mDiffSRV);
-        md3dImmediateContext->PSSetSamplers(bufferNum, 1, &mSampleState);
+        //md3dImmediateContext->PSSetShaderResources(bufferNum, 1, &mDiffSRV);
+        //md3dImmediateContext->PSSetSamplers(bufferNum, 1, &mSampleState);
 
         float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
         md3dImmediateContext->OMSetBlendState(mBlendState, blendFactor, 0xffffffff);

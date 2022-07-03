@@ -102,9 +102,13 @@ namespace Joestar {
 		{
 			return mDescriptorSets[0];
 		}
-		bool IsColumnMajor()
+		bool IsColumnMajor() const
 		{
 			return bIsColumnMajor;
+		}
+		bool IsOriginBottomLeft() const
+		{
+			return bOriginBottomLeft;
 		}
 	private:
 		void CreatePerPassUniforms();
@@ -153,5 +157,6 @@ namespace Joestar {
 		bool bFloatingPointRT{ false };
 		bool bStagingBuffer{ true };
 		bool bIsColumnMajor{ true };
+		bool bOriginBottomLeft{ true };
 	};
 }

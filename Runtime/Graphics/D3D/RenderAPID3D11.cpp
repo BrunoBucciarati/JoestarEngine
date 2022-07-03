@@ -61,7 +61,7 @@ namespace Joestar
     void RenderAPID3D11::CreateSwapChain()
     {
         UINT  m4xMsaaQuality;
-        HR(mDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality));
+        HR(mDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 4, &m4xMsaaQuality));
         bool mEnable4xMsaa = false;// m4xMsaaQuality > 0;
 
         DXGI_SWAP_CHAIN_DESC sd;
@@ -69,7 +69,7 @@ namespace Joestar
         sd.BufferDesc.Height = window->GetHeight();
         sd.BufferDesc.RefreshRate.Numerator = 60;
         sd.BufferDesc.RefreshRate.Denominator = 1;
-        sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
         sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
         sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
         mSwapChain = JOJO_NEW(SwapChainD3D11, MEMORY_GFX_STRUCT);

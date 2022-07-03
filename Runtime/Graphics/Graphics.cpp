@@ -85,10 +85,12 @@ namespace Joestar {
 
 		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
 		renderThread->SetGFXCommandList(cmdLists.cmdList);
+		//renderThread = new RenderThreadD3D11(mContext, cmdBuffers, computeCmdBuffers);
 
 		GFX_API gfxAPI = (GFX_API)GetSubsystem<GlobalConfig>()->GetConfig<U32>(CONFIG_GFX_API);
 		bStagingBuffer = gfxAPI == GFX_API_VULKAN;
 		bIsColumnMajor = gfxAPI == GFX_API_VULKAN;
+		bOriginBottomLeft = gfxAPI == GFX_API_VULKAN || gfxAPI == GFX_API_OPENGL;
 	}
 
 	void Graphics::CreateDefaultStates()

@@ -13,10 +13,10 @@ namespace Joestar
 {
 	void Batch::Render(View* view, CommandBuffer* cb)
 	{
+		bool flag = mMaterial->Update();
 		GraphicsPipelineState* pso = PreparePipelineState(view, cb);
 		cb->BindPipelineState(pso);
 
-		bool flag = mMaterial->Update();
 		if (mMaterial->GetBatchDescriptorSets())
 			cb->BindDescriptorSets(UniformFrequency::BATCH, mShaderProgram->GetPipelineLayout(), mMaterial->GetBatchDescriptorSets());
 		

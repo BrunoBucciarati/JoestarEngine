@@ -3,8 +3,8 @@ cbuffer cbPerObject
 	float4x4 gWorldViewProj; 
 };
 
-Texture2D gDiffTex : register(t0);
-SamplerState gDiffSampler : register(s0);
+// Texture2D gDiffTex : register(t0);
+// SamplerState gDiffSampler : register(s0);
 
 
 struct VertexIn
@@ -34,5 +34,5 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-    return gDiffTex.Sample(gDiffSampler, pin.UV);
+    return float4(1.0, 0.0, 0.0, 1.0);
 }
