@@ -3,13 +3,11 @@
 #include "../Thread/RenderThread.h"
 #include "../Core/SubSystem.h"
 #include "../Core/EngineContext.h"
-#include "RenderCommand.h"
 #include "../Math/Vector4.h"
 #include "GraphicDefines.h"
 #include "Material.h"
 #include "../Math/Matrix4x4.h"
 #include "Shader/Shader.h"
-#include "ProgramCPU.h"
 #include "CommandBuffer.h"
 #include "PipelineState.h"
 #include "GPUResource.h"
@@ -35,7 +33,6 @@ namespace Joestar {
 		void WaitForRender();
 		void SubmitTransfer();
 		void SubmitRender();
-		void Clear();
 
 		//NEW GRAPHICS
 		CommandBuffer* GetMainCommandBuffer();
@@ -115,10 +112,6 @@ namespace Joestar {
 		void CreateMainRenderPass();
 		void CreateDefaultStates();
 		RenderThread* renderThread;
-		Vector<GFXCommandBuffer*> cmdBuffers;
-		Vector<GFXCommandBuffer*> computeCmdBuffers;
-		GFXCommandBuffer* cmdBuffer;//current one
-		GFXCommandBuffer* computeCmdBuffer;//current one
 		Vector4f defaultClearColor;
 		bool isCompute = false;
 		U32 frameIdx = 0;

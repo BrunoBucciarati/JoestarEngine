@@ -166,7 +166,6 @@
     <ClCompile Include="Graphics\D3D\RenderStructsD3D11.cpp" />
     <ClCompile Include="Graphics\Descriptor.cpp" />
     <ClCompile Include="Graphics\FrameBuffer.cpp" />
-    <ClCompile Include="Graphics\GPUProgramVulkan.cpp" />
     <ClCompile Include="Graphics\GPUResource.cpp" />
     <ClCompile Include="Graphics\GPUImage.cpp" />
     <ClCompile Include="Graphics\GraphicDefines.cpp" />
@@ -177,7 +176,6 @@
     <ClCompile Include="Graphics\Mesh.cpp" />
     <ClCompile Include="Graphics\PipelineState.cpp" />
     <ClCompile Include="Graphics\ProceduralMesh.cpp" />
-    <ClCompile Include="Graphics\ProgramCPU.cpp" />
     <ClCompile Include="Graphics\RenderAPIProtocol.cpp" />
     <ClCompile Include="Graphics\Sampler.cpp" />
     <ClCompile Include="Graphics\Shader\Shader.cpp" />
@@ -208,15 +206,10 @@
     <ClCompile Include="Resource\Resource.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Thread\RenderThread.cpp" />
-    <ClCompile Include="Thread\RenderThreadD3D11.cpp" />
-    <ClCompile Include="Thread\RenderThreadVulkan.cpp" />
     <ClCompile Include="Thread\Thread.cpp" />
-    <ClCompile Include="Graphics\glad.c" />
-    <ClCompile Include="Graphics\GPUProgramGL.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Misc\Application.cpp" />
-    <ClCompile Include="Graphics\GPUProgram.cpp" />
     <ClCompile Include="Misc\GlobalConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -257,7 +250,6 @@
     <ClInclude Include="Graphics\FrameBuffer.h" />
     <ClInclude Include="Graphics\GFXCommandList.h" />
     <ClInclude Include="Graphics\GPUCreateInfos.h" />
-    <ClInclude Include="Graphics\GPUProgramVulkan.h" />
     <ClInclude Include="Graphics\GPUResource.h" />
     <ClInclude Include="Graphics\GPUImage.h" />
     <ClInclude Include="Graphics\GraphicDefines.h" />
@@ -267,7 +259,6 @@
     <ClInclude Include="Graphics\MaterialInstance.h" />
     <ClInclude Include="Graphics\PipelineState.h" />
     <ClInclude Include="Graphics\ProceduralMesh.h" />
-    <ClInclude Include="Graphics\ProgramCPU.h" />
     <ClInclude Include="Graphics\RenderAPIProtocol.h" />
     <ClInclude Include="Graphics\RenderTarget.h" />
     <ClInclude Include="Graphics\Sampler.h" />
@@ -307,11 +298,7 @@
     <ClInclude Include="Resource\Resource.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Thread\RenderThread.h" />
-    <ClInclude Include="Thread\RenderThreadD3D11.h" />
-    <ClInclude Include="Thread\RenderThreadGL.h" />
-    <ClInclude Include="Thread\RenderThreadVulkan.h" />
     <ClInclude Include="Thread\Thread.h" />
-    <ClInclude Include="Graphics\GPUProgramGL.h" />
     <ClInclude Include="Graphics\RenderCommand.h" />
     <ClInclude Include="IO\FileSystem.h" />
     <ClInclude Include="Misc\GlobalConfig.h" />
@@ -319,7 +306,6 @@
     <ClInclude Include="Graphics\Graphics.h" />
     <ClInclude Include="Graphics\Material.h" />
     <ClInclude Include="Graphics\Mesh.h" />
-    <ClInclude Include="Graphics\GPUProgram.h" />
     <ClInclude Include="IO\Log.h" />
   </ItemGroup>
   <ItemGroup>

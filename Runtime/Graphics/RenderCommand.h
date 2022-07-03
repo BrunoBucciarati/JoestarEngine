@@ -3,44 +3,6 @@
 #include "../IO/MemoryManager.h"
 #include <atomic>
 namespace Joestar {
-	enum RenderCommandType {
-		RenderCMD_Clear = 0,
-		RenderCMD_Draw,
-		RenderCMD_DrawIndexed,
-		RenderCMD_UpdateUniformBuffer,
-		RenderCMD_UpdateUniformBufferObject,
-		RenderCMD_FlushUniformBufferObject,
-		RenderCMD_UpdateVertexBuffer,
-		RenderCMD_UpdateIndexBuffer,
-		RenderCMD_UpdateInstanceBuffer,
-		RenderCMD_UseShader,
-		RenderCMD_UpdateTexture,
-		RenderCMD_UpdateProgram,
-		RenderCMD_BeginRenderPass,
-		RenderCMD_EndRenderPass,
-		RenderCMD_BeginDrawCall,
-		RenderCMD_EndDrawCall,
-		RenderCMD_SetDepthCompare,
-		RenderCMD_SetDepthWrite,
-		RenderCMD_SetPolygonMode,
-		RenderCMD_SetFrameBuffer,
-
-
-
-		RenderCMD_Invalid
-	};
-
-	enum ComputeCommandType {
-		ComputeCMD_DispatchCompute = 0,
-		ComputeCMD_BeginCompute,
-		ComputeCMD_UpdateComputeBuffer,
-		ComputeCMD_UpdatePushConstant,
-		ComputeCMD_WriteBackComputeBuffer,
-		ComputeCMD_UpdateUniformBuffer,
-		ComputeCMD_UseShader,
-		ComputeCMD_UpdateTexture,
-		ComputeCMD_EndCompute
-	};
 
 	class GFXCommandBuffer {
 	public:

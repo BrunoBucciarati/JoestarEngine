@@ -21,16 +21,7 @@
     <ClCompile Include="Misc\Application.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\GPUProgram.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\glad.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Graphics\Graphics.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\GPUProgramGL.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Base\GameObject.cpp">
@@ -45,16 +36,10 @@
     <ClCompile Include="Thread\Thread.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Thread\RenderThreadVulkan.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="IO\FileSystem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="IO\File.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\GPUProgramVulkan.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Math\Vector2.cpp">
@@ -90,9 +75,6 @@
     <ClCompile Include="Graphics\ProceduralMesh.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\ProgramCPU.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Math\Matrix3x3.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -124,9 +106,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\Material.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Thread\RenderThreadD3D11.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Container\Str.cpp">
@@ -242,16 +221,10 @@
     <ClInclude Include="Graphics\Mesh.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\GPUProgram.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Graphics\Material.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Graphics.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\GPUProgramGL.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="IO\FileSystem.h">
@@ -278,16 +251,7 @@
     <ClInclude Include="Thread\RenderThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Thread\RenderThreadVulkan.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Thread\RenderThreadGL.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="IO\File.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\GPUProgramVulkan.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Math\Vector4.h">
@@ -332,9 +296,6 @@
     <ClInclude Include="IO\MemoryManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\ProgramCPU.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Component\Transform.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -360,9 +321,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\UniformData.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Thread\RenderThreadD3D11.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Container\Ptr.h">

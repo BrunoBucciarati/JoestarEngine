@@ -1,6 +1,5 @@
 #pragma once
 #include "Thread.h"
-#include "../Graphics/RenderCommand.h"
 #include "../Graphics/GraphicDefines.h"
 #include "../Graphics/RenderAPIProtocol.h"
 #include "../Container/Vector.h"
@@ -11,19 +10,13 @@ namespace Joestar {
 	{
 	public:
 		REGISTER_OBJECT(RenderThread, Thread);
-		explicit RenderThread(EngineContext* ctx, Vector<GFXCommandBuffer*>& cmdBufs, Vector<GFXCommandBuffer*>& comCmdBufs) : Super(ctx),
-			cmdBuffers(cmdBufs),
-			computeCmdBuffers(comCmdBufs)
+		explicit RenderThread(EngineContext* ctx) : Super(ctx)
 		{}
 		void SetGFXCommandList(GFXCommandList** start);
-		virtual void DrawFrame(GFXCommandBuffer* cmdBuffer) {}
-		virtual void DispatchCompute(GFXCommandBuffer* cmdBuffer) {}
 		void InitContext();
 		virtual void ThreadFunc();
 		void ExecuteGFXCommand(U32 command, GFXCommandList* cmdList);
 	protected:
-		Vector<GFXCommandBuffer*> cmdBuffers;
-		Vector<GFXCommandBuffer*> computeCmdBuffers;
 		UniquePtr<RenderAPIProtocol> mProtocol;
 		GFXCommandList* mCmdList[MAX_CMDLISTS_IN_FLIGHT]{nullptr};
 

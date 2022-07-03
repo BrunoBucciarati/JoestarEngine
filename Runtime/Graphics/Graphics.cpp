@@ -1,9 +1,6 @@
 #include "Graphics.h"
 #include "../Scene/Scene.h"
 #include "../Misc/GlobalConfig.h"
-#include "../Thread/RenderThreadVulkan.h"
-//#include "../Thread/RenderThreadGL.h"
-#include "../Thread/RenderThreadD3D11.h"
 #include "../IO/MemoryManager.h"
 #include "CommandBuffer.h"
 #include "GFXCommandList.h"
@@ -29,18 +26,9 @@
 	_VEC.Push(_VAR);
 
 namespace Joestar {
-	Graphics::Graphics(EngineContext* context) : Super(context) {
-		cmdBuffers.Resize(MAX_CMDLISTS_IN_FLIGHT);
-		for (auto& cmdBuffer : cmdBuffers)
-			cmdBuffer = JOJO_NEW(GFXCommandBuffer(1024));
-		cmdBuffer = cmdBuffers[0];
+	Graphics::Graphics(EngineContext* context) : Super(context)
+	{}
 
-		computeCmdBuffers.Resize(MAX_CMDLISTS_IN_FLIGHT);
-		for (auto& cmdBuffer : computeCmdBuffers)
-			cmdBuffer = JOJO_NEW(GFXCommandBuffer(256));
-		computeCmdBuffer = computeCmdBuffers[0];
-		defaultClearColor.Set(0.0f, 0.0f, 0.0f, 1.0f);
-	}
 	Graphics::~Graphics()
 	{
 	}
@@ -83,7 +71,7 @@ namespace Joestar {
 		//创建一些default的状态
 		CreateDefaultStates();
 
-		renderThread = new RenderThread(mContext, cmdBuffers, computeCmdBuffers);
+		renderThread = new RenderThread(mContext);
 		renderThread->SetGFXCommandList(cmdLists.cmdList);
 		//renderThread = new RenderThreadD3D11(mContext, cmdBuffers, computeCmdBuffers);
 
@@ -273,11 +261,6 @@ namespace Joestar {
 		GetMainCmdList()->Flush();
 		++frameIdx;
 		return;
-	}
-
-	void Graphics::Clear() {
-		cmdBuffer->WriteCommandType(RenderCMD_Clear);
-		cmdBuffer->WriteBuffer<Vector4f>(defaultClearColor);
 	}
 
 	CommandBuffer* Graphics::GetMainCommandBuffer()
