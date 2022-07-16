@@ -46,8 +46,6 @@ namespace Joestar
 			return mGraphics;
 		}
 	private:
-		void RenderScene(CommandBuffer* cb);
-		void RenderSkybox(CommandBuffer* cb);
 		void CreatePassDescriptor();
 		void SetUniformBuffer(PerPassUniforms, U8* data, Pass pass = Pass::Scene);
 		void ForwardRender(CommandBuffer* cb);

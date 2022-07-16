@@ -45,8 +45,10 @@ namespace Joestar {
                 //Quaternionf rotx = Quaternionf::identity();// AxisAngleToQuaternion(Vector3f::Up, offsetX);
                 Quaternionf rotx = AxisAngleToQuaternion(Vector3f::Up, offsetX);
                 Quaternionf roty = AxisAngleToQuaternion(mRight, -offsetY);
-                mFront = Normalize(RotateVectorByQuat(rotx * roty, mFront));
-                mUp = RotateVectorByQuat(rotx * roty, mUp);
+                mFront = RotateVectorByQuat(roty, mFront);
+                mFront = Normalize(RotateVectorByQuat(rotx, mFront));
+                mUp = RotateVectorByQuat(roty, mUp);
+                mUp = RotateVectorByQuat(rotx, mUp);
                 mRight = RotateVectorByQuat(rotx, mRight);
 
                 Vector3f tmp = Normalize(Cross(mFront, mUp));
@@ -76,20 +78,7 @@ namespace Joestar {
 
     void Camera::UpdateCameraVectors() {
         // calculate the new Front vector
-        //Vector3f front;
-        //front.x = cos(Deg2Rad(mYaw)) * cos(Deg2Rad(mPitch));
-        //front.y = sin(Deg2Rad(mPitch));
-        //front.z = sin(Deg2Rad(mYaw)) * cos(Deg2Rad(mPitch));
-        //mFront = Normalize(front);
-        // also re-calculate the Right and Up vector
-        //mRight = Normalize(Cross(mFront, mWorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-        //mUp = Normalize(Cross(mFront, mRight));
         mView.LookAt(GetPosition(), mFront, mRight, mUp);
-        Vector4f testP = mView.MultiplyVector4(Vector4f(0.F, 0.F, 0.F, 1.F));
-        Vector4f testP1 = mProjection.MultiplyVector4(testP);
-        LOG("Up: %.2f, %.2f, %.2f\n", mUp.x, mUp.y, mUp.z);
-        LOG("Right: %.2f, %.2f, %.2f\n", mRight.x, mRight.y, mRight.z);
-        LOG("Front: %.2f, %.2f, %.2f\n", mFront.x, mFront.y, mFront.z);
     }
 
     void Camera::SetWorldRotation(const Quaternionf& quat)
@@ -100,5 +89,13 @@ namespace Joestar {
         mUp = mat.GetColumn(1);
         mFront = mat.GetColumn(2);
         UpdateCameraVectors();
+    }
+
+    Frustum Camera::GetFrustum()
+    {
+        Frustum ret;
+        Matrix4x4f vp = mView * mProjection;
+        ret.DefineFromViewProj(vp);
+        return ret;
     }
 }

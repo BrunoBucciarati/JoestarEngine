@@ -47,6 +47,8 @@ namespace Joestar
 			return mGPUBuffer->handle;
 		}
 		U32 GetElementOffset(VertexSemantic);
+		template <class T>
+		void GetElementData(T& out, VertexSemantic sem, U32 idx);
 
 	private:
 		U32 mVertexSize{ 0 };
@@ -57,4 +59,11 @@ namespace Joestar
 		bool bDynamic{ false };
 		PODVector<VertexElement> mVertexElements;
 	};
+
+
+	template <class T>
+	void VertexBuffer::GetElementData(T& out, VertexSemantic sem, U32 idx)
+	{
+		memcpy(&out, mData + idx * mVertexSize + GetElementOffset(sem), sizeof(T));
+	}
 }

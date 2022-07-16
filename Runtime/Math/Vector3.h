@@ -29,8 +29,10 @@ namespace Joestar {
 
 		Vector3f& operator += (const Vector3f& inV) { x += inV.x; y += inV.y; z += inV.z; return *this; }
 		Vector3f& operator -= (const Vector3f& inV) { x -= inV.x; y -= inV.y; z -= inV.z; return *this; }
+		Vector3f& operator * (const Vector3f& inV) { x *= inV.x; y *= inV.y; z *= inV.z; return *this; }
 		Vector3f& operator *= (float s) { x *= s; y *= s; z *= s; return *this; }
 		Vector3f& operator /= (float s);
+		Vector3f& operator=(float s) { x = s; y = s; z = s; return *this; }
 
 		Vector3f operator - () const { return Vector3f(-x, -y, -z); }
 

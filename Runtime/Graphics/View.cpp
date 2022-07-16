@@ -9,6 +9,7 @@
 #include "../Component/MeshRenderer.h"
 #include "../IO/HID.h"
 #include "Texture2D.h"
+#include "../Math/Frustum.h"
 
 namespace Joestar
 {
@@ -16,7 +17,7 @@ namespace Joestar
 	{
 		mShadowCameraNode = NEW_OBJECT(GameObject);
 		mCameraNode = NEW_OBJECT(GameObject);
-		mCameraNode->SetPosition(0.0, 1.0, 3.0);
+		mCameraNode->SetPosition(0.0, 1.0, -3.0);
 		mCamera = mCameraNode->GetComponent<Camera>();
 		mScene = NEW_OBJECT(Scene);
 		mGraphics = GetSubsystem<Graphics>();
@@ -107,22 +108,6 @@ namespace Joestar
 		return bRecord;
 	}
 
-	void View::RenderScene(CommandBuffer* cb)
-	{
-		//cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());
-		//cb->SetPassDescriptorSets(mDescriptorSets);
-		//if (mScene)
-		//{
-		//	mScene->RenderScene(cb);
-		//}
-	}
-
-	void View::RenderSkybox(CommandBuffer* cb)
-	{
-		if (mScene)
-			mScene->RenderSkybox(cb);
-	}
-
 	void View::SetUniformBuffer(PerPassUniforms uniform, U8* data, Pass pass)
 	{
 		DescriptorSetLayoutBinding::Member member;
@@ -135,9 +120,13 @@ namespace Joestar
 	{
 		mBatches.Clear();
 		auto& gameObjects = mScene->GetGameObjects();
+		Frustum viewFrustum = mCamera->GetFrustum();
 		for (auto go : gameObjects)
 		{
 			MeshRenderer* renderer = go->HasComponent<MeshRenderer>();
+			auto& aabb = renderer->GetBoundingBox();
+			if (Intersection::OUTSIDE == viewFrustum.IsInside(aabb))
+				continue;
 			Batch batch(renderer);
 			batch.CalculateKey();
 			mBatches.Push(batch);
@@ -154,9 +143,13 @@ namespace Joestar
 			mat->SetShader("shadow");
 			mShadowMaterial = NEW_OBJECT(MaterialInstance, mat);
 		}
+		Frustum viewFrustum = mShadowCamera->GetFrustum();
 		for (auto go : gameObjects)
 		{
 			MeshRenderer* renderer = go->HasComponent<MeshRenderer>();
+			auto& aabb = renderer->GetBoundingBox();
+			if (Intersection::OUTSIDE == viewFrustum.IsInside(aabb))
+				continue;
 			Batch batch(renderer);
 			batch.mMaterial = mShadowMaterial;
 			batch.mShaderProgram = mShadowMaterial->GetShaderProgram();
@@ -196,11 +189,11 @@ namespace Joestar
 
 	void View::ForwardRender(CommandBuffer* cb)
 	{
+		//Check if Shadow Pass inited
+		InitShadowPass();
 		CollectShadowBatches();
 		CollectBatches();
 
-		//Shadow Pass
-		InitShadowPass();
 		Light* mainLight = mScene->GetMainLight();
 		mShadowCamera->SetPosition(mainLight->GetPosition());
 		mShadowCamera->SetOrthographic(100.F);
@@ -236,6 +229,10 @@ namespace Joestar
 		{
 			view.Transponse();
 			proj.Transponse();
+		}
+		if (mGraphics->IsOriginBottomLeft())
+		{
+			proj.FlipY();
 		}
 		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)&view);
 		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)&proj);

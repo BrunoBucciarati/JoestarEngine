@@ -19,9 +19,12 @@ namespace Joestar
 			return mMesh;
 		}
 		void Render(CommandBuffer* cb) override;
+
+		const AABB& GetBoundingBox();
 	private:
 		//SharedPtr<GraphicsPipelineState> GetPipelineState(CommandBuffer* pass);
 		//SharedPtr<GraphicsPipelineState> GetDefaultPipelineState(CommandBuffer* pass);
 		SharedPtr<Mesh> mMesh;
+		AABB mWorldAABB;
 	};
 }

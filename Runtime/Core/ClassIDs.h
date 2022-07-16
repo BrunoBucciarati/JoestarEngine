@@ -48,7 +48,8 @@ enum ClassIDType {
 	DefineClassID(UniformBuffer, 39)
 	DefineClassID(GPUImage, 40)
 	DefineClassID(GPUImageView, 41)
-	DefineClassID(MaterialInstance, 41)
+	DefineClassID(MaterialInstance, 42)
+	DefineClassID(SubShader, 43)
 
 	kClassIDCount
 };

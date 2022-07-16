@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Math/Vector3.h"
+#include "../Math/Frustum.h"
 #include "../Math/Matrix4x4.h"
 #include "../IO/HID.h"
 #include "../IO/Log.h"
@@ -64,7 +65,7 @@ namespace Joestar {
             mFront = dir;
         }
         void SetWorldRotation(const Quaternionf& quat);
-
+        Frustum GetFrustum();
     private:
         // calculates the front vector from the Camera's (updated) Euler Angles
         void UpdateCameraVectors();
@@ -75,11 +76,8 @@ namespace Joestar {
         Vector3f mWorldUp{Vector3f::Up};
         Matrix4x4f mView;
         Matrix4x4f mProjection;
-        // euler Angles
-        //float mYaw{-90.0f};
-        //float mPitch{-30.0f};
-        // camera options
-        float mSpeed{30.f};
+
+        float mSpeed{3000.f};
         float mSensitivity{0.01f};
         float mZoom{60.f};
         float mAspect{45.f};

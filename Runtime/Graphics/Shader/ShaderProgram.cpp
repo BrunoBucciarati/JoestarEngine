@@ -137,7 +137,6 @@ namespace Joestar
 			auto* graphics = GetSubsystem<Graphics>();
 			for (U32 i = 0; i < mPipelineLayout->GetLayoutsSize(); ++i)
 				graphics->SetDescriptorSetLayout(mPipelineLayout->GetSetLayout(i));
-			AllocDescriptorSets();
 			graphics->CreateShaderProgram(this);
 			graphics->CreatePipelineLayout(mPipelineLayout);
 		}
@@ -202,17 +201,5 @@ namespace Joestar
 			return mPipelineLayout->GetSetLayout(set)->GetUniformMemberAndBinding(ID, member);
 		}
 		return U32_MAX;
-	}
-
-
-	void ShaderProgram::AllocDescriptorSets()
-	{
-		//mAllDescriptorSets.Resize(mPipelineLayout->GetLayoutsSize());
-		//for (U32 i = 0; i < mPipelineLayout->GetLayoutsSize(); ++i)
-		//{
-		//	mAllDescriptorSets[i] = JOJO_NEW(DescriptorSets, MEMORY_GFX_STRUCT);
-		//	mAllDescriptorSets[i]->AllocFromLayout(mPipelineLayout->GetSetLayout(i));
-		//	mGraphics->CreateDescriptorSets(mAllDescriptorSets[i]);
-		//}
 	}
 }

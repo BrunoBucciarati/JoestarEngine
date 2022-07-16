@@ -14,7 +14,7 @@ namespace Joestar
 	struct Batch
 	{
 		MaterialInstance* mMaterial;
-		U32 mKey;
+		U32 mKey{ 0 };
 		Mesh* mMesh;
 		Renderer* mRenderer;
 		ShaderProgram* mShaderProgram;
@@ -23,5 +23,6 @@ namespace Joestar
 		void Render(View* view, CommandBuffer* cb);
 		GraphicsPipelineState* PreparePipelineState(View* view, CommandBuffer* cb);
 		void CalculateKey();
+		U32 mNumInstances{1};
 	};
 }

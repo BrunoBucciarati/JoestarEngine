@@ -182,6 +182,7 @@
     <ClCompile Include="Graphics\Shader\ShaderParser.cpp" />
     <ClCompile Include="Graphics\Shader\ShaderProgram.cpp" />
     <ClCompile Include="Graphics\Shader\ShaderReflection.cpp" />
+    <ClCompile Include="Graphics\Shader\SubShader.cpp" />
     <ClCompile Include="Graphics\Texture.cpp" />
     <ClCompile Include="Graphics\Texture2D.cpp" />
     <ClCompile Include="Graphics\TextureCube.cpp" />
@@ -197,8 +198,12 @@
     <ClCompile Include="IO\FileSystem.cpp" />
     <ClCompile Include="IO\HID.cpp" />
     <ClCompile Include="IO\MemoryManager.cpp" />
+    <ClCompile Include="Math\AABB.cpp" />
+    <ClCompile Include="Math\BoundingBox.cpp" />
+    <ClCompile Include="Math\Frustum.cpp" />
     <ClCompile Include="Math\Matrix3x3.cpp" />
     <ClCompile Include="Math\Matrix4x4.cpp" />
+    <ClCompile Include="Math\Plane.cpp" />
     <ClCompile Include="Math\Quaternion.cpp" />
     <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector3.cpp" />
@@ -266,6 +271,7 @@
     <ClInclude Include="Graphics\Shader\ShaderParser.h" />
     <ClInclude Include="Graphics\Shader\ShaderProgram.h" />
     <ClInclude Include="Graphics\Shader\ShaderReflection.h" />
+    <ClInclude Include="Graphics\Shader\SubShader.h" />
     <ClInclude Include="Graphics\SwapChain.h" />
     <ClInclude Include="Graphics\Texture.h" />
     <ClInclude Include="Graphics\Texture2D.h" />
@@ -284,10 +290,14 @@
     <ClInclude Include="IO\HID.h" />
     <ClInclude Include="IO\MemoryManager.h" />
     <ClInclude Include="IO\MemoryWriter.h" />
+    <ClInclude Include="Math\AABB.h" />
+    <ClInclude Include="Math\BoundingBox.h" />
     <ClInclude Include="Math\FloatMath.h" />
+    <ClInclude Include="Math\Frustum.h" />
     <ClInclude Include="Math\MathDefs.h" />
     <ClInclude Include="Math\Matrix3x3.h" />
     <ClInclude Include="Math\Matrix4x4.h" />
+    <ClInclude Include="Math\Plane.h" />
     <ClInclude Include="Math\Quaternion.h" />
     <ClInclude Include="Math\Rect.h" />
     <ClInclude Include="Math\Vector2.h" />

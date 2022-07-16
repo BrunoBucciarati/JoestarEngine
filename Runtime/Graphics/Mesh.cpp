@@ -63,4 +63,17 @@ namespace Joestar {
         mIndexBuffer = ib;
         return true;
 	}
+
+    void Mesh::BuildBoundingBox()
+    {
+        if (!mVertexBuffer)
+            return;
+        U32 count = mVertexBuffer->GetVertexCount();
+        for (U32 i = 0; i < count; ++i)
+        {
+            Vector3f pos;
+            mVertexBuffer->GetElementData(pos, VertexSemantic::POSITION, i);
+            mBoundingBox.Merge(pos);
+        }
+    }
 }

@@ -210,6 +210,21 @@
     <ClCompile Include="Graphics\D3D\RenderEnumsD3D.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Shader\SubShader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\AABB.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Frustum.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\BoundingBox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Plane.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -492,6 +507,21 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Core\Assert.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Shader\SubShader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\AABB.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Frustum.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\BoundingBox.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Plane.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

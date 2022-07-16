@@ -7,6 +7,7 @@
 //#include "VertexData.h"
 #include "../Core/Object.h"
 #include "../Math/Vector2.h"
+#include "../Math/AABB.h"
 #include "../Resource/Resource.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
@@ -33,12 +34,24 @@ public:
         return mIndexBuffer->GetIndexCount();
     }
 
+    AABB& GetBoundingBox()
+    {
+        if (!mBoundingBox.IsValid())
+        {
+            BuildBoundingBox();
+        }
+        return mBoundingBox;
+    }
+
+    void BuildBoundingBox();
+
     bool LoadFile(const String& path);
 
 private:
     // render data 
     SharedPtr<VertexBuffer> mVertexBuffer;
     SharedPtr<IndexBuffer> mIndexBuffer;
+    AABB mBoundingBox;
 };
 }
 #endif

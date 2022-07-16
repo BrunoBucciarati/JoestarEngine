@@ -7,6 +7,18 @@ namespace Joestar {
 	MeshRenderer::~MeshRenderer()
 	{}
 
+	const AABB& MeshRenderer::GetBoundingBox()
+	{
+		if (mMesh)
+		{
+			auto& localAABB = mMesh->GetBoundingBox();
+			auto worldTransform = mGameObject->GetAfflineTransform();
+			Vector3f center = worldTransform.MultiplyPoint3(localAABB.Center());
+			Vector3f scale = worldTransform.GetScale();
+			mWorldAABB.Define(center, localAABB.Length() * scale);
+		}
+		return mWorldAABB;
+	}
 	void MeshRenderer::Render(CommandBuffer* cb)
 	{
 		//if (!mUniformBuffers.Empty())

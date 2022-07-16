@@ -71,6 +71,7 @@ namespace Joestar {
 		void SetColumn(int col, const Vector4f& v);
 		void SetScale(float s);
 		void SetScale(float x, float y, float z);
+		Vector3f GetScale();
 
 		Matrix4x4f& SetFromToRotation(const Vector3f& from, const Vector3f& to);
 
@@ -83,6 +84,37 @@ namespace Joestar {
 		}
 
 		static const Matrix4x4f identity;
+
+		Matrix4x4f operator*(const Matrix4x4f& rhs)
+		{
+			float data[]{
+				m_Data[0] * rhs[0] + m_Data[4] * rhs[1] + m_Data[8] * rhs[2] + m_Data[12] * rhs[3],
+				m_Data[1] * rhs[0] + m_Data[5] * rhs[1] + m_Data[9] * rhs[2] + m_Data[13] * rhs[3],
+				m_Data[2] * rhs[0] + m_Data[6] * rhs[1] + m_Data[10] * rhs[2] + m_Data[14] * rhs[3],
+				m_Data[3] * rhs[0] + m_Data[7] * rhs[1] + m_Data[11] * rhs[2] + m_Data[15] * rhs[3],
+
+				m_Data[0] * rhs[4] + m_Data[4] * rhs[5] + m_Data[8] * rhs[6] + m_Data[12] * rhs[7],
+				m_Data[1] * rhs[4] + m_Data[5] * rhs[5] + m_Data[9] * rhs[6] + m_Data[13] * rhs[7],
+				m_Data[2] * rhs[4] + m_Data[6] * rhs[5] + m_Data[10] * rhs[6] + m_Data[14] * rhs[7],
+				m_Data[3] * rhs[4] + m_Data[7] * rhs[5] + m_Data[11] * rhs[6] + m_Data[15] * rhs[7],
+
+				m_Data[0] * rhs[8] + m_Data[4] * rhs[9] + m_Data[8] * rhs[10] + m_Data[12] * rhs[11],
+				m_Data[1] * rhs[8] + m_Data[5] * rhs[9] + m_Data[9] * rhs[10] + m_Data[13] * rhs[11],
+				m_Data[2] * rhs[8] + m_Data[6] * rhs[9] + m_Data[10] * rhs[10] + m_Data[14] * rhs[11],
+				m_Data[3] * rhs[8] + m_Data[7] * rhs[9] + m_Data[11] * rhs[10] + m_Data[15] * rhs[11],
+
+				m_Data[0] * rhs[12] + m_Data[4] * rhs[13] + m_Data[8] * rhs[14] + m_Data[12] * rhs[15],
+				m_Data[1] * rhs[12] + m_Data[5] * rhs[13] + m_Data[9] * rhs[14] + m_Data[13] * rhs[15],
+				m_Data[2] * rhs[12] + m_Data[6] * rhs[13] + m_Data[10] * rhs[14] + m_Data[14] * rhs[15],
+				m_Data[3] * rhs[12] + m_Data[7] * rhs[13] + m_Data[11] * rhs[14] + m_Data[15] * rhs[15],
+
+				m_Data[0] * rhs[0] + m_Data[4] * rhs[1] + m_Data[8] * rhs[2] + m_Data[12] * rhs[3],
+				m_Data[1] * rhs[0] + m_Data[5] * rhs[1] + m_Data[9] * rhs[2] + m_Data[13] * rhs[3],
+				m_Data[2] * rhs[0] + m_Data[6] * rhs[1] + m_Data[10] * rhs[2] + m_Data[14] * rhs[3],
+				m_Data[3] * rhs[0] + m_Data[7] * rhs[1] + m_Data[11] * rhs[2] + m_Data[15] * rhs[3],
+			};
+			return Matrix4x4f(data);
+		}
 	};
 
 
@@ -127,6 +159,11 @@ namespace Joestar {
 	}
 	inline void Matrix4x4f::SetScale(float x, float y, float z) {
 		Get(0, 0) = x; Get(1, 1) = y; Get(2, 2) = z;
+	}
+
+	inline Vector3f Matrix4x4f::GetScale()
+	{
+		return Vector3f(Get(0, 0), Get(1, 1), Get(2, 2));
 	}
 
 

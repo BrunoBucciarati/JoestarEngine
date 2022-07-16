@@ -4,6 +4,7 @@
 #include "../Graphics/PipelineState.h"
 #include "../Graphics/CommandBuffer.h"
 #include "../Graphics/MaterialInstance.h"
+#include "../Math/AABB.h"
 namespace Joestar {
 	class Graphics;
 	class GraphicsPipelineState;

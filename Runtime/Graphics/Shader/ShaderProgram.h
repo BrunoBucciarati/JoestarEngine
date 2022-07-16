@@ -64,7 +64,6 @@ namespace Joestar {
 	private:
 		void CheckValid();
 		void CollectInputAndDescriptors();
-		void AllocDescriptorSets();
 		Vector<SharedPtr<Shader>> mShaders;
 		PODVector<InputAttribute> mInputAttributes;
 		U32 mStageMask{ 0 };
