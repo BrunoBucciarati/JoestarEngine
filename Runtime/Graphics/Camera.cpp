@@ -43,8 +43,8 @@ namespace Joestar {
                 //Vector3f right = Cross(Vector3f::Up, mFront);
                 //Vector3f up = Cross(mFront, right);
                 //Quaternionf rotx = Quaternionf::identity();// AxisAngleToQuaternion(Vector3f::Up, offsetX);
-                Quaternionf rotx = AxisAngleToQuaternion(Vector3f::Up, offsetX);
-                Quaternionf roty = AxisAngleToQuaternion(mRight, -offsetY);
+                Quaternionf rotx = AxisAngleToQuaternion(Vector3f::Up, -offsetX);
+                Quaternionf roty = AxisAngleToQuaternion(mRight, offsetY);
                 mFront = RotateVectorByQuat(roty, mFront);
                 mFront = Normalize(RotateVectorByQuat(rotx, mFront));
                 mUp = RotateVectorByQuat(roty, mUp);
@@ -53,7 +53,7 @@ namespace Joestar {
 
                 Vector3f tmp = Normalize(Cross(mFront, mUp));
                 mUp = Normalize(Cross(tmp, mFront));
-                mRight = Normalize(Cross(mUp, mFront));
+                mRight = Normalize(Cross(mFront, mUp));
                 dirty = true;
             }
         }

@@ -17,7 +17,7 @@ namespace Joestar
 	{
 		mShadowCameraNode = NEW_OBJECT(GameObject);
 		mCameraNode = NEW_OBJECT(GameObject);
-		mCameraNode->SetPosition(0.0, 1.0, -3.0);
+		mCameraNode->SetPosition(0.0, 10.0, 10.0);
 		mCamera = mCameraNode->GetComponent<Camera>();
 		mScene = NEW_OBJECT(Scene);
 		mGraphics = GetSubsystem<Graphics>();
@@ -197,7 +197,7 @@ namespace Joestar
 		Light* mainLight = mScene->GetMainLight();
 		mShadowCamera->SetPosition(mainLight->GetPosition());
 		mShadowCamera->SetOrthographic(100.F);
-		mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
+		//mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
 		Matrix4x4f view = mShadowCamera->GetViewMatrix();
 		Matrix4x4f proj = mShadowCamera->GetProjectionMatrix();
 		if (!mGraphics->IsColumnMajor())

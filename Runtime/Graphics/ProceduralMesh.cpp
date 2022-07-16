@@ -83,9 +83,9 @@ namespace Joestar {
             {
                 float xSegment = (float)x / (float)X_SEGMENTS;
                 float ySegment = (float)y / (float)Y_SEGMENTS;
-                float xPos = 10 * xSegment - 5;
-                float yPos = 0;
-                float zPos = 10 * ySegment - 5;
+                float xPos = 10.F * xSegment - 5.F;
+                float yPos = 0.F;
+                float zPos = 10.F * ySegment - 5.F;
                 vertices.Push(xPos);
                 vertices.Push(yPos);
                 vertices.Push(zPos);
