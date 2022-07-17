@@ -11,6 +11,7 @@
 #include "../IO/MemoryManager.h"
 #include "../Misc/TimeManager.h"
 #include "../Graphics/Camera.h"
+#include "Terrain.h"
 
 namespace Joestar {
     const U32 SH_LEVEL = 1;
@@ -18,23 +19,8 @@ namespace Joestar {
     {
         mGraphics = GetSubsystem<Graphics>();
 
-        //GameObject* sphere = NEW_OBJECT(GameObject);
-        //gameObjects.Push(sphere);
-        //MeshRenderer* sr = sphere->GetComponent<MeshRenderer>();
-        //sr->SetMesh(GetSubsystem<ProceduralMesh>()->GetUVSphere());
-        //sr->SetMaterial(NEW_OBJECT(Material));
-        //sr->GetMaterial()->SetPBR();
-        //sphere->SetPosition(0, 1.2, 0);
-        //selection = sphere;
-        //pr->SetMaterial(NEW_OBJECT(Material));
-        //pr->GetMaterial()->SetPlaneMat();
-
-
-        //lightBatch = NEW_OBJECT(LightBatch);
-
-        CreateLights();
-
-        //CreateCompute();
+        //CreateLights();
+        CreateTerrain();
 
         GameObject* plane = NEW_OBJECT(GameObject);
         mGameObjects.Push(plane);
@@ -47,12 +33,6 @@ namespace Joestar {
         pr->SetMaterial("test");
         pr->GetMaterial()->SetTexture(texture, 0);
         pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
-
-        //GameObject* testTri = NEW_OBJECT(GameObject);
-        //mGameObjects.Push(testTri);
-        //MeshRenderer* tr = testTri->GetComponent<MeshRenderer>();
-        //tr->SetMaterial("testTriangle");
-        //tr->SetMesh(GetSubsystem<ProceduralMesh>()->GetTriangle());
 
         if (!mSkyboxGO) {
             mSkyboxGO = NEW_OBJECT(GameObject);
@@ -85,14 +65,9 @@ namespace Joestar {
     Scene::~Scene()
     {}
 
-    void Scene::RenderScene(CommandBuffer* cb)
+    void Scene::CreateTerrain()
     {
-        for (auto go : mGameObjects) {
-            MeshRenderer* render = go->HasComponent<MeshRenderer>();
-            if (render) {
-                render->Render(cb);
-            }
-        }
+        mTerrain = NEW_OBJECT(Terrain);
     }
 
     void Scene::RenderSkybox(CommandBuffer* cb)

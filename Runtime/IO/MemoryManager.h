@@ -12,7 +12,8 @@ enum MemoryType {
 	MEMORY_CONTAINER = 3,
 	MEMORY_GFX_MEMORY = 4,
 	MEMORY_TEXTURE = 5,
-	MEMORY_FILE = 6
+	MEMORY_FILE = 6,
+	MEMORY_TERRAIN = 7
 };
 
 enum MemoryAlignment {

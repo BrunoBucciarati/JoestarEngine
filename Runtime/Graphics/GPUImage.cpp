@@ -108,4 +108,13 @@ namespace Joestar {
 		mFormat = mImage->GetFormat();
 		mGraphics->CreateImageView(this);
 	}
+
+	void GPUImageView::SetData(U8* data)
+	{
+		if (!mImage)
+			mImage = JOJO_NEW(GPUImage(mContext), MEMORY_TEXTURE);
+		mImage->SetData(data);
+		mFormat = mImage->GetFormat();
+		mGraphics->CreateImageView(this);
+	}
 }

@@ -12,12 +12,12 @@ namespace Joestar {
 	class Camera;
 	class RenderPass;
 	class CommandBuffer;
+	class Terrain;
 	class Scene : public Object {
 		REGISTER_OBJECT(Scene, Object);
 	public:
 		explicit Scene(EngineContext* ctx);
 		void PreRenderCompute();
-		void RenderScene(CommandBuffer* cb);
 		void RenderLights();
 		void RenderSkybox(CommandBuffer* cb);
 		void Update(float);
@@ -37,6 +37,7 @@ namespace Joestar {
 			return mSkyboxGO;
 		}
 	private:
+		void CreateTerrain();
 		Vector<SharedPtr<GameObject>> mGameObjects;
 		Vector<Light*> lights;
 		GameObject* mMainLightNode;
@@ -54,5 +55,6 @@ namespace Joestar {
 		Graphics* mGraphics;
 		SharedPtr<RenderPass> mMainRenderPass;
 		SharedPtr<GameObject> mSkyboxGO;
+		SharedPtr<Terrain> mTerrain;
 	};
 }

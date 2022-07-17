@@ -50,6 +50,7 @@ enum ClassIDType {
 	DefineClassID(GPUImageView, 41)
 	DefineClassID(MaterialInstance, 42)
 	DefineClassID(SubShader, 43)
+	DefineClassID(Terrain, 44)
 
 	kClassIDCount
 };

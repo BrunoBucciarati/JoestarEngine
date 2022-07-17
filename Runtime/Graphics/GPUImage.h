@@ -53,6 +53,8 @@ namespace Joestar {
 		D24S8,
 		D32S8,
 		D32,
+		R32,
+		R16,
 		FormatCount
 	};
 
@@ -108,6 +110,7 @@ namespace Joestar {
 		void SetImage(Image*);
 		void SetRenderTarget(U32 w, U32 h);
 		void SetImages(Vector<SharedPtr<Image>>&);
+		void SetData(U8* data);
 	private:
 		WeakPtr<Graphics> mGraphics;
 	};

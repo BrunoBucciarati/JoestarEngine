@@ -62,16 +62,10 @@ namespace Joestar {
 
 	void Texture::SetData(U8* data)
 	{
-		//if (mData)
-		//	JOJO_DELETE_ARRAY(mData);
-		//mData = JOJO_NEW_ARRAY(U8, mSize, MEMORY_TEXTURE);
-		//memcpy(mData, data, mSize);
-
-		//if (mImageView)
-		//{
-		//	mImageView->SetWidth(mWidth);
-		//	mImageView->SetHeight(mHeight);
-		//	mGraphics->CreateImageView(mImageView);
-		//}
+		if (mLayers == 1)
+		{
+			mImageView->SetData(data);
+			mGraphics->CreateTexture(this);
+		}
 	}
 }
