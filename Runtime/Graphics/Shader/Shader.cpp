@@ -71,6 +71,21 @@ namespace Joestar {
 						HRESULT hr = D3DCompile(mFile->GetBuffer(), mFile->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "CS",
 							"cs_5_0", flags, 0, &compiledShader, &compilationMsgs);
 					}
+					else if (mStage == ShaderStage::CS)
+					{
+						HRESULT hr = D3DCompile(mFile->GetBuffer(), mFile->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "CS",
+							"cs_5_0", flags, 0, &compiledShader, &compilationMsgs);
+					}
+					else if (mStage == ShaderStage::HS)
+					{
+						HRESULT hr = D3DCompile(mFile->GetBuffer(), mFile->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "HS",
+							"hs_5_0", flags, 0, &compiledShader, &compilationMsgs);
+					}
+					else if (mStage == ShaderStage::DS)
+					{
+						HRESULT hr = D3DCompile(mFile->GetBuffer(), mFile->Size(), "TEST", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "DS",
+							"ds_5_0", flags, 0, &compiledShader, &compilationMsgs);
+					}
 					// compilationMsgs中包含错误或警告信息
 					if (compilationMsgs != 0)
 					{

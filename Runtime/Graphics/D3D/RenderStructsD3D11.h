@@ -199,6 +199,8 @@ namespace Joestar
 			ID3D11VertexShader* vertexShader;
 			ID3D11PixelShader* pixelShader;
 			ID3D11ComputeShader* computeShader;
+			ID3D11HullShader* hullShader;
+			ID3D11DomainShader* domainShader;
 		} shaderPtr;
 		void Create(ID3D11Device* device, GPUShaderCreateInfo& createInfo);
 		ID3D10Blob* compiledBlob = 0;

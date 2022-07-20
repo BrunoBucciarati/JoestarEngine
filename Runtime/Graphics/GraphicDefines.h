@@ -292,8 +292,11 @@ namespace Joestar {
 		PS = 1 << 1,
 		GS = 1 << 2,
 		CS = 1 << 3,
+		HS = 1 << 4,
+		DS = 1 << 5,
 		VS_PS = VS | PS,
-		VS_GS_PS = VS_PS | GS
+		VS_GS_PS = VS_PS | GS,
+		VS_HS_DS_PS = VS_PS | HS | DS
 	};
 
 	enum class ShaderLanguage {

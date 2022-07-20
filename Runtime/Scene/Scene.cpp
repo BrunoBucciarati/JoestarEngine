@@ -68,6 +68,8 @@ namespace Joestar {
     void Scene::CreateTerrain()
     {
         mTerrain = NEW_OBJECT(Terrain);
+        mTerrain->BuildMesh(4096, 4096);
+        mGameObjects.Push(SharedPtr<GameObject>(mTerrain));
     }
 
     void Scene::RenderSkybox(CommandBuffer* cb)
@@ -162,31 +164,6 @@ namespace Joestar {
 
     void Scene::Update(float dt)
     {
-        //HID* hid = GetSubsystem<HID>();
-        //camera->ProcessHID(hid, 0.01f);
-
-        ////Test Selection Movement
-        //if (selection) {
-        //    Vector3f p = selection->GetPosition();
-        //    if (hid->CheckKeyboardInput(KEY_UP)) {
-        //        p.y = p.y + 0.1;
-        //        selection->SetPosition(p);
-        //    }
-        //    if (hid->CheckKeyboardInput(KEY_LEFT)) {
-        //        p.x = p.x - 0.1;
-        //        selection->SetPosition(p);
-        //    }
-        //    if (hid->CheckKeyboardInput(KEY_RIGHT)) {
-        //        p.x = p.x + 0.1;
-        //        selection->SetPosition(p);
-        //    }
-        //    if (hid->CheckKeyboardInput(KEY_DOWN)) {
-        //        p.y = p.y - 0.1;
-        //        selection->SetPosition(p);
-        //    }
-        //}
-
-        //RenderScene();
     }
 
     void Scene::PreRenderCompute()

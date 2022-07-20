@@ -395,6 +395,14 @@ namespace Joestar
         {
             device->CreateComputeShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), NULL, &shaderPtr.computeShader);
         }
+        else if (createInfo.stage == ShaderStage::HS)
+        {
+            device->CreateHullShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), NULL, &shaderPtr.hullShader);
+        }
+        else if (createInfo.stage == ShaderStage::DS)
+        {
+            device->CreateDomainShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), NULL, &shaderPtr.domainShader);
+        }
     }
 
     void CommandBufferD3D11::BeginRenderPass(RenderPassBeginInfo& beginInfo)

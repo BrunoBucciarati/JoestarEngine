@@ -1,7 +1,6 @@
 #pragma once
 #include "../Base/GameObject.h"
 #include "../Base/Light.h"
-#include "../Graphics/UniformData.h"
 #include "../Core/SubSystem.h"
 #include "../Graphics/Material.h"
 #include "../Graphics/Graphics.h"
@@ -49,9 +48,9 @@ namespace Joestar {
 		Shader* shComputeShader;
 		Shader* shadowShader;
 		Camera* shadowCam;
-		ComputeSHConsts computeSHConsts;
+		//ComputeSHConsts computeSHConsts;
 		Texture* shCube;
-		LightBlocks lightBlocks;
+		//LightBlocks lightBlocks;
 		Graphics* mGraphics;
 		SharedPtr<RenderPass> mMainRenderPass;
 		SharedPtr<GameObject> mSkyboxGO;

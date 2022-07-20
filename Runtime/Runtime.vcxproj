@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -187,7 +187,6 @@
     <ClCompile Include="Graphics\Texture2D.cpp" />
     <ClCompile Include="Graphics\TextureCube.cpp" />
     <ClCompile Include="Graphics\UniformBuffer.cpp" />
-    <ClCompile Include="Graphics\UniformData.cpp" />
     <ClCompile Include="Graphics\VertexBuffer.cpp" />
     <ClCompile Include="Graphics\View.cpp" />
     <ClCompile Include="Graphics\Vulkan\RenderAPIVK.cpp" />
@@ -210,6 +209,7 @@
     <ClCompile Include="Misc\TimeManager.cpp" />
     <ClCompile Include="Resource\Resource.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="Scene\Terrain.cpp" />
     <ClCompile Include="Thread\RenderThread.cpp" />
     <ClCompile Include="Thread\Thread.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
@@ -277,7 +277,6 @@
     <ClInclude Include="Graphics\Texture2D.h" />
     <ClInclude Include="Graphics\TextureCube.h" />
     <ClInclude Include="Graphics\UniformBuffer.h" />
-    <ClInclude Include="Graphics\UniformData.h" />
     <ClInclude Include="Graphics\VertexBuffer.h" />
     <ClInclude Include="Graphics\View.h" />
     <ClInclude Include="Graphics\Viewport.h" />
@@ -307,6 +306,7 @@
     <ClInclude Include="Platform\Platform.h" />
     <ClInclude Include="Resource\Resource.h" />
     <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\Terrain.h" />
     <ClInclude Include="Thread\RenderThread.h" />
     <ClInclude Include="Thread\Thread.h" />
     <ClInclude Include="Graphics\RenderCommand.h" />

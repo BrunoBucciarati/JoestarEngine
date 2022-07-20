@@ -148,18 +148,40 @@ namespace Joestar
 	}
 	void ShaderProgram::SetShader(ShaderStage s, const String& name)
 	{
-		if (s == ShaderStage::VS_PS)
+		if ((U32)s & (U32)ShaderStage::HS)
 		{
-			SetShader(s, name, name);
-			return;
+			Shader* shader = NEW_OBJECT(Shader);
+			shader->SetShader(name, ShaderStage::HS);
+			SetShader(ShaderStage::HS, name);
 		}
-		Shader* shader = NEW_OBJECT(Shader);
-		shader->SetShader(name, s);
-		SetShader(s, shader);
+		if ((U32)s & (U32)ShaderStage::DS)
+		{
+			Shader* shader = NEW_OBJECT(Shader);
+			shader->SetShader(name, ShaderStage::DS);
+			SetShader(ShaderStage::DS, name);
+		}
+		if ((U32)s & (U32)ShaderStage::GS)
+		{
+			Shader* shader = NEW_OBJECT(Shader);
+			shader->SetShader(name, ShaderStage::GS);
+			SetShader(ShaderStage::GS, name);
+		}
+		if ((U32)s & (U32)ShaderStage::VS)
+		{
+			Shader* shader = NEW_OBJECT(Shader);
+			shader->SetShader(name, ShaderStage::VS);
+			SetShader(ShaderStage::VS, name);
+		}
+		if ((U32)s & (U32)ShaderStage::PS)
+		{
+			Shader* shader = NEW_OBJECT(Shader);
+			shader->SetShader(name, ShaderStage::PS);
+			SetShader(ShaderStage::PS, name);
+		}
 	}
 	void ShaderProgram::SetShader(ShaderStage s, const String& vs, const String& ps)
 	{
-		if (s != ShaderStage::VS_PS)
+		if (((U32)s & (U32)ShaderStage::VS_PS) == 0)
 		{
 			return;
 		}

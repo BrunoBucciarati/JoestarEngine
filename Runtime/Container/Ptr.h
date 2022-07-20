@@ -64,6 +64,14 @@ namespace Joestar
 		{
 			return mPtr;
 		}
+		//template <typename U>
+		//operator U()
+		//{
+		//	SharedPtr<U> ret;
+		//	ret = dynamic_cast<U*>(mPtr);
+		//	return ret;
+		//}
+		
 	private:
 		T* mPtr;
 	};
