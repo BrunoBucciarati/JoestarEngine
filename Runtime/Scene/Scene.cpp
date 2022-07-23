@@ -19,7 +19,7 @@ namespace Joestar {
     {
         mGraphics = GetSubsystem<Graphics>();
 
-        //CreateLights();
+        CreateLights();
         CreateTerrain();
 
         GameObject* plane = NEW_OBJECT(GameObject);

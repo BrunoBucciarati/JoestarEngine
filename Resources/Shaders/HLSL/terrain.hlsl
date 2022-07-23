@@ -21,6 +21,7 @@ struct VertexOut
 {
 	float3 PosW  : POSITION;
 	float3 Nor : NORMAL;
+	float2 Tex : TEXCOORD0;
 };
 
 VertexOut VS(VertexIn vin)
@@ -30,23 +31,25 @@ VertexOut VS(VertexIn vin)
 	vout.PosW = vin.PosL;
 	vout.PosW.y = textureHeightMap.SampleLevel(samplerHeightMap, vin.UV, 0).r;
 	vout.Nor = vin.Nor;
+	vout.Tex = vin.UV;
     
     return vout;
 }
 
+float CalcTessFactor(float3 p)
+{
 // When distance is minimum, the tessellation is maximum.
 // When distance is maximum, the tessellation is minimum.
-float gMinDist;
-float gMaxDist;
+	float gMinDist = 1.0;
+	float gMaxDist = 1000.0;
 // Exponents for power of 2 tessellation. The tessellation
 // range is [2^(gMinTess), 2^(gMaxTess)]. Since the maximum
 // tessellation is 64, this means gMaxTess can be at most 6
 // since 2^6 = 64, and gMinTess must be at least 0 since 2^0 = 1.
-float gMinTess;
-float gMaxTess;
-float gEyePosW = 1.0;
-float CalcTessFactor(float3 p)
-{
+	float gMinTess = 1.0;
+	float gMaxTess = 64.0;
+	float gEyePosW = 1.0;
+
 	float d = distance(p, gEyePosW);
 	float s = saturate((d - gMinDist) / (gMaxDist - gMinDist));
 	return pow(2, (lerp(gMaxTess, gMinTess, s)));
@@ -90,6 +93,27 @@ PatchTess ConstantHS(InputPatch<VertexOut, 4> patch, uint patchID : SV_Primitive
 	}
 }
 
+struct HullOut
+{
+	float3 PosW : POSITION;
+	float2 Tex : TEXCOORD0;
+};
+
+[domain("quad")]
+[partitioning("integer")]
+[outputtopology("triangle_cw")]
+[outputcontrolpoints(4)]
+[patchconstantfunc("ConstantHS")]
+[maxtessfactor(64.0f)]
+HullOut HS(InputPatch<VertexOut, 4> p, uint i : SV_OutputControlPointID, uint patchId : SV_PrimitiveID)
+{
+	HullOut hout;
+	hout.PosW = p[i].PosW;
+	hout.Tex = p[i].Tex;
+	return hout;
+}
+
+
 struct DomainOut
 {
 	float4 PosH : SV_POSITION;
@@ -97,11 +121,13 @@ struct DomainOut
 	float2 Tex : TEXCOORD0;
 	float2 TiledTex : TEXCOORD1;
 };
-// How much to tile the texture layers.
-float2 gTexScale = 50.0f;
+
 [domain("quad")]
 DomainOut DS(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputPatch<HullOut, 4> quad)
 {
+	// How much to tile the texture layers.
+	float2 gTexScale = 50.0f;
+
 	DomainOut dout;
 	// Bilinear interpolation.
 	dout.PosW = lerp(
@@ -115,7 +141,7 @@ DomainOut DS(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputPat
 	// Tile layer textures over terrain.
 	dout.TiledTex = dout.Tex*gTexScale;
 	// Displacement mapping
-	dout.PosW.y = textureHeightMap.SampleLevel(samplerHeightmap, dout.Tex, 0).r;
+	dout.PosW.y = textureHeightMap.SampleLevel(samplerHeightMap, dout.Tex, 0).r;
 	// NOTE: We tried computing the normal in the domain shader
 	// using finite difference, but the vertices move continuously
 	// with fractional_even which creates noticable light shimmering

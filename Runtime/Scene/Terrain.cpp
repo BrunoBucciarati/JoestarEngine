@@ -13,6 +13,7 @@ namespace Joestar
 		Material* mat = NEW_OBJECT(Material);
 		mat->SetShader("terrain", ShaderStage::VS_HS_DS_PS);
 		mMaterial = NEW_OBJECT(MaterialInstance, mat);
+		mMeshRenderer->SetMaterial(mMaterial);
 	}
 
 	Terrain::~Terrain()
