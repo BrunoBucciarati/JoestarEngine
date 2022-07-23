@@ -7,13 +7,14 @@ namespace Joestar
 	Terrain::Terrain(EngineContext* ctx) : Super(ctx),
 		mHeightMap(JOJO_NEW(Texture2D(ctx), MEMORY_TEXTURE))
 	{
-		InitHeightMap();
 		mMeshRenderer = GetComponent<MeshRenderer>();
 
 		Material* mat = NEW_OBJECT(Material);
 		mat->SetShader("terrain", ShaderStage::VS_HS_DS_PS);
 		mMaterial = NEW_OBJECT(MaterialInstance, mat);
 		mMeshRenderer->SetMaterial(mMaterial);
+
+		InitHeightMap();
 	}
 
 	Terrain::~Terrain()
@@ -40,6 +41,8 @@ namespace Joestar
 		mHeightMap->SetWidth(image.GetWidth());
 		mHeightMap->SetHeight(image.GetHeight());
 		mHeightMap->SetData((U8*)heightMap.Buffer());
+
+		mMaterial->SetTexture(mHeightMap, 1);
 	}
 
 	void Terrain::BuildMesh(U32 width, U32 height)

@@ -67,7 +67,7 @@ namespace Joestar {
         case WM_MOUSEMOVE:
             xPos = (U32)(short)LOWORD(lParam);   // horizontal position 
             yPos = (U32)(short)HIWORD(lParam);   // vertical position 
-            LOG("x:%d y:%d\n", xPos, yPos);
+            //LOG("x:%d y:%d\n", xPos, yPos);
             if (CurPosX != 0 || CurPosY != 0)
             {
                 HIDSystem->SetMouseInputs((F32)xPos - CurPosX, (F32)yPos - CurPosY, 0.F, 0.F);

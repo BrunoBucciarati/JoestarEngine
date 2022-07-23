@@ -16,9 +16,6 @@ namespace Joestar
 		bool flag = mMaterial->Update();
 		GraphicsPipelineState* pso = PreparePipelineState(view, cb);
 		cb->BindPipelineState(pso);
-
-		if (mMaterial->GetBatchDescriptorSets())
-			cb->BindDescriptorSets(UniformFrequency::BATCH, mShaderProgram->GetPipelineLayout(), mMaterial->GetBatchDescriptorSets());
 		
 		auto model = mRenderer->GetGameObject()->GetAfflineTransform();
 		if (!view->GetGraphics()->IsColumnMajor())
@@ -27,6 +24,9 @@ namespace Joestar
 		}
 		mMaterial->SetUniformBuffer(PerObjectUniforms::MODEL_MATRIX, (U8*)&model);
 		mMaterial->UpdateDescriptorSets();
+
+		if (mMaterial->GetBatchDescriptorSets())
+			cb->BindDescriptorSets(UniformFrequency::BATCH, mShaderProgram->GetPipelineLayout(), mMaterial->GetBatchDescriptorSets());
 
 		if (mMaterial->GetObjectDescriptorSets())
 			cb->BindDescriptorSets(UniformFrequency::OBJECT, mShaderProgram->GetPipelineLayout(), mMaterial->GetObjectDescriptorSets());
@@ -44,9 +44,7 @@ namespace Joestar
 		mMesh(renderer->GetMesh()),
 		mShaderProgram(mMaterial->GetShaderProgram()),
 		mRenderer(renderer)
-	{
-	}
-
+	{}
 
 	void Batch::CalculateKey()
 	{

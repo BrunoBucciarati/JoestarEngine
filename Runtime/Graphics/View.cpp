@@ -39,7 +39,7 @@ namespace Joestar
 		binding->binding = 0;
 		binding->type = DescriptorType::UNIFORM_BUFFER;
 		binding->count = 1;
-		binding->stage = (U32)ShaderStage::VS;
+		binding->stage = (U32)ShaderStage::VS | (U32)ShaderStage::DS;
 		binding->size = 128;
 		binding->members.Resize(2);
 		binding->members[0].ID = (U32)PerPassUniforms::VIEW_MATRIX;
@@ -147,6 +147,8 @@ namespace Joestar
 		for (auto go : gameObjects)
 		{
 			MeshRenderer* renderer = go->HasComponent<MeshRenderer>();
+			if (!renderer->GetCastShadow())
+				continue;
 			auto& aabb = renderer->GetBoundingBox();
 			if (Intersection::OUTSIDE == viewFrustum.IsInside(aabb))
 				continue;
@@ -186,14 +188,8 @@ namespace Joestar
 		mGraphics->CreateFrameBuffer(mShadowFrameBuffer);
 	}
 
-
-	void View::ForwardRender(CommandBuffer* cb)
+	void View::DoShadowPass(CommandBuffer* cb)
 	{
-		//Check if Shadow Pass inited
-		InitShadowPass();
-		CollectShadowBatches();
-		CollectBatches();
-
 		Light* mainLight = mScene->GetMainLight();
 		mShadowCamera->SetPosition(mainLight->GetPosition());
 		mShadowCamera->SetOrthographic(100.F);
@@ -221,10 +217,20 @@ namespace Joestar
 			batch.Render(this, cb);
 		}
 		cb->EndRenderPass(mShadowPass);
+	}
 
+	void View::ForwardRender(CommandBuffer* cb)
+	{
+		//Check if Shadow Pass inited
+		InitShadowPass();
+		CollectShadowBatches();
+		CollectBatches();
+
+		if (!mShadowBatches.Empty())
+			DoShadowPass(cb);
 		//Scene Pass
-		view = mCamera->GetViewMatrix();
-		proj = mCamera->GetProjectionMatrix();
+		Matrix4x4f view = mCamera->GetViewMatrix();
+		Matrix4x4f proj = mCamera->GetProjectionMatrix();
 		if (!mGraphics->IsColumnMajor())
 		{
 			view.Transponse();

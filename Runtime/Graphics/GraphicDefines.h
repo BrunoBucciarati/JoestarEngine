@@ -290,10 +290,10 @@ namespace Joestar {
 	enum class ShaderStage {
 		VS = 1 << 0,
 		PS = 1 << 1,
-		GS = 1 << 2,
-		CS = 1 << 3,
-		HS = 1 << 4,
-		DS = 1 << 5,
+		HS = 1 << 2,
+		DS = 1 << 3,
+		GS = 1 << 4,
+		CS = 1 << 5,
 		VS_PS = VS | PS,
 		VS_GS_PS = VS_PS | GS,
 		VS_HS_DS_PS = VS_PS | HS | DS

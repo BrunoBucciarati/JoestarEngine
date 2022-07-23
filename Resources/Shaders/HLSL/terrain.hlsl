@@ -4,8 +4,8 @@ cbuffer cbPerPass : register(b0)
 	float4x4 proj; 
 };
 
-Texture2D textureDiffuse : register(t0);
-SamplerState samplerDiffuse : register(s0);
+// Texture2D textureDiffuse : register(t0);
+// SamplerState samplerDiffuse : register(s0);
 Texture2D textureHeightMap : register(t1);
 SamplerState samplerHeightMap : register(s1);
 

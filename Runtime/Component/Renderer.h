@@ -27,35 +27,19 @@ namespace Joestar {
 			return mMaterial;
 		}
 
-		//void SetShader(const String& name, ShaderStage stage = ShaderStage::VS_PS);
+		void SetCastShadow(bool flag)
+		{
+			bCastShadow = flag;
+		}
 
-		//void SetShader(Shader* shader, ShaderStage stage = ShaderStage::VS_PS)
-		//{
-		//	mShaderProgram->SetShader(stage, shader);
-		//}
-		//Shader* GetShader(ShaderStage stage)
-		//{
-		//	return mShaderProgram->GetShader(stage);
-		//}
-		//String GetShaderName(ShaderStage stage)
-		//{
-		//	return GetShader(stage)->GetName();
-		//}
-		//ShaderProgram* GetShaderProgram()
-		//{
-		//	return mShaderProgram;
-		//}
-		//void SetUniformBuffer(PerObjectUniforms,U8*);
-		//SharedPtr<DescriptorSets>& GetDescriptorSets()
-		//{
-		//	return mDescriptorSets;
-		//}
+		bool GetCastShadow() const
+		{
+			return bCastShadow;
+		}
 	protected:
 		WeakPtr<Graphics> mGraphics;
 		Vector<SharedPtr<GraphicsPipelineState>> mPSOs;
 		SharedPtr<MaterialInstance> mMaterial;
-		//SharedPtr<ShaderProgram> mShaderProgram;
-		//SharedPtr<DescriptorSets> mDescriptorSets;
-		//Vector<SharedPtr<UniformBuffer>> mUniformBuffers;
+		bool bCastShadow{ false };
 	};
 }

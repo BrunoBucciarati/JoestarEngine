@@ -162,6 +162,7 @@ namespace Joestar {
 
 	void Material::SetShader(const String& name, ShaderStage stage)
 	{
+		SetName(name);
 		mShaderProgram->SetShader(stage, name);
 		if (mShaderProgram->IsValid())
 		{

@@ -78,18 +78,23 @@ namespace Joestar
 			//todo
 		}
 		//从不同的stage收集合并描述符
-		if (mStageMask == (U32)ShaderStage::VS_PS)
+		if (mStageMask & (U32)ShaderStage::VS_PS)
 		{
 			U32 maxSets = 0;
 			for (auto& shader : mShaders)
 			{
-				auto* reflection = shader->GetReflection();
-				maxSets = Max(maxSets, reflection->GetNumDescriptorSetLayouts());
+				if (shader)
+				{
+					auto* reflection = shader->GetReflection();
+					maxSets = Max(maxSets, reflection->GetNumDescriptorSetLayouts());
+				}
 			}
 			mPipelineLayout->ResizeLayouts(maxSets);
 
 			for (auto& shader : mShaders)
 			{
+				if (!shader)
+					continue;
 				auto* reflection = shader->GetReflection();
 				Vector<DescriptorSetLayout>& setLayouts = reflection->GetDescriptorSetLayouts();
 				for (U32 setIdx = 0; setIdx < setLayouts.Size(); ++setIdx)
@@ -141,13 +146,16 @@ namespace Joestar
 			graphics->CreatePipelineLayout(mPipelineLayout);
 		}
 	}
+
 	U32 ShaderProgram::GetNumDescriptorSetLayouts()
 	{
 		if (mPipelineLayout)
 			return mPipelineLayout->GetLayoutsSize();
 	}
+
 	void ShaderProgram::SetShader(ShaderStage s, const String& name)
 	{
+		SetName(name);
 		if ((U32)s & (U32)ShaderStage::HS)
 		{
 			Shader* shader = NEW_OBJECT(Shader);
@@ -210,6 +218,9 @@ namespace Joestar
 
 		if (mStageMask == (U32)ShaderStage::VS_GS_PS)
 			return 3;
+
+		if (mStageMask == (U32)ShaderStage::VS_HS_DS_PS)
+			return 4;
 
 		if (mStageMask == (U32)ShaderStage::CS)
 			return 1;

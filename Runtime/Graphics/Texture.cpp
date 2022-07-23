@@ -5,8 +5,7 @@ namespace Joestar {
 	Texture::Texture(EngineContext* ctx) : Super(ctx),
 		mGraphics(GetSubsystem<Graphics>()),
 		mImageView(JOJO_NEW(GPUImageView(ctx), MEMORY_TEXTURE))
-	{
-	}
+	{}
 	Texture::~Texture()
 	{}
 
@@ -62,8 +61,13 @@ namespace Joestar {
 
 	void Texture::SetData(U8* data)
 	{
+		mSampler = JOJO_NEW(Sampler, MEMORY_TEXTURE);
+		mGraphics->SetSampler(mSampler);
 		if (mLayers == 1)
 		{
+			mImageView->GetImage()->SetWidth(mWidth);
+			mImageView->GetImage()->SetHeight(mHeight);
+			mImageView->SetFormat(mFormat);
 			mImageView->SetData(data);
 			mGraphics->CreateTexture(this);
 		}

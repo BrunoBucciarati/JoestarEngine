@@ -73,10 +73,16 @@ namespace Joestar {
 	GPUImageView::~GPUImageView()
 	{}
 
-	void GPUImageView::SetImage(Image* image)
+	GPUImage* GPUImageView::GetImage()
 	{
 		if (!mImage)
 			mImage = JOJO_NEW(GPUImage(mContext), MEMORY_TEXTURE);
+		return mImage;
+	}
+
+	void GPUImageView::SetImage(Image* image)
+	{
+		GetImage();
 		mImage->SetImage(image);
 		mFormat = mImage->GetFormat();
 		mGraphics->CreateImageView(this);
@@ -114,7 +120,13 @@ namespace Joestar {
 		if (!mImage)
 			mImage = JOJO_NEW(GPUImage(mContext), MEMORY_TEXTURE);
 		mImage->SetData(data);
-		mFormat = mImage->GetFormat();
 		mGraphics->CreateImageView(this);
 	}
+
+	void GPUImageView::SetFormat(ImageFormat fmt)
+	{
+		mFormat = fmt;
+		GetImage()->SetFormat(fmt);
+	}
+
 }

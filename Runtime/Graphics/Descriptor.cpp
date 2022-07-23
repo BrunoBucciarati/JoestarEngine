@@ -129,12 +129,16 @@ namespace Joestar {
 
 	void DescriptorSets::SetBindingUniformBuffer(U32 binding, UniformBuffer* ub)
 	{
-		GetDescriptorSetByBinding(binding).ub = ub;
+		auto& ubBinding = GetDescriptorSetByBinding(binding);
+		if (ubBinding.binding == binding)
+			ubBinding.ub = ub;
 	}
 
-	void DescriptorSets::SetBindingTexture(U32 binding, Texture* ub)
+	void DescriptorSets::SetBindingTexture(U32 binding, Texture* tex)
 	{
-		GetDescriptorSetByBinding(binding).texture = ub;
+		auto& texBinding = GetDescriptorSetByBinding(binding);
+		if (texBinding.binding == binding)
+			texBinding.texture = tex;
 	}
 
 	void DescriptorSets::SetLayoutData(U32 ID, float* data)

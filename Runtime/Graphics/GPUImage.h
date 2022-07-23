@@ -98,7 +98,6 @@ namespace Joestar {
 		GET_SET_STATEMENT(SharedPtr<GPUImage>, Image);
 		GET_SET_STATEMENT_INITVALUE(GPUResourceHandle, Handle, GPUResource::INVALID_HANDLE);
 		GET_SET_STATEMENT_INITVALUE(ImageViewType, Type, ImageViewType::TYPE_2D);
-		GET_SET_STATEMENT_INITVALUE(ImageFormat, Format, ImageFormat::R8G8B8A8_SRGB);
 		GET_SET_STATEMENT_INITVALUE(U32, AspectBits, (U32)ImageAspectFlagBits::COLOR_BIT);
 		GET_SET_STATEMENT_INITVALUE(U32, BaseMipLevel, 0);
 		GET_SET_STATEMENT_INITVALUE(U32, MipLevels, 1);
@@ -111,8 +110,15 @@ namespace Joestar {
 		void SetRenderTarget(U32 w, U32 h);
 		void SetImages(Vector<SharedPtr<Image>>&);
 		void SetData(U8* data);
+		void SetFormat(ImageFormat fmt);
+		ImageFormat GetFormat()
+		{
+			return mFormat;
+		}
+		GPUImage* GetImage();
 	private:
 		WeakPtr<Graphics> mGraphics;
+		ImageFormat mFormat{ ImageFormat::R8G8B8A8_SRGB };
 	};
 
 	class GPUSampler : public GPUResource

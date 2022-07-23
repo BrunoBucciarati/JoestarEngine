@@ -436,6 +436,11 @@ namespace Joestar
         deviceContext->IASetInputLayout(pipeline->inputLayout);
         deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+        deviceContext->VSSetShader(NULL, 0, 0);
+        deviceContext->PSSetShader(NULL, 0, 0);
+        deviceContext->GSSetShader(NULL, 0, 0);
+        deviceContext->HSSetShader(NULL, 0, 0);
+        deviceContext->DSSetShader(NULL, 0, 0);
         for (U32 i = 0; i < pipeline->shaders.Size(); ++i)
         {
             if (pipeline->shaders[i]->stage == (U32)ShaderStage::VS)
@@ -445,6 +450,14 @@ namespace Joestar
             else if (pipeline->shaders[i]->stage == (U32)ShaderStage::PS)
             {
                 deviceContext->PSSetShader(pipeline->shaders[i]->shaderPtr.pixelShader, 0, 0);
+            }
+            else if (pipeline->shaders[i]->stage == (U32)ShaderStage::HS)
+            {
+                deviceContext->HSSetShader(pipeline->shaders[i]->shaderPtr.hullShader, 0, 0);
+            }
+            else if (pipeline->shaders[i]->stage == (U32)ShaderStage::DS)
+            {
+                deviceContext->DSSetShader(pipeline->shaders[i]->shaderPtr.domainShader, 0, 0);
             }
         }
     }
@@ -519,8 +532,18 @@ namespace Joestar
                     deviceContext->CSSetShaderResources(binding.binding, 1, &tex->imageView->imageView);
                     deviceContext->CSSetSamplers(binding.binding, 1, &tex->sampler->samplerState);
                 }
+                if (binding.stage & (U32)ShaderStage::HS)
+                {
+                    deviceContext->HSSetShaderResources(binding.binding, 1, &tex->imageView->imageView);
+                    deviceContext->HSSetSamplers(binding.binding, 1, &tex->sampler->samplerState);
+                }
+                if (binding.stage & (U32)ShaderStage::DS)
+                {
+                    deviceContext->DSSetShaderResources(binding.binding, 1, &tex->imageView->imageView);
+                    deviceContext->DSSetSamplers(binding.binding, 1, &tex->sampler->samplerState);
+                }
             }
-            else
+            else if (GPUResource::IsValid(updateSets[i].uniformHandle))
             {
                 UniformBufferD3D11* ub = renderContext->GetUniformBuffer(updateSets[i].uniformHandle);
                 deviceContext->UpdateSubresource(ub->buffer, 0, NULL, ub->GetStagingData(), 0, 0);
@@ -535,6 +558,14 @@ namespace Joestar
                 if (binding.stage & (U32)ShaderStage::CS)
                 {
                     deviceContext->CSSetConstantBuffers(setIndex, 1, &ub->buffer);
+                }
+                if (binding.stage & (U32)ShaderStage::HS)
+                {
+                    deviceContext->HSSetConstantBuffers(setIndex, 1, &ub->buffer);
+                }
+                if (binding.stage & (U32)ShaderStage::DS)
+                {
+                    deviceContext->DSSetConstantBuffers(setIndex, 1, &ub->buffer);
                 }
             }
         }

@@ -105,7 +105,6 @@ namespace Joestar {
 		mPiplelineState->SetRasterizationState(mGraphics->GetDefaultRasterizationState());
 	}
 
-
 	bool MaterialInstance::Update()
 	{
 		bool bUpdate = false;
@@ -127,10 +126,8 @@ namespace Joestar {
 		if (binding >= mTextures.Size())
 			mTextures.Resize(binding + 1);
 		mTextures[binding] = tex;
-		if (mBatchDescriptorSets->Size() > binding)
-		{
-			mBatchDescriptorSets->SetBindingTexture(binding, tex);
-		}
+
+		mBatchDescriptorSets->SetBindingTexture(binding, tex);
 	}
 
 	void MaterialInstance::SetDepthCompareOp(CompareOp op)

@@ -52,6 +52,7 @@ namespace Joestar
 		void CollectBatches();
 		void CollectShadowBatches();
 		void InitShadowPass();
+		void DoShadowPass(CommandBuffer* cb);
 		UniquePtr<Camera> mCamera;
 		UniquePtr<Camera> mShadowCamera;
 		UniquePtr<Scene> mScene;
