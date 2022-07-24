@@ -123,7 +123,7 @@ namespace Joestar
 		Frustum viewFrustum = mCamera->GetFrustum();
 		for (auto go : gameObjects)
 		{
-			MeshRenderer* renderer = go->HasComponent<MeshRenderer>();
+			MeshRenderer* renderer = go->HasDerivedComponent<MeshRenderer>();
 			auto& aabb = renderer->GetBoundingBox();
 			if (Intersection::OUTSIDE == viewFrustum.IsInside(aabb))
 				continue;
@@ -146,7 +146,7 @@ namespace Joestar
 		Frustum viewFrustum = mShadowCamera->GetFrustum();
 		for (auto go : gameObjects)
 		{
-			MeshRenderer* renderer = go->HasComponent<MeshRenderer>();
+			MeshRenderer* renderer = go->HasDerivedComponent<MeshRenderer>();
 			if (!renderer->GetCastShadow())
 				continue;
 			auto& aabb = renderer->GetBoundingBox();
@@ -220,7 +220,7 @@ namespace Joestar
 		cb->SetPassDescriptorSets(mAllDescriptorSets[(U32)Pass::Shadow]);
 		for (auto& batch : mShadowBatches)
 		{
-			batch.Render(this, cb);
+			batch.Render(this, cb, mShadowCamera);
 		}
 		cb->EndRenderPass(mShadowPass);
 	}
@@ -245,7 +245,7 @@ namespace Joestar
 		cb->SetPassDescriptorSets(mAllDescriptorSets[(U32)Pass::Scene]);
 		for (auto& batch : mBatches)
 		{
-			batch.Render(this, cb);
+			batch.Render(this, cb, mCamera);
 		}
 
 		//Skybox
@@ -253,7 +253,7 @@ namespace Joestar
 		{
 			GameObject* skybox = mScene->GetSkybox();
 			Batch skyboxBatch(skybox->GetComponent<MeshRenderer>());
-			skyboxBatch.Render(this, cb);
+			skyboxBatch.Render(this, cb, mCamera);
 		}
 		cb->EndRenderPass(mGraphics->GetMainRenderPass());
 	}

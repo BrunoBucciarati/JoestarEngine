@@ -39,6 +39,25 @@ namespace Joestar {
 			return nullptr;
 		}
 
+		template<class T>
+		T* HasDerivedComponent()
+		{
+			for (auto& comp : components)
+			{
+				if (comp->GetClassID() == T::GetClassIDStatic())
+				{
+					return static_cast<T*>(comp);
+				}
+				else
+				{
+					T* ptr = dynamic_cast<T*>(comp);
+					if (ptr)
+						return ptr;
+				}
+			}
+			return nullptr;
+		}
+
 		Vector3f GetPosition()
 		{
 			//comp 0 must be transform

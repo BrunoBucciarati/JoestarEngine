@@ -225,6 +225,9 @@
     <ClCompile Include="Scene\Terrain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Component\TerrainMeshRenderer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\GlobalConfig.h">
@@ -522,6 +525,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Terrain.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\TerrainMeshRenderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

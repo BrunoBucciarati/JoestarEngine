@@ -51,6 +51,8 @@ namespace Joestar
 			return (U32)PerPassUniforms::VIEW_MATRIX;
 		if (strcmp(name, "model") == 0)
 			return (U32)PerObjectUniforms::MODEL_MATRIX;
+		if (strcmp(name, "frustumPlanes") == 0)
+			return (U32)PerObjectUniforms::FRUSTUM_PLANES;
 		LOGERROR("Unknown Uniform: %s\n", name);
 	}
 

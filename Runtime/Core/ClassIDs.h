@@ -51,6 +51,7 @@ enum ClassIDType {
 	DefineClassID(MaterialInstance, 42)
 	DefineClassID(SubShader, 43)
 	DefineClassID(Terrain, 44)
+	DefineClassID(TerrainMeshRenderer, 45)
 
 	kClassIDCount
 };

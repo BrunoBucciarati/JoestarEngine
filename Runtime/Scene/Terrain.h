@@ -6,7 +6,7 @@
 #include "../Graphics/Mesh.h"
 namespace Joestar
 {
-	class MeshRenderer;
+	class TerrainMeshRenderer;
 	class MaterialInstance;
 	class Terrain : public GameObject
 	{
@@ -22,7 +22,9 @@ namespace Joestar
 		U32 mHeight;
 		U32 mPatchWidth{ 64u };
 		U32 mPatchHeight{ 64u };
-		WeakPtr<MeshRenderer> mMeshRenderer;
+		WeakPtr<TerrainMeshRenderer> mMeshRenderer;
 		SharedPtr<MaterialInstance> mMaterial;
+		F32 mMaxHeight;
+		F32 mMinHeight;
 	};
 }

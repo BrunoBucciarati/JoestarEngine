@@ -153,6 +153,7 @@
     <ClCompile Include="Base\Light.cpp" />
     <ClCompile Include="Component\MeshRenderer.cpp" />
     <ClCompile Include="Component\Renderer.cpp" />
+    <ClCompile Include="Component\TerrainMeshRenderer.cpp" />
     <ClCompile Include="Component\Transform.cpp" />
     <ClCompile Include="Container\Str.cpp" />
     <ClCompile Include="Core\EngineContext.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="Component\MeshRenderer.h" />
     <ClInclude Include="Component\Renderer.h" />
     <ClInclude Include="Component\Component.h" />
+    <ClInclude Include="Component\TerrainMeshRenderer.h" />
     <ClInclude Include="Component\Transform.h" />
     <ClInclude Include="Container\Hash.h" />
     <ClInclude Include="Container\HashMap.h" />

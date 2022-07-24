@@ -2,7 +2,9 @@
 #include "../Misc/Application.h"
 #include "../Graphics/Graphics.h"
 #include "../Graphics/MaterialInstance.h"
+#include "../Graphics/Material.h"
 #include "../Base/GameObject.h"
+#include "../Graphics/Camera.h"
 namespace Joestar {
 	void Renderer::Init()
 	{
@@ -74,5 +76,10 @@ namespace Joestar {
 	SharedPtr<GraphicsPipelineState> Renderer::GetPipelineState(CommandBuffer* cb)
 	{
 		return nullptr;
+	}
+
+	void Renderer::Update(Camera* camera)
+	{
+		mMaterial->Update();
 	}
 }

@@ -1,11 +1,4 @@
 #pragma once
-#define REGISTER_OBJECT_ROOT(CLASS)\
-	public:\
-		static const char* GetTypeStatic() {return #CLASS;}\
-		static uint32_t GetClassIDStatic() {return ClassID(CLASS);}\
-		virtual uint32_t GetClassID() {return ClassID(CLASS);} \
-		virtual ~CLASS();\
-	typedef Object Super;
 
 #define REGISTER_OBJECT(CLASS, PARENT)\
 	public:\
@@ -14,6 +7,9 @@
 		virtual uint32_t GetClassID() {return ClassID(CLASS);} \
 		virtual ~CLASS();\
 	typedef PARENT Super;
+
+#define REGISTER_OBJECT_ROOT(CLASS)\
+	REGISTER_OBJECT(CLASS, Object)
 	
 #define REGISTER_SUBSYSTEM(CLASS) REGISTER_OBJECT(CLASS, SubSystem);
 #define REGISTER_COMPONENT_ROOT(CLASS) \

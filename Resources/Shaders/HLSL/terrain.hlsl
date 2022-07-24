@@ -4,6 +4,11 @@ cbuffer cbPerPass : register(b0)
 	float4x4 proj; 
 };
 
+cbuffer cbPerObject : register(b1)
+{
+	float4 frustumPlanes[6];
+};
+
 // Texture2D textureDiffuse : register(t0);
 // SamplerState samplerDiffuse : register(s0);
 Texture2D textureHeightMap : register(t1);
@@ -15,6 +20,7 @@ struct VertexIn
 	float3 PosL  : POSITION;
 	float3 Nor : NORMAL;
 	float2 UV : TEXCOORD0;
+	float2 BoundsY : TEXCOORD1;
 };
 
 struct VertexOut
@@ -22,6 +28,7 @@ struct VertexOut
 	float3 PosW  : POSITION;
 	float3 Nor : NORMAL;
 	float2 Tex : TEXCOORD0;
+	float2 BoundsY : TEXCOORD1;
 };
 
 VertexOut VS(VertexIn vin)
@@ -32,22 +39,23 @@ VertexOut VS(VertexIn vin)
 	vout.PosW.y = textureHeightMap.SampleLevel(samplerHeightMap, vin.UV, 0).r;
 	vout.Nor = vin.Nor;
 	vout.Tex = vin.UV;
+	vout.BoundsY = vin.BoundsY;
     
     return vout;
 }
 
 float CalcTessFactor(float3 p)
 {
-// When distance is minimum, the tessellation is maximum.
-// When distance is maximum, the tessellation is minimum.
+	// When distance is minimum, the tessellation is maximum.
+	// When distance is maximum, the tessellation is minimum.
 	float gMinDist = 1.0;
 	float gMaxDist = 1000.0;
-// Exponents for power of 2 tessellation. The tessellation
-// range is [2^(gMinTess), 2^(gMaxTess)]. Since the maximum
-// tessellation is 64, this means gMaxTess can be at most 6
-// since 2^6 = 64, and gMinTess must be at least 0 since 2^0 = 1.
-	float gMinTess = 1.0;
-	float gMaxTess = 64.0;
+	// Exponents for power of 2 tessellation. The tessellation
+	// range is [2^(gMinTess), 2^(gMaxTess)]. Since the maximum
+	// tessellation is 64, this means gMaxTess can be at most 6
+	// since 2^6 = 64, and gMinTess must be at least 0 since 2^0 = 1.
+	float gMinTess = 0.0;
+	float gMaxTess = 6.0;
 	float gEyePosW = 1.0;
 
 	float d = distance(p, gEyePosW);
@@ -61,17 +69,60 @@ struct PatchTess
 	float InsideTess[2] : SV_InsideTessFactor;
 };
 
+bool AABBBehindPlaneTest(float3 center, float3 extents, float4 plane)
+{
+	float3 n = abs(plane.xyz); // (|n.x|, |n.y|, |n.z|)
+	float e = plane.w;
+	// This is always positive.
+	float r = dot(extents, n);
+	// signed distance from center point to plane.
+	float s = dot(float4(center, 1.0f), plane);
+	// If the center point of the box is a distance of e or more behind the
+	// plane (in which case s is negative since it is behind the plane),
+	// then the box is completely in the negative half space of the plane.
+	return (s + e) < 0.0f;
+}
+
+// Returns true if the box is completely outside the frustum.
+bool AABBOutsideFrustumTest(float3 center, float3 extents, float4 frustumPlanes[6])
+{
+	for(int i = 0; i < 6; ++i)
+	{
+		// If the box is completely behind any of the frustum planes
+		// then it is outside the frustum.
+		if(AABBBehindPlaneTest(center, extents, frustumPlanes[i]))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
 PatchTess ConstantHS(InputPatch<VertexOut, 4> patch, uint patchID : SV_PrimitiveID)
 {
 	PatchTess pt;
 	//
-	// Frustum cull
-	//
-	// [... Omit frustum culling code]
-	// //
-	// // Do normal tessellation based on distance.
-	// //
-	// else
+	float minY = patch[0].BoundsY.x;
+	float maxY = patch[0].BoundsY.y;
+	// Build axis-aligned bounding box. patch[2] is lower-left corner
+	// and patch[1] is upper-right corner.
+	float3 vMin = float3(patch[2].PosW.x, minY, patch[2].PosW.z);
+	float3 vMax = float3(patch[1].PosW.x, maxY, patch[1].PosW.z);
+	// Center/extents representation.
+	float3 boxCenter = 0.5f*(vMin + vMax);
+	float3 boxExtents = 0.5f*(vMax - vMin);
+	if(AABBOutsideFrustumTest(boxCenter, boxExtents, frustumPlanes))
+	{
+		pt.EdgeTess[0] = 0.0f;
+		pt.EdgeTess[1] = 0.0f;
+		pt.EdgeTess[2] = 0.0f;
+		pt.EdgeTess[3] = 0.0f;
+		pt.InsideTess[0] = 0.0f;
+		pt.InsideTess[1] = 0.0f;
+		return pt;
+	}
+	else
 	{
 		// It is important to do the tess factor calculation
 		// based on the edge properties so that edges shared

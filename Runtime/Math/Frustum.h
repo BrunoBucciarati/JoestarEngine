@@ -11,7 +11,8 @@ namespace Joestar
 		PLANE_BOTTOM,
 		PLANE_TOP,
 		PLANE_NEAR,
-		PLANE_FAR
+		PLANE_FAR,
+		FRUSTUM_PLANE_COUNT
 	};
 	class Frustum
 	{

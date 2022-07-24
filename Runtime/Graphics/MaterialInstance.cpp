@@ -157,7 +157,8 @@ namespace Joestar {
 			return;
 		DescriptorSetLayoutBinding::Member member;
 		U32 binding = layout->GetUniformMemberAndBinding((U32)uniform, member);
-		mObjectUniformBuffers[binding]->SetData(member.offset, member.size, data);
+		if (binding != U32_MAX)
+			mObjectUniformBuffers[binding]->SetData(member.offset, member.size, data);
 	}
 
 	void MaterialInstance::SetUniformBuffer(PerBatchUniforms uniform, U8* data)

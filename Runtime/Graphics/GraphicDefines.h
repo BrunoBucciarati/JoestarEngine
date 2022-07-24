@@ -162,6 +162,7 @@ namespace Joestar {
 
 	enum class PerObjectUniforms {
 		MODEL_MATRIX = (int)PerBatchUniforms::COUNT,
+		FRUSTUM_PLANES,
 		COUNT
 	};
 

@@ -9,11 +9,13 @@
 #include "MaterialInstance.h"
 #include "Shader/ShaderProgram.h"
 #include "Mesh.h"
+#include "Camera.h"
 namespace Joestar
 {
-	void Batch::Render(View* view, CommandBuffer* cb)
+	void Batch::Render(View* view, CommandBuffer* cb, Camera* camera)
 	{
-		bool flag = mMaterial->Update();
+		//bool flag = mMaterial->Update();
+		mRenderer->Update(camera);
 		GraphicsPipelineState* pso = PreparePipelineState(view, cb);
 		cb->BindPipelineState(pso);
 		

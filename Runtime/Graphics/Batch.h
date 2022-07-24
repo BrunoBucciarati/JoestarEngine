@@ -10,6 +10,7 @@ namespace Joestar
 	class GraphicsPipelineState;
 	class MaterialInstance;
 	class Mesh;
+	class Camera;
 	class ShaderProgram;
 	struct Batch
 	{
@@ -20,7 +21,7 @@ namespace Joestar
 		ShaderProgram* mShaderProgram;
 		Batch();
 		Batch(MeshRenderer* renderer);
-		void Render(View* view, CommandBuffer* cb);
+		void Render(View* view, CommandBuffer* cb, Camera* camera);
 		GraphicsPipelineState* PreparePipelineState(View* view, CommandBuffer* cb);
 		void CalculateKey();
 		U32 mNumInstances{1};
