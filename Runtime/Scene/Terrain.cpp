@@ -35,7 +35,7 @@ namespace Joestar
 			{
 				U32 idx = i * image.GetWidth() + j;
 				U8 height = imageData[idx * image.GetNumChannels()];
-				heightMap[idx] = (F32)height / 255.0F;
+				heightMap[idx] = (F32)height;
 			}
 
 		mHeightMap->SetFormat(ImageFormat::R32);

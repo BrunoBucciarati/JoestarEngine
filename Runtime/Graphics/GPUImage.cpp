@@ -7,6 +7,24 @@ namespace Joestar {
 	{
 		return fmt == ImageFormat::D24S8 || fmt == ImageFormat::D32S8 || fmt == ImageFormat::D32;
 	}
+
+	const U32 ImageChannels[]
+	{
+		4,
+		3,
+		4,
+		3,
+		3,
+		4,
+		5,
+		4,
+		4,
+		2
+	};
+	static U32 GetChannels(ImageFormat fmt)
+	{
+		return ImageChannels[(U32)fmt];
+	}
 	GPUImage::GPUImage(EngineContext* ctx) : Super(ctx),
 		mGraphics(GetSubsystem<Graphics>())
 	{}
@@ -47,10 +65,15 @@ namespace Joestar {
 	{
 		if (mData)
 			JOJO_DELETE_ARRAY(mData);
+		if (0 == mSize && data)
+		{
+			mSize = mWidth * mHeight * GetChannels(mFormat);
+		}
 		mData = JOJO_NEW_ARRAY(U8, mSize, MEMORY_TEXTURE);
 		memcpy(mData, data, mSize);
 		mGraphics->CreateImage(this);
 	}
+
 
 	void GPUImage::SetRenderTarget(U32 w, U32 h)
 	{

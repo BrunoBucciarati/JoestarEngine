@@ -59,6 +59,7 @@ namespace Joestar {
 	};
 
 	static bool IsDepthFormat(ImageFormat);
+	static U32 GetChannels(ImageFormat);
 	class Image;
 	class Graphics;
 	class GPUImage : public Object
@@ -83,6 +84,7 @@ namespace Joestar {
 		void SetData(U8* data);
 		void SetSubData(U8* data, U32 offset=0);
 		void SetRenderTarget(U32 w, U32 h);
+		void SetSize(U32 w, U32 h, U32 d = 0);
 		U8* GetData()
 		{
 			return mData;
