@@ -191,6 +191,11 @@ namespace Joestar {
         colorBlending.blendConstants[3] = 0.0f; // Optional
     }
 
+    void GraphicsPipelineStateVK::CreateTessellationState(U32 num = 0)
+    {
+        tessellationInfo.patchControlPoints = num;
+    }
+
     void GraphicsPipelineStateVK::CreateVertexInputInfo(PODVector<InputBinding>& bindings, PODVector<InputAttribute>& attributes)
     {
         vertexInputBindings.Resize(bindings.Size());
@@ -227,12 +232,6 @@ namespace Joestar {
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamicState.dynamicStateCount = 2;
         dynamicState.pDynamicStates = dynamicStates;
-
-        //CreatePipelineLayout<DrawCallVK>(dc);
-
-        //Create Vertex Buffer
-        //VkPipelineVertexInputStateCreateInfo& vertexInputInfo = dc->GetVertexInputInfo();
-        //VkPipelineShaderStageCreateInfo* shaderCreateInfo = dc->shader->shaderStage.Buffer();
         
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = shaderStageInfos.Size();
@@ -244,6 +243,10 @@ namespace Joestar {
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pDepthStencilState = &depthStencil;
         pipelineInfo.pColorBlendState = &colorBlending;
+        if (tessellationInfo.patchControlPoints > 0)
+        {
+            pipelineInfo.pTessellationState = &tessellationInfo;
+        }
         pipelineInfo.pDynamicState = nullptr; // Optional
 
         pipelineInfo.layout = pipelineLayout;

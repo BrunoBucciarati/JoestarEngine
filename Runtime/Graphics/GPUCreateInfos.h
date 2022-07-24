@@ -135,6 +135,7 @@ namespace Joestar
 		GPUResourceHandle depthStencilStateHandle;
 		GPUResourceHandle vertexBufferHandle;
 		Viewport viewport;
+		U32 tessellationControlPoints;
 		U32 numInputBindings;
 		U32 numInputAttributes;
 		PODVector<InputAttribute> inputAttributes;

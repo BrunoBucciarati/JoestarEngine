@@ -180,6 +180,7 @@ namespace Joestar
 		Viewport viewport;
 		ID3D11InputLayout* inputLayout;
 		PODVector<ShaderD3D11*> shaders;
+		U32 tessellationControlPoints{ 0 };
 	};
 
 	class ComputePipelineStateD3D11

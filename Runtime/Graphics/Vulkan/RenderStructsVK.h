@@ -441,6 +441,7 @@ namespace Joestar {
         void CreateShaderStages(PODVector<ShaderVK*>& shaders);
 
         void CreateVertexInputInfo(PODVector<InputBinding>& bindings, PODVector<InputAttribute>& attributes);
+        void CreateTessellationState(U32 controlPoints = 0);
 
         void SetRenderPass(RenderPassVK* rp)
         {
@@ -467,6 +468,7 @@ namespace Joestar {
         Vector<VkVertexInputAttributeDescription> vertexInputAttributes{};
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         VkGraphicsPipelineCreateInfo pipelineInfo{};
+        VkPipelineTessellationStateCreateInfo tessellationInfo{};
         VkRenderPass renderPass{};
         Vector<VkDescriptorSetLayout> setLayouts;
         //Viewport

@@ -306,6 +306,7 @@ namespace Joestar
         pipelineLayout = ctx->GetPipelineLayout(createInfo.pipelineLayoutHandle);
         vertexBuffer = ctx->GetVertexBuffer(createInfo.vertexBufferHandle);
         viewport = createInfo.viewport;
+        tessellationControlPoints = createInfo.tessellationControlPoints;
         GPUShaderProgramCreateInfo* shaderProgram = ctx->GetShaderProgram(createInfo.shaderProramHandle);
         shaders.Resize(shaderProgram->numStages);
         for (U32 i = 0; i < shaderProgram->numStages; ++i)
@@ -434,7 +435,15 @@ namespace Joestar
         deviceContext->OMSetDepthStencilState(pipeline->depthStencilState->depthStencilState, 0);
         deviceContext->RSSetState(pipeline->rasterState->rasterState);
         deviceContext->IASetInputLayout(pipeline->inputLayout);
-        deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        if (pipeline->tessellationControlPoints > 0)
+        {
+
+            deviceContext->IASetPrimitiveTopology((D3D_PRIMITIVE_TOPOLOGY)(D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST + pipeline->tessellationControlPoints - 1));
+        }
+        else
+        {
+            deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        }
 
         deviceContext->VSSetShader(NULL, 0, 0);
         deviceContext->PSSetShader(NULL, 0, 0);

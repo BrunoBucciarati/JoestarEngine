@@ -488,6 +488,7 @@ namespace Joestar {
 		createInfo.numInputAttributes = pso->GetNumInputAttributes();
 		createInfo.numInputBindings = pso->GetNumInputBindings();
 		createInfo.viewport = *pso->GetViewport();
+		createInfo.tessellationControlPoints = pso->GetTessellationPatchControlPoints();
 
 		GetMainCmdList()->WriteBuffer<GPUGraphicsPipelineStateCreateInfo>(createInfo);
 		for (U32 i = 0; i < createInfo.numInputBindings; ++i)
