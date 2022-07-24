@@ -187,7 +187,7 @@ namespace Joestar
 
         count = createInfo.indexCount;
         size = createInfo.indexSize;
-        indexFormat = count == 4 ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT;
+        indexFormat = size == 4 ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT;
     }
 
 

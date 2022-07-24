@@ -140,6 +140,11 @@ namespace Joestar {
 		bDepthStencilStateDirty = true;
 	}
 
+	void MaterialInstance::SetTessellationControlPoints(U32 num)
+	{
+		mTessellationControlPoints = num;
+	}
+
 	SharedPtr<DepthStencilState> MaterialInstance::GetDepthStencilState() const
 	{
 		return mDepthStencilState;

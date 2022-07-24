@@ -72,6 +72,7 @@ namespace Joestar
 			inputAttributes[i].binding = 0;
 		}
 		pso->SetInputAttributes(inputAttributes);
+		pso->SetTessellationPatchControlPoints(mMaterial->GetTessellationControlPoints());
 
 		PODVector<InputBinding> inputBindings;
 		inputBindings.Push({

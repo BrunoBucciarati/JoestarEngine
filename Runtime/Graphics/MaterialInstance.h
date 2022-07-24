@@ -28,6 +28,7 @@ namespace Joestar
 		bool Update();
 		void SetTexture(Texture* tex, U32 binding = 0);
 		void SetDepthCompareOp(CompareOp op);
+		void SetTessellationControlPoints(U32);
 		SharedPtr<DepthStencilState> GetDepthStencilState() const;
 		DescriptorSets* GetBatchDescriptorSets()
 		{
@@ -49,6 +50,10 @@ namespace Joestar
 
 		ShaderProgram* GetShaderProgram();
 
+		U32 GetTessellationControlPoints() const
+		{
+			return mTessellationControlPoints;
+		}
 	private:
 		void Init();
 		Vector<SharedPtr<Texture>> mTextures;
@@ -60,6 +65,7 @@ namespace Joestar
 		Vector<SharedPtr<UniformBuffer>> mObjectUniformBuffers;
 		SharedPtr<DepthStencilState> mDepthStencilState;
 		SharedPtr<GraphicsPipelineState> mPiplelineState;
+		U32 mTessellationControlPoints{ 0 };
 		bool bDepthStencilStateDirty{ false };
 	};
 }

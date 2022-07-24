@@ -191,7 +191,7 @@ namespace Joestar {
         colorBlending.blendConstants[3] = 0.0f; // Optional
     }
 
-    void GraphicsPipelineStateVK::CreateTessellationState(U32 num = 0)
+    void GraphicsPipelineStateVK::CreateTessellationState(U32 num)
     {
         tessellationInfo.patchControlPoints = num;
     }
