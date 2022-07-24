@@ -188,23 +188,29 @@ namespace Joestar
 		mGraphics->CreateFrameBuffer(mShadowFrameBuffer);
 	}
 
+	void View::PrepareCameraMatrix(Camera* cam, Matrix4x4f& view, Matrix4x4f& proj)
+	{
+		view = cam->GetViewMatrix();
+		proj = cam->GetProjectionMatrix();
+		if (!mGraphics->IsColumnMajor())
+		{
+			view.Transponse();
+			proj.Transponse();
+		}
+		if (!mGraphics->IsOriginBottomLeft())
+		{
+			proj.FlipY();
+		}
+	}
+
 	void View::DoShadowPass(CommandBuffer* cb)
 	{
 		Light* mainLight = mScene->GetMainLight();
 		mShadowCamera->SetPosition(mainLight->GetPosition());
 		mShadowCamera->SetOrthographic(100.F);
 		//mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
-		Matrix4x4f view = mShadowCamera->GetViewMatrix();
-		Matrix4x4f proj = mShadowCamera->GetProjectionMatrix();
-		if (!mGraphics->IsColumnMajor())
-		{
-			view.Transponse();
-			proj.Transponse();
-		}
-		if (mGraphics->IsOriginBottomLeft())
-		{
-			proj.FlipY();
-		}
+		Matrix4x4f view, proj;
+		PrepareCameraMatrix(mShadowCamera, view, proj);
 		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)&view);
 		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)&proj);
 		mGraphics->SetUniformBuffer(mAllUniformBuffers[(U32)Pass::Shadow][0]);
@@ -229,17 +235,8 @@ namespace Joestar
 		if (!mShadowBatches.Empty())
 			DoShadowPass(cb);
 		//Scene Pass
-		Matrix4x4f view = mCamera->GetViewMatrix();
-		Matrix4x4f proj = mCamera->GetProjectionMatrix();
-		if (!mGraphics->IsColumnMajor())
-		{
-			view.Transponse();
-			proj.Transponse();
-		}
-		if (mGraphics->IsOriginBottomLeft())
-		{
-			proj.FlipY();
-		}
+		Matrix4x4f view, proj;
+		PrepareCameraMatrix(mCamera, view, proj);
 		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)&view);
 		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)&proj);
 		mGraphics->SetUniformBuffer(mAllUniformBuffers[(U32)Pass::Scene][0]);

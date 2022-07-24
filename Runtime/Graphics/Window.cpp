@@ -4,7 +4,7 @@
 #include "../IO/Log.h"
 
 namespace Joestar {
-    F32 CurPosX = 0, CurPosY = 0;
+    F32 CurPosX = 0.F, CurPosY = 0.F;
     HID* HIDSystem;
     LRESULT CALLBACK WinProc(
         HWND hwnd,      // handle to window
@@ -33,7 +33,6 @@ namespace Joestar {
             HDC hDC;
             PAINTSTRUCT ps;
             hDC = BeginPaint(hwnd, &ps);
-            //TextOut(hDC,0,0,"",strlen("http://www.sunxin.org"));
             EndPaint(hwnd, &ps);
             break;
         case WM_CLOSE:
@@ -70,7 +69,7 @@ namespace Joestar {
             //LOG("x:%d y:%d\n", xPos, yPos);
             if (CurPosX != 0 || CurPosY != 0)
             {
-                HIDSystem->SetMouseInputs((F32)xPos - CurPosX, (F32)yPos - CurPosY, 0.F, 0.F);
+                HIDSystem->SetMouseInputs((F32)xPos - CurPosX, CurPosY - (F32)yPos, 0.F, 0.F);
             }
             CurPosX = xPos;
             CurPosY = yPos;

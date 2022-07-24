@@ -27,7 +27,7 @@ VertexOut VS(VertexIn vin)
 {
     VertexOut vout;
     vout.UV = vin.PosL;
-    vout.UV.y = -vout.UV.y;
+    // vout.UV.y = -vout.UV.y;
 	// 转换到齐次剪裁空间
     float4x4 view1 = view;
     view1[3].xyz = float3(0.0, 0.0, 0.0);

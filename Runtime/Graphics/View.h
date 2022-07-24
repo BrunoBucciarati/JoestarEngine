@@ -53,6 +53,7 @@ namespace Joestar
 		void CollectShadowBatches();
 		void InitShadowPass();
 		void DoShadowPass(CommandBuffer* cb);
+		void PrepareCameraMatrix(Camera* cam, Matrix4x4f& view, Matrix4x4f& proj);
 		UniquePtr<Camera> mCamera;
 		UniquePtr<Camera> mShadowCamera;
 		UniquePtr<Scene> mScene;

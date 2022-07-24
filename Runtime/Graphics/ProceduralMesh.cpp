@@ -41,11 +41,11 @@ namespace Joestar {
         for (unsigned int y = 0; y <= Y_SEGMENTS; ++y) {
             for (unsigned int x = 0; x <= X_SEGMENTS; ++x) {
                 indices.Push(y * (X_SEGMENTS + 1) + x);
-                indices.Push((y + 1) * (X_SEGMENTS + 1) + x + 1);
                 indices.Push((y + 1) * (X_SEGMENTS + 1) + x);
-                indices.Push(y * (X_SEGMENTS + 1) + x);
-                indices.Push(y * (X_SEGMENTS + 1) + x + 1);
                 indices.Push((y + 1) * (X_SEGMENTS + 1) + x + 1);
+                indices.Push(y * (X_SEGMENTS + 1) + x);
+                indices.Push((y + 1) * (X_SEGMENTS + 1) + x + 1);
+                indices.Push(y * (X_SEGMENTS + 1) + x + 1);
             }
         }
 

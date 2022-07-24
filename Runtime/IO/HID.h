@@ -1,7 +1,8 @@
 #pragma once
 #include "../Core/SubSystem.h"
 namespace Joestar {
-	enum InputType {
+	enum InputType
+	{
 		MOUSE_DOWN = 1,
 		MOUSE_UP,
 		KEY_W,
