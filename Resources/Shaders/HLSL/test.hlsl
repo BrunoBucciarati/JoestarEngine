@@ -2,6 +2,7 @@ cbuffer cbPerPass : register(b0)
 {
 	float4x4 view; 
 	float4x4 proj; 
+	float4 cameraPos;
 };
 cbuffer cbPerObject : register(b2)
 {

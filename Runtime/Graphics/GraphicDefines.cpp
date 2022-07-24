@@ -49,6 +49,8 @@ namespace Joestar
 			return (U32)PerPassUniforms::PROJECTION_MATRIX;
 		if (strcmp(name, "view") == 0)
 			return (U32)PerPassUniforms::VIEW_MATRIX;
+		if (strcmp(name, "cameraPos") == 0)
+			return (U32)PerPassUniforms::CAMERA_POS;
 		if (strcmp(name, "model") == 0)
 			return (U32)PerObjectUniforms::MODEL_MATRIX;
 		if (strcmp(name, "frustumPlanes") == 0)

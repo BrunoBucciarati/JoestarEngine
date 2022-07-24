@@ -68,7 +68,7 @@ namespace Joestar {
     void Scene::CreateTerrain()
     {
         mTerrain = NEW_OBJECT(Terrain);
-        mTerrain->BuildMesh(4096, 4096);
+        mTerrain->BuildMesh(16, 16);
         mGameObjects.Push(SharedPtr<GameObject>(mTerrain));
     }
 

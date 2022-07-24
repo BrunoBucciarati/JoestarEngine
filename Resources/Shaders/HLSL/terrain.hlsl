@@ -2,9 +2,10 @@ cbuffer cbPerPass : register(b0)
 {
 	float4x4 view; 
 	float4x4 proj; 
+	float4 cameraPos;
 };
 
-cbuffer cbPerObject : register(b1)
+cbuffer cbPerObject : register(b2)
 {
 	float4 frustumPlanes[6];
 };
@@ -56,11 +57,13 @@ float CalcTessFactor(float3 p)
 	// since 2^6 = 64, and gMinTess must be at least 0 since 2^0 = 1.
 	float gMinTess = 0.0;
 	float gMaxTess = 6.0;
-	float gEyePosW = 1.0;
 
-	float d = distance(p, gEyePosW);
+	// float d = distance(p, cameraPos.xyz);
+	float3 dist = p - cameraPos.xyz; 
+	float d = dot(dist, dist);
 	float s = saturate((d - gMinDist) / (gMaxDist - gMinDist));
-	return pow(2, (lerp(gMaxTess, gMinTess, s)));
+	s = 0.5;
+	return pow(2, (lerp(gMinTess, gMaxTess, s)));
 }
 
 struct PatchTess
@@ -80,7 +83,9 @@ bool AABBBehindPlaneTest(float3 center, float3 extents, float4 plane)
 	// If the center point of the box is a distance of e or more behind the
 	// plane (in which case s is negative since it is behind the plane),
 	// then the box is completely in the negative half space of the plane.
-	return (s + e) < 0.0f;
+
+	//todo 平面那边可能数据还没组织好，不过逻辑已有，后续可加
+	return false;//(s + e) < 0.0f;
 }
 
 // Returns true if the box is completely outside the frustum.
@@ -112,7 +117,7 @@ PatchTess ConstantHS(InputPatch<VertexOut, 4> patch, uint patchID : SV_Primitive
 	// Center/extents representation.
 	float3 boxCenter = 0.5f*(vMin + vMax);
 	float3 boxExtents = 0.5f*(vMax - vMin);
-	if(AABBOutsideFrustumTest(boxCenter, boxExtents, frustumPlanes))
+	if(false)//AABBOutsideFrustumTest(boxCenter, boxExtents, frustumPlanes))
 	{
 		pt.EdgeTess[0] = 0.0f;
 		pt.EdgeTess[1] = 0.0f;

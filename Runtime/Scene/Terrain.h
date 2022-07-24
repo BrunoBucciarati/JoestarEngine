@@ -20,8 +20,8 @@ namespace Joestar
 		SharedPtr<Mesh> mMesh;
 		U32 mWidth;
 		U32 mHeight;
-		U32 mPatchWidth{ 64u };
-		U32 mPatchHeight{ 64u };
+		U32 mPatchWidth{ 4u };
+		U32 mPatchHeight{ 4u };
 		WeakPtr<TerrainMeshRenderer> mMeshRenderer;
 		SharedPtr<MaterialInstance> mMaterial;
 		F32 mMaxHeight;

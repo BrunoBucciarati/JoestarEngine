@@ -23,6 +23,7 @@ namespace Joestar {
 		bool operator != (const Vector4f& v) const { return x != v.x || y != v.y || z != v.z || w != v.w; }
 		bool operator == (const float v[4]) const { return x == v[0] && y == v[1] && z == v[2] && w == v[3]; }
 		bool operator != (const float v[4]) const { return x != v[0] || y != v[1] || z != v[2] || w != v[3]; }
+		Vector4f& operator = (const Vector3f& v) { x = v.x; y = v.y; z = v.z; return *this; }
 
 		Vector4f operator - () const { return Vector4f(-x, -y, -z, -w); }
 

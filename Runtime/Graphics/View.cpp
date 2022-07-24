@@ -39,15 +39,18 @@ namespace Joestar
 		binding->binding = 0;
 		binding->type = DescriptorType::UNIFORM_BUFFER;
 		binding->count = 1;
-		binding->stage = (U32)ShaderStage::VS | (U32)ShaderStage::DS;
-		binding->size = 128;
-		binding->members.Resize(2);
+		binding->stage = (U32)ShaderStage::VS | (U32)ShaderStage::DS | (U32)ShaderStage::HS;
+		binding->size = 144;
+		binding->members.Resize(3);
 		binding->members[0].ID = (U32)PerPassUniforms::VIEW_MATRIX;
 		binding->members[0].offset = 0;
 		binding->members[0].size = 64;
 		binding->members[1].ID = (U32)PerPassUniforms::PROJECTION_MATRIX;
 		binding->members[1].offset = 64;
 		binding->members[1].size = 64;
+		binding->members[2].ID = (U32)PerPassUniforms::CAMERA_POS;
+		binding->members[2].offset = 128;
+		binding->members[2].size = 16;
 		mGraphics->SetDescriptorSetLayout(mDescriptorSetLayout);
 
 		mAllDescriptorSets.Resize((U32)Pass::Count);
@@ -112,6 +115,8 @@ namespace Joestar
 	{
 		DescriptorSetLayoutBinding::Member member;
 		U32 binding = mDescriptorSetLayout->GetUniformMemberAndBinding((U32)uniform, member);
+		if (binding == U32_MAX)
+			return;
 		Vector<SharedPtr<UniformBuffer>>& passBuffer = mAllUniformBuffers[(U32)pass];
 		passBuffer[binding]->SetData(member.offset, member.size, data);
 	}
@@ -210,9 +215,12 @@ namespace Joestar
 		mShadowCamera->SetOrthographic(100.F);
 		//mShadowCamera->SetWorldRotation(mainLight->GetWorldRotation());
 		Matrix4x4f view, proj;
+		Vector4f cameraPos;
+		cameraPos = mShadowCamera->GetPosition();
 		PrepareCameraMatrix(mShadowCamera, view, proj);
 		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)&view);
 		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)&proj);
+		SetUniformBuffer(PerPassUniforms::CAMERA_POS, (U8*)&cameraPos);
 		mGraphics->SetUniformBuffer(mAllUniformBuffers[(U32)Pass::Shadow][0]);
 		mGraphics->UpdateDescriptorSets(mAllDescriptorSets[(U32)Pass::Shadow]);
 		//要增加shadow的pass和FrameBuffer
@@ -236,9 +244,12 @@ namespace Joestar
 			DoShadowPass(cb);
 		//Scene Pass
 		Matrix4x4f view, proj;
+		Vector4f cameraPos;
+		cameraPos = mCamera->GetPosition();
 		PrepareCameraMatrix(mCamera, view, proj);
 		SetUniformBuffer(PerPassUniforms::VIEW_MATRIX, (U8*)&view);
 		SetUniformBuffer(PerPassUniforms::PROJECTION_MATRIX, (U8*)&proj);
+		SetUniformBuffer(PerPassUniforms::CAMERA_POS, (U8*)&cameraPos);
 		mGraphics->SetUniformBuffer(mAllUniformBuffers[(U32)Pass::Scene][0]);
 		mGraphics->UpdateDescriptorSets(mAllDescriptorSets[(U32)Pass::Scene]);
 		cb->BeginRenderPass(mGraphics->GetMainRenderPass(), mGraphics->GetBackBuffer());

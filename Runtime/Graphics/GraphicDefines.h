@@ -147,6 +147,7 @@ namespace Joestar {
 	enum class PerPassUniforms {
 		VIEW_MATRIX = 0,
 		PROJECTION_MATRIX,
+		CAMERA_POS,
 		COUNT
 	};
 

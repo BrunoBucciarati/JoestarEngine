@@ -89,8 +89,8 @@ namespace Joestar
 				vertData.Push((F32)i / patchNumX);
 				vertData.Push((F32)j / patchNumY);
 				//BoundsY
-				vertData.Push(mMaxHeight);
 				vertData.Push(mMinHeight);
+				vertData.Push(mMaxHeight);
 			}
 		}
 
