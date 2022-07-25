@@ -115,6 +115,13 @@ namespace Joestar {
 			bUpdate = true;
 			bDepthStencilStateDirty = false;
 		}
+		if (bRasterStateDirty)
+		{
+			mGraphics->CreateRasterizationState(mRasterizationState);
+			mPiplelineState->SetRasterizationState(mRasterizationState);
+			bUpdate = true;
+			bRasterStateDirty = false;
+		}
 		//mGraphics->UpdateDescriptorSets(mDescriptorSets);
 		//if (bUpdate)
 			//ReHash();
@@ -199,5 +206,15 @@ namespace Joestar {
 		return nullptr;
 	}
 
+
+	void MaterialInstance::SetPolygonMode(PolygonMode mode)
+	{
+		if (!mRasterizationState)
+		{
+			mRasterizationState = JOJO_NEW(RasterizationState, MEMORY_GFX_STRUCT);
+		}
+		mRasterizationState->SetPolygonMode(mode);
+		bRasterStateDirty = true;
+	}
 
 }

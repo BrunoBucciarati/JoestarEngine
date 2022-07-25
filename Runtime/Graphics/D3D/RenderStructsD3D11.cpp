@@ -277,7 +277,11 @@ namespace Joestar
     {
         D3D11_RASTERIZER_DESC rsDesc;
         ZeroMemory(&rsDesc, sizeof(D3D11_RASTERIZER_DESC));
-        rsDesc.FillMode = D3D11_FILL_SOLID;
+        if (createInfo.polygonMode == PolygonMode::FILL)
+            rsDesc.FillMode = D3D11_FILL_SOLID;
+        else if (createInfo.polygonMode == PolygonMode::LINE)
+            rsDesc.FillMode = D3D11_FILL_WIREFRAME;
+
         if (createInfo.cullMode == CullMode::FRONT)
         {
             rsDesc.CullMode = D3D11_CULL_FRONT;

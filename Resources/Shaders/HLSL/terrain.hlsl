@@ -50,20 +50,22 @@ float CalcTessFactor(float3 p)
 	// When distance is minimum, the tessellation is maximum.
 	// When distance is maximum, the tessellation is minimum.
 	float gMinDist = 1.0;
-	float gMaxDist = 1000.0;
+	float gMaxDist = 100.0;
 	// Exponents for power of 2 tessellation. The tessellation
 	// range is [2^(gMinTess), 2^(gMaxTess)]. Since the maximum
 	// tessellation is 64, this means gMaxTess can be at most 6
 	// since 2^6 = 64, and gMinTess must be at least 0 since 2^0 = 1.
-	float gMinTess = 0.0;
-	float gMaxTess = 6.0;
+	float gMinTess = 1.0;
+	float gMaxTess = 16.0;
 
 	// float d = distance(p, cameraPos.xyz);
 	float3 dist = p - cameraPos.xyz; 
-	float d = dot(dist, dist);
+	float d = sqrt(dot(dist, dist));
 	float s = saturate((d - gMinDist) / (gMaxDist - gMinDist));
-	s = 0.5;
-	return pow(2, (lerp(gMinTess, gMaxTess, s)));
+	s = 1.0 - pow(1.0 - s, 4.0);
+	float fac = s * gMinTess + (1.0 - s) * gMaxTess;
+
+	return fac;
 }
 
 struct PatchTess
@@ -156,7 +158,7 @@ struct HullOut
 };
 
 [domain("quad")]
-[partitioning("integer")]
+[partitioning("fractional_even")]
 [outputtopology("triangle_cw")]
 [outputcontrolpoints(4)]
 [patchconstantfunc("ConstantHS")]

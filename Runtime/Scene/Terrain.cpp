@@ -13,6 +13,7 @@ namespace Joestar
 		mat->SetShader("terrain", ShaderStage::VS_HS_DS_PS);
 		mMaterial = NEW_OBJECT(MaterialInstance, mat);
 		mMaterial->SetTessellationControlPoints(4U);
+		mMaterial->SetPolygonMode(PolygonMode::LINE);
 		mMeshRenderer->SetMaterial(mMaterial);
 
 		InitHeightMap();
@@ -37,7 +38,13 @@ namespace Joestar
 			{
 				U32 idx = i * image.GetWidth() + j;
 				U8 height = imageData[idx * image.GetNumChannels()];
+				//test code
+				{
+					height = 0.F;
+				}
+
 				heightMap[idx] = (F32)height;
+
 				mMaxHeight = Max(height, mMaxHeight);
 				mMinHeight = Min(height, mMinHeight);
 			}
@@ -71,7 +78,7 @@ namespace Joestar
 		F32 halfHeight = (F32)height * 0.5;
 		vb->SetSize(vertCount, elements);
 		ib->SetSize(patchCount * 4, true);
-		vertData.Reserve(vertCount * 8);
+		vertData.Reserve(vertCount * 10);
 		indexData.Reserve(patchCount * 4);
 
 		for (U32 i = 0; i <= patchNumX; ++i)
@@ -98,10 +105,10 @@ namespace Joestar
 		{
 			for (U32 j = 0; j < patchNumY; ++j)
 			{
-				indexData.Push(i * patchNumY + j);
-				indexData.Push((i + 1) * patchNumY + j);
-				indexData.Push(i * patchNumY + j + 1);
-				indexData.Push((i + 1) * patchNumY + j + 1);
+				indexData.Push(i * (patchNumY + 1) + j);
+				indexData.Push(i * (patchNumY + 1) + j + 1);
+				indexData.Push((i + 1) * (patchNumY + 1) + j);
+				indexData.Push((i + 1) * (patchNumY + 1) + j + 1);
 			}
 		}
 

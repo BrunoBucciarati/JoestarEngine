@@ -22,17 +22,17 @@ namespace Joestar {
         CreateLights();
         CreateTerrain();
 
-        GameObject* plane = NEW_OBJECT(GameObject);
-        mGameObjects.Push(plane);
-        MeshRenderer* pr = plane->GetComponent<MeshRenderer>();
-        Texture2D* texture = NEW_OBJECT(Texture2D);
-        String path = "Textures/texture.jpg";
-        Image image(mContext);
-        image.Load(path);
-        texture->SetImage(&image);
-        pr->SetMaterial("test");
-        pr->GetMaterial()->SetTexture(texture, 0);
-        pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
+        //GameObject* plane = NEW_OBJECT(GameObject);
+        //mGameObjects.Push(plane);
+        //MeshRenderer* pr = plane->GetComponent<MeshRenderer>();
+        //Texture2D* texture = NEW_OBJECT(Texture2D);
+        //String path = "Textures/texture.jpg";
+        //Image image(mContext);
+        //image.Load(path);
+        //texture->SetImage(&image);
+        //pr->SetMaterial("test");
+        //pr->GetMaterial()->SetTexture(texture, 0);
+        //pr->SetMesh(GetSubsystem<ProceduralMesh>()->GetPlane());
 
         if (!mSkyboxGO) {
             mSkyboxGO = NEW_OBJECT(GameObject);
@@ -68,7 +68,7 @@ namespace Joestar {
     void Scene::CreateTerrain()
     {
         mTerrain = NEW_OBJECT(Terrain);
-        mTerrain->BuildMesh(16, 16);
+        mTerrain->BuildMesh(64, 64);
         mGameObjects.Push(SharedPtr<GameObject>(mTerrain));
     }
 

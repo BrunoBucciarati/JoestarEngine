@@ -9,6 +9,7 @@ namespace Joestar
 	class UniformBuffer;
 	class Texture;
 	class DepthStencilState;
+	class RasterizationState;
 	class GraphicsPipelineState;
 	class Graphics;
 	class ShaderProgram;
@@ -54,6 +55,8 @@ namespace Joestar
 		{
 			return mTessellationControlPoints;
 		}
+
+		void SetPolygonMode(PolygonMode mode);
 	private:
 		void Init();
 		Vector<SharedPtr<Texture>> mTextures;
@@ -64,8 +67,10 @@ namespace Joestar
 		Vector<SharedPtr<UniformBuffer>> mBatchUniformBuffers;
 		Vector<SharedPtr<UniformBuffer>> mObjectUniformBuffers;
 		SharedPtr<DepthStencilState> mDepthStencilState;
+		SharedPtr<RasterizationState> mRasterizationState;
 		SharedPtr<GraphicsPipelineState> mPiplelineState;
 		U32 mTessellationControlPoints{ 0 };
 		bool bDepthStencilStateDirty{ false };
+		bool bRasterStateDirty{ false };
 	};
 }
